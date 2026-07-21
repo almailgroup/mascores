@@ -28,9 +28,6 @@ function CompetitionPage() {
     },
   });
   const fixtures = useFootball<Fixture[]>("fixtures", { league: leagueId, season, next: 20 }, { select: (d) => d.response as unknown as Fixture[] });
-  const topScorers = useFootball<Array<{ player: { id: number; name: string; photo?: string }; statistics: Array<{ team: { name: string }; goals: { total: number } }> }>>(
-    "players/topscorers", { league: leagueId, season }, { select: (d) => d.response as never, enabled: false },
-  );
 
   const league = info.data;
 
