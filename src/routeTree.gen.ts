@@ -17,6 +17,7 @@ import { Route as CompetitionsRouteImport } from './routes/competitions'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TeamsIdRouteImport } from './routes/teams.$id'
+import { Route as PlayersIdRouteImport } from './routes/players.$id'
 import { Route as MatchesIdRouteImport } from './routes/matches.$id'
 import { Route as CompetitionsIdRouteImport } from './routes/competitions.$id'
 
@@ -60,6 +61,11 @@ const TeamsIdRoute = TeamsIdRouteImport.update({
   path: '/teams/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlayersIdRoute = PlayersIdRouteImport.update({
+  id: '/players/$id',
+  path: '/players/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MatchesIdRoute = MatchesIdRouteImport.update({
   id: '/matches/$id',
   path: '/matches/$id',
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/world-cup-2026': typeof WorldCup2026Route
   '/competitions/$id': typeof CompetitionsIdRoute
   '/matches/$id': typeof MatchesIdRoute
+  '/players/$id': typeof PlayersIdRoute
   '/teams/$id': typeof TeamsIdRoute
 }
 export interface FileRoutesByTo {
@@ -93,6 +100,7 @@ export interface FileRoutesByTo {
   '/world-cup-2026': typeof WorldCup2026Route
   '/competitions/$id': typeof CompetitionsIdRoute
   '/matches/$id': typeof MatchesIdRoute
+  '/players/$id': typeof PlayersIdRoute
   '/teams/$id': typeof TeamsIdRoute
 }
 export interface FileRoutesById {
@@ -106,6 +114,7 @@ export interface FileRoutesById {
   '/world-cup-2026': typeof WorldCup2026Route
   '/competitions/$id': typeof CompetitionsIdRoute
   '/matches/$id': typeof MatchesIdRoute
+  '/players/$id': typeof PlayersIdRoute
   '/teams/$id': typeof TeamsIdRoute
 }
 export interface FileRouteTypes {
@@ -120,6 +129,7 @@ export interface FileRouteTypes {
     | '/world-cup-2026'
     | '/competitions/$id'
     | '/matches/$id'
+    | '/players/$id'
     | '/teams/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -132,6 +142,7 @@ export interface FileRouteTypes {
     | '/world-cup-2026'
     | '/competitions/$id'
     | '/matches/$id'
+    | '/players/$id'
     | '/teams/$id'
   id:
     | '__root__'
@@ -144,6 +155,7 @@ export interface FileRouteTypes {
     | '/world-cup-2026'
     | '/competitions/$id'
     | '/matches/$id'
+    | '/players/$id'
     | '/teams/$id'
   fileRoutesById: FileRoutesById
 }
@@ -156,6 +168,7 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   WorldCup2026Route: typeof WorldCup2026Route
   MatchesIdRoute: typeof MatchesIdRoute
+  PlayersIdRoute: typeof PlayersIdRoute
   TeamsIdRoute: typeof TeamsIdRoute
 }
 
@@ -217,6 +230,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TeamsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/players/$id': {
+      id: '/players/$id'
+      path: '/players/$id'
+      fullPath: '/players/$id'
+      preLoaderRoute: typeof PlayersIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/matches/$id': {
       id: '/matches/$id'
       path: '/matches/$id'
@@ -255,6 +275,7 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   WorldCup2026Route: WorldCup2026Route,
   MatchesIdRoute: MatchesIdRoute,
+  PlayersIdRoute: PlayersIdRoute,
   TeamsIdRoute: TeamsIdRoute,
 }
 export const routeTree = rootRouteImport
