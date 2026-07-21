@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { BrandLogo } from "@/components/brand-logo";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Loader2, Mail, Lock, User as UserIcon } from "lucide-react";
+import { Loader2, Mail, Lock, User as UserIcon, ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -100,9 +100,16 @@ function AuthPage() {
     <div className="relative min-h-screen bg-background text-foreground">
       <div className="pointer-events-none absolute inset-0 opacity-60 [background:radial-gradient(circle_at_50%_0%,color-mix(in_oklab,var(--primary)_30%,transparent),transparent_50%)]" />
       <div className="relative z-10 mx-auto flex max-w-md flex-col px-6 py-8">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
+          <Link
+            to="/"
+            aria-label="Back to home"
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-card text-foreground transition hover:bg-accent"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
           <Link to="/" className="inline-flex">
-            <BrandLogo variant="horizontal" className="h-9 w-auto rounded-md" />
+            <BrandLogo variant="horizontal" className="h-9 w-auto" />
           </Link>
           <ThemeToggle />
         </div>
