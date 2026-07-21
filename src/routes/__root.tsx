@@ -79,29 +79,32 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "MansourAlmailScores — Live Scores. Real Passion." },
+      { title: "MansourAlmailScores — Live Football Scores" },
       {
         name: "description",
         content:
-          "MansourAlmailScores delivers live football scores, fixtures, and in-depth coverage of the FIFA World Cup 2026, Premier League, and LaLiga.",
+          "Live scores, match centers, lineups, and coverage of the best leagues of the world.",
       },
       { name: "author", content: "MansourAlmailScores" },
       { name: "theme-color", content: "#0a1628" },
-      { property: "og:title", content: "MansourAlmailScores — Live Scores. Real Passion." },
+      { property: "og:title", content: "MansourAlmailScores — Live Football Scores" },
       {
         property: "og:description",
         content:
-          "Live football scores and comprehensive coverage of the World Cup 2026, Premier League, and LaLiga.",
+          "Live scores, match centers, lineups, and coverage of the best leagues of the world.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "MansourAlmailScores — Live Football Scores" },
+      { name: "twitter:description", content: "Live scores, match centers, lineups, and coverage of the best leagues of the world." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/eab9f645-fd29-4918-b6f6-f8760815f669/id-preview-291137d6--552dae1c-a8e4-4697-9e43-5a409c40ae78.lovable.app-1784632724087.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/eab9f645-fd29-4918-b6f6-f8760815f669/id-preview-291137d6--552dae1c-a8e4-4697-9e43-5a409c40ae78.lovable.app-1784632724087.png" },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.jpg", type: "image/jpeg" },
     ],
   }),
   shellComponent: RootShell,
