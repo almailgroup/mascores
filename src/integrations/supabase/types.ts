@@ -14,7 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          favorite_competition_ids: string[]
+          favorite_player_ids: string[]
+          favorite_team_ids: string[]
+          id: string
+          language: string
+          notification_preferences: Json
+          theme: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          favorite_competition_ids?: string[]
+          favorite_player_ids?: string[]
+          favorite_team_ids?: string[]
+          id: string
+          language?: string
+          notification_preferences?: Json
+          theme?: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          favorite_competition_ids?: string[]
+          favorite_player_ids?: string[]
+          favorite_team_ids?: string[]
+          id?: string
+          language?: string
+          notification_preferences?: Json
+          theme?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
