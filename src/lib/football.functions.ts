@@ -21,7 +21,8 @@ export type FootballEndpoint =
 
 type Params = Record<string, string | number | boolean | undefined>;
 
-type FootballResponse = { response: Record<string, unknown>[]; errors?: Record<string, unknown> | unknown[] };
+type JsonValue = string | number | boolean | null | JsonValue[] | { [k: string]: JsonValue };
+type FootballResponse = { response: JsonValue[]; errors?: JsonValue };
 
 // Cheap in-memory cache to soften repeat calls during a single worker lifetime.
 const cache = new Map<string, { at: number; data: FootballResponse }>();
