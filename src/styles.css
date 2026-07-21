@@ -4,6 +4,25 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@keyframes mas-logo-in {
+  0% { opacity: 0; transform: scale(0.6); }
+  60% { opacity: 1; transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes mas-text-in {
+  0% { opacity: 0; transform: translateY(12px); letter-spacing: 0.1em; }
+  100% { opacity: 1; transform: translateY(0); letter-spacing: 0em; }
+}
+
+@utility animate-mas-logo-in {
+  animation: mas-logo-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@utility animate-mas-text-in {
+  animation: mas-text-in 0.8s ease-out 0.4s both;
+}
+
 /*
  * Design system definition.
  *
@@ -63,25 +82,26 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
+  /* MansourAlmailScores — Light mode */
+  --background: oklch(0.985 0.005 240);
+  --foreground: oklch(0.18 0.05 260);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
+  --card-foreground: oklch(0.18 0.05 260);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
+  --popover-foreground: oklch(0.18 0.05 260);
+  --primary: oklch(0.55 0.22 260);
+  --primary-foreground: oklch(0.985 0.005 240);
+  --secondary: oklch(0.96 0.01 250);
+  --secondary-foreground: oklch(0.2 0.05 260);
+  --muted: oklch(0.96 0.01 250);
+  --muted-foreground: oklch(0.5 0.03 255);
+  --accent: oklch(0.93 0.05 255);
+  --accent-foreground: oklch(0.2 0.08 260);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
+  --border: oklch(0.9 0.015 250);
+  --input: oklch(0.92 0.015 250);
+  --ring: oklch(0.55 0.22 260);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -89,47 +109,48 @@
   --chart-5: oklch(0.769 0.188 70.08);
   --sidebar: oklch(0.984 0.003 247.858);
   --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.208 0.042 265.755);
+  --sidebar-primary: oklch(0.55 0.22 260);
   --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
   --sidebar-accent: oklch(0.968 0.007 247.896);
   --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
   --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
+  --sidebar-ring: oklch(0.55 0.22 260);
 }
 
 .dark {
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.208 0.042 265.755);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.929 0.013 255.508);
-  --primary-foreground: oklch(0.208 0.042 265.755);
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
+  /* MansourAlmailScores — Dark mode (stadium night) */
+  --background: oklch(0.16 0.03 260);
+  --foreground: oklch(0.98 0.005 240);
+  --card: oklch(0.21 0.04 262);
+  --card-foreground: oklch(0.98 0.005 240);
+  --popover: oklch(0.21 0.04 262);
+  --popover-foreground: oklch(0.98 0.005 240);
+  --primary: oklch(0.62 0.22 260);
+  --primary-foreground: oklch(0.98 0.005 240);
+  --secondary: oklch(0.26 0.04 262);
+  --secondary-foreground: oklch(0.98 0.005 240);
+  --muted: oklch(0.26 0.04 262);
+  --muted-foreground: oklch(0.72 0.03 255);
+  --accent: oklch(0.32 0.08 262);
+  --accent-foreground: oklch(0.98 0.005 240);
   --destructive: oklch(0.704 0.191 22.216);
   --destructive-foreground: oklch(0.984 0.003 247.858);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.551 0.027 264.364);
+  --ring: oklch(0.62 0.22 260);
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.208 0.042 265.755);
+  --sidebar: oklch(0.18 0.035 262);
   --sidebar-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary: oklch(0.62 0.22 260);
   --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.279 0.041 260.031);
+  --sidebar-accent: oklch(0.28 0.05 262);
   --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
+  --sidebar-ring: oklch(0.62 0.22 260);
 }
 
 @layer base {
