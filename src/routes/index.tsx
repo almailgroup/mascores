@@ -1,13 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { BrandLogo } from "@/components/brand-logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Activity, Trophy, Globe2, Search } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/")({
   component: Index,
 });
 
 function Index() {
+  const { user, loading } = useAuth();
   return (
     <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
       <div className="pointer-events-none absolute inset-0 opacity-60 [background:radial-gradient(circle_at_20%_10%,color-mix(in_oklab,var(--primary)_25%,transparent),transparent_55%),radial-gradient(circle_at_85%_80%,color-mix(in_oklab,var(--primary)_15%,transparent),transparent_60%)]" />
@@ -16,6 +20,24 @@ function Index() {
         <BrandLogo variant="horizontal" className="h-10 w-auto rounded-md" />
         <div className="flex items-center gap-3">
           <ThemeToggle />
+          {!loading && (
+            user ? (
+              <button
+                type="button"
+                onClick={() => supabase.auth.signOut()}
+                className="inline-flex h-10 items-center rounded-full border border-border bg-card px-4 text-sm font-medium hover:bg-accent"
+              >
+                Sign out
+              </button>
+            ) : (
+              <Link
+                to="/auth"
+                className="inline-flex h-10 items-center rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground shadow hover:brightness-110"
+              >
+                Sign in
+              </Link>
+            )
+          )}
         </div>
       </header>
 
@@ -43,12 +65,14 @@ function Index() {
               >
                 Explore matches
               </button>
-              <button
-                type="button"
-                className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-6 py-3 text-sm font-semibold text-foreground transition hover:bg-accent"
-              >
-                Create an account
-              </button>
+              {!user && (
+                <Link
+                  to="/auth"
+                  className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-6 py-3 text-sm font-semibold text-foreground transition hover:bg-accent"
+                >
+                  Create an account
+                </Link>
+              )}
             </div>
           </div>
 
