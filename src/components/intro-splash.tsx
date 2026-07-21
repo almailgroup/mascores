@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
-import logoIconDark from "@/assets/logo-icon.asset.json";
+import logoHorizontalDark from "@/assets/logo-horizontal-dark.png.asset.json";
+import logoHorizontalLight from "@/assets/logo-horizontal-light.png.asset.json";
+import { useTheme } from "./theme-provider";
 
 const SESSION_KEY = "mas-intro-shown";
 
 export function IntroSplash() {
+  const { theme } = useTheme();
   const [visible, setVisible] = useState(false);
   const [fading, setFading] = useState(false);
 
@@ -24,28 +27,28 @@ export function IntroSplash() {
   }, []);
 
   if (!visible) return null;
+  const isLight = theme === "light";
+  const src = isLight ? logoHorizontalLight.url : logoHorizontalDark.url;
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex items-center justify-center bg-[#050b1a] transition-opacity duration-500 ${fading ? "opacity-0" : "opacity-100"}`}
+      className={`fixed inset-0 z-[100] flex items-center justify-center transition-opacity duration-500 ${fading ? "opacity-0" : "opacity-100"} ${isLight ? "bg-white" : "bg-[#050b1a]"}`}
       aria-hidden="true"
     >
-      <div className="pointer-events-none absolute inset-0 opacity-40 [background:radial-gradient(circle_at_50%_40%,rgba(37,99,235,0.35),transparent_60%)]" />
-      <div className="relative flex flex-col items-center gap-6">
+      <div
+        className={`pointer-events-none absolute inset-0 opacity-40 ${
+          isLight
+            ? "[background:radial-gradient(circle_at_50%_40%,rgba(37,99,235,0.18),transparent_60%)]"
+            : "[background:radial-gradient(circle_at_50%_40%,rgba(37,99,235,0.35),transparent_60%)]"
+        }`}
+      />
+      <div className="relative flex flex-col items-center gap-6 px-6">
         <div className="animate-mas-logo-in">
           <img
-            src={logoIconDark.url}
+            src={src}
             alt="MansourAlmailScores"
-            className="h-32 w-32 drop-shadow-[0_0_40px_rgba(37,99,235,0.6)]"
+            className={`h-auto w-[min(560px,80vw)] ${isLight ? "" : "drop-shadow-[0_0_40px_rgba(37,99,235,0.35)]"}`}
           />
-        </div>
-        <div className="animate-mas-text-in text-center">
-          <div className="text-2xl font-bold tracking-tight text-white">
-            MansourAlmail<span className="text-[#2563eb]">Scores</span>
-          </div>
-          <div className="mt-2 text-[0.65rem] font-medium uppercase tracking-[0.35em] text-slate-400">
-            Live Scores. Real Passion.
-          </div>
         </div>
       </div>
     </div>
