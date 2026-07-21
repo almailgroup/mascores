@@ -16,6 +16,7 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as CompetitionsRouteImport } from './routes/competitions'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MatchesIdRouteImport } from './routes/matches.$id'
 import { Route as CompetitionsIdRouteImport } from './routes/competitions.$id'
 
 const WorldCup2026Route = WorldCup2026RouteImport.update({
@@ -53,6 +54,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MatchesIdRoute = MatchesIdRouteImport.update({
+  id: '/matches/$id',
+  path: '/matches/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CompetitionsIdRoute = CompetitionsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -68,6 +74,7 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/world-cup-2026': typeof WorldCup2026Route
   '/competitions/$id': typeof CompetitionsIdRoute
+  '/matches/$id': typeof MatchesIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/world-cup-2026': typeof WorldCup2026Route
   '/competitions/$id': typeof CompetitionsIdRoute
+  '/matches/$id': typeof MatchesIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -89,6 +97,7 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/world-cup-2026': typeof WorldCup2026Route
   '/competitions/$id': typeof CompetitionsIdRoute
+  '/matches/$id': typeof MatchesIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -101,6 +110,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/world-cup-2026'
     | '/competitions/$id'
+    | '/matches/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -111,6 +121,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/world-cup-2026'
     | '/competitions/$id'
+    | '/matches/$id'
   id:
     | '__root__'
     | '/'
@@ -121,6 +132,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/world-cup-2026'
     | '/competitions/$id'
+    | '/matches/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -131,6 +143,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   SearchRoute: typeof SearchRoute
   WorldCup2026Route: typeof WorldCup2026Route
+  MatchesIdRoute: typeof MatchesIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -184,6 +197,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/matches/$id': {
+      id: '/matches/$id'
+      path: '/matches/$id'
+      fullPath: '/matches/$id'
+      preLoaderRoute: typeof MatchesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/competitions/$id': {
       id: '/competitions/$id'
       path: '/$id'
@@ -214,6 +234,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   SearchRoute: SearchRoute,
   WorldCup2026Route: WorldCup2026Route,
+  MatchesIdRoute: MatchesIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
