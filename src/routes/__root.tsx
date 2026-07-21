@@ -11,6 +11,8 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { ThemeProvider } from "../components/theme-provider";
+import { IntroSplash } from "../components/intro-splash";
 
 function NotFoundComponent() {
   return (
@@ -77,21 +79,29 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "MansourAlmailScores — Live Scores. Real Passion." },
+      {
+        name: "description",
+        content:
+          "MansourAlmailScores delivers live football scores, fixtures, and in-depth coverage of the FIFA World Cup 2026, Premier League, and LaLiga.",
+      },
+      { name: "author", content: "MansourAlmailScores" },
+      { name: "theme-color", content: "#0a1628" },
+      { property: "og:title", content: "MansourAlmailScores — Live Scores. Real Passion." },
+      {
+        property: "og:description",
+        content:
+          "Live football scores and comprehensive coverage of the World Cup 2026, Premier League, and LaLiga.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.jpg", type: "image/jpeg" },
     ],
   }),
   shellComponent: RootShell,
@@ -119,8 +129,11 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <ThemeProvider>
+        <IntroSplash />
+        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+        <Outlet />
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
