@@ -21,8 +21,10 @@ export type FootballEndpoint =
 
 type Params = Record<string, string | number | boolean | undefined>;
 
+type FootballResponse = { response: Record<string, unknown>[]; errors?: Record<string, unknown> | unknown[] };
+
 // Cheap in-memory cache to soften repeat calls during a single worker lifetime.
-const cache = new Map<string, { at: number; data: unknown }>();
+const cache = new Map<string, { at: number; data: FootballResponse }>();
 const TTL = 60_000;
 
 export const callFootball = createServerFn({ method: "POST" })
@@ -36,7 +38,7 @@ export const callFootball = createServerFn({ method: "POST" })
     }
     const url = `${BASE}/${data.endpoint}${qs.size ? "?" + qs.toString() : ""}`;
     const cached = cache.get(url);
-    if (cached && Date.now() - cached.at < TTL) return cached.data as { response: unknown[]; errors?: unknown };
+    if (cached && Date.now() - cached.at < TTL) return cached.data;
 
     const res = await fetch(url, {
       headers: {
@@ -48,7 +50,7 @@ export const callFootball = createServerFn({ method: "POST" })
       const text = await res.text();
       throw new Error(`Football API ${res.status}: ${text.slice(0, 200)}`);
     }
-    const json = (await res.json()) as { response: unknown[]; errors?: unknown };
+    const json = (await res.json()) as FootballResponse;
     cache.set(url, { at: Date.now(), data: json });
     return json;
   });
