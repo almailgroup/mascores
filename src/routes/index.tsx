@@ -3,7 +3,14 @@ import { AppShell, SectionHeader, EmptyState, LoadingSkeleton } from "@/componen
 import { MatchCard, type Fixture } from "@/components/match-card";
 import { useFootball, FEATURED_LEAGUES, todayISO } from "@/lib/football";
 import { useFavorites } from "@/hooks/use-favorites";
-import { Trophy, TrendingUp } from "lucide-react";
+import {
+  CURATED_ALL,
+  CURATED_FEATURED,
+  CURATED_PL_2025_26,
+  CURATED_LALIGA_2025_26,
+  CURATED_WC_2026,
+} from "@/lib/football-fallback";
+import { Info } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -36,65 +43,110 @@ function Home() {
     (f) => favTeamSet.has(String(f.teams.home.id)) || favTeamSet.has(String(f.teams.away.id)),
   );
 
+  const liveFeedDown =
+    Boolean(live.error || todays.error || upcoming.error || finished.error) ||
+    (!live.isLoading && !todays.isLoading && !upcoming.isLoading &&
+      (live.data?.length ?? 0) === 0 &&
+      (todays.data?.length ?? 0) === 0 &&
+      (upcoming.data?.length ?? 0) === 0);
+
   return (
     <AppShell>
-      <div className="relative mb-8 overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-6 sm:p-10">
+      <div className="relative mb-8 overflow-hidden rounded-3xl border border-border bg-[radial-gradient(ellipse_at_top_left,theme(colors.primary/20),transparent_60%),radial-gradient(ellipse_at_bottom_right,theme(colors.primary/10),transparent_55%)] bg-card p-6 sm:p-10">
         <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" /> Live football
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" /> Matchday coverage
         </div>
-        <h1 className="mt-4 text-3xl font-black tracking-tight sm:text-5xl">
-          Live Scores. <span className="text-primary">Real Passion.</span>
+        <h1 className="mt-4 max-w-3xl text-3xl font-black leading-[1.05] tracking-tight sm:text-5xl">
+          Every match. Every moment. <span className="text-primary">One scoreboard.</span>
         </h1>
-        <p className="mt-3 max-w-xl text-sm text-muted-foreground sm:text-base">
-          Every kick of the FIFA World Cup 2026, Premier League 2025/26 and LaLiga 2025/26 — with match centers, lineups, and player profiles.
+        <p className="mt-3 max-w-2xl text-sm text-muted-foreground sm:text-base">
+          FIFA World Cup 2026, Premier League 2025/26 and LaLiga 2025/26 — with match centers, lineups, and player profiles built for real supporters.
         </p>
+        <div className="mt-5 flex flex-wrap items-center gap-2 text-xs">
+          <Link to="/world-cup-2026" className="rounded-full bg-primary px-3 py-1.5 font-semibold text-primary-foreground hover:opacity-90">World Cup 2026</Link>
+          <Link to="/competitions/$id" params={{ id: "39" }} className="rounded-full border border-border bg-background/60 px-3 py-1.5 font-semibold hover:border-primary/50">Premier League</Link>
+          <Link to="/competitions/$id" params={{ id: "140" }} className="rounded-full border border-border bg-background/60 px-3 py-1.5 font-semibold hover:border-primary/50">LaLiga</Link>
+        </div>
       </div>
 
-      <Section title="Live now" data={live.data} loading={live.isLoading} error={live.error} empty="No live matches right now." />
-      {favMatches.length > 0 && <Section title="Favorite matches today" data={favMatches} loading={false} error={null} empty="" />}
-      <Section title="Today's matches" data={todays.data} loading={todays.isLoading} error={todays.error} empty="No matches scheduled today." />
-      <Section title="Upcoming" data={upcoming.data} loading={upcoming.isLoading} error={upcoming.error} empty="No upcoming fixtures." />
-      <Section title="Recently finished" data={finished.data} loading={finished.isLoading} error={finished.error} empty="No finished matches." />
+      {liveFeedDown && (
+        <div className="mb-6 flex items-start gap-3 rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground">
+          <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+          <div>
+            <div className="font-semibold text-foreground">Live feed warming up</div>
+            The live data feed is temporarily unavailable — showing curated fixtures for the FIFA World Cup 2026, Premier League 2025/26 and LaLiga 2025/26.
+          </div>
+        </div>
+      )}
+
+      {liveFeedDown ? (
+        <>
+          <Section title="FIFA World Cup 2026" data={CURATED_WC_2026} loading={false} error={null} empty="" disabled />
+          <Section title="Premier League 2025/26 — opening weekend" data={CURATED_PL_2025_26} loading={false} error={null} empty="" disabled />
+          <Section title="LaLiga 2025/26 — Jornada 1" data={CURATED_LALIGA_2025_26} loading={false} error={null} empty="" disabled />
+          <Section title="Featured fixtures" data={CURATED_ALL.slice(0, 6)} loading={false} error={null} empty="" disabled />
+        </>
+      ) : (
+        <>
+          <Section title="Live now" data={live.data} loading={live.isLoading} error={live.error} empty="No live matches right now." />
+          {favMatches.length > 0 && <Section title="Favorite matches today" data={favMatches} loading={false} error={null} empty="" />}
+          <Section title="Today's matches" data={todays.data} loading={todays.isLoading} error={todays.error} empty="No matches scheduled today." />
+          <Section title="Upcoming" data={upcoming.data} loading={upcoming.isLoading} error={upcoming.error} empty="No upcoming fixtures." />
+          <Section title="Recently finished" data={finished.data} loading={finished.isLoading} error={finished.error} empty="No finished matches." />
+        </>
+      )}
 
       <section className="mt-10">
         <SectionHeader title="Featured competitions" />
         <div className="grid gap-3 sm:grid-cols-3">
-          {FEATURED_LEAGUES.map((l) => (
-            l.id === 1 ? (
+          {FEATURED_LEAGUES.map((l) => {
+            const logo = `https://media.api-sports.io/football/leagues/${l.id}.png`;
+            const content = (
+              <>
+                <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-border bg-background">
+                  <img src={logo} alt="" className="h-10 w-10 object-contain" loading="lazy" />
+                </div>
+                <div>
+                  <div className="font-semibold">{l.name}</div>
+                  <div className="text-xs text-muted-foreground">Season {l.season}</div>
+                </div>
+              </>
+            );
+            return l.id === 1 ? (
               <Link key={l.id} to="/world-cup-2026" className="group flex items-center gap-3 rounded-2xl border border-border bg-card p-4 transition hover:border-primary/50 hover:shadow-lg">
-                <FeatureIcon />
-                <div><div className="font-semibold">{l.name}</div><div className="text-xs text-muted-foreground">Season {l.season}</div></div>
+                {content}
               </Link>
             ) : (
               <Link key={l.id} to="/competitions/$id" params={{ id: String(l.id) }} className="group flex items-center gap-3 rounded-2xl border border-border bg-card p-4 transition hover:border-primary/50 hover:shadow-lg">
-                <FeatureIcon />
-                <div><div className="font-semibold">{l.name}</div><div className="text-xs text-muted-foreground">Season {l.season}</div></div>
+                {content}
               </Link>
-            )
-          ))}
+            );
+          })}
         </div>
       </section>
 
       <section className="mt-10">
-        <SectionHeader title="Trending" action={<TrendingUp className="h-5 w-5 text-primary" />} />
-        <div className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground">
-          Explore players, teams, coaches, stadiums, and countries via{" "}
-          <Link to="/search" className="font-semibold text-primary hover:underline">global search</Link>.
+        <SectionHeader title="Explore" />
+        <div className="grid gap-3 sm:grid-cols-3">
+          <Link to="/search" className="rounded-2xl border border-border bg-card p-5 transition hover:border-primary/50">
+            <div className="text-sm font-semibold">Global search</div>
+            <div className="mt-1 text-xs text-muted-foreground">Players, teams, coaches, stadiums, countries.</div>
+          </Link>
+          <Link to="/news" className="rounded-2xl border border-border bg-card p-5 transition hover:border-primary/50">
+            <div className="text-sm font-semibold">News</div>
+            <div className="mt-1 text-xs text-muted-foreground">Latest headlines across your favorite competitions.</div>
+          </Link>
+          <Link to="/favorites" className="rounded-2xl border border-border bg-card p-5 transition hover:border-primary/50">
+            <div className="text-sm font-semibold">Favorites</div>
+            <div className="mt-1 text-xs text-muted-foreground">Follow teams, players, matches and competitions.</div>
+          </Link>
         </div>
       </section>
     </AppShell>
   );
 }
 
-function FeatureIcon() {
-  return (
-    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-      <Trophy className="h-6 w-6" />
-    </div>
-  );
-}
-
-function Section({ title, data, loading, error, empty }: { title: string; data: Fixture[] | undefined; loading: boolean; error: Error | null; empty: string }) {
+function Section({ title, data, loading, error, empty, disabled }: { title: string; data: Fixture[] | undefined; loading: boolean; error: Error | null; empty: string; disabled?: boolean }) {
   return (
     <section className="mt-8">
       <SectionHeader title={title} />
@@ -107,7 +159,7 @@ function Section({ title, data, loading, error, empty }: { title: string; data: 
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {data.map((f) => (
-            <MatchCard key={f.fixture.id} fixture={f} />
+            <MatchCard key={f.fixture.id} fixture={f} disabled={disabled} />
           ))}
         </div>
       )}
