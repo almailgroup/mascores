@@ -2,13 +2,26 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, EmptyState, SectionHeader } from "@/components/app-shell";
 import { useFootball, fixtureStatusLabel, isLive, formatKickoff } from "@/lib/football";
 import { FavoriteButton } from "@/hooks/use-favorites";
+import { ShareMatchButton } from "@/components/share-match-button";
 import type { Fixture } from "@/components/match-card";
 
 export const Route = createFileRoute("/matches/$id")({
-  head: ({ params }) => ({ meta: [
-    { title: `Match #${params.id} — MansourAlmailScores` },
-    { name: "description", content: "Match center: live scores, lineups, statistics and events." },
-  ] }),
+  head: ({ params }) => {
+    const title = `Match #${params.id} — MansourAlmailScores`;
+    const desc = "Match center: live scores, lineups, statistics and events.";
+    const img = `/api/public/share/match/${params.id}`;
+    return { meta: [
+      { title },
+      { name: "description", content: desc },
+      { property: "og:title", content: title },
+      { property: "og:description", content: desc },
+      { property: "og:type", content: "article" },
+      { property: "og:url", content: `/matches/${params.id}` },
+      { property: "og:image", content: img },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: img },
+    ], links: [{ rel: "canonical", href: `/matches/${params.id}` }] };
+  },
   component: MatchPage,
 });
 
@@ -69,6 +82,7 @@ function MatchPage() {
         <div className="mt-6 flex items-center justify-center gap-3 text-xs text-muted-foreground">
           {f.fixture.venue?.name && <span>{f.fixture.venue.name}{f.fixture.venue.city ? `, ${f.fixture.venue.city}` : ""}</span>}
           <FavoriteButton kind="match" id={f.fixture.id} />
+          <ShareMatchButton matchId={f.fixture.id} title={`${f.teams.home.name} vs ${f.teams.away.name} — ${f.league.name}`} />
         </div>
       </div>
 
