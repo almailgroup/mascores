@@ -1,6 +1,6 @@
-import logoHorizontal from "@/assets/logo-horizontal.asset.json";
-import logoIconDark from "@/assets/logo-icon.asset.json";
-import logoIconLight from "@/assets/logo-icon-light.asset.json";
+import logoHorizontalDark from "@/assets/logo-horizontal-dark.png.asset.json";
+import logoHorizontalLight from "@/assets/logo-horizontal-light.png.asset.json";
+import logoMark from "@/assets/logo-mark.png.asset.json";
 import { useTheme } from "./theme-provider";
 
 interface BrandLogoProps {
@@ -11,20 +11,8 @@ interface BrandLogoProps {
 export function BrandLogo({ variant = "horizontal", className }: BrandLogoProps) {
   const { theme } = useTheme();
   if (variant === "icon") {
-    const src = theme === "light" ? logoIconLight.url : logoIconDark.url;
-    return (
-      <img
-        src={src}
-        alt="MansourAlmailScores"
-        className={className}
-      />
-    );
+    return <img src={logoMark.url} alt="MansourAlmailScores" className={className} />;
   }
-  return (
-    <img
-      src={logoHorizontal.url}
-      alt="MansourAlmailScores"
-      className={className}
-    />
-  );
+  const src = theme === "light" ? logoHorizontalLight.url : logoHorizontalDark.url;
+  return <img src={src} alt="MansourAlmailScores" className={className} />;
 }
