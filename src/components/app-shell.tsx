@@ -6,14 +6,15 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 
-const NAV = [
+type NavItem = { to: "/" | "/search" | "/competitions" | "/news" | "/favorites" | "/profile"; label: string; icon: typeof Home; exact?: boolean };
+const NAV: NavItem[] = [
   { to: "/", label: "Home", icon: Home, exact: true },
   { to: "/search", label: "Search", icon: Search },
   { to: "/competitions", label: "Competitions", icon: Trophy },
   { to: "/news", label: "News", icon: Newspaper },
   { to: "/favorites", label: "Favorites", icon: Star },
   { to: "/profile", label: "Profile", icon: User },
-] as const;
+];
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
