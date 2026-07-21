@@ -70,10 +70,11 @@ export function useFavorites() {
         return;
       }
       if (!user) return;
-      await supabase
-        .from("profiles")
-        .update({ [COLS[kind]]: next })
-        .eq("id", user.id);
+      const patch =
+        kind === "team" ? { favorite_team_ids: next }
+        : kind === "player" ? { favorite_player_ids: next }
+        : { favorite_competition_ids: next };
+      await supabase.from("profiles").update(patch).eq("id", user.id);
     },
     [favorites, user],
   );
