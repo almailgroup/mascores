@@ -9,11 +9,31 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WorldCup2026RouteImport } from './routes/world-cup-2026'
+import { Route as SearchRouteImport } from './routes/search'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as NewsRouteImport } from './routes/news'
+import { Route as FavoritesRouteImport } from './routes/favorites'
+import { Route as CompetitionsRouteImport } from './routes/competitions'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TeamsIdRouteImport } from './routes/teams.$id'
+import { Route as PlayersIdRouteImport } from './routes/players.$id'
+import { Route as MatchesIdRouteImport } from './routes/matches.$id'
+import { Route as CountriesNameRouteImport } from './routes/countries.$name'
+import { Route as CompetitionsIdRouteImport } from './routes/competitions.$id'
 
+const WorldCup2026Route = WorldCup2026RouteImport.update({
+  id: '/world-cup-2026',
+  path: '/world-cup-2026',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SearchRoute = SearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -22,6 +42,21 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewsRoute = NewsRouteImport.update({
+  id: '/news',
+  path: '/news',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FavoritesRoute = FavoritesRouteImport.update({
+  id: '/favorites',
+  path: '/favorites',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompetitionsRoute = CompetitionsRouteImport.update({
+  id: '/competitions',
+  path: '/competitions',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -34,43 +69,164 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TeamsIdRoute = TeamsIdRouteImport.update({
+  id: '/teams/$id',
+  path: '/teams/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlayersIdRoute = PlayersIdRouteImport.update({
+  id: '/players/$id',
+  path: '/players/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MatchesIdRoute = MatchesIdRouteImport.update({
+  id: '/matches/$id',
+  path: '/matches/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CountriesNameRoute = CountriesNameRouteImport.update({
+  id: '/countries/$name',
+  path: '/countries/$name',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompetitionsIdRoute = CompetitionsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => CompetitionsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/competitions': typeof CompetitionsRouteWithChildren
+  '/favorites': typeof FavoritesRoute
+  '/news': typeof NewsRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/search': typeof SearchRoute
+  '/world-cup-2026': typeof WorldCup2026Route
+  '/competitions/$id': typeof CompetitionsIdRoute
+  '/countries/$name': typeof CountriesNameRoute
+  '/matches/$id': typeof MatchesIdRoute
+  '/players/$id': typeof PlayersIdRoute
+  '/teams/$id': typeof TeamsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/competitions': typeof CompetitionsRouteWithChildren
+  '/favorites': typeof FavoritesRoute
+  '/news': typeof NewsRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/search': typeof SearchRoute
+  '/world-cup-2026': typeof WorldCup2026Route
+  '/competitions/$id': typeof CompetitionsIdRoute
+  '/countries/$name': typeof CountriesNameRoute
+  '/matches/$id': typeof MatchesIdRoute
+  '/players/$id': typeof PlayersIdRoute
+  '/teams/$id': typeof TeamsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/competitions': typeof CompetitionsRouteWithChildren
+  '/favorites': typeof FavoritesRoute
+  '/news': typeof NewsRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/search': typeof SearchRoute
+  '/world-cup-2026': typeof WorldCup2026Route
+  '/competitions/$id': typeof CompetitionsIdRoute
+  '/countries/$name': typeof CountriesNameRoute
+  '/matches/$id': typeof MatchesIdRoute
+  '/players/$id': typeof PlayersIdRoute
+  '/teams/$id': typeof TeamsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/profile' | '/reset-password'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/competitions'
+    | '/favorites'
+    | '/news'
+    | '/profile'
+    | '/reset-password'
+    | '/search'
+    | '/world-cup-2026'
+    | '/competitions/$id'
+    | '/countries/$name'
+    | '/matches/$id'
+    | '/players/$id'
+    | '/teams/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/profile' | '/reset-password'
-  id: '__root__' | '/' | '/auth' | '/profile' | '/reset-password'
+  to:
+    | '/'
+    | '/auth'
+    | '/competitions'
+    | '/favorites'
+    | '/news'
+    | '/profile'
+    | '/reset-password'
+    | '/search'
+    | '/world-cup-2026'
+    | '/competitions/$id'
+    | '/countries/$name'
+    | '/matches/$id'
+    | '/players/$id'
+    | '/teams/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/competitions'
+    | '/favorites'
+    | '/news'
+    | '/profile'
+    | '/reset-password'
+    | '/search'
+    | '/world-cup-2026'
+    | '/competitions/$id'
+    | '/countries/$name'
+    | '/matches/$id'
+    | '/players/$id'
+    | '/teams/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  CompetitionsRoute: typeof CompetitionsRouteWithChildren
+  FavoritesRoute: typeof FavoritesRoute
+  NewsRoute: typeof NewsRoute
   ProfileRoute: typeof ProfileRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SearchRoute: typeof SearchRoute
+  WorldCup2026Route: typeof WorldCup2026Route
+  CountriesNameRoute: typeof CountriesNameRoute
+  MatchesIdRoute: typeof MatchesIdRoute
+  PlayersIdRoute: typeof PlayersIdRoute
+  TeamsIdRoute: typeof TeamsIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/world-cup-2026': {
+      id: '/world-cup-2026'
+      path: '/world-cup-2026'
+      fullPath: '/world-cup-2026'
+      preLoaderRoute: typeof WorldCup2026RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -83,6 +239,27 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/news': {
+      id: '/news'
+      path: '/news'
+      fullPath: '/news'
+      preLoaderRoute: typeof NewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/favorites': {
+      id: '/favorites'
+      path: '/favorites'
+      fullPath: '/favorites'
+      preLoaderRoute: typeof FavoritesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/competitions': {
+      id: '/competitions'
+      path: '/competitions'
+      fullPath: '/competitions'
+      preLoaderRoute: typeof CompetitionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -99,14 +276,70 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/teams/$id': {
+      id: '/teams/$id'
+      path: '/teams/$id'
+      fullPath: '/teams/$id'
+      preLoaderRoute: typeof TeamsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/players/$id': {
+      id: '/players/$id'
+      path: '/players/$id'
+      fullPath: '/players/$id'
+      preLoaderRoute: typeof PlayersIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/matches/$id': {
+      id: '/matches/$id'
+      path: '/matches/$id'
+      fullPath: '/matches/$id'
+      preLoaderRoute: typeof MatchesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/countries/$name': {
+      id: '/countries/$name'
+      path: '/countries/$name'
+      fullPath: '/countries/$name'
+      preLoaderRoute: typeof CountriesNameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/competitions/$id': {
+      id: '/competitions/$id'
+      path: '/$id'
+      fullPath: '/competitions/$id'
+      preLoaderRoute: typeof CompetitionsIdRouteImport
+      parentRoute: typeof CompetitionsRoute
+    }
   }
 }
+
+interface CompetitionsRouteChildren {
+  CompetitionsIdRoute: typeof CompetitionsIdRoute
+}
+
+const CompetitionsRouteChildren: CompetitionsRouteChildren = {
+  CompetitionsIdRoute: CompetitionsIdRoute,
+}
+
+const CompetitionsRouteWithChildren = CompetitionsRoute._addFileChildren(
+  CompetitionsRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  CompetitionsRoute: CompetitionsRouteWithChildren,
+  FavoritesRoute: FavoritesRoute,
+  NewsRoute: NewsRoute,
   ProfileRoute: ProfileRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  SearchRoute: SearchRoute,
+  WorldCup2026Route: WorldCup2026Route,
+  CountriesNameRoute: CountriesNameRoute,
+  MatchesIdRoute: MatchesIdRoute,
+  PlayersIdRoute: PlayersIdRoute,
+  TeamsIdRoute: TeamsIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
