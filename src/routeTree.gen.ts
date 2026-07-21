@@ -23,6 +23,7 @@ import { Route as PlayersIdRouteImport } from './routes/players.$id'
 import { Route as MatchesIdRouteImport } from './routes/matches.$id'
 import { Route as CountriesNameRouteImport } from './routes/countries.$name'
 import { Route as CompetitionsIdRouteImport } from './routes/competitions.$id'
+import { Route as ApiPublicShareMatchIdRouteImport } from './routes/api/public/share.match.$id'
 
 const WorldCup2026Route = WorldCup2026RouteImport.update({
   id: '/world-cup-2026',
@@ -94,6 +95,11 @@ const CompetitionsIdRoute = CompetitionsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => CompetitionsRoute,
 } as any)
+const ApiPublicShareMatchIdRoute = ApiPublicShareMatchIdRouteImport.update({
+  id: '/api/public/share/match/$id',
+  path: '/api/public/share/match/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/matches/$id': typeof MatchesIdRoute
   '/players/$id': typeof PlayersIdRoute
   '/teams/$id': typeof TeamsIdRoute
+  '/api/public/share/match/$id': typeof ApiPublicShareMatchIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -126,6 +133,7 @@ export interface FileRoutesByTo {
   '/matches/$id': typeof MatchesIdRoute
   '/players/$id': typeof PlayersIdRoute
   '/teams/$id': typeof TeamsIdRoute
+  '/api/public/share/match/$id': typeof ApiPublicShareMatchIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -143,6 +151,7 @@ export interface FileRoutesById {
   '/matches/$id': typeof MatchesIdRoute
   '/players/$id': typeof PlayersIdRoute
   '/teams/$id': typeof TeamsIdRoute
+  '/api/public/share/match/$id': typeof ApiPublicShareMatchIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -161,6 +170,7 @@ export interface FileRouteTypes {
     | '/matches/$id'
     | '/players/$id'
     | '/teams/$id'
+    | '/api/public/share/match/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -177,6 +187,7 @@ export interface FileRouteTypes {
     | '/matches/$id'
     | '/players/$id'
     | '/teams/$id'
+    | '/api/public/share/match/$id'
   id:
     | '__root__'
     | '/'
@@ -193,6 +204,7 @@ export interface FileRouteTypes {
     | '/matches/$id'
     | '/players/$id'
     | '/teams/$id'
+    | '/api/public/share/match/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -209,6 +221,7 @@ export interface RootRouteChildren {
   MatchesIdRoute: typeof MatchesIdRoute
   PlayersIdRoute: typeof PlayersIdRoute
   TeamsIdRoute: typeof TeamsIdRoute
+  ApiPublicShareMatchIdRoute: typeof ApiPublicShareMatchIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -311,6 +324,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompetitionsIdRouteImport
       parentRoute: typeof CompetitionsRoute
     }
+    '/api/public/share/match/$id': {
+      id: '/api/public/share/match/$id'
+      path: '/api/public/share/match/$id'
+      fullPath: '/api/public/share/match/$id'
+      preLoaderRoute: typeof ApiPublicShareMatchIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -340,6 +360,7 @@ const rootRouteChildren: RootRouteChildren = {
   MatchesIdRoute: MatchesIdRoute,
   PlayersIdRoute: PlayersIdRoute,
   TeamsIdRoute: TeamsIdRoute,
+  ApiPublicShareMatchIdRoute: ApiPublicShareMatchIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
