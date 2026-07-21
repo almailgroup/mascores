@@ -8,16 +8,12 @@ export type Fixture = {
   goals: { home: number | null; away: number | null };
 };
 
-export function MatchCard({ fixture }: { fixture: Fixture }) {
+export function MatchCard({ fixture, disabled = false }: { fixture: Fixture; disabled?: boolean }) {
   const live = isLive(fixture.fixture.status.short);
   const status = fixtureStatusLabel(fixture.fixture.status.short, fixture.fixture.status.elapsed);
   const started = !["NS", "PST", "CANC", "TBD"].includes(fixture.fixture.status.short);
-  return (
-    <Link
-      to="/matches/$id"
-      params={{ id: String(fixture.fixture.id) }}
-      className="group block rounded-2xl border border-border bg-card p-4 transition hover:border-primary/50 hover:shadow-lg"
-    >
+  const inner = (
+    <>
       <div className="flex items-center justify-between gap-2 text-[0.65rem] font-medium uppercase tracking-widest text-muted-foreground">
         <span className="truncate">{fixture.league.name}</span>
         <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 ${live ? "bg-primary/15 text-primary" : "bg-muted"}`}>
@@ -40,6 +36,18 @@ export function MatchCard({ fixture }: { fixture: Fixture }) {
         </div>
         <TeamRow name={fixture.teams.away.name} logo={fixture.teams.away.logo} align="left" winner={fixture.teams.away.winner} />
       </div>
+    </>
+  );
+  if (disabled) {
+    return <div className="block rounded-2xl border border-border bg-card p-4">{inner}</div>;
+  }
+  return (
+    <Link
+      to="/matches/$id"
+      params={{ id: String(fixture.fixture.id) }}
+      className="group block rounded-2xl border border-border bg-card p-4 transition hover:border-primary/50 hover:shadow-lg"
+    >
+      {inner}
     </Link>
   );
 }
