@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { Home, Search, Trophy, Newspaper, Star, User, LogOut, LogIn } from "lucide-react";
-import type { ReactNode } from "react";
+import { Home, Search, Trophy, Newspaper, Star, User, LogIn } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
 import { BrandLogo } from "@/components/brand-logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useAuth } from "@/hooks/use-auth";
@@ -18,8 +18,45 @@ const NAV: NavItem[] = [
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
-  const navigate = useNavigate();
+  useNavigate();
   const location = useLocation();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [displayName, setDisplayName] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!user) {
+      setAvatarUrl(null);
+      setDisplayName(null);
+      return;
+    }
+    (async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("display_name, avatar_url")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (cancelled || !data) return;
+      setDisplayName(data.display_name ?? null);
+      if (data.avatar_url) {
+        if (data.avatar_url.startsWith("http")) {
+          setAvatarUrl(data.avatar_url);
+        } else {
+          const { data: signed } = await supabase.storage
+            .from("avatars")
+            .createSignedUrl(data.avatar_url, 3600);
+          if (!cancelled) setAvatarUrl(signed?.signedUrl ?? null);
+        }
+      } else {
+        setAvatarUrl(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
+  const initial = (displayName || user?.email || "?").trim().charAt(0).toUpperCase();
 
   return (
     <div className="relative min-h-screen bg-background text-foreground">
@@ -53,16 +90,17 @@ export function AppShell({ children }: { children: ReactNode }) {
             <ThemeToggle />
             {!loading && (
               user ? (
-                <button
-                  type="button"
-                  onClick={async () => {
-                    await supabase.auth.signOut();
-                    navigate({ to: "/" });
-                  }}
-                  className="hidden h-9 items-center gap-2 rounded-full border border-border bg-card px-3 text-sm font-medium hover:bg-accent sm:inline-flex"
+                <Link
+                  to="/profile"
+                  aria-label="Your profile"
+                  className="inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-border bg-card text-sm font-semibold text-foreground shadow-sm transition hover:ring-2 hover:ring-primary/50"
                 >
-                  <LogOut className="h-4 w-4" /> Sign out
-                </button>
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="Profile" className="h-full w-full object-cover" />
+                  ) : (
+                    <span>{initial}</span>
+                  )}
+                </Link>
               ) : (
                 <Link
                   to="/auth"
