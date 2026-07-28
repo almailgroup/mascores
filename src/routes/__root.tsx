@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { ThemeProvider } from "../components/theme-provider";
 import { IntroSplash } from "../components/intro-splash";
+import { I18nProvider } from "../lib/i18n";
 
 function NotFoundComponent() {
   return (
@@ -134,9 +135,10 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <IntroSplash />
-        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <Outlet />
+        <I18nProvider>
+          <IntroSplash />
+          <Outlet />
+        </I18nProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

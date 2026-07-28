@@ -1,42 +1,44 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { AppShell, SectionHeader } from "@/components/app-shell";
-import { FEATURED_LEAGUES } from "@/lib/football";
+import { useQuery } from "@tanstack/react-query";
+import { AppShell, EmptyState, LoadingSkeleton, SectionHeader } from "@/components/app-shell";
+import { supabase, type Competition } from "@/lib/db";
+import { useRealtime } from "@/lib/realtime";
+import { Trophy } from "lucide-react";
 
 export const Route = createFileRoute("/competitions")({
-  head: () => ({ meta: [
-    { title: "Competitions — MansourAlmailScores" },
-    { name: "description", content: "Browse featured football competitions: FIFA World Cup 2026, Premier League and LaLiga." },
-    { property: "og:title", content: "Competitions — MansourAlmailScores" },
-    { property: "og:description", content: "Every featured football competition in one place." },
-  ] }),
-  component: CompetitionsPage,
+  head: () => ({ meta: [{ title: "Competitions — MansourAlmailScores" }] }),
+  component: CompetitionsList,
 });
 
-function CompetitionsPage() {
+function CompetitionsList() {
+  useRealtime(["competitions"]);
+  const q = useQuery({
+    queryKey: ["competitions"],
+    queryFn: async () => {
+      const { data } = await supabase.from("competitions").select("*").order("featured", { ascending: false }).order("sort_order");
+      return (data ?? []) as Competition[];
+    },
+  });
   return (
     <AppShell>
-      <SectionHeader title="Featured competitions" />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {FEATURED_LEAGUES.map((l) => (
-          l.id === 1 ? (
-            <Link key={l.id} to="/world-cup-2026" className="group flex items-center gap-4 rounded-2xl border border-border bg-card p-6 transition hover:border-primary/50 hover:shadow-lg">
-              <img src={`https://media.api-sports.io/football/leagues/${l.id}.png`} alt={`${l.name} logo`} className="h-14 w-14 shrink-0 object-contain" />
+      <SectionHeader title="Competitions" />
+      {q.isLoading ? <LoadingSkeleton /> : !q.data || q.data.length === 0 ? (
+        <EmptyState title="No competitions yet" description="Add one from the admin panel." />
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {q.data.map((c) => (
+            <Link key={c.id} to="/competitions/$slug" params={{ slug: c.slug }} className="group flex items-center gap-3 rounded-2xl border border-border bg-card p-4 hover:border-primary/50 hover:shadow-lg">
+              <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-primary/10 text-primary">
+                {c.logo_url ? <img src={c.logo_url} alt="" className="h-full w-full object-contain" /> : <Trophy className="h-6 w-6" />}
+              </div>
               <div className="min-w-0">
-                <div className="text-lg font-bold sm:text-xl">{l.name}</div>
-                <div className="mt-1 text-sm text-muted-foreground">Season {l.season}</div>
+                <div className="truncate font-semibold">{c.name}</div>
+                <div className="truncate text-xs text-muted-foreground">{[c.country, c.season].filter(Boolean).join(" · ")}</div>
               </div>
             </Link>
-          ) : (
-            <Link key={l.id} to="/competitions/$id" params={{ id: String(l.id) }} className="group flex items-center gap-4 rounded-2xl border border-border bg-card p-6 transition hover:border-primary/50 hover:shadow-lg">
-              <img src={`https://media.api-sports.io/football/leagues/${l.id}.png`} alt={`${l.name} logo`} className="h-14 w-14 shrink-0 object-contain" />
-              <div className="min-w-0">
-                <div className="text-lg font-bold sm:text-xl">{l.name}</div>
-                <div className="mt-1 text-sm text-muted-foreground">Season {l.season}</div>
-              </div>
-            </Link>
-          )
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </AppShell>
   );
 }

@@ -9,25 +9,23 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as WorldCup2026RouteImport } from './routes/world-cup-2026'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as NewsRouteImport } from './routes/news'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as CompetitionsRouteImport } from './routes/competitions'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TeamsIdRouteImport } from './routes/teams.$id'
 import { Route as PlayersIdRouteImport } from './routes/players.$id'
 import { Route as MatchesIdRouteImport } from './routes/matches.$id'
-import { Route as CountriesNameRouteImport } from './routes/countries.$name'
-import { Route as CompetitionsIdRouteImport } from './routes/competitions.$id'
-import { Route as ApiPublicShareMatchIdRouteImport } from './routes/api/public/share.match.$id'
+import { Route as CompetitionsSlugRouteImport } from './routes/competitions.$slug'
 
-const WorldCup2026Route = WorldCup2026RouteImport.update({
-  id: '/world-cup-2026',
-  path: '/world-cup-2026',
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SearchRoute = SearchRouteImport.update({
@@ -38,11 +36,6 @@ const SearchRoute = SearchRouteImport.update({
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProfileRoute = ProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NewsRoute = NewsRouteImport.update({
@@ -65,6 +58,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -85,152 +83,128 @@ const MatchesIdRoute = MatchesIdRouteImport.update({
   path: '/matches/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CountriesNameRoute = CountriesNameRouteImport.update({
-  id: '/countries/$name',
-  path: '/countries/$name',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CompetitionsIdRoute = CompetitionsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
+const CompetitionsSlugRoute = CompetitionsSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
   getParentRoute: () => CompetitionsRoute,
-} as any)
-const ApiPublicShareMatchIdRoute = ApiPublicShareMatchIdRouteImport.update({
-  id: '/api/public/share/match/$id',
-  path: '/api/public/share/match/$id',
-  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/competitions': typeof CompetitionsRouteWithChildren
   '/favorites': typeof FavoritesRoute
   '/news': typeof NewsRoute
-  '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
-  '/world-cup-2026': typeof WorldCup2026Route
-  '/competitions/$id': typeof CompetitionsIdRoute
-  '/countries/$name': typeof CountriesNameRoute
+  '/settings': typeof SettingsRoute
+  '/competitions/$slug': typeof CompetitionsSlugRoute
   '/matches/$id': typeof MatchesIdRoute
   '/players/$id': typeof PlayersIdRoute
   '/teams/$id': typeof TeamsIdRoute
-  '/api/public/share/match/$id': typeof ApiPublicShareMatchIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/competitions': typeof CompetitionsRouteWithChildren
   '/favorites': typeof FavoritesRoute
   '/news': typeof NewsRoute
-  '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
-  '/world-cup-2026': typeof WorldCup2026Route
-  '/competitions/$id': typeof CompetitionsIdRoute
-  '/countries/$name': typeof CountriesNameRoute
+  '/settings': typeof SettingsRoute
+  '/competitions/$slug': typeof CompetitionsSlugRoute
   '/matches/$id': typeof MatchesIdRoute
   '/players/$id': typeof PlayersIdRoute
   '/teams/$id': typeof TeamsIdRoute
-  '/api/public/share/match/$id': typeof ApiPublicShareMatchIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/competitions': typeof CompetitionsRouteWithChildren
   '/favorites': typeof FavoritesRoute
   '/news': typeof NewsRoute
-  '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
-  '/world-cup-2026': typeof WorldCup2026Route
-  '/competitions/$id': typeof CompetitionsIdRoute
-  '/countries/$name': typeof CountriesNameRoute
+  '/settings': typeof SettingsRoute
+  '/competitions/$slug': typeof CompetitionsSlugRoute
   '/matches/$id': typeof MatchesIdRoute
   '/players/$id': typeof PlayersIdRoute
   '/teams/$id': typeof TeamsIdRoute
-  '/api/public/share/match/$id': typeof ApiPublicShareMatchIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/auth'
     | '/competitions'
     | '/favorites'
     | '/news'
-    | '/profile'
     | '/reset-password'
     | '/search'
-    | '/world-cup-2026'
-    | '/competitions/$id'
-    | '/countries/$name'
+    | '/settings'
+    | '/competitions/$slug'
     | '/matches/$id'
     | '/players/$id'
     | '/teams/$id'
-    | '/api/public/share/match/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/auth'
     | '/competitions'
     | '/favorites'
     | '/news'
-    | '/profile'
     | '/reset-password'
     | '/search'
-    | '/world-cup-2026'
-    | '/competitions/$id'
-    | '/countries/$name'
+    | '/settings'
+    | '/competitions/$slug'
     | '/matches/$id'
     | '/players/$id'
     | '/teams/$id'
-    | '/api/public/share/match/$id'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/auth'
     | '/competitions'
     | '/favorites'
     | '/news'
-    | '/profile'
     | '/reset-password'
     | '/search'
-    | '/world-cup-2026'
-    | '/competitions/$id'
-    | '/countries/$name'
+    | '/settings'
+    | '/competitions/$slug'
     | '/matches/$id'
     | '/players/$id'
     | '/teams/$id'
-    | '/api/public/share/match/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
   CompetitionsRoute: typeof CompetitionsRouteWithChildren
   FavoritesRoute: typeof FavoritesRoute
   NewsRoute: typeof NewsRoute
-  ProfileRoute: typeof ProfileRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SearchRoute: typeof SearchRoute
-  WorldCup2026Route: typeof WorldCup2026Route
-  CountriesNameRoute: typeof CountriesNameRoute
+  SettingsRoute: typeof SettingsRoute
   MatchesIdRoute: typeof MatchesIdRoute
   PlayersIdRoute: typeof PlayersIdRoute
   TeamsIdRoute: typeof TeamsIdRoute
-  ApiPublicShareMatchIdRoute: typeof ApiPublicShareMatchIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/world-cup-2026': {
-      id: '/world-cup-2026'
-      path: '/world-cup-2026'
-      fullPath: '/world-cup-2026'
-      preLoaderRoute: typeof WorldCup2026RouteImport
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/search': {
@@ -245,13 +219,6 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/profile': {
-      id: '/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/news': {
@@ -282,6 +249,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -310,36 +284,22 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MatchesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/countries/$name': {
-      id: '/countries/$name'
-      path: '/countries/$name'
-      fullPath: '/countries/$name'
-      preLoaderRoute: typeof CountriesNameRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/competitions/$id': {
-      id: '/competitions/$id'
-      path: '/$id'
-      fullPath: '/competitions/$id'
-      preLoaderRoute: typeof CompetitionsIdRouteImport
+    '/competitions/$slug': {
+      id: '/competitions/$slug'
+      path: '/$slug'
+      fullPath: '/competitions/$slug'
+      preLoaderRoute: typeof CompetitionsSlugRouteImport
       parentRoute: typeof CompetitionsRoute
-    }
-    '/api/public/share/match/$id': {
-      id: '/api/public/share/match/$id'
-      path: '/api/public/share/match/$id'
-      fullPath: '/api/public/share/match/$id'
-      preLoaderRoute: typeof ApiPublicShareMatchIdRouteImport
-      parentRoute: typeof rootRouteImport
     }
   }
 }
 
 interface CompetitionsRouteChildren {
-  CompetitionsIdRoute: typeof CompetitionsIdRoute
+  CompetitionsSlugRoute: typeof CompetitionsSlugRoute
 }
 
 const CompetitionsRouteChildren: CompetitionsRouteChildren = {
-  CompetitionsIdRoute: CompetitionsIdRoute,
+  CompetitionsSlugRoute: CompetitionsSlugRoute,
 }
 
 const CompetitionsRouteWithChildren = CompetitionsRoute._addFileChildren(
@@ -348,30 +308,18 @@ const CompetitionsRouteWithChildren = CompetitionsRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
   CompetitionsRoute: CompetitionsRouteWithChildren,
   FavoritesRoute: FavoritesRoute,
   NewsRoute: NewsRoute,
-  ProfileRoute: ProfileRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SearchRoute: SearchRoute,
-  WorldCup2026Route: WorldCup2026Route,
-  CountriesNameRoute: CountriesNameRoute,
+  SettingsRoute: SettingsRoute,
   MatchesIdRoute: MatchesIdRoute,
   PlayersIdRoute: PlayersIdRoute,
   TeamsIdRoute: TeamsIdRoute,
-  ApiPublicShareMatchIdRoute: ApiPublicShareMatchIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

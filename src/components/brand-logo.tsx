@@ -1,6 +1,6 @@
 import logoHorizontalDark from "@/assets/logo-horizontal-dark.png.asset.json";
 import logoHorizontalLight from "@/assets/logo-horizontal-light.png.asset.json";
-import logoMark from "@/assets/logo-mark.png.asset.json";
+import logoMark from "@/assets/logo-mark-v2.png.asset.json";
 import { useTheme } from "./theme-provider";
 
 interface BrandLogoProps {
