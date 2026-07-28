@@ -9,13 +9,48 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as SearchRouteImport } from './routes/search'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as NewsRouteImport } from './routes/news'
+import { Route as FavoritesRouteImport } from './routes/favorites'
+import { Route as CompetitionsRouteImport } from './routes/competitions'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TeamsIdRouteImport } from './routes/teams.$id'
+import { Route as PlayersIdRouteImport } from './routes/players.$id'
+import { Route as MatchesIdRouteImport } from './routes/matches.$id'
+import { Route as CompetitionsSlugRouteImport } from './routes/competitions.$slug'
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SearchRoute = SearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewsRoute = NewsRouteImport.update({
+  id: '/news',
+  path: '/news',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FavoritesRoute = FavoritesRouteImport.update({
+  id: '/favorites',
+  path: '/favorites',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompetitionsRoute = CompetitionsRouteImport.update({
+  id: '/competitions',
+  path: '/competitions',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -23,49 +58,188 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TeamsIdRoute = TeamsIdRouteImport.update({
+  id: '/teams/$id',
+  path: '/teams/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlayersIdRoute = PlayersIdRouteImport.update({
+  id: '/players/$id',
+  path: '/players/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MatchesIdRoute = MatchesIdRouteImport.update({
+  id: '/matches/$id',
+  path: '/matches/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompetitionsSlugRoute = CompetitionsSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => CompetitionsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/competitions': typeof CompetitionsRouteWithChildren
+  '/favorites': typeof FavoritesRoute
+  '/news': typeof NewsRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/search': typeof SearchRoute
+  '/settings': typeof SettingsRoute
+  '/competitions/$slug': typeof CompetitionsSlugRoute
+  '/matches/$id': typeof MatchesIdRoute
+  '/players/$id': typeof PlayersIdRoute
+  '/teams/$id': typeof TeamsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/competitions': typeof CompetitionsRouteWithChildren
+  '/favorites': typeof FavoritesRoute
+  '/news': typeof NewsRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/search': typeof SearchRoute
+  '/settings': typeof SettingsRoute
+  '/competitions/$slug': typeof CompetitionsSlugRoute
+  '/matches/$id': typeof MatchesIdRoute
+  '/players/$id': typeof PlayersIdRoute
+  '/teams/$id': typeof TeamsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/competitions': typeof CompetitionsRouteWithChildren
+  '/favorites': typeof FavoritesRoute
+  '/news': typeof NewsRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/search': typeof SearchRoute
+  '/settings': typeof SettingsRoute
+  '/competitions/$slug': typeof CompetitionsSlugRoute
+  '/matches/$id': typeof MatchesIdRoute
+  '/players/$id': typeof PlayersIdRoute
+  '/teams/$id': typeof TeamsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/reset-password'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/competitions'
+    | '/favorites'
+    | '/news'
+    | '/reset-password'
+    | '/search'
+    | '/settings'
+    | '/competitions/$slug'
+    | '/matches/$id'
+    | '/players/$id'
+    | '/teams/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/reset-password'
-  id: '__root__' | '/' | '/auth' | '/reset-password'
+  to:
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/competitions'
+    | '/favorites'
+    | '/news'
+    | '/reset-password'
+    | '/search'
+    | '/settings'
+    | '/competitions/$slug'
+    | '/matches/$id'
+    | '/players/$id'
+    | '/teams/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/competitions'
+    | '/favorites'
+    | '/news'
+    | '/reset-password'
+    | '/search'
+    | '/settings'
+    | '/competitions/$slug'
+    | '/matches/$id'
+    | '/players/$id'
+    | '/teams/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
+  CompetitionsRoute: typeof CompetitionsRouteWithChildren
+  FavoritesRoute: typeof FavoritesRoute
+  NewsRoute: typeof NewsRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SearchRoute: typeof SearchRoute
+  SettingsRoute: typeof SettingsRoute
+  MatchesIdRoute: typeof MatchesIdRoute
+  PlayersIdRoute: typeof PlayersIdRoute
+  TeamsIdRoute: typeof TeamsIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/news': {
+      id: '/news'
+      path: '/news'
+      fullPath: '/news'
+      preLoaderRoute: typeof NewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/favorites': {
+      id: '/favorites'
+      path: '/favorites'
+      fullPath: '/favorites'
+      preLoaderRoute: typeof FavoritesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/competitions': {
+      id: '/competitions'
+      path: '/competitions'
+      fullPath: '/competitions'
+      preLoaderRoute: typeof CompetitionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -75,6 +249,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -82,13 +263,62 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/teams/$id': {
+      id: '/teams/$id'
+      path: '/teams/$id'
+      fullPath: '/teams/$id'
+      preLoaderRoute: typeof TeamsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/players/$id': {
+      id: '/players/$id'
+      path: '/players/$id'
+      fullPath: '/players/$id'
+      preLoaderRoute: typeof PlayersIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/matches/$id': {
+      id: '/matches/$id'
+      path: '/matches/$id'
+      fullPath: '/matches/$id'
+      preLoaderRoute: typeof MatchesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/competitions/$slug': {
+      id: '/competitions/$slug'
+      path: '/$slug'
+      fullPath: '/competitions/$slug'
+      preLoaderRoute: typeof CompetitionsSlugRouteImport
+      parentRoute: typeof CompetitionsRoute
+    }
   }
 }
 
+interface CompetitionsRouteChildren {
+  CompetitionsSlugRoute: typeof CompetitionsSlugRoute
+}
+
+const CompetitionsRouteChildren: CompetitionsRouteChildren = {
+  CompetitionsSlugRoute: CompetitionsSlugRoute,
+}
+
+const CompetitionsRouteWithChildren = CompetitionsRoute._addFileChildren(
+  CompetitionsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
+  CompetitionsRoute: CompetitionsRouteWithChildren,
+  FavoritesRoute: FavoritesRoute,
+  NewsRoute: NewsRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  SearchRoute: SearchRoute,
+  SettingsRoute: SettingsRoute,
+  MatchesIdRoute: MatchesIdRoute,
+  PlayersIdRoute: PlayersIdRoute,
+  TeamsIdRoute: TeamsIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
