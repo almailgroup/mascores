@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ApiPublicShareMatchIdRouteImport } from './routes/api/public/share.match.$id'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -29,49 +28,35 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicShareMatchIdRoute = ApiPublicShareMatchIdRouteImport.update({
-  id: '/api/public/share/match/$id',
-  path: '/api/public/share/match/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/api/public/share/match/$id': typeof ApiPublicShareMatchIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/api/public/share/match/$id': typeof ApiPublicShareMatchIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/api/public/share/match/$id': typeof ApiPublicShareMatchIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/reset-password' | '/api/public/share/match/$id'
+  fullPaths: '/' | '/auth' | '/reset-password'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/reset-password' | '/api/public/share/match/$id'
-  id:
-    | '__root__'
-    | '/'
-    | '/auth'
-    | '/reset-password'
-    | '/api/public/share/match/$id'
+  to: '/' | '/auth' | '/reset-password'
+  id: '__root__' | '/' | '/auth' | '/reset-password'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
-  ApiPublicShareMatchIdRoute: typeof ApiPublicShareMatchIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -97,13 +82,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/share/match/$id': {
-      id: '/api/public/share/match/$id'
-      path: '/api/public/share/match/$id'
-      fullPath: '/api/public/share/match/$id'
-      preLoaderRoute: typeof ApiPublicShareMatchIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -111,7 +89,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
-  ApiPublicShareMatchIdRoute: ApiPublicShareMatchIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
