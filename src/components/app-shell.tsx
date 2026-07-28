@@ -1,61 +1,26 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Home, Search, Trophy, Newspaper, Star, User, LogIn } from "lucide-react";
+import { Home, Search, Trophy, Newspaper, Star, Settings, LogIn } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { BrandLogo } from "@/components/brand-logo";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { useAuth } from "@/hooks/use-auth";
-import { supabase } from "@/integrations/supabase/client";
+import { useI18n } from "@/lib/i18n";
+import logoMark from "@/assets/logo-mark-v2.png.asset.json";
 
-type NavItem = { to: "/" | "/search" | "/competitions" | "/news" | "/favorites" | "/profile"; label: string; icon: typeof Home; exact?: boolean };
+type NavItem = { to: "/" | "/search" | "/competitions" | "/news" | "/favorites" | "/settings"; labelKey: string; icon: typeof Home; exact?: boolean };
 const NAV: NavItem[] = [
-  { to: "/", label: "Home", icon: Home, exact: true },
-  { to: "/search", label: "Search", icon: Search },
-  { to: "/competitions", label: "Competitions", icon: Trophy },
-  { to: "/news", label: "News", icon: Newspaper },
-  { to: "/favorites", label: "Favorites", icon: Star },
-  { to: "/profile", label: "Profile", icon: User },
+  { to: "/", labelKey: "nav.home", icon: Home, exact: true },
+  { to: "/search", labelKey: "nav.search", icon: Search },
+  { to: "/competitions", labelKey: "nav.competitions", icon: Trophy },
+  { to: "/news", labelKey: "nav.news", icon: Newspaper },
+  { to: "/favorites", labelKey: "nav.favorites", icon: Star },
+  { to: "/settings", labelKey: "nav.settings", icon: Settings },
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
+  const { t } = useI18n();
   const location = useLocation();
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [displayName, setDisplayName] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    if (!user) {
-      setAvatarUrl(null);
-      setDisplayName(null);
-      return;
-    }
-    (async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("display_name, avatar_url")
-        .eq("id", user.id)
-        .maybeSingle();
-      if (cancelled || !data) return;
-      setDisplayName(data.display_name ?? null);
-      if (data.avatar_url) {
-        if (data.avatar_url.startsWith("http")) {
-          setAvatarUrl(data.avatar_url);
-        } else {
-          const { data: signed } = await supabase.storage
-            .from("avatars")
-            .createSignedUrl(data.avatar_url, 3600);
-          if (!cancelled) setAvatarUrl(signed?.signedUrl ?? null);
-        }
-      } else {
-        setAvatarUrl(null);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [user]);
-
-  const initial = (displayName || user?.email || "?").trim().charAt(0).toUpperCase();
+  useEffect(() => { void user; }, [user]);
 
   return (
     <div className="relative min-h-screen bg-background text-foreground">
@@ -63,8 +28,9 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-          <Link to="/" className="inline-flex shrink-0">
-            <BrandLogo variant="horizontal" className="h-8 w-auto rounded-md sm:h-9" />
+          <Link to="/" className="inline-flex shrink-0 items-center gap-2">
+            <img src={logoMark.url} alt="MansourAlmailScores" className="h-9 w-9 rounded-lg object-contain" />
+            <BrandLogo variant="horizontal" className="hidden h-7 w-auto sm:block" />
           </Link>
 
           <nav className="hidden items-center gap-1 md:flex">
@@ -79,33 +45,28 @@ export function AppShell({ children }: { children: ReactNode }) {
                   }`}
                 >
                   <item.icon className="h-4 w-4" />
-                  {item.label}
+                  {t(item.labelKey)}
                 </Link>
               );
             })}
           </nav>
 
           <div className="flex items-center gap-2">
-            <ThemeToggle />
             {!loading && (
               user ? (
                 <Link
-                  to="/profile"
-                  aria-label="Your profile"
-                  className="inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-border bg-card text-sm font-semibold text-foreground shadow-sm transition hover:ring-2 hover:ring-primary/50"
+                  to="/settings"
+                  aria-label={t("nav.settings")}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-sm transition hover:ring-2 hover:ring-primary/50"
                 >
-                  {avatarUrl ? (
-                    <img src={avatarUrl} alt="Profile" className="h-full w-full object-cover" />
-                  ) : (
-                    <span>{initial}</span>
-                  )}
+                  <Settings className="h-4 w-4" />
                 </Link>
               ) : (
                 <Link
                   to="/auth"
                   className="inline-flex h-9 items-center gap-2 rounded-full bg-primary px-3 text-sm font-semibold text-primary-foreground shadow"
                 >
-                  <LogIn className="h-4 w-4" /> Sign in
+                  <LogIn className="h-4 w-4" /> {t("nav.signIn")}
                 </Link>
               )
             )}
@@ -128,7 +89,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 }`}
               >
                 <item.icon className="h-5 w-5" />
-                {item.label}
+                {t(item.labelKey)}
               </Link>
             );
           })}
