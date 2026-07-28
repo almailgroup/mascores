@@ -1,0 +1,132 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { AppShell, EmptyState, LoadingSkeleton, SectionHeader } from "@/components/app-shell";
+import { supabase, formatKickoff, type Competition, type Team, type Match, type StandingRow } from "@/lib/db";
+import { useRealtime } from "@/lib/realtime";
+
+export const Route = createFileRoute("/competitions/$slug")({
+  head: ({ params }) => ({ meta: [{ title: `${params.slug} — MansourAlmailScores` }] }),
+  component: CompetitionPage,
+});
+
+function CompetitionPage() {
+  const { slug } = Route.useParams();
+  useRealtime(["competitions", "teams", "matches", "standings_rows"]);
+
+  const comp = useQuery({
+    queryKey: ["comp", slug],
+    queryFn: async () => {
+      const { data } = await supabase.from("competitions").select("*").eq("slug", slug).maybeSingle();
+      return data as Competition | null;
+    },
+  });
+
+  const teams = useQuery({
+    enabled: !!comp.data,
+    queryKey: ["comp-teams", comp.data?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("teams").select("*").eq("competition_id", comp.data!.id).order("name");
+      return (data ?? []) as Team[];
+    },
+  });
+
+  const matches = useQuery({
+    enabled: !!comp.data,
+    queryKey: ["comp-matches", comp.data?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("matches")
+        .select("*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url)")
+        .eq("competition_id", comp.data!.id)
+        .order("kickoff_at");
+      return (data ?? []) as unknown as (Match & { home: Team | null; away: Team | null })[];
+    },
+  });
+
+  const standings = useQuery({
+    enabled: !!comp.data,
+    queryKey: ["comp-standings", comp.data?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("standings_rows")
+        .select("*, team:team_id(id,name,logo_url,short_name)")
+        .eq("competition_id", comp.data!.id)
+        .order("group_label", { ascending: true, nullsFirst: true })
+        .order("sort_order")
+        .order("points", { ascending: false });
+      return (data ?? []) as unknown as (StandingRow & { team: Team | null })[];
+    },
+  });
+
+  if (comp.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;
+  if (!comp.data) return <AppShell><EmptyState title="Competition not found" /></AppShell>;
+  const c = comp.data;
+
+  return (
+    <AppShell>
+      <div className="mb-6 flex items-center gap-4 rounded-3xl border border-border bg-card p-6">
+        <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-primary/10 text-primary">
+          {c.logo_url && <img src={c.logo_url} alt="" className="h-full w-full object-contain" />}
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold">{c.name}</h1>
+          <div className="text-xs text-muted-foreground">{[c.country, c.season, c.category].filter(Boolean).join(" · ")}</div>
+          {c.description && <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{c.description}</p>}
+        </div>
+      </div>
+
+      <SectionHeader title="Matches" />
+      {matches.data && matches.data.length > 0 ? (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {matches.data.map((m) => (
+            <Link key={m.id} to="/matches/$id" params={{ id: m.id }} className="rounded-2xl border border-border bg-card p-4 hover:border-primary/50">
+              <div className="text-[0.65rem] uppercase tracking-widest text-muted-foreground">{m.round ?? "—"}</div>
+              <div className="mt-2 grid items-center gap-2" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
+                <div className="truncate text-right font-semibold">{m.home?.name ?? "TBD"}</div>
+                <div className="text-center text-sm font-bold">{m.home_score != null ? `${m.home_score} – ${m.away_score}` : formatKickoff(m.kickoff_at)}</div>
+                <div className="truncate font-semibold">{m.away?.name ?? "TBD"}</div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      ) : <EmptyState title="No matches yet" />}
+
+      <SectionHeader title="Standings" action={<div />} />
+      {standings.data && standings.data.length > 0 ? (
+        <div className="overflow-hidden rounded-2xl border border-border bg-card">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/50 text-xs uppercase tracking-widest text-muted-foreground"><tr>
+              <th className="p-3 text-left">#</th><th className="text-left">Team</th>
+              <th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>Pts</th>
+            </tr></thead>
+            <tbody>{standings.data.map((r, i) => (
+              <tr key={r.id} className="border-t border-border">
+                <td className="p-3">
+                  <span className="inline-block h-3 w-3 rounded-full" style={{ background: r.qualification_color ?? "transparent" }} title={r.qualification_label ?? ""} />
+                  <span className="ml-2">{i + 1}</span>
+                </td>
+                <td className="flex items-center gap-2 p-3 font-medium">
+                  {r.team?.logo_url && <img src={r.team.logo_url} alt="" className="h-5 w-5 object-contain" />}
+                  {r.team?.name ?? "—"}
+                </td>
+                <td className="text-center">{r.played}</td><td className="text-center">{r.won}</td><td className="text-center">{r.drawn}</td>
+                <td className="text-center">{r.lost}</td><td className="text-center">{r.gf}</td><td className="text-center">{r.ga}</td>
+                <td className="text-center font-bold">{r.points + r.points_adjust}</td>
+              </tr>))}
+            </tbody>
+          </table>
+        </div>
+      ) : <EmptyState title="No standings yet" />}
+
+      <SectionHeader title="Teams" />
+      {teams.data && teams.data.length > 0 ? (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {teams.data.map((t) => (
+            <Link key={t.id} to="/teams/$id" params={{ id: t.id }} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 hover:border-primary/50">
+              {t.logo_url && <img src={t.logo_url} alt="" className="h-8 w-8 object-contain" />}
+              <div className="min-w-0"><div className="truncate font-medium">{t.name}</div><div className="truncate text-xs text-muted-foreground">{t.country}</div></div>
+            </Link>
+          ))}
+        </div>
+      ) : <EmptyState title="No teams yet" />}
+    </AppShell>
+  );
+}
