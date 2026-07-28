@@ -12,11 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as TeamsIdRouteImport } from './routes/teams.$id'
-import { Route as PlayersIdRouteImport } from './routes/players.$id'
-import { Route as MatchesIdRouteImport } from './routes/matches.$id'
-import { Route as CountriesNameRouteImport } from './routes/countries.$name'
-import { Route as CompetitionsIdRouteImport } from './routes/competitions.$id'
 import { Route as ApiPublicShareMatchIdRouteImport } from './routes/api/public/share.match.$id'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -34,31 +29,6 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TeamsIdRoute = TeamsIdRouteImport.update({
-  id: '/teams/$id',
-  path: '/teams/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PlayersIdRoute = PlayersIdRouteImport.update({
-  id: '/players/$id',
-  path: '/players/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MatchesIdRoute = MatchesIdRouteImport.update({
-  id: '/matches/$id',
-  path: '/matches/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CountriesNameRoute = CountriesNameRouteImport.update({
-  id: '/countries/$name',
-  path: '/countries/$name',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CompetitionsIdRoute = CompetitionsIdRouteImport.update({
-  id: '/competitions/$id',
-  path: '/competitions/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiPublicShareMatchIdRoute = ApiPublicShareMatchIdRouteImport.update({
   id: '/api/public/share/match/$id',
   path: '/api/public/share/match/$id',
@@ -69,22 +39,12 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/competitions/$id': typeof CompetitionsIdRoute
-  '/countries/$name': typeof CountriesNameRoute
-  '/matches/$id': typeof MatchesIdRoute
-  '/players/$id': typeof PlayersIdRoute
-  '/teams/$id': typeof TeamsIdRoute
   '/api/public/share/match/$id': typeof ApiPublicShareMatchIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/competitions/$id': typeof CompetitionsIdRoute
-  '/countries/$name': typeof CountriesNameRoute
-  '/matches/$id': typeof MatchesIdRoute
-  '/players/$id': typeof PlayersIdRoute
-  '/teams/$id': typeof TeamsIdRoute
   '/api/public/share/match/$id': typeof ApiPublicShareMatchIdRoute
 }
 export interface FileRoutesById {
@@ -92,46 +52,18 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/competitions/$id': typeof CompetitionsIdRoute
-  '/countries/$name': typeof CountriesNameRoute
-  '/matches/$id': typeof MatchesIdRoute
-  '/players/$id': typeof PlayersIdRoute
-  '/teams/$id': typeof TeamsIdRoute
   '/api/public/share/match/$id': typeof ApiPublicShareMatchIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/auth'
-    | '/reset-password'
-    | '/competitions/$id'
-    | '/countries/$name'
-    | '/matches/$id'
-    | '/players/$id'
-    | '/teams/$id'
-    | '/api/public/share/match/$id'
+  fullPaths: '/' | '/auth' | '/reset-password' | '/api/public/share/match/$id'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/auth'
-    | '/reset-password'
-    | '/competitions/$id'
-    | '/countries/$name'
-    | '/matches/$id'
-    | '/players/$id'
-    | '/teams/$id'
-    | '/api/public/share/match/$id'
+  to: '/' | '/auth' | '/reset-password' | '/api/public/share/match/$id'
   id:
     | '__root__'
     | '/'
     | '/auth'
     | '/reset-password'
-    | '/competitions/$id'
-    | '/countries/$name'
-    | '/matches/$id'
-    | '/players/$id'
-    | '/teams/$id'
     | '/api/public/share/match/$id'
   fileRoutesById: FileRoutesById
 }
@@ -139,11 +71,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
-  CompetitionsIdRoute: typeof CompetitionsIdRoute
-  CountriesNameRoute: typeof CountriesNameRoute
-  MatchesIdRoute: typeof MatchesIdRoute
-  PlayersIdRoute: typeof PlayersIdRoute
-  TeamsIdRoute: typeof TeamsIdRoute
   ApiPublicShareMatchIdRoute: typeof ApiPublicShareMatchIdRoute
 }
 
@@ -170,41 +97,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/teams/$id': {
-      id: '/teams/$id'
-      path: '/teams/$id'
-      fullPath: '/teams/$id'
-      preLoaderRoute: typeof TeamsIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/players/$id': {
-      id: '/players/$id'
-      path: '/players/$id'
-      fullPath: '/players/$id'
-      preLoaderRoute: typeof PlayersIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/matches/$id': {
-      id: '/matches/$id'
-      path: '/matches/$id'
-      fullPath: '/matches/$id'
-      preLoaderRoute: typeof MatchesIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/countries/$name': {
-      id: '/countries/$name'
-      path: '/countries/$name'
-      fullPath: '/countries/$name'
-      preLoaderRoute: typeof CountriesNameRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/competitions/$id': {
-      id: '/competitions/$id'
-      path: '/competitions/$id'
-      fullPath: '/competitions/$id'
-      preLoaderRoute: typeof CompetitionsIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/share/match/$id': {
       id: '/api/public/share/match/$id'
       path: '/api/public/share/match/$id'
@@ -219,11 +111,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
-  CompetitionsIdRoute: CompetitionsIdRoute,
-  CountriesNameRoute: CountriesNameRoute,
-  MatchesIdRoute: MatchesIdRoute,
-  PlayersIdRoute: PlayersIdRoute,
-  TeamsIdRoute: TeamsIdRoute,
   ApiPublicShareMatchIdRoute: ApiPublicShareMatchIdRoute,
 }
 export const routeTree = rootRouteImport
