@@ -4,7 +4,7 @@ import { AppShell, SectionHeader, EmptyState, LoadingSkeleton } from "@/componen
 import { supabase, formatKickoff, type Competition, type Match, type Team, type NewsPost } from "@/lib/db";
 import { useI18n } from "@/lib/i18n";
 import { useRealtime } from "@/lib/realtime";
-import { Trophy } from "lucide-react";
+import { Trophy, Zap, Languages, Sliders } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -75,24 +75,35 @@ function Home() {
     },
   });
 
+  const recent = useQuery({
+    queryKey: ["home", "recent"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("matches")
+        .select("*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url)")
+        .in("status", ["ft", "aet", "pen", "awarded"])
+        .order("kickoff_at", { ascending: false })
+        .limit(6);
+      return (data ?? []) as unknown as MatchWithTeams[];
+    },
+  });
+
   return (
     <AppShell>
       <div className="relative mb-10 overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/20 via-card to-card p-6 sm:p-10">
         <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/25 blur-3xl" />
         <h1 className="text-3xl font-black tracking-tight sm:text-5xl">{t("home.hero.title")}</h1>
         <p className="mt-3 max-w-2xl text-sm text-muted-foreground sm:text-base">{t("home.hero.desc")}</p>
-        <div className="mt-5 flex flex-wrap gap-2">
-          <Link to="/competitions/$slug" params={{ slug: "world-cup-2026" }} className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground shadow">
-            <Trophy className="h-4 w-4" /> {t("home.hero.wc")}
-          </Link>
-          <Link to="/competitions" className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-background/60 px-4 text-sm font-medium">
-            {t("home.hero.competitions")}
-          </Link>
+        <div className="mt-6 flex flex-wrap gap-2">
+          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1.5 text-xs font-medium"><Zap className="h-3.5 w-3.5 text-primary" /> {t("home.hero.feat1")}</span>
+          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1.5 text-xs font-medium"><Languages className="h-3.5 w-3.5 text-primary" /> {t("home.hero.feat2")}</span>
+          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1.5 text-xs font-medium"><Sliders className="h-3.5 w-3.5 text-primary" /> {t("home.hero.feat3")}</span>
         </div>
       </div>
 
       {(live.data?.length ?? 0) > 0 && <MatchSection title={t("home.live")} data={live.data} loading={live.isLoading} />}
       <MatchSection title={t("home.upcoming")} data={upcoming.data} loading={upcoming.isLoading} />
+      {(recent.data?.length ?? 0) > 0 && <MatchSection title={t("home.recent")} data={recent.data} loading={recent.isLoading} />}
 
       <section className="mt-10">
         <SectionHeader title={t("home.competitions")} />

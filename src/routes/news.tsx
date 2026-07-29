@@ -19,7 +19,7 @@ function NewsPage() {
     <AppShell>
       <SectionHeader title="News" />
       {q.isLoading ? <LoadingSkeleton /> : !q.data || q.data.length === 0 ? (
-        <EmptyState title="No news yet" description="Add posts from the admin panel." />
+        <EmptyState title="No news yet" />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {q.data.map((n) => (

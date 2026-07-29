@@ -72,8 +72,8 @@ function SettingsPage() {
         </div>
         <div className="rounded-3xl border border-border bg-card p-6">
           <div className="mb-3 text-sm font-semibold">{t("settings.theme")}</div>
-          <div className="grid grid-cols-3 gap-2">
-            {(["light", "dark", "system"] as const).map((th) => (
+          <div className="grid grid-cols-2 gap-2">
+            {(["light", "dark"] as const).map((th) => (
               <button key={th} type="button" onClick={() => setTheme(th)}
                 className={`rounded-xl border px-3 py-2 text-sm capitalize ${theme === th ? "border-primary bg-primary/10 text-primary" : "border-border bg-background hover:bg-accent"}`}>
                 {t(`settings.theme.${th}`)}
