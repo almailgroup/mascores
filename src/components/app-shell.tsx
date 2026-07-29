@@ -1,7 +1,6 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { Home, Search, Trophy, Newspaper, Star, Settings, LogIn } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
-import { BrandLogo } from "@/components/brand-logo";
+import { useEffect, type ReactNode } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import logoMark from "@/assets/logo-mark-v2.png.asset.json";
@@ -29,8 +28,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <Link to="/" className="inline-flex shrink-0 items-center gap-2">
-            <img src={logoMark.url} alt="MansourAlmailScores" className="h-9 w-9 rounded-lg object-contain" />
-            <BrandLogo variant="horizontal" className="hidden h-7 w-auto sm:block" />
+            <img src={logoMark.url} alt="MansourAlmailScores" className="h-10 w-10 object-contain" />
+            <span className="hidden text-base font-black tracking-tight sm:inline">MansourAlmailScores</span>
           </Link>
 
           <nav className="hidden items-center gap-1 md:flex">

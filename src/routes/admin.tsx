@@ -6,7 +6,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import { unlockAdmin } from "@/lib/admin.functions";
-import { Loader2, ShieldCheck } from "lucide-react";
+import { Loader2, ShieldCheck, ArrowLeft } from "lucide-react";
+import type { Competition } from "@/lib/db";
+import { CompetitionsPanel } from "@/components/admin/competitions-panel";
+import { TeamsPanel } from "@/components/admin/teams-panel";
+import { MatchesPanel } from "@/components/admin/matches-panel";
+import { StandingsPanel } from "@/components/admin/standings-panel";
+import { NewsPanel } from "@/components/admin/news-panel";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — MansourAlmailScores" }, { name: "robots", content: "noindex" }] }),
@@ -21,6 +27,9 @@ function AdminPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [tab, setTab] = useState<"competitions" | "news">("competitions");
+  const [openComp, setOpenComp] = useState<Competition | null>(null);
+  const [compTab, setCompTab] = useState<"teams" | "matches" | "standings">("teams");
   const unlock = useServerFn(unlockAdmin);
 
   useEffect(() => {
@@ -66,11 +75,43 @@ function AdminPage() {
 
   return (
     <AppShell>
-      <h1 className="text-3xl font-bold tracking-tight">Admin</h1>
-      <p className="mt-1 text-sm text-muted-foreground">Full editor coming online — competitions, teams, matches, standings, and news modules.</p>
-      <div className="mt-6 rounded-2xl border border-dashed border-border p-6 text-sm text-muted-foreground">
-        You're unlocked as an admin. The full admin CRUD UI will render here in the next update. Data model, storage, real-time sync and permissions are all live already.
-      </div>
+      {openComp ? (
+        <div>
+          <button onClick={() => setOpenComp(null)} className="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="h-4 w-4" /> All competitions
+          </button>
+          <div className="flex items-center gap-3">
+            {openComp.logo_url && <img src={openComp.logo_url} alt="" className="h-12 w-12 rounded-lg object-contain" />}
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">{openComp.name}</h1>
+              <p className="text-xs text-muted-foreground">{[openComp.country, openComp.season, openComp.format].filter(Boolean).join(" · ")}</p>
+            </div>
+          </div>
+          <div className="mt-5 flex gap-1 rounded-full border border-border bg-card p-1 text-xs w-fit">
+            {(["teams", "matches", "standings"] as const).map((k) => (
+              <button key={k} onClick={() => setCompTab(k)} className={`rounded-full px-4 py-1.5 font-semibold capitalize ${compTab === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>{k}</button>
+            ))}
+          </div>
+          <div className="mt-6">
+            {compTab === "teams" && <TeamsPanel competitionId={openComp.id} />}
+            {compTab === "matches" && <MatchesPanel competitionId={openComp.id} />}
+            {compTab === "standings" && <StandingsPanel competitionId={openComp.id} />}
+          </div>
+        </div>
+      ) : (
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Admin</h1>
+          <div className="mt-4 flex gap-1 rounded-full border border-border bg-card p-1 text-xs w-fit">
+            {(["competitions", "news"] as const).map((k) => (
+              <button key={k} onClick={() => setTab(k)} className={`rounded-full px-4 py-1.5 font-semibold capitalize ${tab === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>{k}</button>
+            ))}
+          </div>
+          <div className="mt-6">
+            {tab === "competitions" && <CompetitionsPanel onOpen={setOpenComp} />}
+            {tab === "news" && <NewsPanel />}
+          </div>
+        </div>
+      )}
     </AppShell>
   );
 }
