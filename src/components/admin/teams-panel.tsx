@@ -1,18 +1,24 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase, type Team, type Player } from "@/lib/db";
+import { supabase, POSITIONS, type Team, type Player, type Coach } from "@/lib/db";
 import { Field, Modal, ImageInput, inputCls, btnPrimary, btnGhost, btnDanger } from "./ui";
 import { uploadMedia } from "./upload";
-import { Plus, Pencil, Trash2, Users } from "lucide-react";
+import { CountrySelect } from "@/components/country-select";
+import { DateWheel } from "@/components/date-wheel";
+import { TransfersEditor } from "./transfers-editor";
+import { VenueSelect } from "./venue-select";
+import { Plus, Pencil, Trash2, Users, UserCog } from "lucide-react";
 
 type TeamForm = Partial<Team>;
 type PlayerForm = Partial<Player>;
+type CoachForm = Partial<Coach>;
 
 export function TeamsPanel({ competitionId }: { competitionId: string }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<TeamForm>({});
   const [squadOf, setSquadOf] = useState<Team | null>(null);
+  const [staffOf, setStaffOf] = useState<Team | null>(null);
 
   const q = useQuery({
     queryKey: ["admin", "teams", competitionId],
@@ -51,9 +57,10 @@ export function TeamsPanel({ competitionId }: { competitionId: string }) {
             </div>
             <div className="min-w-0 flex-1">
               <div className="truncate font-semibold text-sm">{t.name}</div>
-              <div className="truncate text-xs text-muted-foreground">{[t.country, t.group_label, t.venue_name].filter(Boolean).join(" · ")}</div>
+              <div className="truncate text-xs text-muted-foreground">{[t.country, t.venue_name].filter(Boolean).join(" · ")}</div>
             </div>
             <button className={btnGhost} onClick={() => setSquadOf(t)}><Users className="h-3.5 w-3.5" /> Squad</button>
+            <button className={btnGhost} onClick={() => setStaffOf(t)}><UserCog className="h-3.5 w-3.5" /> Coaches</button>
             <button className={btnGhost} onClick={() => { setForm(t); setOpen(true); }}><Pencil className="h-3.5 w-3.5" /></button>
             <button className={btnDanger} onClick={() => remove(t.id)}><Trash2 className="h-3.5 w-3.5" /></button>
           </div>
@@ -65,18 +72,17 @@ export function TeamsPanel({ competitionId }: { competitionId: string }) {
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Name"><input className={inputCls} value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
           <Field label="Short name"><input className={inputCls} value={form.short_name ?? ""} onChange={(e) => setForm({ ...form, short_name: e.target.value })} /></Field>
-          <Field label="Country"><input className={inputCls} value={form.country ?? ""} onChange={(e) => setForm({ ...form, country: e.target.value })} /></Field>
-          <Field label="Group label"><input className={inputCls} placeholder="Group A" value={form.group_label ?? ""} onChange={(e) => setForm({ ...form, group_label: e.target.value })} /></Field>
-          <Field label="Coach name"><input className={inputCls} value={form.coach_name ?? ""} onChange={(e) => setForm({ ...form, coach_name: e.target.value })} /></Field>
-          <Field label="Venue name"><input className={inputCls} value={form.venue_name ?? ""} onChange={(e) => setForm({ ...form, venue_name: e.target.value })} /></Field>
-          <Field label="Venue city"><input className={inputCls} value={form.venue_city ?? ""} onChange={(e) => setForm({ ...form, venue_city: e.target.value })} /></Field>
+          <Field label="Country">
+            <CountrySelect value={form.country} onChange={(name, c) => setForm({ ...form, country: name, country_code: c?.code ?? null })} />
+          </Field>
+          <Field label="Home venue">
+            <VenueSelect venue={form.venue_name} city={form.venue_city} onChange={(v, city) => setForm({ ...form, venue_name: v, venue_city: city })} />
+          </Field>
           <div className="sm:col-span-2"><Field label="Team logo">
             <ImageInput value={form.logo_url ?? null} onChange={(v) => setForm({ ...form, logo_url: v })} onFile={async (f) => { const url = await uploadMedia("team-logos", f); if (url) setForm({ ...form, logo_url: url }); }} />
           </Field></div>
-          <div className="sm:col-span-2"><Field label="Coach photo">
-            <ImageInput value={form.coach_photo_url ?? null} onChange={(v) => setForm({ ...form, coach_photo_url: v })} onFile={async (f) => { const url = await uploadMedia("team-logos", f); if (url) setForm({ ...form, coach_photo_url: url }); }} />
-          </Field></div>
         </div>
+        <p className="mt-3 text-[0.65rem] text-muted-foreground">Groups are managed from the Standings tab. Coaches are added from the Coaches button.</p>
         <div className="mt-5 flex justify-end gap-2">
           <button className={btnGhost} onClick={() => setOpen(false)}>Cancel</button>
           <button className={btnPrimary} onClick={save}>Save</button>
@@ -84,6 +90,7 @@ export function TeamsPanel({ competitionId }: { competitionId: string }) {
       </Modal>
 
       {squadOf && <SquadModal team={squadOf} onClose={() => setSquadOf(null)} />}
+      {staffOf && <CoachesModal team={staffOf} onClose={() => setStaffOf(null)} />}
     </div>
   );
 }
