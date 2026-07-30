@@ -29,10 +29,55 @@ export type Database = {
         }
         Relationships: []
       }
+      coaches: {
+        Row: {
+          created_at: string
+          dob: string | null
+          id: string
+          name: string
+          nationality: string | null
+          nationality_code: string | null
+          photo_url: string | null
+          team_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          dob?: string | null
+          id?: string
+          name: string
+          nationality?: string | null
+          nationality_code?: string | null
+          photo_url?: string | null
+          team_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          dob?: string | null
+          id?: string
+          name?: string
+          nationality?: string | null
+          nationality_code?: string | null
+          photo_url?: string | null
+          team_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coaches_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       competitions: {
         Row: {
           category: string | null
           country: string | null
+          country_code: string | null
           created_at: string
           description: string | null
           ends_on: string | null
@@ -45,12 +90,14 @@ export type Database = {
           slug: string
           sort_order: number
           sport: string
+          standings_mode: string
           starts_on: string | null
           updated_at: string
         }
         Insert: {
           category?: string | null
           country?: string | null
+          country_code?: string | null
           created_at?: string
           description?: string | null
           ends_on?: string | null
@@ -63,12 +110,14 @@ export type Database = {
           slug: string
           sort_order?: number
           sport?: string
+          standings_mode?: string
           starts_on?: string | null
           updated_at?: string
         }
         Update: {
           category?: string | null
           country?: string | null
+          country_code?: string | null
           created_at?: string
           description?: string | null
           ends_on?: string | null
@@ -81,6 +130,7 @@ export type Database = {
           slug?: string
           sort_order?: number
           sport?: string
+          standings_mode?: string
           starts_on?: string | null
           updated_at?: string
         }
@@ -221,59 +271,77 @@ export type Database = {
       }
       matches: {
         Row: {
+          away_formation: string | null
           away_pen: number | null
           away_score: number | null
           away_team_id: string | null
           city: string | null
           competition_id: string
           created_at: string
+          home_formation: string | null
           home_pen: number | null
           home_score: number | null
           home_team_id: string | null
           id: string
           kickoff_at: string | null
+          lineup_mode: string
           live_minute: number | null
           notes: string | null
           round: string | null
           status: string
+          timer_elapsed_seconds: number
+          timer_running: boolean
+          timer_started_at: string | null
           updated_at: string
           venue: string | null
         }
         Insert: {
+          away_formation?: string | null
           away_pen?: number | null
           away_score?: number | null
           away_team_id?: string | null
           city?: string | null
           competition_id: string
           created_at?: string
+          home_formation?: string | null
           home_pen?: number | null
           home_score?: number | null
           home_team_id?: string | null
           id?: string
           kickoff_at?: string | null
+          lineup_mode?: string
           live_minute?: number | null
           notes?: string | null
           round?: string | null
           status?: string
+          timer_elapsed_seconds?: number
+          timer_running?: boolean
+          timer_started_at?: string | null
           updated_at?: string
           venue?: string | null
         }
         Update: {
+          away_formation?: string | null
           away_pen?: number | null
           away_score?: number | null
           away_team_id?: string | null
           city?: string | null
           competition_id?: string
           created_at?: string
+          home_formation?: string | null
           home_pen?: number | null
           home_score?: number | null
           home_team_id?: string | null
           id?: string
           kickoff_at?: string | null
+          lineup_mode?: string
           live_minute?: number | null
           notes?: string | null
           round?: string | null
           status?: string
+          timer_elapsed_seconds?: number
+          timer_running?: boolean
+          timer_started_at?: string | null
           updated_at?: string
           venue?: string | null
         }
@@ -346,8 +414,11 @@ export type Database = {
           dob: string | null
           height_cm: number | null
           id: string
+          market_value: string | null
+          media_urls: string[]
           name: string
           nationality: string | null
+          nationality_code: string | null
           photo_url: string | null
           position: string | null
           shirt_number: number | null
@@ -359,8 +430,11 @@ export type Database = {
           dob?: string | null
           height_cm?: number | null
           id?: string
+          market_value?: string | null
+          media_urls?: string[]
           name: string
           nationality?: string | null
+          nationality_code?: string | null
           photo_url?: string | null
           position?: string | null
           shirt_number?: number | null
@@ -372,8 +446,11 @@ export type Database = {
           dob?: string | null
           height_cm?: number | null
           id?: string
+          market_value?: string | null
+          media_urls?: string[]
           name?: string
           nationality?: string | null
+          nationality_code?: string | null
           photo_url?: string | null
           position?: string | null
           shirt_number?: number | null
@@ -398,6 +475,7 @@ export type Database = {
           favorite_competition_ids: string[]
           favorite_player_ids: string[]
           favorite_team_ids: string[]
+          height_unit: string
           id: string
           language: string
           notification_preferences: Json
@@ -411,6 +489,7 @@ export type Database = {
           favorite_competition_ids?: string[]
           favorite_player_ids?: string[]
           favorite_team_ids?: string[]
+          height_unit?: string
           id: string
           language?: string
           notification_preferences?: Json
@@ -424,6 +503,7 @@ export type Database = {
           favorite_competition_ids?: string[]
           favorite_player_ids?: string[]
           favorite_team_ids?: string[]
+          height_unit?: string
           id?: string
           language?: string
           notification_preferences?: Json
@@ -431,6 +511,38 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      standing_labels: {
+        Row: {
+          color: string
+          competition_id: string | null
+          created_at: string
+          id: string
+          label: string
+        }
+        Insert: {
+          color?: string
+          competition_id?: string | null
+          created_at?: string
+          id?: string
+          label: string
+        }
+        Update: {
+          color?: string
+          competition_id?: string | null
+          created_at?: string
+          id?: string
+          label?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "standing_labels_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       standings_rows: {
         Row: {
@@ -510,6 +622,7 @@ export type Database = {
           coach_photo_url: string | null
           competition_id: string | null
           country: string | null
+          country_code: string | null
           created_at: string
           group_label: string | null
           id: string
@@ -525,6 +638,7 @@ export type Database = {
           coach_photo_url?: string | null
           competition_id?: string | null
           country?: string | null
+          country_code?: string | null
           created_at?: string
           group_label?: string | null
           id?: string
@@ -540,6 +654,7 @@ export type Database = {
           coach_photo_url?: string | null
           competition_id?: string | null
           country?: string | null
+          country_code?: string | null
           created_at?: string
           group_label?: string | null
           id?: string
@@ -559,6 +674,69 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      transfers: {
+        Row: {
+          created_at: string
+          fee: string | null
+          from_club: string | null
+          id: string
+          moved_on: string | null
+          person_id: string
+          person_type: string
+          sort_order: number
+          to_club: string | null
+          transfer_type: string | null
+        }
+        Insert: {
+          created_at?: string
+          fee?: string | null
+          from_club?: string | null
+          id?: string
+          moved_on?: string | null
+          person_id: string
+          person_type?: string
+          sort_order?: number
+          to_club?: string | null
+          transfer_type?: string | null
+        }
+        Update: {
+          created_at?: string
+          fee?: string | null
+          from_club?: string | null
+          id?: string
+          moved_on?: string | null
+          person_id?: string
+          person_type?: string
+          sort_order?: number
+          to_club?: string | null
+          transfer_type?: string | null
+        }
+        Relationships: []
+      }
+      venues: {
+        Row: {
+          city: string | null
+          country: string | null
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
       }
     }
     Views: {
