@@ -5,7 +5,7 @@ import { supabase, type Competition } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 import { Trophy } from "lucide-react";
 
-export const Route = createFileRoute("/competitions")({
+export const Route = createFileRoute("/competitions/")({
   head: () => ({ meta: [{ title: "Competitions — MansourAlmailScores" }] }),
   component: CompetitionsList,
 });
