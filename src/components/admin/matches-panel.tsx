@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase, type Match, type Team, STATUS_LABELS, formatKickoff } from "@/lib/db";
+import { supabase, type Match, type Team, STATUS_LABELS, formatKickoff, roundLabel } from "@/lib/db";
 import { Field, Modal, inputCls, btnPrimary, btnGhost, btnDanger } from "./ui";
 import { VenueSelect } from "./venue-select";
 import { MatchEditor } from "./match-editor";
@@ -36,7 +36,7 @@ export function MatchesPanel({ competitionId }: { competitionId: string }) {
   const grouped = useMemo(() => {
     const map = new Map<string, Match[]>();
     for (const m of matches) {
-      const k = m.round?.trim() || "Unassigned round";
+      const k = roundLabel(m.round_number, m.round) ?? "Unassigned round";
       if (!map.has(k)) map.set(k, []);
       map.get(k)!.push(m);
     }
@@ -50,7 +50,8 @@ export function MatchesPanel({ competitionId }: { competitionId: string }) {
       home_team_id: form.home_team_id,
       away_team_id: form.away_team_id,
       kickoff_at: form.kickoff_at ?? null,
-      round: form.round ?? null,
+      round_number: form.round_number ?? null,
+      round: form.round_number != null ? `Round ${form.round_number}` : null,
       venue: form.venue ?? null,
       city: form.city ?? null,
       status: "scheduled",
@@ -123,7 +124,7 @@ export function MatchesPanel({ competitionId }: { competitionId: string }) {
               value={form.kickoff_at ? new Date(new Date(form.kickoff_at).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ""}
               onChange={(e) => setForm({ ...form, kickoff_at: e.target.value ? new Date(e.target.value).toISOString() : null })} />
           </Field>
-          <Field label="Round"><input className={inputCls} placeholder="Round 1" value={form.round ?? ""} onChange={(e) => setForm({ ...form, round: e.target.value })} /></Field>
+          <Field label="Round number"><input type="number" min={1} inputMode="numeric" className={inputCls} placeholder="1" value={form.round_number ?? ""} onChange={(e) => setForm({ ...form, round_number: e.target.value ? Number(e.target.value) : null })} /></Field>
           <div className="sm:col-span-2">
             <Field label="Venue"><VenueSelect venue={form.venue} city={form.city} onChange={(v, c) => setForm({ ...form, venue: v, city: c })} /></Field>
           </div>

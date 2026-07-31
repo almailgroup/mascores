@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, EmptyState, LoadingSkeleton } from "@/components/app-shell";
-import { supabase, formatKickoff, STATUS_LABELS, type Match, type Team, type MatchEvent, type Lineup, type Player } from "@/lib/db";
+import { supabase, formatKickoff, STATUS_LABELS, roundLabel, type Match, type Team, type MatchEvent, type Lineup, type Player } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 
 export const Route = createFileRoute("/matches/$id")({
@@ -48,7 +48,7 @@ function MatchPage() {
   return (
     <AppShell>
       <div className="mb-6 rounded-3xl border border-border bg-card p-6">
-        <div className="text-xs uppercase tracking-widest text-muted-foreground">{match.competition?.name}{match.round ? ` · ${match.round}` : ""}</div>
+        <div className="text-xs uppercase tracking-widest text-muted-foreground">{match.competition?.name}{roundLabel(match.round_number, match.round) ? ` · ${roundLabel(match.round_number, match.round)}` : ""}</div>
         <div className="mt-4 grid items-center gap-4" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
           <div className="text-right">
             {match.home?.logo_url && <img src={match.home.logo_url} className="ml-auto h-14 w-14 object-contain" alt="" />}

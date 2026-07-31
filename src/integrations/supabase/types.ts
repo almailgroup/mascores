@@ -29,6 +29,33 @@ export type Database = {
         }
         Relationships: []
       }
+      broadcast_channels: {
+        Row: {
+          country_code: string | null
+          created_at: string
+          id: string
+          logo_url: string | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          country_code?: string | null
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          country_code?: string | null
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       coaches: {
         Row: {
           created_at: string
@@ -69,6 +96,57 @@ export type Database = {
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      competition_awards: {
+        Row: {
+          award_type: string
+          competition_id: string
+          created_at: string
+          id: string
+          note: string | null
+          player_id: string | null
+          round_number: number | null
+          season: string | null
+          updated_at: string
+        }
+        Insert: {
+          award_type: string
+          competition_id: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          player_id?: string | null
+          round_number?: number | null
+          season?: string | null
+          updated_at?: string
+        }
+        Update: {
+          award_type?: string
+          competition_id?: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          player_id?: string | null
+          round_number?: number | null
+          season?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competition_awards_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competition_awards_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
             referencedColumns: ["id"]
           },
         ]
@@ -119,15 +197,20 @@ export type Database = {
           ends_on: string | null
           featured: boolean
           format: string
+          higher_division_id: string | null
           id: string
           logo_url: string | null
+          lower_division_id: string | null
           name: string
+          parent_competition_id: string | null
           season: string | null
+          seasons: string[]
           slug: string
           sort_order: number
           sport: string
           standings_mode: string
           starts_on: string | null
+          title_holder_team_id: string | null
           updated_at: string
         }
         Insert: {
@@ -139,15 +222,20 @@ export type Database = {
           ends_on?: string | null
           featured?: boolean
           format?: string
+          higher_division_id?: string | null
           id?: string
           logo_url?: string | null
+          lower_division_id?: string | null
           name: string
+          parent_competition_id?: string | null
           season?: string | null
+          seasons?: string[]
           slug: string
           sort_order?: number
           sport?: string
           standings_mode?: string
           starts_on?: string | null
+          title_holder_team_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -159,18 +247,120 @@ export type Database = {
           ends_on?: string | null
           featured?: boolean
           format?: string
+          higher_division_id?: string | null
           id?: string
           logo_url?: string | null
+          lower_division_id?: string | null
           name?: string
+          parent_competition_id?: string | null
           season?: string | null
+          seasons?: string[]
           slug?: string
           sort_order?: number
           sport?: string
           standings_mode?: string
           starts_on?: string | null
+          title_holder_team_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "competitions_higher_division_id_fkey"
+            columns: ["higher_division_id"]
+            isOneToOne: false
+            referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competitions_lower_division_id_fkey"
+            columns: ["lower_division_id"]
+            isOneToOne: false
+            referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competitions_parent_competition_id_fkey"
+            columns: ["parent_competition_id"]
+            isOneToOne: false
+            referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competitions_title_holder_team_id_fkey"
+            columns: ["title_holder_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      match_broadcasts: {
+        Row: {
+          channel_id: string
+          created_at: string
+          id: string
+          match_id: string
+        }
+        Insert: {
+          channel_id: string
+          created_at?: string
+          id?: string
+          match_id: string
+        }
+        Update: {
+          channel_id?: string
+          created_at?: string
+          id?: string
+          match_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_broadcasts_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "broadcast_channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_broadcasts_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      match_chat_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          match_id: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          match_id: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          match_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_chat_messages_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       match_events: {
         Row: {
@@ -305,6 +495,76 @@ export type Database = {
           },
         ]
       }
+      match_predictions: {
+        Row: {
+          away_percent: number
+          draw_percent: number
+          home_percent: number
+          match_id: string
+          updated_at: string
+        }
+        Insert: {
+          away_percent?: number
+          draw_percent?: number
+          home_percent?: number
+          match_id: string
+          updated_at?: string
+        }
+        Update: {
+          away_percent?: number
+          draw_percent?: number
+          home_percent?: number
+          match_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_predictions_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: true
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      match_stats: {
+        Row: {
+          away_value: string | null
+          created_at: string
+          home_value: string | null
+          id: string
+          label: string
+          match_id: string
+          sort_order: number
+        }
+        Insert: {
+          away_value?: string | null
+          created_at?: string
+          home_value?: string | null
+          id?: string
+          label: string
+          match_id: string
+          sort_order?: number
+        }
+        Update: {
+          away_value?: string | null
+          created_at?: string
+          home_value?: string | null
+          id?: string
+          label?: string
+          match_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_stats_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       matches: {
         Row: {
           away_formation: string | null
@@ -314,6 +574,7 @@ export type Database = {
           city: string | null
           competition_id: string
           created_at: string
+          highlight_url: string | null
           home_formation: string | null
           home_pen: number | null
           home_score: number | null
@@ -321,15 +582,19 @@ export type Database = {
           id: string
           kickoff_at: string | null
           lineup_mode: string
+          lineups_published: boolean
           live_minute: number | null
           notes: string | null
+          referee: string | null
           round: string | null
+          round_number: number | null
           status: string
           timer_elapsed_seconds: number
           timer_running: boolean
           timer_started_at: string | null
           updated_at: string
           venue: string | null
+          venue_id: string | null
         }
         Insert: {
           away_formation?: string | null
@@ -339,6 +604,7 @@ export type Database = {
           city?: string | null
           competition_id: string
           created_at?: string
+          highlight_url?: string | null
           home_formation?: string | null
           home_pen?: number | null
           home_score?: number | null
@@ -346,15 +612,19 @@ export type Database = {
           id?: string
           kickoff_at?: string | null
           lineup_mode?: string
+          lineups_published?: boolean
           live_minute?: number | null
           notes?: string | null
+          referee?: string | null
           round?: string | null
+          round_number?: number | null
           status?: string
           timer_elapsed_seconds?: number
           timer_running?: boolean
           timer_started_at?: string | null
           updated_at?: string
           venue?: string | null
+          venue_id?: string | null
         }
         Update: {
           away_formation?: string | null
@@ -364,6 +634,7 @@ export type Database = {
           city?: string | null
           competition_id?: string
           created_at?: string
+          highlight_url?: string | null
           home_formation?: string | null
           home_pen?: number | null
           home_score?: number | null
@@ -371,15 +642,19 @@ export type Database = {
           id?: string
           kickoff_at?: string | null
           lineup_mode?: string
+          lineups_published?: boolean
           live_minute?: number | null
           notes?: string | null
+          referee?: string | null
           round?: string | null
+          round_number?: number | null
           status?: string
           timer_elapsed_seconds?: number
           timer_running?: boolean
           timer_started_at?: string | null
           updated_at?: string
           venue?: string | null
+          venue_id?: string | null
         }
         Relationships: [
           {
@@ -403,7 +678,47 @@ export type Database = {
             referencedRelation: "teams"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "matches_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      media_items: {
+        Row: {
+          created_at: string
+          id: string
+          owner_id: string
+          owner_type: string
+          sort_order: number
+          source: string
+          title: string | null
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_id: string
+          owner_type: string
+          sort_order?: number
+          source?: string
+          title?: string | null
+          url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          owner_type?: string
+          sort_order?: number
+          source?: string
+          title?: string | null
+          url?: string
+        }
+        Relationships: []
       }
       news_posts: {
         Row: {
@@ -443,6 +758,58 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      player_ratings: {
+        Row: {
+          competition_id: string | null
+          created_at: string
+          id: string
+          match_id: string | null
+          player_id: string
+          rating: number
+          updated_at: string
+        }
+        Insert: {
+          competition_id?: string | null
+          created_at?: string
+          id?: string
+          match_id?: string | null
+          player_id: string
+          rating: number
+          updated_at?: string
+        }
+        Update: {
+          competition_id?: string | null
+          created_at?: string
+          id?: string
+          match_id?: string | null
+          player_id?: string
+          rating?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_ratings_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_ratings_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_ratings_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       players: {
         Row: {
@@ -702,6 +1069,7 @@ export type Database = {
           country_code: string | null
           created_at: string
           description: string | null
+          founded_on: string | null
           group_label: string | null
           id: string
           logo_url: string | null
@@ -720,6 +1088,7 @@ export type Database = {
           country_code?: string | null
           created_at?: string
           description?: string | null
+          founded_on?: string | null
           group_label?: string | null
           id?: string
           logo_url?: string | null
@@ -738,6 +1107,7 @@ export type Database = {
           country_code?: string | null
           created_at?: string
           description?: string | null
+          founded_on?: string | null
           group_label?: string | null
           id?: string
           logo_url?: string | null
@@ -767,6 +1137,7 @@ export type Database = {
           moved_on: string | null
           person_id: string
           person_type: string
+          season: string | null
           sort_order: number
           to_club: string | null
           transfer_type: string | null
@@ -779,6 +1150,7 @@ export type Database = {
           moved_on?: string | null
           person_id: string
           person_type?: string
+          season?: string | null
           sort_order?: number
           to_club?: string | null
           transfer_type?: string | null
@@ -791,33 +1163,73 @@ export type Database = {
           moved_on?: string | null
           person_id?: string
           person_type?: string
+          season?: string | null
           sort_order?: number
           to_club?: string | null
           transfer_type?: string | null
         }
         Relationships: []
       }
-      venues: {
+      translations: {
         Row: {
-          city: string | null
-          country: string | null
           created_at: string
           id: string
-          name: string
+          locale: string
+          source_text: string
+          translated_text: string
         }
         Insert: {
-          city?: string | null
-          country?: string | null
           created_at?: string
           id?: string
-          name: string
+          locale: string
+          source_text: string
+          translated_text: string
         }
         Update: {
-          city?: string | null
-          country?: string | null
           created_at?: string
           id?: string
+          locale?: string
+          source_text?: string
+          translated_text?: string
+        }
+        Relationships: []
+      }
+      venues: {
+        Row: {
+          capacity: number | null
+          city: string | null
+          country: string | null
+          country_code: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          capacity?: number | null
+          city?: string | null
+          country?: string | null
+          country_code?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          capacity?: number | null
+          city?: string | null
+          country?: string | null
+          country_code?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
           name?: string
+          updated_at?: string
         }
         Relationships: []
       }

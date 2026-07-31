@@ -6,7 +6,7 @@ import {
 } from "@/lib/db";
 import { Field, Modal, inputCls, btnPrimary, btnGhost, btnDanger } from "./ui";
 import { VenueSelect } from "./venue-select";
-import { Play, Pause, Plus, Trash2, RotateCcw } from "lucide-react";
+import { Play, Pause, Plus, Trash2, RotateCcw, Check } from "lucide-react";
 
 export const EVENT_TYPES = [
   { v: "goal", l: "Goal" },
@@ -84,9 +84,12 @@ function MainTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
       home_team_id: form.home_team_id ?? null,
       away_team_id: form.away_team_id ?? null,
       kickoff_at: form.kickoff_at ?? null,
-      round: form.round ?? null,
+      round_number: form.round_number ?? null,
+      round: form.round_number != null ? `Round ${form.round_number}` : null,
       venue: form.venue ?? null,
       city: form.city ?? null,
+      referee: form.referee ?? null,
+      highlight_url: form.highlight_url ?? null,
       notes: form.notes ?? null,
     }).eq("id", match.id);
     onSaved();
@@ -113,10 +116,12 @@ function MainTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
           <input type="datetime-local" className={inputCls} value={local}
             onChange={(e) => setForm({ ...form, kickoff_at: e.target.value ? new Date(e.target.value).toISOString() : null })} />
         </Field>
-        <Field label="Round"><input className={inputCls} placeholder="Round 1" value={form.round ?? ""} onChange={(e) => setForm({ ...form, round: e.target.value })} /></Field>
+        <Field label="Round number"><input type="number" min={1} inputMode="numeric" className={inputCls} placeholder="1" value={form.round_number ?? ""} onChange={(e) => setForm({ ...form, round_number: e.target.value ? Number(e.target.value) : null })} /></Field>
         <div className="sm:col-span-2">
           <Field label="Venue"><VenueSelect venue={form.venue} city={form.city} onChange={(v, c) => setForm({ ...form, venue: v, city: c })} /></Field>
         </div>
+        <Field label="Referee"><input className={inputCls} value={form.referee ?? ""} onChange={(e) => setForm({ ...form, referee: e.target.value })} /></Field>
+        <Field label="Highlights link"><input className={inputCls} placeholder="YouTube link" value={form.highlight_url ?? ""} onChange={(e) => setForm({ ...form, highlight_url: e.target.value })} /></Field>
         <div className="sm:col-span-2"><Field label="Notes"><textarea rows={2} className={inputCls} value={form.notes ?? ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></Field></div>
       </div>
       <div className="mt-4 flex justify-end"><button className={btnPrimary} onClick={save}>Save details</button></div>
@@ -127,6 +132,28 @@ function MainTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
 /* ---------------- Lineups ---------------- */
 
 const FORMATIONS = ["4-4-2", "4-3-3", "4-2-3-1", "3-5-2", "3-4-3", "5-3-2", "4-1-4-1", "4-5-1"];
+
+/** Slot keys for a formation, goalkeeper first then each outfield line. */
+function formationSlots(formation: string | null | undefined): string[] {
+  const lines = (formation ?? "4-4-2").split("-").map((n) => Number(n)).filter((n) => n > 0);
+  const slots = ["GK"];
+  lines.forEach((count, li) => {
+    for (let i = 0; i < count; i++) slots.push(`L${li + 1}-${i + 1}`);
+  });
+  return slots;
+}
+
+function formationRows(formation: string | null | undefined): string[][] {
+  const slots = formationSlots(formation);
+  const lines = (formation ?? "4-4-2").split("-").map((n) => Number(n)).filter((n) => n > 0);
+  const rows: string[][] = [["GK"]];
+  let idx = 1;
+  for (const count of lines) {
+    rows.push(slots.slice(idx, idx + count));
+    idx += count;
+  }
+  return rows.reverse();
+}
 
 function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSaved: () => void }) {
   const qc = useQueryClient();
@@ -172,6 +199,26 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
     qc.invalidateQueries({ queryKey: ["admin", "lineups", match.id] });
   };
 
+  const assignSlot = async (teamId: string, slot: string, playerId: string | null) => {
+    const current = lineups.find((l) => l.team_id === teamId && l.position_code === slot);
+    if (current) await supabase.from("match_lineups").delete().eq("id", current.id);
+    if (playerId) {
+      const dupe = lineups.find((l) => l.player_id === playerId);
+      if (dupe) await supabase.from("match_lineups").delete().eq("id", dupe.id);
+      const p = players.find((x) => x.id === playerId);
+      await supabase.from("match_lineups").insert({
+        match_id: match.id, team_id: teamId, player_id: playerId,
+        is_starting: true, position_code: slot, shirt_number: p?.shirt_number ?? null,
+      } as never);
+    }
+    qc.invalidateQueries({ queryKey: ["admin", "lineups", match.id] });
+  };
+
+  const publish = async (value: boolean) => {
+    await supabase.from("matches").update({ lineups_published: value }).eq("id", match.id);
+    onSaved();
+  };
+
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -200,6 +247,28 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
                   </select>
                 )}
               </div>
+              {match.lineup_mode === "formation" && formation ? (
+                <div className="rounded-lg bg-emerald-900/25 p-2">
+                  {formationRows(formation).map((row, ri) => (
+                    <div key={ri} className="mb-2 flex justify-around gap-1">
+                      {row.map((slot) => {
+                        const assigned = lineups.find((l) => l.team_id === tid && l.position_code === slot);
+                        const p = players.find((x) => x.id === assigned?.player_id);
+                        return (
+                          <select key={slot} value={assigned?.player_id ?? ""}
+                            onChange={(e) => assignSlot(tid, slot, e.target.value || null)}
+                            className="max-w-[6.5rem] flex-1 truncate rounded-md border border-emerald-400/40 bg-background/90 px-1 py-1 text-[0.6rem] font-semibold">
+                            <option value="">{slot}</option>
+                            {squad.map((s) => <option key={s.id} value={s.id}>{s.shirt_number ? `${s.shirt_number} ` : ""}{s.name}</option>)}
+                          </select>
+                        );
+                      })}
+                    </div>
+                  ))}
+                  <div className="mt-1 text-center text-[0.6rem] text-muted-foreground">{formation} · tap a slot to pick a player</div>
+                  {squad.length === 0 && <div className="text-center text-[0.6rem] text-muted-foreground">Add players to this squad first.</div>}
+                </div>
+              ) : (
               <div className="grid gap-1">
                 {squad.map((p) => {
                   const st = lineups.find((l) => l.player_id === p.id)?.is_starting;
@@ -213,10 +282,20 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
                 })}
                 {squad.length === 0 && <div className="text-[0.65rem] text-muted-foreground">Add players to this squad first.</div>}
               </div>
+              )}
             </div>
           );
         })}
         {teamIds.length === 0 && <div className="text-xs text-muted-foreground">Pick both teams in Match details first.</div>}
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-background/40 p-3">
+        <span className="text-xs text-muted-foreground">
+          {match.lineups_published ? "Lineups are live on the match page." : "Lineups stay hidden until you confirm them."}
+        </span>
+        {match.lineups_published
+          ? <button className={btnGhost} onClick={() => publish(false)}>Unpublish</button>
+          : <button className={btnPrimary} onClick={() => publish(true)}><Check className="h-3.5 w-3.5" /> Confirm lineups</button>}
       </div>
     </div>
   );
@@ -273,7 +352,12 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
     return { h, a };
   }, [eventsQ.data, match.home_team_id]);
 
-  const applyScores = () => patchMatch({ home_score: scores.h, away_score: scores.a });
+  // Score always mirrors the logged events — no manual sync.
+  useEffect(() => {
+    if (eventsQ.isLoading) return;
+    if ((match.home_score ?? 0) === scores.h && (match.away_score ?? 0) === scores.a) return;
+    supabase.from("matches").update({ home_score: scores.h, away_score: scores.a }).eq("id", match.id).then(onSaved);
+  }, [scores.h, scores.a, eventsQ.isLoading, match.id, match.home_score, match.away_score]);
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
@@ -295,7 +379,6 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
               {Object.entries(STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </select>
             <span className="text-sm font-bold tabular-nums">{match.home_score ?? 0} – {match.away_score ?? 0}</span>
-            <button className={btnGhost} onClick={applyScores}>Sync score from events ({scores.h}–{scores.a})</button>
           </div>
         </div>
 
