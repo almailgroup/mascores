@@ -125,7 +125,7 @@ function Home() {
           <SectionHeader title={t("home.news")} />
           <div className="grid gap-3 sm:grid-cols-3">
             {news.data.map((n) => (
-              <Link key={n.id} to="/news" className="group overflow-hidden rounded-2xl border border-border bg-card transition hover:border-primary/50 hover:shadow-lg">
+              <Link key={n.id} to="/news/$slug" params={{ slug: n.slug }} className="group overflow-hidden rounded-2xl border border-border bg-card transition hover:border-primary/50 hover:shadow-lg">
                 {n.cover_url && <img src={n.cover_url} alt="" className="h-32 w-full object-cover" />}
                 <div className="p-4">
                   <div className="font-semibold">{n.title}</div>
