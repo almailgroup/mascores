@@ -67,6 +67,28 @@ export function slugify(s: string): string {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80) || `x-${Date.now()}`;
 }
 
+/** Season label for a date, e.g. 2026-08-10 -> "26/27" (seasons start in July). */
+export function seasonOf(date: Date | string): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  const y = d.getMonth() >= 6 ? d.getFullYear() : d.getFullYear() - 1;
+  return `${String(y % 100).padStart(2, "0")}/${String((y + 1) % 100).padStart(2, "0")}`;
+}
+
+export function currentSeason(): string {
+  return seasonOf(new Date());
+}
+
+/** Inclusive ISO date bounds for a season label like "26/27". */
+export function seasonRange(label: string): { from: string; to: string } {
+  const start = 2000 + Number(label.slice(0, 2));
+  return { from: `${start}-07-01`, to: `${start + 1}-06-30` };
+}
+
+export function formatDob(dob: string | null | undefined): string {
+  if (!dob) return "—";
+  return new Date(dob).toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" });
+}
+
 export async function signMediaUrl(bucket: string, path: string | null | undefined): Promise<string | null> {
   if (!path) return null;
   if (path.startsWith("http")) return path;
