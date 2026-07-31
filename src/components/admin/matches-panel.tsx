@@ -16,7 +16,9 @@ export function MatchesPanel({ competitionId }: { competitionId: string }) {
   const teamsQ = useQuery({
     queryKey: ["admin", "teams", competitionId],
     queryFn: async () => {
-      const { data } = await supabase.from("teams").select("*").eq("competition_id", competitionId).order("name");
+      const { data: links } = await supabase.from("competition_teams").select("team_id").eq("competition_id", competitionId);
+      const ids = (links ?? []).map((link) => link.team_id);
+      const { data } = ids.length ? await supabase.from("teams").select("*").in("id", ids).order("name") : await supabase.from("teams").select("*").eq("competition_id", competitionId).order("name");
       return (data ?? []) as Team[];
     },
   });
