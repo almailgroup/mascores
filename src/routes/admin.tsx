@@ -14,6 +14,7 @@ import { MatchesPanel } from "@/components/admin/matches-panel";
 import { StandingsPanel } from "@/components/admin/standings-panel";
 import { NewsPanel } from "@/components/admin/news-panel";
 import { AlmailAiPanel, ChannelsPanel, TransfersAdminPanel, VenuesPanel } from "@/components/admin/content-panels";
+import { CompetitionAwardsManager, MediaManager } from "@/components/admin/media-manager";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — MansourAlmailScores" }, { name: "robots", content: "noindex" }] }),
@@ -30,7 +31,7 @@ function AdminPage() {
   const [busy, setBusy] = useState(false);
   const [tab, setTab] = useState<"competitions" | "news" | "ai" | "venues" | "channels" | "transfers">("competitions");
   const [openComp, setOpenComp] = useState<Competition | null>(null);
-  const [compTab, setCompTab] = useState<"overview" | "teams" | "matches" | "standings">("overview");
+  const [compTab, setCompTab] = useState<"overview" | "teams" | "matches" | "standings" | "awards" | "media">("overview");
   const unlock = useServerFn(unlockAdmin);
 
   useEffect(() => {
@@ -89,7 +90,7 @@ function AdminPage() {
             </div>
           </div>
           <div className="mt-5 flex max-w-full gap-1 overflow-x-auto border-b border-border pb-2 text-xs">
-            {(["overview", "teams", "matches", "standings"] as const).map((k) => (
+            {(["overview", "teams", "matches", "standings", "awards", "media"] as const).map((k) => (
               <button key={k} onClick={() => setCompTab(k)} className={`rounded-full px-4 py-1.5 font-semibold capitalize ${compTab === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>{k}</button>
             ))}
           </div>
@@ -98,6 +99,8 @@ function AdminPage() {
             {compTab === "teams" && <TeamsPanel competitionId={openComp.id} />}
             {compTab === "matches" && <MatchesPanel competitionId={openComp.id} />}
             {compTab === "standings" && <StandingsPanel competitionId={openComp.id} />}
+            {compTab === "awards" && <CompetitionAwardsManager competitionId={openComp.id} />}
+            {compTab === "media" && <MediaManager ownerType="competition" ownerId={openComp.id} />}
           </div>
         </div>
       ) : (

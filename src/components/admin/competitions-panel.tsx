@@ -4,6 +4,7 @@ import { supabase, slugify, type Competition } from "@/lib/db";
 import { Field, Modal, ImageInput, inputCls, btnPrimary, btnGhost, btnDanger } from "./ui";
 import { uploadMedia } from "./upload";
 import { Plus, Pencil, Trash2, ChevronRight } from "lucide-react";
+import { CountrySelect } from "@/components/country-select";
 
 type Form = Partial<Competition>;
 const empty: Form = { name: "", slug: "", sport: "football", format: "league", featured: false, sort_order: 0 };
@@ -22,7 +23,7 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
   });
 
   const save = async () => {
-    const payload = { ...form, slug: form.slug || slugify(form.name ?? "") };
+    const payload = { ...form, slug: form.slug || slugify(form.name ?? ""), seasons: form.seasons ?? (form.season ? [form.season] : []) };
     if (!payload.name) return;
     if (form.id) await supabase.from("competitions").update(payload).eq("id", form.id);
     else await supabase.from("competitions").insert(payload as never);
@@ -68,10 +69,11 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Name"><input className={inputCls} value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value, slug: form.slug || slugify(e.target.value) })} /></Field>
           <Field label="Slug"><input className={inputCls} value={form.slug ?? ""} onChange={(e) => setForm({ ...form, slug: e.target.value })} /></Field>
-          <Field label="Sport"><input className={inputCls} value={form.sport ?? ""} onChange={(e) => setForm({ ...form, sport: e.target.value })} /></Field>
-          <Field label="Country"><input className={inputCls} value={form.country ?? ""} onChange={(e) => setForm({ ...form, country: e.target.value })} /></Field>
+          <Field label="Sport"><select className={inputCls} value={form.sport ?? "football"} onChange={(e) => setForm({ ...form, sport: e.target.value })}><option value="football">Football</option><option value="basketball">Basketball</option><option value="american_football">American football</option><option value="hockey">Hockey</option><option value="volleyball">Volleyball</option><option value="handball">Handball</option></select></Field>
+          <Field label="Country"><CountrySelect value={form.country} onChange={(name, country) => setForm({ ...form, country: name, country_code: country?.code ?? null })} /></Field>
           <Field label="Category"><input className={inputCls} placeholder="Club / International / Youth" value={form.category ?? ""} onChange={(e) => setForm({ ...form, category: e.target.value })} /></Field>
           <Field label="Season"><input className={inputCls} placeholder="2025/26" value={form.season ?? ""} onChange={(e) => setForm({ ...form, season: e.target.value })} /></Field>
+          <Field label="Available seasons"><input className={inputCls} placeholder="25/26, 26/27" value={(form.seasons ?? []).join(", ")} onChange={(e) => setForm({ ...form, seasons: e.target.value.split(",").map((item) => item.trim()).filter(Boolean) })} /></Field>
           <Field label="Format">
             <select className={inputCls} value={form.format ?? "league"} onChange={(e) => setForm({ ...form, format: e.target.value })}>
               <option value="league">League</option>
@@ -84,6 +86,8 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
           <Field label="Sort order"><input type="number" className={inputCls} value={form.sort_order ?? 0} onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) })} /></Field>
           <Field label="Starts on"><input type="date" className={inputCls} value={form.starts_on ?? ""} onChange={(e) => setForm({ ...form, starts_on: e.target.value || null })} /></Field>
           <Field label="Ends on"><input type="date" className={inputCls} value={form.ends_on ?? ""} onChange={(e) => setForm({ ...form, ends_on: e.target.value || null })} /></Field>
+          <Field label="Higher division"><select className={inputCls} value={form.higher_division_id ?? ""} onChange={(e) => setForm({ ...form, higher_division_id: e.target.value || null })}><option value="">None</option>{(q.data ?? []).filter((item) => item.id !== form.id).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></Field>
+          <Field label="Lower division"><select className={inputCls} value={form.lower_division_id ?? ""} onChange={(e) => setForm({ ...form, lower_division_id: e.target.value || null })}><option value="">None</option>{(q.data ?? []).filter((item) => item.id !== form.id).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></Field>
           <div className="sm:col-span-2">
             <Field label="Logo">
               <ImageInput value={form.logo_url ?? null} onChange={(v) => setForm({ ...form, logo_url: v })} onFile={async (f) => { const url = await uploadMedia("competition-logos", f); if (url) setForm({ ...form, logo_url: url }); }} />
