@@ -6,7 +6,7 @@ import {
 } from "@/lib/db";
 import { Field, Modal, inputCls, btnPrimary, btnGhost, btnDanger } from "./ui";
 import { VenueSelect } from "./venue-select";
-import { Play, Pause, Plus, Trash2, RotateCcw } from "lucide-react";
+import { Play, Pause, Plus, Trash2, RotateCcw, Check } from "lucide-react";
 
 export const EVENT_TYPES = [
   { v: "goal", l: "Goal" },
@@ -84,9 +84,12 @@ function MainTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
       home_team_id: form.home_team_id ?? null,
       away_team_id: form.away_team_id ?? null,
       kickoff_at: form.kickoff_at ?? null,
-      round: form.round ?? null,
+      round_number: form.round_number ?? null,
+      round: form.round_number != null ? `Round ${form.round_number}` : null,
       venue: form.venue ?? null,
       city: form.city ?? null,
+      referee: form.referee ?? null,
+      highlight_url: form.highlight_url ?? null,
       notes: form.notes ?? null,
     }).eq("id", match.id);
     onSaved();
@@ -113,10 +116,12 @@ function MainTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
           <input type="datetime-local" className={inputCls} value={local}
             onChange={(e) => setForm({ ...form, kickoff_at: e.target.value ? new Date(e.target.value).toISOString() : null })} />
         </Field>
-        <Field label="Round"><input className={inputCls} placeholder="Round 1" value={form.round ?? ""} onChange={(e) => setForm({ ...form, round: e.target.value })} /></Field>
+        <Field label="Round number"><input type="number" min={1} inputMode="numeric" className={inputCls} placeholder="1" value={form.round_number ?? ""} onChange={(e) => setForm({ ...form, round_number: e.target.value ? Number(e.target.value) : null })} /></Field>
         <div className="sm:col-span-2">
           <Field label="Venue"><VenueSelect venue={form.venue} city={form.city} onChange={(v, c) => setForm({ ...form, venue: v, city: c })} /></Field>
         </div>
+        <Field label="Referee"><input className={inputCls} value={form.referee ?? ""} onChange={(e) => setForm({ ...form, referee: e.target.value })} /></Field>
+        <Field label="Highlights link"><input className={inputCls} placeholder="YouTube link" value={form.highlight_url ?? ""} onChange={(e) => setForm({ ...form, highlight_url: e.target.value })} /></Field>
         <div className="sm:col-span-2"><Field label="Notes"><textarea rows={2} className={inputCls} value={form.notes ?? ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></Field></div>
       </div>
       <div className="mt-4 flex justify-end"><button className={btnPrimary} onClick={save}>Save details</button></div>
