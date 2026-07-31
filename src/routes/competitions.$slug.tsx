@@ -3,6 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { AppShell, EmptyState, LoadingSkeleton, SectionHeader } from "@/components/app-shell";
 import { supabase, formatKickoff, type Competition, type Team, type Match, type StandingRow } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
+import { FlagIcon } from "@/components/flag";
+import type { Database } from "@/integrations/supabase/types";
+
+type PositionLabel = Database["public"]["Tables"]["standings_position_labels"]["Row"];
 
 export const Route = createFileRoute("/competitions/$slug")({
   head: ({ params }) => ({ meta: [{ title: `${params.slug} — MansourAlmailScores` }] }),
@@ -50,9 +54,17 @@ function CompetitionPage() {
         .select("*, team:team_id(id,name,logo_url,short_name)")
         .eq("competition_id", comp.data!.id)
         .order("group_label", { ascending: true, nullsFirst: true })
-        .order("sort_order")
-        .order("points", { ascending: false });
+        .order("sort_order");
       return (data ?? []) as unknown as (StandingRow & { team: Team | null })[];
+    },
+  });
+
+  const posLabels = useQuery({
+    enabled: !!comp.data,
+    queryKey: ["comp-position-labels", comp.data?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("standings_position_labels").select("*").eq("competition_id", comp.data!.id);
+      return (data ?? []) as PositionLabel[];
     },
   });
 
@@ -68,7 +80,10 @@ function CompetitionPage() {
         </div>
         <div>
           <h1 className="text-2xl font-bold">{c.name}</h1>
-          <div className="text-xs text-muted-foreground">{[c.country, c.season, c.category].filter(Boolean).join(" · ")}</div>
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <FlagIcon value={c.country_code ?? c.country} />
+            <span>{[c.country, c.season, c.category].filter(Boolean).join(" · ")}</span>
+          </div>
           {c.description && <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{c.description}</p>}
         </div>
       </div>
