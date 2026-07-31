@@ -1,16 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { COUNTRIES, findCountry, searchCountries, type Country } from "@/lib/countries";
+import { FlagIcon } from "@/components/flag";
 
 export function CountryFlag({ value, className = "" }: { value: string | null | undefined; className?: string }) {
-  const c = findCountry(value);
-  if (!c) return null;
-  return <span className={className} title={c.name} aria-hidden>{c.flag}</span>;
+  return <FlagIcon value={value} className={className} />;
 }
 
 export function CountryTag({ value, className = "" }: { value: string | null | undefined; className?: string }) {
   const c = findCountry(value);
   if (!c) return value ? <span className={className}>{value}</span> : null;
-  return <span className={`inline-flex items-center gap-1 ${className}`}><span aria-hidden>{c.flag}</span>{c.name}</span>;
+  return <span className={`inline-flex items-center gap-1.5 ${className}`}><FlagIcon value={c.code} />{c.name}</span>;
 }
 
 export function CountrySelect({
@@ -43,7 +42,7 @@ export function CountrySelect({
         className="flex w-full cursor-text items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm focus-within:border-primary"
         onClick={() => setOpen(true)}
       >
-        {selected && <span aria-hidden className="text-base leading-none">{selected.flag}</span>}
+        {selected && <FlagIcon value={selected.code} size="md" />}
         <input
           className="w-full bg-transparent outline-none"
           value={open ? query : (selected?.name ?? value ?? "")}
@@ -63,7 +62,7 @@ export function CountrySelect({
             <button key={c.code} type="button"
               className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm hover:bg-accent"
               onClick={() => { onChange(c.name, c); setOpen(false); setQuery(""); }}>
-              <span aria-hidden className="text-base leading-none">{c.flag}</span>
+              <FlagIcon value={c.code} size="md" />
               <span className="flex-1 truncate">{c.name}</span>
               <span className="text-[0.6rem] text-muted-foreground">{c.code}</span>
             </button>
