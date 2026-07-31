@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase, POSITIONS, type Team, type Player, type Coach } from "@/lib/db";
 import { Field, Modal, ImageInput, inputCls, btnPrimary, btnGhost, btnDanger } from "./ui";
 import { uploadMedia } from "./upload";
@@ -7,7 +8,9 @@ import { CountrySelect } from "@/components/country-select";
 import { DateWheel } from "@/components/date-wheel";
 import { TransfersEditor } from "./transfers-editor";
 import { VenueSelect } from "./venue-select";
-import { Plus, Pencil, Trash2, Users, UserCog } from "lucide-react";
+import { createPlayerDraftWithAlmail } from "@/lib/almail-ai.functions";
+import { readAiImages, type AiImageInput } from "@/lib/image-files";
+import { Plus, Pencil, Trash2, Users, UserCog, Sparkles, Loader2, ImagePlus } from "lucide-react";
 
 type TeamForm = Partial<Team>;
 type PlayerForm = Partial<Player>;
@@ -99,6 +102,12 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
   const qc = useQueryClient();
   const [form, setForm] = useState<PlayerForm>({});
   const [editing, setEditing] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiNotes, setAiNotes] = useState("");
+  const [aiImages, setAiImages] = useState<AiImageInput[]>([]);
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const createAiDraft = useServerFn(createPlayerDraftWithAlmail);
 
   const q = useQuery({
     queryKey: ["admin", "players", team.id],
@@ -126,6 +135,22 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
     qc.invalidateQueries({ queryKey: ["admin", "players", team.id] });
   };
 
+  const generateDraft = async () => {
+    if (!aiNotes.trim() && aiImages.length === 0) return;
+    setAiBusy(true);
+    setAiError(null);
+    try {
+      const draft = await createAiDraft({ data: { notes: aiNotes, images: aiImages } });
+      setForm(draft);
+      setEditing(true);
+      setAiOpen(false);
+    } catch (error) {
+      setAiError(error instanceof Error ? error.message : "Almail AI could not create this draft.");
+    } finally {
+      setAiBusy(false);
+    }
+  };
+
   return (
     <Modal open onClose={onClose} title={`${team.name} — squad`} wide>
       <div className="mb-4 grid gap-2">
@@ -144,6 +169,28 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
         ))}
         {q.data && q.data.length === 0 && <div className="rounded border border-dashed border-border p-3 text-center text-xs text-muted-foreground">No players yet.</div>}
       </div>
+
+      {aiOpen && (
+        <div className="mb-4 rounded-2xl border border-primary/30 bg-primary/5 p-4">
+          <div className="mb-1 flex items-center gap-2 font-semibold"><Sparkles className="h-4 w-4 text-primary" /> Almail AI player creator</div>
+          <p className="mb-3 text-xs text-muted-foreground">Add notes, screenshots, player cards, or several photos. Review every field before creating the player.</p>
+          <textarea className={inputCls} rows={4} maxLength={10000} placeholder="Paste player information or describe what the images show…" value={aiNotes} onChange={(event) => setAiNotes(event.target.value)} />
+          <label className={`${btnGhost} mt-3 cursor-pointer`}>
+            <ImagePlus className="h-3.5 w-3.5" /> Add images
+            <input className="sr-only" type="file" accept="image/png,image/jpeg,image/webp" multiple onChange={async (event) => {
+              if (event.target.files) setAiImages(await readAiImages(event.target.files));
+            }} />
+          </label>
+          {aiImages.length > 0 && <div className="mt-2 text-xs text-muted-foreground">{aiImages.length} image{aiImages.length === 1 ? "" : "s"} attached</div>}
+          {aiError && <div className="mt-2 text-xs text-destructive">{aiError}</div>}
+          <div className="mt-4 flex justify-end gap-2">
+            <button className={btnGhost} onClick={() => setAiOpen(false)}>Cancel</button>
+            <button className={btnPrimary} disabled={aiBusy || (!aiNotes.trim() && aiImages.length === 0)} onClick={generateDraft}>
+              {aiBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />} Generate draft
+            </button>
+          </div>
+        </div>
+      )}
 
       {editing ? (
         <div className="rounded-2xl border border-border bg-background/40 p-4">
@@ -170,12 +217,15 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
           </div>
           {form.id && <div className="mt-4"><TransfersEditor personType="player" personId={form.id} /></div>}
           <div className="mt-4 flex justify-end gap-2">
-            <button className={btnGhost} onClick={() => { setEditing(false); setForm({}); }}>{form.id ? "Done" : "Cancel"}</button>
+            <button className={btnGhost} onClick={() => { setEditing(false); setForm({}); }}>Cancel</button>
             <button className={btnPrimary} onClick={save}>{form.id ? "Save player" : "Create player"}</button>
           </div>
         </div>
       ) : (
-        <button className={btnPrimary} onClick={() => { setForm({}); setEditing(true); }}><Plus className="h-3.5 w-3.5" /> Add player</button>
+        <div className="flex flex-wrap gap-2">
+          <button className={btnPrimary} onClick={() => { setForm({}); setEditing(true); }}><Plus className="h-3.5 w-3.5" /> Add player</button>
+          <button className={btnGhost} onClick={() => { setAiError(null); setAiOpen(true); }}><Sparkles className="h-3.5 w-3.5" /> Create with Almail AI</button>
+        </div>
       )}
     </Modal>
   );
@@ -268,7 +318,7 @@ function CoachesModal({ team, onClose }: { team: Team; onClose: () => void }) {
           </div>
           {form.id && <div className="mt-4"><TransfersEditor personType="coach" personId={form.id} /></div>}
           <div className="mt-4 flex justify-end gap-2">
-            <button className={btnGhost} onClick={() => { setEditing(false); setForm({}); }}>{form.id ? "Done" : "Cancel"}</button>
+            <button className={btnGhost} onClick={() => { setEditing(false); setForm({}); }}>Cancel</button>
             <button className={btnPrimary} onClick={save}>{form.id ? "Save coach" : "Create coach"}</button>
           </div>
         </div>

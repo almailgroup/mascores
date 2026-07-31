@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_unlock_attempts: {
+        Row: {
+          attempted_at: string
+          id: string
+          succeeded: boolean
+          user_id: string
+        }
+        Insert: {
+          attempted_at?: string
+          id?: string
+          succeeded?: boolean
+          user_id: string
+        }
+        Update: {
+          attempted_at?: string
+          id?: string
+          succeeded?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       admins: {
         Row: {
           created_at: string
@@ -1238,9 +1259,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_unlock_allowed: { Args: { _uid: string }; Returns: boolean }
       grant_admin: { Args: { _uid: string }; Returns: undefined }
       is_admin: { Args: { _uid: string }; Returns: boolean }
       recompute_standings: { Args: { _comp: string }; Returns: undefined }
+      record_admin_unlock_attempt: {
+        Args: { _succeeded: boolean; _uid: string }
+        Returns: undefined
+      }
+      revoke_admin: { Args: { _uid: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

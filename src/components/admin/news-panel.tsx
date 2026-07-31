@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase, slugify, type NewsPost } from "@/lib/db";
 import { Field, Modal, ImageInput, inputCls, btnPrimary, btnGhost, btnDanger } from "./ui";
 import { uploadMedia } from "./upload";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { createArticleDraftWithAlmail } from "@/lib/almail-ai.functions";
+import { readAiImages, type AiImageInput } from "@/lib/image-files";
+import { Plus, Pencil, Trash2, Sparkles, ImagePlus, Loader2 } from "lucide-react";
 
 type Form = Partial<NewsPost>;
 
@@ -11,6 +14,12 @@ export function NewsPanel() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<Form>({});
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiNotes, setAiNotes] = useState("");
+  const [aiImages, setAiImages] = useState<AiImageInput[]>([]);
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const createAiDraft = useServerFn(createArticleDraftWithAlmail);
 
   const q = useQuery({
     queryKey: ["admin", "news"],
@@ -40,12 +49,50 @@ export function NewsPanel() {
     qc.invalidateQueries({ queryKey: ["admin", "news"] });
   };
 
+  const generateArticle = async () => {
+    if (!aiNotes.trim() && aiImages.length === 0) return;
+    setAiBusy(true);
+    setAiError(null);
+    try {
+      const draft = await createAiDraft({ data: { notes: aiNotes, images: aiImages } });
+      setForm({ ...draft, slug: slugify(draft.title) });
+      setAiOpen(false);
+      setOpen(true);
+    } catch (error) {
+      setAiError(error instanceof Error ? error.message : "Almail AI could not draft this article.");
+    } finally {
+      setAiBusy(false);
+    }
+  };
+
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-bold">News</h2>
-        <button className={btnPrimary} onClick={() => { setForm({}); setOpen(true); }}><Plus className="h-3.5 w-3.5" /> New post</button>
+        <div className="flex flex-wrap gap-2">
+          <button className={btnGhost} onClick={() => { setAiError(null); setAiOpen(true); }}><Sparkles className="h-3.5 w-3.5" /> Write with Almail AI</button>
+          <button className={btnPrimary} onClick={() => { setForm({}); setOpen(true); }}><Plus className="h-3.5 w-3.5" /> New post</button>
+        </div>
       </div>
+
+      <Modal open={aiOpen} onClose={() => setAiOpen(false)} title="Almail AI news writer" wide>
+        <p className="mb-3 text-sm text-muted-foreground">Attach a photo, paste your reporting notes, or use both. The result opens as an editable draft and is never published automatically.</p>
+        <textarea className={inputCls} rows={7} maxLength={10000} placeholder="Add the facts, score, names, quotes, or context Almail AI should use…" value={aiNotes} onChange={(event) => setAiNotes(event.target.value)} />
+        <label className={`${btnGhost} mt-3 cursor-pointer`}>
+          <ImagePlus className="h-3.5 w-3.5" /> Add images
+          <input className="sr-only" type="file" accept="image/png,image/jpeg,image/webp" multiple onChange={async (event) => {
+            if (event.target.files) setAiImages(await readAiImages(event.target.files));
+          }} />
+        </label>
+        {aiImages.length > 0 && <div className="mt-2 text-xs text-muted-foreground">{aiImages.length} image{aiImages.length === 1 ? "" : "s"} attached</div>}
+        {aiError && <div className="mt-2 text-sm text-destructive">{aiError}</div>}
+        <div className="mt-5 flex justify-end gap-2">
+          <button className={btnGhost} onClick={() => setAiOpen(false)}>Cancel</button>
+          <button className={btnPrimary} disabled={aiBusy || (!aiNotes.trim() && aiImages.length === 0)} onClick={generateArticle}>
+            {aiBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />} Generate editable draft
+          </button>
+        </div>
+      </Modal>
       <div className="grid gap-2">
         {(q.data ?? []).map((n) => (
           <div key={n.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3">
