@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TransfersRouteImport } from './routes/transfers'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
@@ -22,6 +23,11 @@ import { Route as PlayersIdRouteImport } from './routes/players.$id'
 import { Route as MatchesIdRouteImport } from './routes/matches.$id'
 import { Route as CompetitionsSlugRouteImport } from './routes/competitions.$slug'
 
+const TransfersRoute = TransfersRouteImport.update({
+  id: '/transfers',
+  path: '/transfers',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -91,6 +97,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
+  '/transfers': typeof TransfersRoute
   '/competitions/$slug': typeof CompetitionsSlugRoute
   '/matches/$id': typeof MatchesIdRoute
   '/players/$id': typeof PlayersIdRoute
@@ -105,6 +112,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
+  '/transfers': typeof TransfersRoute
   '/competitions/$slug': typeof CompetitionsSlugRoute
   '/matches/$id': typeof MatchesIdRoute
   '/players/$id': typeof PlayersIdRoute
@@ -120,6 +128,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
+  '/transfers': typeof TransfersRoute
   '/competitions/$slug': typeof CompetitionsSlugRoute
   '/matches/$id': typeof MatchesIdRoute
   '/players/$id': typeof PlayersIdRoute
@@ -136,6 +145,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/search'
     | '/settings'
+    | '/transfers'
     | '/competitions/$slug'
     | '/matches/$id'
     | '/players/$id'
@@ -150,6 +160,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/search'
     | '/settings'
+    | '/transfers'
     | '/competitions/$slug'
     | '/matches/$id'
     | '/players/$id'
@@ -164,6 +175,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/search'
     | '/settings'
+    | '/transfers'
     | '/competitions/$slug'
     | '/matches/$id'
     | '/players/$id'
@@ -179,6 +191,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   SearchRoute: typeof SearchRoute
   SettingsRoute: typeof SettingsRoute
+  TransfersRoute: typeof TransfersRoute
   CompetitionsSlugRoute: typeof CompetitionsSlugRoute
   MatchesIdRoute: typeof MatchesIdRoute
   PlayersIdRoute: typeof PlayersIdRoute
@@ -188,6 +201,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/transfers': {
+      id: '/transfers'
+      path: '/transfers'
+      fullPath: '/transfers'
+      preLoaderRoute: typeof TransfersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
@@ -283,6 +303,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   SearchRoute: SearchRoute,
   SettingsRoute: SettingsRoute,
+  TransfersRoute: TransfersRoute,
   CompetitionsSlugRoute: CompetitionsSlugRoute,
   MatchesIdRoute: MatchesIdRoute,
   PlayersIdRoute: PlayersIdRoute,
