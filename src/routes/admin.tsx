@@ -6,13 +6,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import { unlockAdmin } from "@/lib/admin.functions";
-import { Loader2, ShieldCheck, ArrowLeft } from "lucide-react";
+import { Loader2, ShieldCheck, ArrowLeft, Bot, CalendarDays, Newspaper, Radio, Repeat2, Trophy, Landmark } from "lucide-react";
 import type { Competition } from "@/lib/db";
 import { CompetitionsPanel } from "@/components/admin/competitions-panel";
 import { TeamsPanel } from "@/components/admin/teams-panel";
 import { MatchesPanel } from "@/components/admin/matches-panel";
 import { StandingsPanel } from "@/components/admin/standings-panel";
 import { NewsPanel } from "@/components/admin/news-panel";
+import { AlmailAiPanel, ChannelsPanel, TransfersAdminPanel, VenuesPanel } from "@/components/admin/content-panels";
+import { CompetitionAwardsManager, MediaManager } from "@/components/admin/media-manager";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — MansourAlmailScores" }, { name: "robots", content: "noindex" }] }),
@@ -27,9 +29,9 @@ function AdminPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [tab, setTab] = useState<"competitions" | "news">("competitions");
+  const [tab, setTab] = useState<"competitions" | "news" | "ai" | "venues" | "channels" | "transfers">("competitions");
   const [openComp, setOpenComp] = useState<Competition | null>(null);
-  const [compTab, setCompTab] = useState<"teams" | "matches" | "standings">("teams");
+  const [compTab, setCompTab] = useState<"overview" | "teams" | "matches" | "standings" | "awards" | "media">("overview");
   const unlock = useServerFn(unlockAdmin);
 
   useEffect(() => {
@@ -87,31 +89,49 @@ function AdminPage() {
               <p className="text-xs text-muted-foreground">{[openComp.country, openComp.season, openComp.format].filter(Boolean).join(" · ")}</p>
             </div>
           </div>
-          <div className="mt-5 flex gap-1 rounded-full border border-border bg-card p-1 text-xs w-fit">
-            {(["teams", "matches", "standings"] as const).map((k) => (
+          <div className="mt-5 flex max-w-full gap-1 overflow-x-auto border-b border-border pb-2 text-xs">
+            {(["overview", "teams", "matches", "standings", "awards", "media"] as const).map((k) => (
               <button key={k} onClick={() => setCompTab(k)} className={`rounded-full px-4 py-1.5 font-semibold capitalize ${compTab === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>{k}</button>
             ))}
           </div>
           <div className="mt-6">
+            {compTab === "overview" && <CompetitionOverview competition={openComp} />}
             {compTab === "teams" && <TeamsPanel competitionId={openComp.id} />}
             {compTab === "matches" && <MatchesPanel competitionId={openComp.id} />}
             {compTab === "standings" && <StandingsPanel competitionId={openComp.id} />}
+            {compTab === "awards" && <CompetitionAwardsManager competitionId={openComp.id} />}
+            {compTab === "media" && <MediaManager ownerType="competition" ownerId={openComp.id} />}
           </div>
         </div>
       ) : (
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Admin</h1>
-          <div className="mt-4 flex gap-1 rounded-full border border-border bg-card p-1 text-xs w-fit">
-            {(["competitions", "news"] as const).map((k) => (
-              <button key={k} onClick={() => setTab(k)} className={`rounded-full px-4 py-1.5 font-semibold capitalize ${tab === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>{k}</button>
+          <h1 className="text-3xl font-bold tracking-tight">Admin control centre</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Competitions, matches, news, AI and reusable libraries in one place.</p>
+          <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+            {([
+              ["competitions", Trophy], ["news", Newspaper], ["ai", Bot], ["venues", Landmark], ["channels", Radio], ["transfers", Repeat2],
+            ] as const).map(([k, Icon]) => (
+              <button key={k} onClick={() => setTab(k)} className={`flex min-h-20 flex-col items-start justify-between rounded-lg border p-3 text-left font-semibold capitalize ${tab === k ? "border-primary bg-primary/10 text-primary" : "border-border bg-card hover:border-primary/50"}`}><Icon className="h-4 w-4" />{k === "ai" ? "Almail AI" : k}</button>
             ))}
           </div>
           <div className="mt-6">
             {tab === "competitions" && <CompetitionsPanel onOpen={setOpenComp} />}
             {tab === "news" && <NewsPanel />}
+            {tab === "ai" && <AlmailAiPanel onNews={() => setTab("news")} onCompetitions={() => setTab("competitions")} />}
+            {tab === "venues" && <VenuesPanel />}
+            {tab === "channels" && <ChannelsPanel />}
+            {tab === "transfers" && <TransfersAdminPanel />}
           </div>
         </div>
       )}
     </AppShell>
   );
+}
+
+function CompetitionOverview({ competition }: { competition: Competition }) {
+  const items = [
+    ["Sport", competition.sport], ["Format", competition.format], ["Current season", competition.season],
+    ["Available seasons", competition.seasons?.join(", ") || "—"], ["Starts", competition.starts_on || "—"], ["Ends", competition.ends_on || "—"],
+  ];
+  return <div><div className="mb-4 flex items-center gap-2"><CalendarDays className="h-4 w-4 text-primary" /><h2 className="font-bold">Competition setup</h2></div><div className="grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2 lg:grid-cols-3">{items.map(([label, value]) => <div key={label} className="bg-card p-4"><div className="text-[0.65rem] font-semibold uppercase text-muted-foreground">{label}</div><div className="mt-1 text-sm font-semibold">{value || "—"}</div></div>)}</div><p className="mt-4 text-sm text-muted-foreground">Use Teams for the saved club library, Matches for schedules and match centres, and Standings for groups and qualification labels.</p></div>;
 }
