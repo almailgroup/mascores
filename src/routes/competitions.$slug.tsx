@@ -106,28 +106,56 @@ function CompetitionPage() {
 
       <SectionHeader title="Standings" action={<div />} />
       {standings.data && standings.data.length > 0 ? (
-        <div className="overflow-hidden rounded-2xl border border-border bg-card">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50 text-xs uppercase tracking-widest text-muted-foreground"><tr>
-              <th className="p-3 text-left">#</th><th className="text-left">Team</th>
-              <th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>Pts</th>
-            </tr></thead>
-            <tbody>{standings.data.map((r, i) => (
-              <tr key={r.id} className="border-t border-border">
-                <td className="p-3">
-                  <span className="inline-block h-3 w-3 rounded-full" style={{ background: r.qualification_color ?? "transparent" }} title={r.qualification_label ?? ""} />
-                  <span className="ml-2">{i + 1}</span>
-                </td>
-                <td className="flex items-center gap-2 p-3 font-medium">
-                  {r.team?.logo_url && <img src={r.team.logo_url} alt="" className="h-5 w-5 object-contain" />}
-                  {r.team?.name ?? "—"}
-                </td>
-                <td className="text-center">{r.played}</td><td className="text-center">{r.won}</td><td className="text-center">{r.drawn}</td>
-                <td className="text-center">{r.lost}</td><td className="text-center">{r.gf}</td><td className="text-center">{r.ga}</td>
-                <td className="text-center font-bold">{r.points + r.points_adjust}</td>
-              </tr>))}
-            </tbody>
-          </table>
+        <div className="space-y-6">
+          {groupsOf(standings.data).map(([group, rows]) => {
+            const labels = (posLabels.data ?? []).filter((l) => (l.group_label ?? null) === group);
+            const used = rows
+              .map((_, i) => labels.find((l) => l.position === i + 1))
+              .filter((l): l is PositionLabel => !!l)
+              .filter((l, i, arr) => arr.findIndex((x) => x.label === l.label) === i);
+            return (
+              <div key={group ?? "single"}>
+                {group && <div className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">{group}</div>}
+                <div className="overflow-hidden rounded-2xl border border-border bg-card">
+                  <table className="w-full text-sm">
+                    <thead className="bg-muted/50 text-xs uppercase tracking-widest text-muted-foreground"><tr>
+                      <th className="p-3 text-left">#</th><th className="text-left">Team</th>
+                      <th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>Pts</th>
+                    </tr></thead>
+                    <tbody>{rows.map((r, i) => {
+                      const lbl = labels.find((l) => l.position === i + 1);
+                      return (
+                        <tr key={r.id} className="border-t border-border" style={{ borderLeft: lbl ? `4px solid ${lbl.color}` : "4px solid transparent" }}>
+                          <td className="p-3 tabular-nums">{i + 1}</td>
+                          <td className="p-3">
+                            {r.team ? (
+                              <Link to="/teams/$id" params={{ id: r.team.id }} className="flex items-center gap-2 font-medium hover:text-primary">
+                                {r.team.logo_url && <img src={r.team.logo_url} alt="" className="h-5 w-5 object-contain" />}
+                                <span className="truncate">{r.team.name}</span>
+                              </Link>
+                            ) : "—"}
+                          </td>
+                          <td className="text-center">{r.played}</td><td className="text-center">{r.won}</td><td className="text-center">{r.drawn}</td>
+                          <td className="text-center">{r.lost}</td><td className="text-center">{r.gf}</td><td className="text-center">{r.ga}</td>
+                          <td className="text-center font-bold">{r.points + r.points_adjust}</td>
+                        </tr>
+                      );
+                    })}
+                    </tbody>
+                  </table>
+                </div>
+                {used.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-3 text-xs text-muted-foreground">
+                    {used.map((l) => (
+                      <span key={l.id} className="inline-flex items-center gap-1.5">
+                        <span className="h-2.5 w-2.5 rounded-full" style={{ background: l.color }} />{l.label}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       ) : <EmptyState title="No standings yet" />}
 
