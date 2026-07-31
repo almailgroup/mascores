@@ -47,7 +47,7 @@ function AdminPage() {
     try {
       const res = await unlock({ data: { password } });
       if (res.ok) setIsAdmin(true);
-      else setError(t("admin.unlock.wrong"));
+       else setError(res.rateLimited ? "Too many attempts. Try again in 15 minutes." : t("admin.unlock.wrong"));
     } finally { setBusy(false); }
   };
 
