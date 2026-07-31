@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, EmptyState, LoadingSkeleton } from "@/components/app-shell";
-import { supabase, formatKickoff, formatHeight, type Player, type Team, type Match, type Transfer } from "@/lib/db";
+import { supabase, formatKickoff, formatHeight, formatDob, type Player, type Team, type Match, type Transfer } from "@/lib/db";
 import { FavoriteButton } from "@/hooks/use-favorites";
 import { FlagIcon } from "@/components/flag";
 import { useI18n } from "@/lib/i18n";
@@ -93,7 +93,7 @@ function PlayerPage() {
         <>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             <Stat label="Nationality" value={p.nationality ?? "—"} icon={<FlagIcon value={nat} size="md" />} />
-            <Stat label="Age" value={age(p.dob) != null ? String(age(p.dob)) : "—"} />
+            <Stat label="Date of birth" value={p.dob ? `${formatDob(p.dob)}${age(p.dob) != null ? ` (${age(p.dob)})` : ""}` : "—"} />
             <Stat label="Height" value={formatHeight(p.height_cm, "cm")} />
             <Stat label="Position" value={p.position ?? "—"} />
             <Stat label="Shirt" value={p.shirt_number != null ? `#${p.shirt_number}` : "—"} />
