@@ -7,6 +7,17 @@ import { FlagIcon } from "@/components/flag";
 import type { Database } from "@/integrations/supabase/types";
 
 type PositionLabel = Database["public"]["Tables"]["standings_position_labels"]["Row"];
+type Row = StandingRow & { team: Team | null };
+
+function groupsOf(rows: Row[]): [string | null, Row[]][] {
+  const map = new Map<string | null, Row[]>();
+  for (const r of rows) {
+    const key = r.group_label ?? null;
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(r);
+  }
+  return [...map.entries()];
+}
 
 export const Route = createFileRoute("/competitions/$slug")({
   head: ({ params }) => ({ meta: [{ title: `${params.slug} — MansourAlmailScores` }] }),
