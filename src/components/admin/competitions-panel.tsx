@@ -21,6 +21,10 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
       return (data ?? []) as Competition[];
     },
   });
+  const teams = useQuery({
+    queryKey: ["admin", "team-library"],
+    queryFn: async () => (await supabase.from("teams").select("id,name").order("name")).data ?? [],
+  });
 
   const save = async () => {
     const payload = { ...form, slug: form.slug || slugify(form.name ?? ""), seasons: form.seasons ?? (form.season ? [form.season] : []) };
@@ -88,6 +92,9 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
           <Field label="Ends on"><input type="date" className={inputCls} value={form.ends_on ?? ""} onChange={(e) => setForm({ ...form, ends_on: e.target.value || null })} /></Field>
           <Field label="Higher division"><select className={inputCls} value={form.higher_division_id ?? ""} onChange={(e) => setForm({ ...form, higher_division_id: e.target.value || null })}><option value="">None</option>{(q.data ?? []).filter((item) => item.id !== form.id).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></Field>
           <Field label="Lower division"><select className={inputCls} value={form.lower_division_id ?? ""} onChange={(e) => setForm({ ...form, lower_division_id: e.target.value || null })}><option value="">None</option>{(q.data ?? []).filter((item) => item.id !== form.id).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></Field>
+          <Field label="Parent competition"><select className={inputCls} value={form.parent_competition_id ?? ""} onChange={(e) => setForm({ ...form, parent_competition_id: e.target.value || null })}><option value="">None</option>{(q.data ?? []).filter((item) => item.id !== form.id).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></Field>
+          <Field label="Title holder"><select className={inputCls} value={form.title_holder_team_id ?? ""} onChange={(e) => setForm({ ...form, title_holder_team_id: e.target.value || null })}><option value="">None</option>{teams.data?.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}</select></Field>
+          <Field label="Standings mode"><select className={inputCls} value={form.standings_mode ?? "table"} onChange={(e) => setForm({ ...form, standings_mode: e.target.value })}><option value="table">League table</option><option value="groups">Groups</option><option value="knockout">Knockout</option></select></Field>
           <div className="sm:col-span-2">
             <Field label="Logo">
               <ImageInput value={form.logo_url ?? null} onChange={(v) => setForm({ ...form, logo_url: v })} onFile={async (f) => { const url = await uploadMedia("competition-logos", f); if (url) setForm({ ...form, logo_url: url }); }} />

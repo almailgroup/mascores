@@ -27,8 +27,8 @@ export const Route = createFileRoute("/competitions/$slug")({
 
 function CompetitionPage() {
   const { slug } = Route.useParams();
-  const [tab, setTab] = useState<"overview" | "matches" | "standings" | "teams" | "media">("overview");
-  useRealtime(["competitions", "teams", "matches", "standings_rows"]);
+  const [tab, setTab] = useState<"overview" | "matches" | "standings" | "teams" | "awards" | "media">("overview");
+  useRealtime(["competitions", "teams", "matches", "standings_rows", "competition_awards", "media_items"]);
 
   const comp = useQuery({
     queryKey: ["comp", slug],
@@ -83,6 +83,8 @@ function CompetitionPage() {
     },
   });
   const media = useQuery({ enabled: !!comp.data, queryKey: ["competition-media", comp.data?.id], queryFn: async () => (await supabase.from("media_items").select("*").eq("owner_type", "competition").eq("owner_id", comp.data!.id).order("sort_order")).data ?? [] });
+  const awards = useQuery({ enabled: !!comp.data, queryKey: ["competition-awards", comp.data?.id], queryFn: async () => (await supabase.from("competition_awards").select("*, player:players(id,name,photo_url)").eq("competition_id", comp.data!.id).order("created_at", { ascending: false })).data ?? [] });
+  const titleHolder = teams.data?.find((team) => team.id === comp.data?.title_holder_team_id);
 
   if (comp.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;
   if (!comp.data) return <AppShell><EmptyState title="Competition not found" /></AppShell>;
@@ -105,10 +107,10 @@ function CompetitionPage() {
       </div>
 
       <div className="mb-6 flex max-w-full gap-1 overflow-x-auto border-b border-border pb-2 text-sm">
-        {(["overview", "matches", "standings", "teams", "media"] as const).map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 py-2 font-semibold capitalize ${tab === item ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{item}</button>)}
+        {(["overview", "matches", "standings", "teams", "awards", "media"] as const).map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 py-2 font-semibold capitalize ${tab === item ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{item}</button>)}
       </div>
 
-      {tab === "overview" && <div className="grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">{[["Sport", c.sport], ["Format", c.format], ["Teams", String(teams.data?.length ?? 0)], ["Duration", [c.starts_on, c.ends_on].filter(Boolean).join(" — ") || "—"], ["Season", c.season ?? "—"], ["Available seasons", c.seasons?.join(", ") || "—"], ["Category", c.category ?? "—"], ["Country", c.country ?? "—"]].map(([label, value]) => <div key={label} className="bg-card p-4"><div className="text-[0.65rem] font-bold uppercase text-muted-foreground">{label}</div><div className="mt-1 font-semibold">{value}</div></div>)}</div>}
+      {tab === "overview" && <div className="grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">{[["Sport", c.sport], ["Format", c.format], ["Teams", String(teams.data?.length ?? 0)], ["Duration", [c.starts_on, c.ends_on].filter(Boolean).join(" — ") || "—"], ["Season", c.season ?? "—"], ["Available seasons", c.seasons?.join(", ") || "—"], ["Title holder", titleHolder?.name ?? "—"], ["Country", c.country ?? "—"]].map(([label, value]) => <div key={label} className="bg-card p-4"><div className="text-[0.65rem] font-bold uppercase text-muted-foreground">{label}</div><div className="mt-1 font-semibold">{value}</div></div>)}</div>}
 
       {tab === "matches" && <><SectionHeader title="Matches" />
       {matches.data && matches.data.length > 0 ? (
@@ -192,6 +194,7 @@ function CompetitionPage() {
           ))}
         </div>
       ) : <EmptyState title="No teams yet" />}</>}
+      {tab === "awards" && <>{awards.data && awards.data.length > 0 ? <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{awards.data.map((award) => <div key={award.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4">{award.player?.photo_url ? <img src={award.player.photo_url} alt="" className="h-12 w-12 rounded-full object-cover" /> : <div className="h-12 w-12 rounded-full bg-muted" />}<div><div className="font-bold">{award.player?.name ?? "Player"}</div><div className="text-xs text-muted-foreground">{award.award_type === "player_of_round" ? `Player of round ${award.round_number ?? "—"}` : "Player of the season"}{award.season ? ` · ${award.season}` : ""}</div></div></div>)}</div> : <EmptyState title="No competition awards yet" />}</>}
       {tab === "media" && <>{media.data && media.data.length > 0 ? <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{media.data.map((item) => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="rounded-lg border border-border bg-card p-4 hover:border-primary"><div className="text-xs font-bold uppercase text-primary">{item.source}</div><div className="mt-1 font-semibold">{item.title || "Open media"}</div><div className="mt-1 truncate text-xs text-muted-foreground">{item.url}</div></a>)}</div> : <EmptyState title="No competition media yet" />}</>}
     </AppShell>
   );
