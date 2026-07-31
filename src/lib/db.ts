@@ -89,6 +89,14 @@ export function formatDob(dob: string | null | undefined): string {
   return new Date(dob).toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" });
 }
 
+/** "Round 1" from a numeric round, falling back to any free-text round. */
+export function roundLabel(round_number: number | null | undefined, round?: string | null): string | null {
+  if (round_number != null) return `Round ${round_number}`;
+  const t = round?.trim();
+  if (!t) return null;
+  return /^\d+$/.test(t) ? `Round ${t}` : t;
+}
+
 export async function signMediaUrl(bucket: string, path: string | null | undefined): Promise<string | null> {
   if (!path) return null;
   if (path.startsWith("http")) return path;
