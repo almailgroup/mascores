@@ -73,6 +73,42 @@ export type Database = {
           },
         ]
       }
+      competition_teams: {
+        Row: {
+          competition_id: string
+          created_at: string
+          id: string
+          team_id: string
+        }
+        Insert: {
+          competition_id: string
+          created_at?: string
+          id?: string
+          team_id: string
+        }
+        Update: {
+          competition_id?: string
+          created_at?: string
+          id?: string
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competition_teams_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competition_teams_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       competitions: {
         Row: {
           category: string | null
@@ -544,6 +580,47 @@ export type Database = {
           },
         ]
       }
+      standings_position_labels: {
+        Row: {
+          color: string
+          competition_id: string
+          created_at: string
+          group_label: string | null
+          id: string
+          label: string
+          position: number
+          updated_at: string
+        }
+        Insert: {
+          color?: string
+          competition_id: string
+          created_at?: string
+          group_label?: string | null
+          id?: string
+          label: string
+          position: number
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          competition_id?: string
+          created_at?: string
+          group_label?: string | null
+          id?: string
+          label?: string
+          position?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "standings_position_labels_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       standings_rows: {
         Row: {
           competition_id: string
@@ -624,9 +701,11 @@ export type Database = {
           country: string | null
           country_code: string | null
           created_at: string
+          description: string | null
           group_label: string | null
           id: string
           logo_url: string | null
+          media_urls: string[]
           name: string
           short_name: string | null
           updated_at: string
@@ -640,9 +719,11 @@ export type Database = {
           country?: string | null
           country_code?: string | null
           created_at?: string
+          description?: string | null
           group_label?: string | null
           id?: string
           logo_url?: string | null
+          media_urls?: string[]
           name: string
           short_name?: string | null
           updated_at?: string
@@ -656,9 +737,11 @@ export type Database = {
           country?: string | null
           country_code?: string | null
           created_at?: string
+          description?: string | null
           group_label?: string | null
           id?: string
           logo_url?: string | null
+          media_urls?: string[]
           name?: string
           short_name?: string | null
           updated_at?: string
