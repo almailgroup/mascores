@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { AppShell, EmptyState, LoadingSkeleton, SectionHeader } from "@/components/app-shell";
-import { supabase, type Transfer } from "@/lib/db";
+import { AppShell, EmptyState, LoadingSkeleton } from "@/components/app-shell";
+import { supabase, currentSeason, seasonRange, type Transfer } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Repeat } from "lucide-react";
 
 export const Route = createFileRoute("/transfers")({
   head: () => ({
@@ -21,16 +22,30 @@ export const Route = createFileRoute("/transfers")({
 
 type Row = Transfer & { player?: { id: string; name: string; photo_url: string | null } | null };
 
+const KIND_TONE: Record<string, string> = {
+  Loan: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+  "Loan return": "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+  "Free agent": "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+  Retired: "bg-muted text-muted-foreground",
+  Left: "bg-destructive/15 text-destructive",
+};
+
 function TransfersPage() {
   useRealtime(["transfers"]);
+  const season = currentSeason();
+  const { from, to } = seasonRange(season);
+  const [kind, setKind] = useState<"all" | "player" | "coach">("all");
+
   const q = useQuery({
-    queryKey: ["transfers", "all"],
+    queryKey: ["transfers", season],
     queryFn: async () => {
       const { data } = await supabase
         .from("transfers")
         .select("*")
+        .gte("moved_on", from)
+        .lte("moved_on", to)
         .order("moved_on", { ascending: false, nullsFirst: false })
-        .limit(200);
+        .limit(300);
       const rows = (data ?? []) as Transfer[];
       const playerIds = rows.filter((r) => r.person_type === "player").map((r) => r.person_id);
       let people: Record<string, { id: string; name: string; photo_url: string | null }> = {};
@@ -47,34 +62,82 @@ function TransfersPage() {
     },
   });
 
+  const rows = useMemo(() => (q.data ?? []).filter((r) => kind === "all" || r.person_type === kind), [q.data, kind]);
+  const grouped = useMemo(() => {
+    const map = new Map<string, Row[]>();
+    for (const r of rows) {
+      const key = r.moved_on ?? "undated";
+      const list = map.get(key) ?? [];
+      list.push(r);
+      map.set(key, list);
+    }
+    return [...map.entries()];
+  }, [rows]);
+
   return (
     <AppShell>
-      <SectionHeader title="Transfers" />
-      {q.isLoading ? <LoadingSkeleton /> : !q.data || q.data.length === 0 ? (
-        <EmptyState title="No transfers yet" />
+      <div className="mb-5 overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/15 via-card to-card p-5">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+            <Repeat className="h-5 w-5" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-black tracking-tight">Transfers</h1>
+            <p className="text-xs text-muted-foreground">Season {season} · {rows.length} moves</p>
+          </div>
+        </div>
+        <div className="mt-4 flex w-fit gap-1 rounded-full border border-border bg-background/70 p-1 text-xs">
+          {(["all", "player", "coach"] as const).map((k) => (
+            <button key={k} onClick={() => setKind(k)}
+              className={`rounded-full px-4 py-1.5 font-semibold capitalize ${kind === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+              {k === "all" ? "All" : k === "player" ? "Players" : "Coaches"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {q.isLoading ? <LoadingSkeleton /> : grouped.length === 0 ? (
+        <EmptyState title={`No transfers in ${season} yet`} />
       ) : (
-        <div className="grid gap-2">
-          {q.data.map((r) => (
-            <div key={r.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-xs font-bold">
-                {r.player?.photo_url ? <img src={r.player.photo_url} alt="" className="h-full w-full object-cover" /> : (r.player?.name ?? "?").slice(0, 1)}
+        <div className="grid gap-6">
+          {grouped.map(([day, list]) => (
+            <section key={day}>
+              <div className="mb-2 flex items-center gap-3">
+                <span className="text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">
+                  {day === "undated" ? "Date to be confirmed" : new Date(day).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" })}
+                </span>
+                <span className="h-px flex-1 bg-border" />
               </div>
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-semibold">
-                  {r.person_type === "player" && r.player
-                    ? <Link to="/players/$id" params={{ id: r.person_id }} className="hover:text-primary">{r.player.name}</Link>
-                    : (r.player?.name ?? "Unknown")}
-                  <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-[0.6rem] uppercase tracking-widest text-muted-foreground">{r.person_type}</span>
-                </div>
-                <div className="mt-0.5 flex items-center gap-2 truncate text-xs text-muted-foreground">
-                  <span>{r.from_club ?? "—"}</span><ArrowRight className="h-3 w-3" /><span>{r.to_club ?? "—"}</span>
-                </div>
+              <div className="overflow-hidden rounded-2xl border border-border bg-card">
+                {list.map((r, i) => (
+                  <div key={r.id} className={`flex items-center gap-3 p-3 ${i > 0 ? "border-t border-border" : ""}`}>
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-muted text-xs font-bold">
+                      {r.player?.photo_url ? <img src={r.player.photo_url} alt="" className="h-full w-full object-cover" /> : (r.player?.name ?? "?").slice(0, 1)}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-bold">
+                        {r.person_type === "player" && r.player
+                          ? <Link to="/players/$id" params={{ id: r.person_id }} className="hover:text-primary">{r.player.name}</Link>
+                          : (r.player?.name ?? "Unknown")}
+                      </div>
+                      <div className="mt-1 flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
+                        <span className="truncate">{r.from_club ?? "Free agent"}</span>
+                        <ArrowRight className="h-3.5 w-3.5 shrink-0 text-primary" />
+                        <span className="truncate font-semibold text-foreground">{r.to_club ?? "—"}</span>
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      {r.transfer_type && (
+                        <span className={`rounded-full px-2.5 py-1 text-[0.6rem] font-bold uppercase tracking-wider ${KIND_TONE[r.transfer_type] ?? "bg-primary/15 text-primary"}`}>
+                          {r.transfer_type}
+                        </span>
+                      )}
+                      {r.fee && <div className="mt-1 text-xs font-semibold tabular-nums">{r.fee}</div>}
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="shrink-0 text-right text-xs">
-                <div className="font-medium">{r.fee ?? r.transfer_type ?? ""}</div>
-                <div className="text-muted-foreground">{r.moved_on ? new Date(r.moved_on).toLocaleDateString() : ""}</div>
-              </div>
-            </div>
+            </section>
           ))}
         </div>
       )}
