@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bot, Plus, Radio, Repeat2, Sparkles, Stadium, Trash2 } from "lucide-react";
+import { Bot, Landmark, Plus, Radio, Repeat2, Sparkles, Trash2 } from "lucide-react";
 import { supabase, type Venue, type Transfer } from "@/lib/db";
 import { CountrySelect } from "@/components/country-select";
 import { Field, ImageInput, inputCls, btnPrimary, btnDanger } from "./ui";
@@ -18,7 +18,7 @@ export function VenuesPanel() {
     if (form.id) await supabase.from("venues").update(form).eq("id", form.id); else await supabase.from("venues").insert(form as never);
     setForm({}); qc.invalidateQueries({ queryKey: ["admin", "venues"] });
   };
-  return <LibraryPanel icon={<Stadium className="h-5 w-5" />} title="Venue library" subtitle="Save stadiums once and reuse them in every match.">
+  return <LibraryPanel icon={<Landmark className="h-5 w-5" />} title="Venue library" subtitle="Save stadiums once and reuse them in every match.">
     <div className="grid gap-2 sm:grid-cols-2">{q.data?.map((v) => <Item key={v.id} title={v.name} subtitle={[v.city, v.country, v.capacity ? `${v.capacity.toLocaleString()} seats` : null].filter(Boolean).join(" · ")} onEdit={() => setForm(v)} onDelete={async () => { await supabase.from("venues").delete().eq("id", v.id); qc.invalidateQueries({ queryKey: ["admin", "venues"] }); }} />)}</div>
     <div className="mt-4 grid gap-3 border-t border-border pt-4 sm:grid-cols-2">
       <Field label="Venue name"><input className={inputCls} value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>

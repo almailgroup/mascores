@@ -10,7 +10,7 @@ import { TransfersEditor } from "./transfers-editor";
 import { VenueSelect } from "./venue-select";
 import { createPlayerDraftWithAlmail } from "@/lib/almail-ai.functions";
 import { readAiImages, type AiImageInput } from "@/lib/image-files";
-import { Plus, Pencil, Trash2, Users, UserCog, Sparkles, Loader2, ImagePlus } from "lucide-react";
+import { Plus, Pencil, Trash2, Users, UserCog, Sparkles, Loader2, ImagePlus, Library } from "lucide-react";
 
 type TeamForm = Partial<Team>;
 type PlayerForm = Partial<Player>;
@@ -22,20 +22,28 @@ export function TeamsPanel({ competitionId }: { competitionId: string }) {
   const [form, setForm] = useState<TeamForm>({});
   const [squadOf, setSquadOf] = useState<Team | null>(null);
   const [staffOf, setStaffOf] = useState<Team | null>(null);
+  const [libraryOpen, setLibraryOpen] = useState(false);
+  const [libraryTeamId, setLibraryTeamId] = useState("");
 
   const q = useQuery({
     queryKey: ["admin", "teams", competitionId],
     queryFn: async () => {
-      const { data } = await supabase.from("teams").select("*").eq("competition_id", competitionId).order("name");
+      const { data: links } = await supabase.from("competition_teams").select("team_id").eq("competition_id", competitionId);
+      const ids = (links ?? []).map((link) => link.team_id);
+      const { data } = ids.length ? await supabase.from("teams").select("*").in("id", ids).order("name") : await supabase.from("teams").select("*").eq("competition_id", competitionId).order("name");
       return (data ?? []) as Team[];
     },
   });
+  const libraryQ = useQuery({ queryKey: ["admin", "team-library"], queryFn: async () => (await supabase.from("teams").select("*").order("name")).data as Team[] ?? [] });
 
   const save = async () => {
     if (!form.name) return;
     const payload = { ...form, competition_id: competitionId };
     if (form.id) await supabase.from("teams").update(payload).eq("id", form.id);
-    else await supabase.from("teams").insert(payload as never);
+    else {
+      const { data } = await supabase.from("teams").insert(payload as never).select("id").single();
+      if (data) await supabase.from("competition_teams").insert({ competition_id: competitionId, team_id: data.id } as never);
+    }
     setOpen(false); setForm({});
     qc.invalidateQueries({ queryKey: ["admin", "teams", competitionId] });
   };
@@ -50,7 +58,7 @@ export function TeamsPanel({ competitionId }: { competitionId: string }) {
     <div>
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-base font-bold">Teams</h3>
-        <button className={btnPrimary} onClick={() => { setForm({}); setOpen(true); }}><Plus className="h-3.5 w-3.5" /> Add team</button>
+        <div className="flex flex-wrap gap-2"><button className={btnGhost} onClick={() => setLibraryOpen(true)}><Library className="h-3.5 w-3.5" /> Add existing</button><button className={btnPrimary} onClick={() => { setForm({}); setOpen(true); }}><Plus className="h-3.5 w-3.5" /> New team</button></div>
       </div>
       <div className="grid gap-2">
         {(q.data ?? []).map((t) => (
@@ -90,6 +98,11 @@ export function TeamsPanel({ competitionId }: { competitionId: string }) {
           <button className={btnGhost} onClick={() => setOpen(false)}>Cancel</button>
           <button className={btnPrimary} onClick={save}>Save</button>
         </div>
+      </Modal>
+
+      <Modal open={libraryOpen} onClose={() => setLibraryOpen(false)} title="Add an existing team">
+        <Field label="Saved team"><select className={inputCls} value={libraryTeamId} onChange={(e) => setLibraryTeamId(e.target.value)}><option value="">Choose a team</option>{(libraryQ.data ?? []).filter((team) => !(q.data ?? []).some((current) => current.id === team.id)).map((team) => <option key={team.id} value={team.id}>{team.name}{team.country ? ` · ${team.country}` : ""}</option>)}</select></Field>
+        <div className="mt-4 flex justify-end gap-2"><button className={btnGhost} onClick={() => setLibraryOpen(false)}>Cancel</button><button className={btnPrimary} disabled={!libraryTeamId} onClick={async () => { await supabase.from("competition_teams").insert({ competition_id: competitionId, team_id: libraryTeamId } as never); setLibraryTeamId(""); setLibraryOpen(false); qc.invalidateQueries({ queryKey: ["admin", "teams", competitionId] }); }}>Add to competition</button></div>
       </Modal>
 
       {squadOf && <SquadModal team={squadOf} onClose={() => setSquadOf(null)} />}
