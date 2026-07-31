@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, EmptyState, LoadingSkeleton } from "@/components/app-shell";
-import { supabase, formatKickoff, STATUS_LABELS, type Match, type Team, type MatchEvent, type Lineup, type Player } from "@/lib/db";
+import { supabase, formatKickoff, STATUS_LABELS, roundLabel, type Match, type Team, type MatchEvent, type Lineup, type Player } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 
 export const Route = createFileRoute("/matches/$id")({
