@@ -1,10 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, SectionHeader, EmptyState, LoadingSkeleton } from "@/components/app-shell";
 import { supabase, formatKickoff, type Competition, type Match, type Team, type NewsPost } from "@/lib/db";
 import { useI18n } from "@/lib/i18n";
 import { useRealtime } from "@/lib/realtime";
-import { Trophy, Zap, Languages, Sliders } from "lucide-react";
+import { useFavorites } from "@/hooks/use-favorites";
+import { Trophy, ChevronLeft, ChevronRight } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -90,19 +92,11 @@ function Home() {
 
   return (
     <AppShell>
-      <div className="relative mb-10 overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/20 via-card to-card p-6 sm:p-10">
-        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/25 blur-3xl" />
-        <h1 className="text-3xl font-black tracking-tight sm:text-5xl">{t("home.hero.title")}</h1>
-        <p className="mt-3 max-w-2xl text-sm text-muted-foreground sm:text-base">{t("home.hero.desc")}</p>
-        <div className="mt-6 flex flex-wrap gap-2">
-          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1.5 text-xs font-medium"><Zap className="h-3.5 w-3.5 text-primary" /> {t("home.hero.feat1")}</span>
-          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1.5 text-xs font-medium"><Languages className="h-3.5 w-3.5 text-primary" /> {t("home.hero.feat2")}</span>
-          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1.5 text-xs font-medium"><Sliders className="h-3.5 w-3.5 text-primary" /> {t("home.hero.feat3")}</span>
-        </div>
-      </div>
+      <ScoreBoard liveCount={live.data?.length ?? 0} />
 
       {(live.data?.length ?? 0) > 0 && <MatchSection title={t("home.live")} data={live.data} loading={live.isLoading} />}
       <MatchSection title={t("home.upcoming")} data={upcoming.data} loading={upcoming.isLoading} />
+      <FavoriteMatches />
       {(recent.data?.length ?? 0) > 0 && <MatchSection title={t("home.recent")} data={recent.data} loading={recent.isLoading} />}
 
       <section className="mt-10">
@@ -131,7 +125,7 @@ function Home() {
           <SectionHeader title={t("home.news")} />
           <div className="grid gap-3 sm:grid-cols-3">
             {news.data.map((n) => (
-              <Link key={n.id} to="/news" className="group overflow-hidden rounded-2xl border border-border bg-card transition hover:border-primary/50 hover:shadow-lg">
+              <Link key={n.id} to="/news/$slug" params={{ slug: n.slug }} className="group overflow-hidden rounded-2xl border border-border bg-card transition hover:border-primary/50 hover:shadow-lg">
                 {n.cover_url && <img src={n.cover_url} alt="" className="h-32 w-full object-cover" />}
                 <div className="p-4">
                   <div className="font-semibold">{n.title}</div>
@@ -144,6 +138,155 @@ function Home() {
       )}
     </AppShell>
   );
+}
+
+/** Sofascore-style control bar: scope tabs, date stepper and status chips. */
+function ScoreBoard({ liveCount }: { liveCount: number }) {
+  const { t } = useI18n();
+  const { favorites } = useFavorites();
+  const [scope, setScope] = useState<"all" | "favourites" | "competitions">("all");
+  const [offset, setOffset] = useState(0);
+  const [status, setStatus] = useState<"live" | "finished" | "upcoming" | null>(null);
+
+  const day = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() + offset);
+    return d;
+  }, [offset]);
+
+  const dayQ = useQuery({
+    queryKey: ["board", day.toISOString()],
+    queryFn: async () => {
+      const start = new Date(day);
+      const end = new Date(day);
+      end.setDate(end.getDate() + 1);
+      const { data } = await supabase
+        .from("matches")
+        .select("*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url)")
+        .gte("kickoff_at", start.toISOString())
+        .lt("kickoff_at", end.toISOString())
+        .order("kickoff_at");
+      return (data ?? []) as unknown as MatchWithTeams[];
+    },
+    refetchInterval: 60_000,
+  });
+
+  const rows = (dayQ.data ?? []).filter((m) => {
+    if (scope === "favourites") {
+      const favTeam = favorites.team.includes(m.home_team_id ?? "") || favorites.team.includes(m.away_team_id ?? "");
+      if (!favTeam && !favorites.match.includes(m.id) && !favorites.competition.includes(m.competition_id)) return false;
+    }
+    if (status === "live") return ["live", "ht"].includes(m.status);
+    if (status === "finished") return ["ft", "aet", "pen", "awarded"].includes(m.status);
+    if (status === "upcoming") return m.status === "scheduled";
+    return true;
+  });
+
+  const groups = new Map<string, MatchWithTeams[]>();
+  for (const m of rows) {
+    const key = m.competition?.name ?? "Other";
+    groups.set(key, [...(groups.get(key) ?? []), m]);
+  }
+
+  const dayLabel = offset === 0 ? t("board.today")
+    : offset === 1 ? t("board.tomorrow")
+    : offset === -1 ? t("board.yesterday")
+    : day.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
+
+  const chip = (key: "live" | "finished" | "upcoming", label: string) => (
+    <button
+      key={key}
+      onClick={() => setStatus(status === key ? null : key)}
+      className={`rounded-full px-4 py-1.5 text-xs font-semibold transition ${
+        status === key
+          ? key === "live" ? "bg-destructive/15 text-destructive" : "bg-primary text-primary-foreground"
+          : key === "live" && liveCount > 0 ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground hover:text-foreground"
+      }`}
+    >
+      {label}{key === "live" && liveCount > 0 ? ` (${liveCount})` : ""}
+    </button>
+  );
+
+  return (
+    <section className="mb-8 overflow-hidden rounded-3xl border border-border bg-card">
+      <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-2">
+        <div className="flex items-center gap-1 overflow-x-auto">
+          {(["all", "favourites", "competitions"] as const).map((s) => (
+            <button
+              key={s}
+              onClick={() => setScope(s)}
+              className={`relative whitespace-nowrap px-3 py-2 text-sm font-bold transition ${scope === s ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              {t(`board.${s}`)}
+              {scope === s && <span className="absolute inset-x-2 -bottom-[9px] h-0.5 rounded-full bg-primary" />}
+            </button>
+          ))}
+        </div>
+        <div className="flex shrink-0 items-center overflow-hidden rounded-full border border-border">
+          <button onClick={() => setOffset(offset - 1)} className="px-2 py-1.5 text-primary hover:bg-accent" aria-label="Previous day"><ChevronLeft className="h-4 w-4" /></button>
+          <button onClick={() => setOffset(0)} className="min-w-24 px-2 py-1.5 text-xs font-semibold text-primary">{dayLabel}</button>
+          <button onClick={() => setOffset(offset + 1)} className="px-2 py-1.5 text-primary hover:bg-accent" aria-label="Next day"><ChevronRight className="h-4 w-4" /></button>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2 px-4 py-3">
+        {chip("live", t("board.live"))}
+        {chip("finished", t("board.finished"))}
+        {chip("upcoming", t("board.upcoming"))}
+      </div>
+
+      <div className="border-t border-border p-4">
+        {dayQ.isLoading ? (
+          <LoadingSkeleton count={3} className="h-16" />
+        ) : rows.length === 0 ? (
+          <div className="py-6 text-center text-sm text-muted-foreground">{t("board.none")}</div>
+        ) : scope === "competitions" ? (
+          <div className="space-y-5">
+            {[...groups.entries()].map(([name, ms]) => (
+              <div key={name}>
+                <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                  {ms[0].competition?.logo_url && <img src={ms[0].competition.logo_url} alt="" className="h-4 w-4 object-contain" />}
+                  {name}
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{ms.map((m) => <MatchTile key={m.id} m={m} />)}</div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{rows.map((m) => <MatchTile key={m.id} m={m} />)}</div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function FavoriteMatches() {
+  const { t } = useI18n();
+  const { favorites, ready } = useFavorites();
+  const ids = favorites.match;
+  const teamIds = favorites.team;
+  const q = useQuery({
+    enabled: ready && (ids.length > 0 || teamIds.length > 0),
+    queryKey: ["fav-matches", ids.join(","), teamIds.join(",")],
+    queryFn: async () => {
+      const sel = "*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url)";
+      const out: MatchWithTeams[] = [];
+      if (ids.length) {
+        const { data } = await supabase.from("matches").select(sel).in("id", ids).order("kickoff_at");
+        out.push(...((data ?? []) as unknown as MatchWithTeams[]));
+      }
+      if (teamIds.length) {
+        const { data } = await supabase.from("matches").select(sel)
+          .or(`home_team_id.in.(${teamIds.join(",")}),away_team_id.in.(${teamIds.join(",")})`)
+          .order("kickoff_at").limit(12);
+        out.push(...((data ?? []) as unknown as MatchWithTeams[]));
+      }
+      return [...new Map(out.map((m) => [m.id, m])).values()];
+    },
+  });
+  if (!q.data || q.data.length === 0) return null;
+  return <MatchSection title={t("home.favMatches")} data={q.data} loading={false} />;
 }
 
 function CompLogo({ logo }: { logo: string | null }) {

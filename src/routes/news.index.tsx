@@ -1,10 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, EmptyState, LoadingSkeleton, SectionHeader } from "@/components/app-shell";
 import { supabase, type NewsPost } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 
-export const Route = createFileRoute("/news")({
+export const Route = createFileRoute("/news/")({
   head: () => ({ meta: [{ title: "News — MansourAlmailScores" }, { name: "description", content: "Latest football news from MansourAlmailScores." }] }),
   component: NewsPage,
 });
@@ -23,14 +23,14 @@ function NewsPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {q.data.map((n) => (
-            <article key={n.id} className="overflow-hidden rounded-2xl border border-border bg-card">
+            <Link key={n.id} to="/news/$slug" params={{ slug: n.slug }} className="block overflow-hidden rounded-2xl border border-border bg-card transition hover:border-primary/50 hover:shadow-lg">
               {n.cover_url && <img src={n.cover_url} alt="" className="h-40 w-full object-cover" />}
               <div className="p-4">
                 <h2 className="font-semibold">{n.title}</h2>
                 {n.excerpt && <p className="mt-1 text-sm text-muted-foreground">{n.excerpt}</p>}
                 <div className="mt-2 text-xs text-muted-foreground">{n.published_at ? new Date(n.published_at).toLocaleDateString() : ""}{n.author_display ? ` · ${n.author_display}` : ""}</div>
               </div>
-            </article>
+            </Link>
           ))}
         </div>
       )}

@@ -9,20 +9,26 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TransfersRouteImport } from './routes/transfers'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as NewsRouteImport } from './routes/news'
-import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as NewsIndexRouteImport } from './routes/news.index'
 import { Route as CompetitionsIndexRouteImport } from './routes/competitions.index'
 import { Route as TeamsIdRouteImport } from './routes/teams.$id'
 import { Route as PlayersIdRouteImport } from './routes/players.$id'
+import { Route as NewsSlugRouteImport } from './routes/news.$slug'
 import { Route as MatchesIdRouteImport } from './routes/matches.$id'
 import { Route as CompetitionsSlugRouteImport } from './routes/competitions.$slug'
 
+const TransfersRoute = TransfersRouteImport.update({
+  id: '/transfers',
+  path: '/transfers',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -36,16 +42,6 @@ const SearchRoute = SearchRouteImport.update({
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NewsRoute = NewsRouteImport.update({
-  id: '/news',
-  path: '/news',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FavoritesRoute = FavoritesRouteImport.update({
-  id: '/favorites',
-  path: '/favorites',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -63,6 +59,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NewsIndexRoute = NewsIndexRouteImport.update({
+  id: '/news/',
+  path: '/news/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CompetitionsIndexRoute = CompetitionsIndexRouteImport.update({
   id: '/competitions/',
   path: '/competitions/',
@@ -76,6 +77,11 @@ const TeamsIdRoute = TeamsIdRouteImport.update({
 const PlayersIdRoute = PlayersIdRouteImport.update({
   id: '/players/$id',
   path: '/players/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewsSlugRoute = NewsSlugRouteImport.update({
+  id: '/news/$slug',
+  path: '/news/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MatchesIdRoute = MatchesIdRouteImport.update({
@@ -93,47 +99,50 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
-  '/favorites': typeof FavoritesRoute
-  '/news': typeof NewsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
+  '/transfers': typeof TransfersRoute
   '/competitions/$slug': typeof CompetitionsSlugRoute
   '/matches/$id': typeof MatchesIdRoute
+  '/news/$slug': typeof NewsSlugRoute
   '/players/$id': typeof PlayersIdRoute
   '/teams/$id': typeof TeamsIdRoute
   '/competitions/': typeof CompetitionsIndexRoute
+  '/news/': typeof NewsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
-  '/favorites': typeof FavoritesRoute
-  '/news': typeof NewsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
+  '/transfers': typeof TransfersRoute
   '/competitions/$slug': typeof CompetitionsSlugRoute
   '/matches/$id': typeof MatchesIdRoute
+  '/news/$slug': typeof NewsSlugRoute
   '/players/$id': typeof PlayersIdRoute
   '/teams/$id': typeof TeamsIdRoute
   '/competitions': typeof CompetitionsIndexRoute
+  '/news': typeof NewsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
-  '/favorites': typeof FavoritesRoute
-  '/news': typeof NewsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
+  '/transfers': typeof TransfersRoute
   '/competitions/$slug': typeof CompetitionsSlugRoute
   '/matches/$id': typeof MatchesIdRoute
+  '/news/$slug': typeof NewsSlugRoute
   '/players/$id': typeof PlayersIdRoute
   '/teams/$id': typeof TeamsIdRoute
   '/competitions/': typeof CompetitionsIndexRoute
+  '/news/': typeof NewsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -141,66 +150,77 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
-    | '/favorites'
-    | '/news'
     | '/reset-password'
     | '/search'
     | '/settings'
+    | '/transfers'
     | '/competitions/$slug'
     | '/matches/$id'
+    | '/news/$slug'
     | '/players/$id'
     | '/teams/$id'
     | '/competitions/'
+    | '/news/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admin'
     | '/auth'
-    | '/favorites'
-    | '/news'
     | '/reset-password'
     | '/search'
     | '/settings'
+    | '/transfers'
     | '/competitions/$slug'
     | '/matches/$id'
+    | '/news/$slug'
     | '/players/$id'
     | '/teams/$id'
     | '/competitions'
+    | '/news'
   id:
     | '__root__'
     | '/'
     | '/admin'
     | '/auth'
-    | '/favorites'
-    | '/news'
     | '/reset-password'
     | '/search'
     | '/settings'
+    | '/transfers'
     | '/competitions/$slug'
     | '/matches/$id'
+    | '/news/$slug'
     | '/players/$id'
     | '/teams/$id'
     | '/competitions/'
+    | '/news/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
-  FavoritesRoute: typeof FavoritesRoute
-  NewsRoute: typeof NewsRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SearchRoute: typeof SearchRoute
   SettingsRoute: typeof SettingsRoute
+  TransfersRoute: typeof TransfersRoute
   CompetitionsSlugRoute: typeof CompetitionsSlugRoute
   MatchesIdRoute: typeof MatchesIdRoute
+  NewsSlugRoute: typeof NewsSlugRoute
   PlayersIdRoute: typeof PlayersIdRoute
   TeamsIdRoute: typeof TeamsIdRoute
   CompetitionsIndexRoute: typeof CompetitionsIndexRoute
+  NewsIndexRoute: typeof NewsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/transfers': {
+      id: '/transfers'
+      path: '/transfers'
+      fullPath: '/transfers'
+      preLoaderRoute: typeof TransfersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
@@ -220,20 +240,6 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/news': {
-      id: '/news'
-      path: '/news'
-      fullPath: '/news'
-      preLoaderRoute: typeof NewsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/favorites': {
-      id: '/favorites'
-      path: '/favorites'
-      fullPath: '/favorites'
-      preLoaderRoute: typeof FavoritesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -257,6 +263,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/news/': {
+      id: '/news/'
+      path: '/news'
+      fullPath: '/news/'
+      preLoaderRoute: typeof NewsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/competitions/': {
       id: '/competitions/'
       path: '/competitions'
@@ -276,6 +289,13 @@ declare module '@tanstack/react-router' {
       path: '/players/$id'
       fullPath: '/players/$id'
       preLoaderRoute: typeof PlayersIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/news/$slug': {
+      id: '/news/$slug'
+      path: '/news/$slug'
+      fullPath: '/news/$slug'
+      preLoaderRoute: typeof NewsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/matches/$id': {
@@ -299,16 +319,17 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
-  FavoritesRoute: FavoritesRoute,
-  NewsRoute: NewsRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SearchRoute: SearchRoute,
   SettingsRoute: SettingsRoute,
+  TransfersRoute: TransfersRoute,
   CompetitionsSlugRoute: CompetitionsSlugRoute,
   MatchesIdRoute: MatchesIdRoute,
+  NewsSlugRoute: NewsSlugRoute,
   PlayersIdRoute: PlayersIdRoute,
   TeamsIdRoute: TeamsIdRoute,
   CompetitionsIndexRoute: CompetitionsIndexRoute,
+  NewsIndexRoute: NewsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

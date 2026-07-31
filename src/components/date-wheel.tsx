@@ -31,13 +31,13 @@ function Column({ values, labels, value, onChange }: { values: number[]; labels:
       <div
         ref={ref}
         onScroll={onScroll}
-        className="h-40 overflow-y-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        style={{ scrollSnapType: "y mandatory", paddingTop: ITEM_H * 2, paddingBottom: ITEM_H * 2 }}
+        className="h-40 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        style={{ paddingTop: ITEM_H * 2, paddingBottom: ITEM_H * 2 }}
       >
         {values.map((v, i) => (
           <div
             key={v}
-            style={{ height: ITEM_H, scrollSnapAlign: "start" }}
+            style={{ height: ITEM_H }}
             onClick={() => onChange(v)}
             className={`flex cursor-pointer items-center justify-center text-sm tabular-nums transition-colors ${v === value ? "font-bold text-foreground" : "text-muted-foreground/60"}`}
           >
