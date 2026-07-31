@@ -189,11 +189,11 @@ function TeamPage() {
   );
 }
 
-function InfoCard({ label, value }: { label: string; value: string }) {
+function InfoCard({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) {
   return (
     <div className="rounded-2xl border border-border bg-card p-4">
       <div className="text-[0.6rem] font-semibold uppercase tracking-widest text-muted-foreground">{label}</div>
-      <div className="mt-1 truncate text-sm font-semibold">{value}</div>
+      <div className="mt-1 flex items-center gap-2 truncate text-sm font-semibold">{icon}{value}</div>
     </div>
   );
 }
