@@ -7,6 +7,11 @@ import {
 import { Field, Modal, inputCls, btnPrimary, btnGhost, btnDanger } from "./ui";
 import { VenueSelect } from "./venue-select";
 import { Play, Pause, Plus, Trash2, RotateCcw, Check } from "lucide-react";
+import { MediaManager } from "./media-manager";
+import type { Database } from "@/integrations/supabase/types";
+
+type MatchStat = Database["public"]["Tables"]["match_stats"]["Row"];
+type Channel = Database["public"]["Tables"]["broadcast_channels"]["Row"];
 
 export const EVENT_TYPES = [
   { v: "goal", l: "Goal" },
@@ -39,7 +44,7 @@ function useLiveClock(match: Match) {
 
 export function MatchEditor({ match: initial, teams, onClose }: { match: Match; teams: Team[]; onClose: () => void }) {
   const qc = useQueryClient();
-  const [tab, setTab] = useState<"main" | "lineups" | "live">("main");
+  const [tab, setTab] = useState<"main" | "lineups" | "live" | "extras">("main");
 
   const matchQ = useQuery({
     queryKey: ["admin", "match", initial.id],
@@ -61,7 +66,7 @@ export function MatchEditor({ match: initial, teams, onClose }: { match: Match; 
   return (
     <Modal open onClose={onClose} title={`${teamName(match.home_team_id)} vs ${teamName(match.away_team_id)}`} wide>
       <div className="mb-5 flex w-fit gap-1 rounded-full border border-border bg-background p-1 text-xs">
-        {([["main", "Match details"], ["lineups", "Lineups"], ["live", "Live centre"]] as const).map(([k, l]) => (
+        {([["main", "Match details"], ["lineups", "Lineups"], ["live", "Live centre"], ["extras", "Stats, TV & media"]] as const).map(([k, l]) => (
           <button key={k} onClick={() => setTab(k)}
             className={`rounded-full px-4 py-1.5 font-semibold ${tab === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>{l}</button>
         ))}
@@ -69,8 +74,29 @@ export function MatchEditor({ match: initial, teams, onClose }: { match: Match; 
       {tab === "main" && <MainTab match={match} teams={teams} onSaved={refresh} />}
       {tab === "lineups" && <LineupsTab match={match} teams={teams} onSaved={refresh} />}
       {tab === "live" && <LiveTab match={match} teams={teams} onSaved={refresh} />}
+      {tab === "extras" && <ExtrasTab match={match} teams={teams} />}
     </Modal>
   );
+}
+
+function ExtrasTab({ match, teams }: { match: Match; teams: Team[] }) {
+  const qc = useQueryClient();
+  const [stat, setStat] = useState({ label: "", home_value: "", away_value: "" });
+  const [prediction, setPrediction] = useState({ home_percent: 33, draw_percent: 34, away_percent: 33 });
+  const statsQ = useQuery({ queryKey: ["admin", "match-stats", match.id], queryFn: async () => (await supabase.from("match_stats").select("*").eq("match_id", match.id).order("sort_order")).data as MatchStat[] ?? [] });
+  const channelsQ = useQuery({ queryKey: ["admin", "channels"], queryFn: async () => (await supabase.from("broadcast_channels").select("*").order("name")).data as Channel[] ?? [] });
+  const selectedQ = useQuery({ queryKey: ["admin", "match-channels", match.id], queryFn: async () => (await supabase.from("match_broadcasts").select("channel_id").eq("match_id", match.id)).data ?? [] });
+  const predictionQ = useQuery({ queryKey: ["admin", "match-prediction", match.id], queryFn: async () => (await supabase.from("match_predictions").select("*").eq("match_id", match.id).maybeSingle()).data });
+  useEffect(() => { if (predictionQ.data) setPrediction(predictionQ.data); }, [predictionQ.data]);
+  const selected = new Set((selectedQ.data ?? []).map((item) => item.channel_id));
+  const home = teams.find((team) => team.id === match.home_team_id)?.name ?? "Home";
+  const away = teams.find((team) => team.id === match.away_team_id)?.name ?? "Away";
+  return <div className="space-y-8">
+    <section><h4 className="mb-3 font-bold">Match statistics</h4><div className="grid gap-2">{statsQ.data?.map((item) => <div key={item.id} className="grid grid-cols-[1fr_2fr_1fr_auto] items-center gap-2 rounded-lg border border-border p-2 text-sm"><span className="text-center font-bold">{item.home_value}</span><span className="text-center text-muted-foreground">{item.label}</span><span className="text-center font-bold">{item.away_value}</span><button className="text-destructive" onClick={async () => { await supabase.from("match_stats").delete().eq("id", item.id); qc.invalidateQueries({ queryKey: ["admin", "match-stats", match.id] }); }}><Trash2 className="h-4 w-4" /></button></div>)}</div><div className="mt-2 grid gap-2 sm:grid-cols-4"><input className={inputCls} placeholder="Statistic, e.g. Possession" value={stat.label} onChange={(e) => setStat({ ...stat, label: e.target.value })} /><input className={inputCls} placeholder={home} value={stat.home_value} onChange={(e) => setStat({ ...stat, home_value: e.target.value })} /><input className={inputCls} placeholder={away} value={stat.away_value} onChange={(e) => setStat({ ...stat, away_value: e.target.value })} /><button className={btnPrimary} onClick={async () => { if (!stat.label) return; await supabase.from("match_stats").insert({ ...stat, match_id: match.id, sort_order: statsQ.data?.length ?? 0 } as never); setStat({ label: "", home_value: "", away_value: "" }); qc.invalidateQueries({ queryKey: ["admin", "match-stats", match.id] }); }}><Plus className="h-4 w-4" /> Add stat</button></div></section>
+    <section><h4 className="mb-3 font-bold">Win prediction</h4><div className="grid gap-3 sm:grid-cols-3"><Field label={home}><input type="number" className={inputCls} value={prediction.home_percent} onChange={(e) => setPrediction({ ...prediction, home_percent: Number(e.target.value) })} /></Field><Field label="Draw"><input type="number" className={inputCls} value={prediction.draw_percent} onChange={(e) => setPrediction({ ...prediction, draw_percent: Number(e.target.value) })} /></Field><Field label={away}><input type="number" className={inputCls} value={prediction.away_percent} onChange={(e) => setPrediction({ ...prediction, away_percent: Number(e.target.value) })} /></Field></div><button className={`${btnPrimary} mt-2`} onClick={async () => { if (prediction.home_percent + prediction.draw_percent + prediction.away_percent !== 100) return alert("Prediction must total 100%."); await supabase.from("match_predictions").upsert({ match_id: match.id, ...prediction } as never); qc.invalidateQueries({ queryKey: ["admin", "match-prediction", match.id] }); }}>Save prediction</button></section>
+    <section><h4 className="mb-3 font-bold">Where to watch</h4><div className="flex flex-wrap gap-2">{channelsQ.data?.map((channel) => <button key={channel.id} onClick={async () => { if (selected.has(channel.id)) await supabase.from("match_broadcasts").delete().eq("match_id", match.id).eq("channel_id", channel.id); else await supabase.from("match_broadcasts").insert({ match_id: match.id, channel_id: channel.id } as never); qc.invalidateQueries({ queryKey: ["admin", "match-channels", match.id] }); }} className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold ${selected.has(channel.id) ? "border-primary bg-primary/10 text-primary" : "border-border"}`}>{channel.logo_url && <img src={channel.logo_url} alt="" className="h-5 w-5 object-contain" />}{channel.name}</button>)}</div>{channelsQ.data?.length === 0 && <p className="text-xs text-muted-foreground">Create channels from the main Admin → Channels section first.</p>}</section>
+    <section><h4 className="mb-3 font-bold">Videos and media</h4><MediaManager ownerType="match" ownerId={match.id} /></section>
+  </div>;
 }
 
 /* ---------------- Main ---------------- */
