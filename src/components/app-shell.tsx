@@ -1,17 +1,19 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Home, Search, Trophy, Newspaper, Star, Settings, LogIn } from "lucide-react";
+import { Home, Search, Trophy, Newspaper, ArrowLeftRight, Settings, LogIn } from "lucide-react";
 import { useEffect, type ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import logoMark from "@/assets/logo-mark-v2.png.asset.json";
 
-type NavItem = { to: "/" | "/search" | "/competitions" | "/news" | "/favorites" | "/settings"; labelKey: string; icon: typeof Home; exact?: boolean };
+type NavItem = { to: "/" | "/search" | "/competitions" | "/news" | "/transfers" | "/settings"; labelKey: string; icon: typeof Home; exact?: boolean };
 const NAV: NavItem[] = [
   { to: "/", labelKey: "nav.home", icon: Home, exact: true },
   { to: "/search", labelKey: "nav.search", icon: Search },
   { to: "/competitions", labelKey: "nav.competitions", icon: Trophy },
   { to: "/news", labelKey: "nav.news", icon: Newspaper },
-  { to: "/favorites", labelKey: "nav.favorites", icon: Star },
+  { to: "/transfers", labelKey: "nav.transfers", icon: ArrowLeftRight },
   { to: "/settings", labelKey: "nav.settings", icon: Settings },
 ];
 
@@ -20,6 +22,16 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { t } = useI18n();
   const location = useLocation();
   useEffect(() => { void user; }, [user]);
+
+  const profile = useQuery({
+    enabled: !!user,
+    queryKey: ["shell-profile", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("display_name, avatar_url").eq("id", user!.id).maybeSingle();
+      return data;
+    },
+  });
+  const initials = (profile.data?.display_name ?? user?.email ?? "?").trim().slice(0, 1).toUpperCase();
 
   return (
     <div className="relative min-h-screen bg-background text-foreground">
@@ -56,9 +68,11 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <Link
                   to="/settings"
                   aria-label={t("nav.settings")}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-sm transition hover:ring-2 hover:ring-primary/50"
+                  className="inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-border bg-card text-sm font-bold text-foreground shadow-sm transition hover:ring-2 hover:ring-primary/50"
                 >
-                  <Settings className="h-4 w-4" />
+                  {profile.data?.avatar_url
+                    ? <img src={profile.data.avatar_url} alt="" className="h-full w-full object-cover" />
+                    : <span>{initials}</span>}
                 </Link>
               ) : (
                 <Link
