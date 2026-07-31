@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { AppShell, EmptyState, LoadingSkeleton } from "@/components/app-shell";
 import { supabase, formatKickoff, formatHeight, type Player, type Team, type Match, type Transfer } from "@/lib/db";
 import { FavoriteButton } from "@/hooks/use-favorites";
-import { countryFlag } from "@/lib/countries";
+import { FlagIcon } from "@/components/flag";
 import { useI18n } from "@/lib/i18n";
 import { ArrowRight } from "lucide-react";
 
@@ -58,7 +58,7 @@ function PlayerPage() {
   if (q.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;
   if (!q.data) return <AppShell><EmptyState title="Player not found" /></AppShell>;
   const p = q.data;
-  const flag = countryFlag(p.nationality_code ?? p.nationality);
+  const nat = p.nationality_code ?? p.nationality;
 
   return (
     <AppShell>
@@ -92,7 +92,7 @@ function PlayerPage() {
       {tab === "details" && (
         <>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            <Stat label="Nationality" value={`${flag ?? ""} ${p.nationality ?? "—"}`} />
+            <Stat label="Nationality" value={p.nationality ?? "—"} icon={<FlagIcon value={nat} size="md" />} />
             <Stat label="Age" value={age(p.dob) != null ? String(age(p.dob)) : "—"} />
             <Stat label="Height" value={formatHeight(p.height_cm, "cm")} />
             <Stat label="Position" value={p.position ?? "—"} />
@@ -142,11 +142,11 @@ function PlayerPage() {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) {
   return (
     <div className="rounded-2xl border border-border bg-card p-4">
       <div className="text-[0.6rem] font-semibold uppercase tracking-widest text-muted-foreground">{label}</div>
-      <div className="mt-1 truncate text-sm font-bold">{value}</div>
+      <div className="mt-1 flex items-center gap-2 truncate text-sm font-bold">{icon}{value}</div>
     </div>
   );
 }

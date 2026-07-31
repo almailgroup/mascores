@@ -3,52 +3,134 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, EmptyState } from "@/components/app-shell";
 import { supabase } from "@/lib/db";
-import { Search as SearchIcon } from "lucide-react";
+import { FlagIcon } from "@/components/flag";
+import { Search as SearchIcon, Trophy, Shield, User, Building2 } from "lucide-react";
 
 export const Route = createFileRoute("/search")({
   head: () => ({ meta: [{ title: "Search — MansourAlmailScores" }, { name: "robots", content: "noindex" }] }),
   component: SearchPage,
 });
 
+type Filter = "all" | "clubs" | "competitions" | "players" | "coaches" | "venues";
+const FILTERS: { key: Filter; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "clubs", label: "Clubs" },
+  { key: "competitions", label: "Competitions" },
+  { key: "players", label: "Players" },
+  { key: "coaches", label: "Coaches" },
+  { key: "venues", label: "Stadiums" },
+];
+
 function SearchPage() {
   const [q, setQ] = useState("");
+  const [filter, setFilter] = useState<Filter>("all");
   const res = useQuery({
     enabled: q.length > 1,
     queryKey: ["search", q],
     queryFn: async () => {
       const term = `%${q}%`;
-      const [teams, players, comps] = await Promise.all([
-        supabase.from("teams").select("id,name,country,logo_url").ilike("name", term).limit(10),
-        supabase.from("players").select("id,name,position").ilike("name", term).limit(10),
-        supabase.from("competitions").select("id,slug,name,country").ilike("name", term).limit(10),
+      const [teams, players, comps, coaches, venues] = await Promise.all([
+        supabase.from("teams").select("id,name,short_name,country,country_code,logo_url").ilike("name", term).limit(20),
+        supabase.from("players").select("id,name,position,photo_url,nationality,nationality_code,team:team_id(id,name,logo_url)").ilike("name", term).limit(20),
+        supabase.from("competitions").select("id,slug,name,country,country_code,logo_url,season").ilike("name", term).limit(20),
+        supabase.from("coaches").select("id,name,nationality,nationality_code,photo_url,team:team_id(id,name,logo_url)").ilike("name", term).limit(20),
+        supabase.from("venues").select("id,name,city,country").ilike("name", term).limit(20),
       ]);
-      return { teams: teams.data ?? [], players: players.data ?? [], comps: comps.data ?? [] };
+      return {
+        teams: teams.data ?? [],
+        players: (players.data ?? []) as unknown as { id: string; name: string; position: string | null; photo_url: string | null; nationality: string | null; nationality_code: string | null; team: { id: string; name: string; logo_url: string | null } | null }[],
+        comps: comps.data ?? [],
+        coaches: (coaches.data ?? []) as unknown as { id: string; name: string; nationality: string | null; nationality_code: string | null; photo_url: string | null; team: { id: string; name: string; logo_url: string | null } | null }[],
+        venues: venues.data ?? [],
+      };
     },
   });
+
+  const show = (k: Filter) => filter === "all" || filter === k;
+  const total = res.data
+    ? res.data.teams.length + res.data.players.length + res.data.comps.length + res.data.coaches.length + res.data.venues.length
+    : 0;
+
   return (
     <AppShell>
       <div className="mb-4 flex items-center gap-2 rounded-2xl border border-border bg-card px-4 py-3">
         <SearchIcon className="h-4 w-4 text-muted-foreground" />
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Teams, players, competitions…"
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Clubs, players, competitions, coaches, stadiums…"
           className="flex-1 bg-transparent text-sm outline-none" />
       </div>
-      {q.length < 2 ? <EmptyState title="Type to search" /> : !res.data ? null : (
+
+      <div className="mb-5 flex gap-1 overflow-x-auto rounded-full border border-border bg-card p-1 text-xs">
+        {FILTERS.map((f) => (
+          <button key={f.key} onClick={() => setFilter(f.key)}
+            className={`whitespace-nowrap rounded-full px-4 py-1.5 font-semibold ${filter === f.key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {q.length < 2 ? <EmptyState title="Type to search" /> : !res.data ? null : total === 0 ? <EmptyState title="No results" /> : (
         <div className="space-y-6">
-          <Group title="Competitions">{res.data.comps.map((c) => (
-            <Link key={c.id} to="/competitions/$slug" params={{ slug: c.slug }} className="block rounded-xl border border-border bg-card p-3 hover:border-primary/50">
-              <div className="font-medium">{c.name}</div><div className="text-xs text-muted-foreground">{c.country}</div>
-            </Link>))}</Group>
-          <Group title="Teams">{res.data.teams.map((tm) => (
-            <Link key={tm.id} to="/teams/$id" params={{ id: tm.id }} className="block rounded-xl border border-border bg-card p-3 hover:border-primary/50">
-              <div className="font-medium">{tm.name}</div><div className="text-xs text-muted-foreground">{tm.country}</div>
-            </Link>))}</Group>
-          <Group title="Players">{res.data.players.map((p) => (
-            <Link key={p.id} to="/players/$id" params={{ id: p.id }} className="block rounded-xl border border-border bg-card p-3 hover:border-primary/50">
-              <div className="font-medium">{p.name}</div><div className="text-xs text-muted-foreground">{p.position}</div>
-            </Link>))}</Group>
+          {show("competitions") && (
+            <Group title="Competitions">{res.data.comps.map((c) => (
+              <ResultRow key={c.id} to="/competitions/$slug" params={{ slug: c.slug }}
+                logo={c.logo_url} fallback={<Trophy className="h-4 w-4 text-muted-foreground" />}
+                title={c.name} country={c.country_code ?? c.country} sub={[c.country, c.season].filter(Boolean).join(" · ")} />
+            ))}</Group>
+          )}
+          {show("clubs") && (
+            <Group title="Clubs">{res.data.teams.map((tm) => (
+              <ResultRow key={tm.id} to="/teams/$id" params={{ id: tm.id }}
+                logo={tm.logo_url} fallback={<Shield className="h-4 w-4 text-muted-foreground" />}
+                title={tm.name} country={tm.country_code ?? tm.country} sub={tm.country ?? tm.short_name ?? ""} />
+            ))}</Group>
+          )}
+          {show("players") && (
+            <Group title="Players">{res.data.players.map((p) => (
+              <ResultRow key={p.id} to="/players/$id" params={{ id: p.id }} round
+                logo={p.photo_url} fallback={<User className="h-4 w-4 text-muted-foreground" />}
+                title={p.name} country={p.nationality_code ?? p.nationality}
+                sub={[p.team?.name, p.position].filter(Boolean).join(" · ")} />
+            ))}</Group>
+          )}
+          {show("coaches") && (
+            <Group title="Coaches">{res.data.coaches.map((c) => (
+              <ResultRow key={c.id} to={c.team ? "/teams/$id" : "/search"} params={c.team ? { id: c.team.id } : {}} round
+                logo={c.photo_url} fallback={<User className="h-4 w-4 text-muted-foreground" />}
+                title={c.name} country={c.nationality_code ?? c.nationality}
+                sub={[c.team?.name, "Coach"].filter(Boolean).join(" · ")} />
+            ))}</Group>
+          )}
+          {show("venues") && (
+            <Group title="Stadiums">{res.data.venues.map((v) => (
+              <ResultRow key={v.id} to="/search" params={{}}
+                logo={null} fallback={<Building2 className="h-4 w-4 text-muted-foreground" />}
+                title={v.name} country={v.country} sub={[v.city, v.country].filter(Boolean).join(", ")} />
+            ))}</Group>
+          )}
         </div>
       )}
     </AppShell>
+  );
+}
+
+function ResultRow({ to, params, logo, fallback, title, sub, country, round }: {
+  to: string; params: Record<string, string>; logo: string | null | undefined;
+  fallback: React.ReactNode; title: string; sub?: string; country?: string | null; round?: boolean;
+}) {
+  return (
+    <Link to={to as never} params={params as never}
+      className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 transition hover:border-primary/50">
+      <div className={`flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden ${round ? "rounded-full" : "rounded-xl"} border border-border bg-muted/40`}>
+        {logo ? <img src={logo} alt="" className={`h-full w-full ${round ? "object-cover" : "object-contain p-1"}`} /> : fallback}
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-sm font-semibold">{title}</div>
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <FlagIcon value={country} size="xs" />
+          <span className="truncate">{sub || "—"}</span>
+        </div>
+      </div>
+    </Link>
   );
 }
 

@@ -5,7 +5,7 @@ import { AppShell, EmptyState, LoadingSkeleton } from "@/components/app-shell";
 import { supabase, formatKickoff, type Team, type Player, type Match, type StandingRow, type Coach, type Transfer } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 import { FavoriteButton } from "@/hooks/use-favorites";
-import { countryFlag } from "@/lib/countries";
+import { FlagIcon } from "@/components/flag";
 import { useI18n } from "@/lib/i18n";
 import { ArrowRight } from "lucide-react";
 
@@ -80,8 +80,9 @@ function TeamPage() {
         </div>
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-2xl font-bold">{t.name}</h1>
-          <div className="text-xs text-muted-foreground">
-            {countryFlag(t.country_code ?? t.country) ?? ""} {[t.country, t.venue_name].filter(Boolean).join(" · ")}
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <FlagIcon value={t.country_code ?? t.country} />
+            <span className="truncate">{[t.country, t.venue_name].filter(Boolean).join(" · ")}</span>
           </div>
         </div>
         <FavoriteButton kind="team" id={t.id} size="md" />
@@ -143,7 +144,7 @@ function TeamPage() {
 
       {tab === "info" && (
         <div className="grid gap-3 sm:grid-cols-2">
-          <InfoCard label="Country" value={`${countryFlag(t.country_code ?? t.country) ?? ""} ${t.country ?? "—"}`} />
+          <InfoCard label="Country" value={t.country ?? "—"} icon={<FlagIcon value={t.country_code ?? t.country} size="md" />} />
           <InfoCard label="Stadium" value={[t.venue_name, t.venue_city].filter(Boolean).join(", ") || "—"} />
           <InfoCard label="Coach" value={coaches.data?.map((c) => c.name).join(", ") || t.coach_name || "—"} />
           <InfoCard label="Short name" value={t.short_name ?? "—"} />
@@ -188,11 +189,11 @@ function TeamPage() {
   );
 }
 
-function InfoCard({ label, value }: { label: string; value: string }) {
+function InfoCard({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) {
   return (
     <div className="rounded-2xl border border-border bg-card p-4">
       <div className="text-[0.6rem] font-semibold uppercase tracking-widest text-muted-foreground">{label}</div>
-      <div className="mt-1 truncate text-sm font-semibold">{value}</div>
+      <div className="mt-1 flex items-center gap-2 truncate text-sm font-semibold">{icon}{value}</div>
     </div>
   );
 }

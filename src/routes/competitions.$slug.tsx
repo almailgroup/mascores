@@ -3,6 +3,21 @@ import { useQuery } from "@tanstack/react-query";
 import { AppShell, EmptyState, LoadingSkeleton, SectionHeader } from "@/components/app-shell";
 import { supabase, formatKickoff, type Competition, type Team, type Match, type StandingRow } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
+import { FlagIcon } from "@/components/flag";
+import type { Database } from "@/integrations/supabase/types";
+
+type PositionLabel = Database["public"]["Tables"]["standings_position_labels"]["Row"];
+type Row = StandingRow & { team: Team | null };
+
+function groupsOf(rows: Row[]): [string | null, Row[]][] {
+  const map = new Map<string | null, Row[]>();
+  for (const r of rows) {
+    const key = r.group_label ?? null;
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(r);
+  }
+  return [...map.entries()];
+}
 
 export const Route = createFileRoute("/competitions/$slug")({
   head: ({ params }) => ({ meta: [{ title: `${params.slug} — MansourAlmailScores` }] }),
@@ -50,9 +65,17 @@ function CompetitionPage() {
         .select("*, team:team_id(id,name,logo_url,short_name)")
         .eq("competition_id", comp.data!.id)
         .order("group_label", { ascending: true, nullsFirst: true })
-        .order("sort_order")
-        .order("points", { ascending: false });
+        .order("sort_order");
       return (data ?? []) as unknown as (StandingRow & { team: Team | null })[];
+    },
+  });
+
+  const posLabels = useQuery({
+    enabled: !!comp.data,
+    queryKey: ["comp-position-labels", comp.data?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("standings_position_labels").select("*").eq("competition_id", comp.data!.id);
+      return (data ?? []) as PositionLabel[];
     },
   });
 
@@ -68,7 +91,10 @@ function CompetitionPage() {
         </div>
         <div>
           <h1 className="text-2xl font-bold">{c.name}</h1>
-          <div className="text-xs text-muted-foreground">{[c.country, c.season, c.category].filter(Boolean).join(" · ")}</div>
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <FlagIcon value={c.country_code ?? c.country} />
+            <span>{[c.country, c.season, c.category].filter(Boolean).join(" · ")}</span>
+          </div>
           {c.description && <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{c.description}</p>}
         </div>
       </div>
@@ -91,28 +117,56 @@ function CompetitionPage() {
 
       <SectionHeader title="Standings" action={<div />} />
       {standings.data && standings.data.length > 0 ? (
-        <div className="overflow-hidden rounded-2xl border border-border bg-card">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50 text-xs uppercase tracking-widest text-muted-foreground"><tr>
-              <th className="p-3 text-left">#</th><th className="text-left">Team</th>
-              <th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>Pts</th>
-            </tr></thead>
-            <tbody>{standings.data.map((r, i) => (
-              <tr key={r.id} className="border-t border-border">
-                <td className="p-3">
-                  <span className="inline-block h-3 w-3 rounded-full" style={{ background: r.qualification_color ?? "transparent" }} title={r.qualification_label ?? ""} />
-                  <span className="ml-2">{i + 1}</span>
-                </td>
-                <td className="flex items-center gap-2 p-3 font-medium">
-                  {r.team?.logo_url && <img src={r.team.logo_url} alt="" className="h-5 w-5 object-contain" />}
-                  {r.team?.name ?? "—"}
-                </td>
-                <td className="text-center">{r.played}</td><td className="text-center">{r.won}</td><td className="text-center">{r.drawn}</td>
-                <td className="text-center">{r.lost}</td><td className="text-center">{r.gf}</td><td className="text-center">{r.ga}</td>
-                <td className="text-center font-bold">{r.points + r.points_adjust}</td>
-              </tr>))}
-            </tbody>
-          </table>
+        <div className="space-y-6">
+          {groupsOf(standings.data).map(([group, rows]) => {
+            const labels = (posLabels.data ?? []).filter((l) => (l.group_label ?? null) === group);
+            const used = rows
+              .map((_, i) => labels.find((l) => l.position === i + 1))
+              .filter((l): l is PositionLabel => !!l)
+              .filter((l, i, arr) => arr.findIndex((x) => x.label === l.label) === i);
+            return (
+              <div key={group ?? "single"}>
+                {group && <div className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">{group}</div>}
+                <div className="overflow-hidden rounded-2xl border border-border bg-card">
+                  <table className="w-full text-sm">
+                    <thead className="bg-muted/50 text-xs uppercase tracking-widest text-muted-foreground"><tr>
+                      <th className="p-3 text-left">#</th><th className="text-left">Team</th>
+                      <th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>Pts</th>
+                    </tr></thead>
+                    <tbody>{rows.map((r, i) => {
+                      const lbl = labels.find((l) => l.position === i + 1);
+                      return (
+                        <tr key={r.id} className="border-t border-border" style={{ borderLeft: lbl ? `4px solid ${lbl.color}` : "4px solid transparent" }}>
+                          <td className="p-3 tabular-nums">{i + 1}</td>
+                          <td className="p-3">
+                            {r.team ? (
+                              <Link to="/teams/$id" params={{ id: r.team.id }} className="flex items-center gap-2 font-medium hover:text-primary">
+                                {r.team.logo_url && <img src={r.team.logo_url} alt="" className="h-5 w-5 object-contain" />}
+                                <span className="truncate">{r.team.name}</span>
+                              </Link>
+                            ) : "—"}
+                          </td>
+                          <td className="text-center">{r.played}</td><td className="text-center">{r.won}</td><td className="text-center">{r.drawn}</td>
+                          <td className="text-center">{r.lost}</td><td className="text-center">{r.gf}</td><td className="text-center">{r.ga}</td>
+                          <td className="text-center font-bold">{r.points + r.points_adjust}</td>
+                        </tr>
+                      );
+                    })}
+                    </tbody>
+                  </table>
+                </div>
+                {used.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-3 text-xs text-muted-foreground">
+                    {used.map((l) => (
+                      <span key={l.id} className="inline-flex items-center gap-1.5">
+                        <span className="h-2.5 w-2.5 rounded-full" style={{ background: l.color }} />{l.label}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       ) : <EmptyState title="No standings yet" />}
 
