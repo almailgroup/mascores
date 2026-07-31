@@ -1,9 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { unlockAdminSchema } from "./admin.schemas";
 
 export const unlockAdmin = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { password: string }) => input)
+  .inputValidator((input: unknown) => unlockAdminSchema.parse(input))
   .handler(async ({ data, context }) => {
     const expected = process.env.ADMIN_UNLOCK_PASSWORD;
     if (!expected) throw new Error("Admin password not configured");

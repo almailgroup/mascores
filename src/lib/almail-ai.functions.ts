@@ -1,20 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
-import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-
-const imageSchema = z.object({
-  name: z.string().trim().min(1).max(200),
-  dataUrl: z.string().max(8_000_000).refine((value) => /^data:image\/(png|jpeg|webp);base64,/i.test(value), "Unsupported image"),
-});
-
-const inputSchema = z.object({
-  notes: z.string().trim().max(10_000),
-  images: z.array(imageSchema).max(6),
-});
+import { almailInputSchema } from "./almail-ai.schemas";
 
 export const createPlayerDraftWithAlmail = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => inputSchema.parse(input))
+  .inputValidator((input: unknown) => almailInputSchema.parse(input))
   .handler(async ({ data, context }) => {
     const { data: isAdmin, error } = await context.supabase.rpc("is_admin", { _uid: context.userId });
     if (error || !isAdmin) throw new Error("Administrator access required.");
@@ -24,7 +14,7 @@ export const createPlayerDraftWithAlmail = createServerFn({ method: "POST" })
 
 export const createArticleDraftWithAlmail = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => inputSchema.parse(input))
+  .inputValidator((input: unknown) => almailInputSchema.parse(input))
   .handler(async ({ data, context }) => {
     const { data: isAdmin, error } = await context.supabase.rpc("is_admin", { _uid: context.userId });
     if (error || !isAdmin) throw new Error("Administrator access required.");
