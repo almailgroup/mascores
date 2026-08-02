@@ -12,6 +12,7 @@ export const Route = createFileRoute("/competitions/")({
 });
 
 function CompetitionsList() {
+  const tx = useTx();
   useRealtime(["competitions"]);
   const q = useQuery({
     queryKey: ["competitions"],

@@ -26,6 +26,7 @@ export const Route = createFileRoute("/")({
 type MatchWithTeams = Match & { home: Team | null; away: Team | null; competition: { slug: string; name: string; logo_url: string | null } | null };
 
 function Home() {
+  const tx = useTx();
   const { t } = useI18n();
   useRealtime(["competitions", "matches", "news_posts"]);
 
@@ -143,6 +144,7 @@ function Home() {
 
 /** Sofascore-style control bar: scope tabs, date stepper and status chips. */
 function ScoreBoard({ liveCount }: { liveCount: number }) {
+  const tx = useTx();
   const { t } = useI18n();
   const { favorites } = useFavorites();
   const [scope, setScope] = useState<"all" | "favourites" | "competitions">("all");
