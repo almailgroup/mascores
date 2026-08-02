@@ -6,7 +6,7 @@ import { Field, Modal, ImageInput, inputCls, btnPrimary, btnGhost, btnDanger } f
 import { uploadMedia } from "./upload";
 import { createArticleDraftWithAlmail } from "@/lib/almail-ai.functions";
 import { readAiImages, type AiImageInput } from "@/lib/image-files";
-import { NewsLinkPicker } from "./news-link-picker";
+import { NewsLinkPicker, type NewsLinks } from "./news-link-picker";
 import { NewsSubmissionsPanel } from "./news-submissions-panel";
 import { Plus, Pencil, Trash2, Sparkles, ImagePlus, Loader2 } from "lucide-react";
 
@@ -132,7 +132,7 @@ export function NewsPanel() {
             teamId={form.team_id ?? null}
             competitionId={form.competition_id ?? null}
             playerId={form.player_id ?? null}
-            onChange={(links) => setForm({ ...form, ...links })}
+            onChange={(links: NewsLinks) => setForm({ ...form, ...links })}
           />
           <Field label="Excerpt"><textarea rows={2} className={inputCls} value={form.excerpt ?? ""} onChange={(e) => setForm({ ...form, excerpt: e.target.value })} /></Field>
           <Field label="Body (Markdown)"><textarea rows={8} className={inputCls} value={form.body_markdown ?? ""} onChange={(e) => setForm({ ...form, body_markdown: e.target.value })} /></Field>
