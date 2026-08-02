@@ -242,6 +242,7 @@ function CompetitionOverviewTab({ c, season, teams, titleHolderName, titles, div
   titles: { team_id: string; titles: number }[];
   divisions: { id: string; name: string; slug: string }[];
 }) {
+  const tx = useTx();
   const winners = titles.filter((r) => r.titles > 0);
   const best = winners[0];
   const bestTeam = best ? teams.find((team) => team.id === best.team_id) : undefined;
@@ -252,8 +253,8 @@ function CompetitionOverviewTab({ c, season, teams, titleHolderName, titles, div
     ["Duration", [c.starts_on, c.ends_on].filter(Boolean).join(" — ") || "—"],
     ["Season", season ?? c.season ?? "—"], ["Available seasons", c.seasons?.join(", ") || "—"],
     ["Title holder", titleHolderName ?? "—"],
-    ["Most titles", bestTeam && best ? `${bestTeam.name} (${best.titles})` : "—"],
-    ["Higher division", higher?.name ?? "—"], ["Lower division", lower?.name ?? "—"],
+    ["Most titles", bestTeam && best ? `${tx(bestTeam.name)} (${best.titles})` : "—"],
+    ["Higher division", tx(higher?.name) ?? "—"], ["Lower division", tx(lower?.name) ?? "—"],
     ["Country", c.country ?? "—"],
   ];
   return (
@@ -275,7 +276,7 @@ function CompetitionOverviewTab({ c, season, teams, titleHolderName, titles, div
               return (
                 <Link key={r.team_id} to="/teams/$id" params={{ id: r.team_id }} className="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-accent">
                   {team?.logo_url ? <img src={team.logo_url} alt="" className="h-5 w-5 object-contain" /> : <span className="h-5 w-5 rounded bg-muted" />}
-                  <span className="min-w-0 flex-1 truncate font-medium">{team?.name ?? "Team"}</span>
+                  <span className="min-w-0 flex-1 truncate font-medium">{tx(team?.name) ?? "Team"}</span>
                   <span className="font-black tabular-nums">{r.titles}</span>
                 </Link>
               );
