@@ -318,6 +318,7 @@ export function MatchSection({ title, data, loading }: { title: string; data: Ma
 }
 
 export function MatchTile({ m }: { m: MatchWithTeams }) {
+  const tx = useTx();
   const started = ["live", "ht", "ft", "aet", "pen", "awarded"].includes(m.status);
   const isLive = ["live", "ht"].includes(m.status);
   return (
