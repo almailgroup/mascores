@@ -10,6 +10,7 @@ import { PlayerAvatar } from "@/components/player-avatar";
 import { LinkedNews } from "@/components/linked-news";
 import { formatMoney, useCurrency } from "@/lib/currency";
 import { ArrowRight } from "lucide-react";
+import { useTx } from "@/lib/auto-translate";
 
 export const Route = createFileRoute("/players/$id")({
   head: () => ({
@@ -35,6 +36,7 @@ function age(dob: string | null | undefined) {
 }
 
 function PlayerPage() {
+  const tx = useTx();
   const { id } = Route.useParams();
   const { t: tr } = useI18n();
   const { currency } = useCurrency();
@@ -70,11 +72,11 @@ function PlayerPage() {
         <div className="flex items-center gap-5">
           <PlayerAvatar src={p.photo_url} name={p.name} size="lg" className="border-2 border-primary/30" />
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-3xl font-black tracking-tight">{p.name}</h1>
+            <h1 className="truncate text-3xl font-black tracking-tight">{tx(p.name)}</h1>
             {p.team && (
               <Link to="/teams/$id" params={{ id: p.team.id }} className="mt-1 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary">
                 {p.team.logo_url && <img src={p.team.logo_url} alt="" className="h-5 w-5 object-contain" />}
-                {p.team.name}
+                {tx(p.team.name)}
               </Link>
             )}
           </div>
@@ -97,7 +99,7 @@ function PlayerPage() {
             <Stat label="Nationality" value={p.nationality ?? "—"} icon={<FlagIcon value={nat} size="md" />} />
             <Stat label="Date of birth" value={p.dob ? `${formatDob(p.dob)}${age(p.dob) != null ? ` (${age(p.dob)})` : ""}` : "—"} />
             <Stat label="Height" value={formatHeight(p.height_cm, "cm")} />
-            <Stat label="Position" value={p.position ?? "—"} />
+            <Stat label="Position" value={tx(p.position) ?? "—"} />
             <Stat label="Shirt" value={p.shirt_number != null ? `#${p.shirt_number}` : "—"} />
             <Stat label="Market value" value={formatMoney(p.market_value, currency)} />
           </div>
@@ -107,9 +109,9 @@ function PlayerPage() {
             <div className="grid gap-2">
               {transfers.data.map((r) => (
                 <div key={r.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 text-sm">
-                  <span className="flex-1 truncate">{r.from_club ?? "—"}</span>
+                  <span className="flex-1 truncate">{tx(r.from_club) ?? "—"}</span>
                   <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                  <span className="flex-1 truncate font-medium">{r.to_club ?? "—"}</span>
+                  <span className="flex-1 truncate font-medium">{tx(r.to_club) ?? "—"}</span>
                   <span className="shrink-0 text-xs text-muted-foreground">{r.fee ?? r.transfer_type ?? ""}</span>
                   <span className="shrink-0 text-xs text-muted-foreground">{r.moved_on ? new Date(r.moved_on).toLocaleDateString() : ""}</span>
                 </div>
@@ -124,9 +126,9 @@ function PlayerPage() {
           <div className="grid gap-2">
             {matches.data.map((m) => (
               <Link key={m.id} to="/matches/$id" params={{ id: m.id }} className="grid items-center gap-2 rounded-2xl border border-border bg-card p-3 hover:border-primary/50" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
-                <div className="truncate text-right text-sm font-semibold">{m.home?.name ?? "TBD"}</div>
+                <div className="truncate text-right text-sm font-semibold">{tx(m.home?.name) ?? "TBD"}</div>
                 <div className="text-center text-sm font-bold tabular-nums">{m.home_score != null ? `${m.home_score} – ${m.away_score}` : formatKickoff(m.kickoff_at)}</div>
-                <div className="truncate text-sm font-semibold">{m.away?.name ?? "TBD"}</div>
+                <div className="truncate text-sm font-semibold">{tx(m.away?.name) ?? "TBD"}</div>
               </Link>
             ))}
           </div>
