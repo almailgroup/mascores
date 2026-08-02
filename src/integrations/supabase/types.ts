@@ -820,9 +820,12 @@ export type Database = {
       news_reporters: {
         Row: {
           access_code: string | null
+          code_redeemed_at: string | null
           created_at: string
+          email: string | null
           handle: string
           id: string
+          phone: string | null
           platform: string
           status: string
           subscription_status: string
@@ -831,9 +834,12 @@ export type Database = {
         }
         Insert: {
           access_code?: string | null
+          code_redeemed_at?: string | null
           created_at?: string
+          email?: string | null
           handle: string
           id?: string
+          phone?: string | null
           platform?: string
           status?: string
           subscription_status?: string
@@ -842,9 +848,12 @@ export type Database = {
         }
         Update: {
           access_code?: string | null
+          code_redeemed_at?: string | null
           created_at?: string
+          email?: string | null
           handle?: string
           id?: string
+          phone?: string | null
           platform?: string
           status?: string
           subscription_status?: string
@@ -1232,6 +1241,54 @@ export type Database = {
           },
           {
             foreignKeyName: "standings_rows_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_titles: {
+        Row: {
+          competition_id: string | null
+          created_at: string
+          id: string
+          sort_order: number
+          team_id: string
+          title_name: string | null
+          titles: number
+          updated_at: string
+        }
+        Insert: {
+          competition_id?: string | null
+          created_at?: string
+          id?: string
+          sort_order?: number
+          team_id: string
+          title_name?: string | null
+          titles?: number
+          updated_at?: string
+        }
+        Update: {
+          competition_id?: string | null
+          created_at?: string
+          id?: string
+          sort_order?: number
+          team_id?: string
+          title_name?: string | null
+          titles?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_titles_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_titles_team_id_fkey"
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "teams"
