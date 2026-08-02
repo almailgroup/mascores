@@ -5,6 +5,8 @@ import { AppShell, EmptyState, LoadingSkeleton, SectionHeader } from "@/componen
 import { supabase, formatKickoff, type Competition, type Team, type Match, type StandingRow } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 import { FlagIcon } from "@/components/flag";
+import { LinkedNews } from "@/components/linked-news";
+import { useAutoTranslate } from "@/lib/auto-translate";
 import type { Database } from "@/integrations/supabase/types";
 
 type PositionLabel = Database["public"]["Tables"]["standings_position_labels"]["Row"];
@@ -27,7 +29,8 @@ export const Route = createFileRoute("/competitions/$slug")({
 
 function CompetitionPage() {
   const { slug } = Route.useParams();
-  const [tab, setTab] = useState<"overview" | "matches" | "standings" | "teams" | "awards" | "media">("overview");
+  const [tab, setTab] = useState<"overview" | "matches" | "standings" | "teams" | "awards" | "media" | "news">("overview");
+  const [season, setSeason] = useState<string | null>(null);
   useRealtime(["competitions", "teams", "matches", "standings_rows", "competition_awards", "media_items"]);
 
   const comp = useQuery({
@@ -51,23 +54,26 @@ function CompetitionPage() {
 
   const matches = useQuery({
     enabled: !!comp.data,
-    queryKey: ["comp-matches", comp.data?.id],
+    queryKey: ["comp-matches", comp.data?.id, season],
     queryFn: async () => {
-      const { data } = await supabase.from("matches")
+      let query = supabase.from("matches")
         .select("*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url)")
-        .eq("competition_id", comp.data!.id)
-        .order("kickoff_at");
+        .eq("competition_id", comp.data!.id);
+      if (season) query = query.eq("season", season);
+      const { data } = await query.order("kickoff_at");
       return (data ?? []) as unknown as (Match & { home: Team | null; away: Team | null })[];
     },
   });
 
   const standings = useQuery({
     enabled: !!comp.data,
-    queryKey: ["comp-standings", comp.data?.id],
+    queryKey: ["comp-standings", comp.data?.id, season],
     queryFn: async () => {
-      const { data } = await supabase.from("standings_rows")
+      let query = supabase.from("standings_rows")
         .select("*, team:team_id(id,name,logo_url,short_name)")
-        .eq("competition_id", comp.data!.id)
+        .eq("competition_id", comp.data!.id);
+      if (season) query = query.eq("season", season);
+      const { data } = await query
         .order("group_label", { ascending: true, nullsFirst: true })
         .order("sort_order");
       return (data ?? []) as unknown as (StandingRow & { team: Team | null })[];
@@ -85,6 +91,24 @@ function CompetitionPage() {
   const media = useQuery({ enabled: !!comp.data, queryKey: ["competition-media", comp.data?.id], queryFn: async () => (await supabase.from("media_items").select("*").eq("owner_type", "competition").eq("owner_id", comp.data!.id).order("sort_order")).data ?? [] });
   const awards = useQuery({ enabled: !!comp.data, queryKey: ["competition-awards", comp.data?.id], queryFn: async () => (await supabase.from("competition_awards").select("*, player:players(id,name,photo_url)").eq("competition_id", comp.data!.id).order("created_at", { ascending: false })).data ?? [] });
   const titleHolder = teams.data?.find((team) => team.id === comp.data?.title_holder_team_id);
+  const compTitles = useQuery({
+    enabled: !!comp.data,
+    queryKey: ["comp-titles", comp.data?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("competition_teams").select("team_id,titles").eq("competition_id", comp.data!.id).order("titles", { ascending: false });
+      return (data ?? []) as { team_id: string; titles: number }[];
+    },
+  });
+  const divisions = useQuery({
+    enabled: !!comp.data && !!(comp.data.higher_division_id || comp.data.lower_division_id),
+    queryKey: ["comp-divisions", comp.data?.higher_division_id, comp.data?.lower_division_id],
+    queryFn: async () => {
+      const ids = [comp.data!.higher_division_id, comp.data!.lower_division_id].filter((v): v is string => !!v);
+      const { data } = await supabase.from("competitions").select("id,name,slug").in("id", ids);
+      return (data ?? []) as { id: string; name: string; slug: string }[];
+    },
+  });
+  const tx = useAutoTranslate([comp.data?.name, comp.data?.description, comp.data?.country, comp.data?.category]);
 
   if (comp.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;
   if (!comp.data) return <AppShell><EmptyState title="Competition not found" /></AppShell>;
