@@ -140,6 +140,8 @@ function PlayerPage() {
           </div>
         ) : <EmptyState title="No media yet" />
       )}
+
+      {tab === "news" && <LinkedNews kind="player" id={p.id} />}
     </AppShell>
   );
 }
