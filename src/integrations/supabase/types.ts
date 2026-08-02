@@ -178,18 +178,21 @@ export type Database = {
           created_at: string
           id: string
           team_id: string
+          titles: number
         }
         Insert: {
           competition_id: string
           created_at?: string
           id?: string
           team_id: string
+          titles?: number
         }
         Update: {
           competition_id?: string
           created_at?: string
           id?: string
           team_id?: string
+          titles?: number
         }
         Relationships: [
           {
@@ -609,6 +612,7 @@ export type Database = {
           referee: string | null
           round: string | null
           round_number: number | null
+          season: string | null
           status: string
           timer_elapsed_seconds: number
           timer_running: boolean
@@ -639,6 +643,7 @@ export type Database = {
           referee?: string | null
           round?: string | null
           round_number?: number | null
+          season?: string | null
           status?: string
           timer_elapsed_seconds?: number
           timer_running?: boolean
@@ -669,6 +674,7 @@ export type Database = {
           referee?: string | null
           round?: string | null
           round_number?: number | null
+          season?: string | null
           status?: string
           timer_elapsed_seconds?: number
           timer_running?: boolean
@@ -745,40 +751,183 @@ export type Database = {
         Row: {
           author_display: string | null
           body_markdown: string
+          competition_id: string | null
           cover_url: string | null
           created_at: string
           excerpt: string | null
           id: string
+          player_id: string | null
           published_at: string | null
           slug: string
+          team_id: string | null
           title: string
           updated_at: string
         }
         Insert: {
           author_display?: string | null
           body_markdown?: string
+          competition_id?: string | null
           cover_url?: string | null
           created_at?: string
           excerpt?: string | null
           id?: string
+          player_id?: string | null
           published_at?: string | null
           slug: string
+          team_id?: string | null
           title: string
           updated_at?: string
         }
         Update: {
           author_display?: string | null
           body_markdown?: string
+          competition_id?: string | null
           cover_url?: string | null
           created_at?: string
           excerpt?: string | null
           id?: string
+          player_id?: string | null
           published_at?: string | null
           slug?: string
+          team_id?: string | null
           title?: string
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "news_posts_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "news_posts_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "news_posts_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      news_reporters: {
+        Row: {
+          access_code: string | null
+          created_at: string
+          handle: string
+          id: string
+          platform: string
+          status: string
+          subscription_status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_code?: string | null
+          created_at?: string
+          handle: string
+          id?: string
+          platform?: string
+          status?: string
+          subscription_status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_code?: string | null
+          created_at?: string
+          handle?: string
+          id?: string
+          platform?: string
+          status?: string
+          subscription_status?: string
+          updated_at?: string
+          user_id?: string
+        }
         Relationships: []
+      }
+      news_submissions: {
+        Row: {
+          author_id: string
+          body_markdown: string
+          competition_id: string | null
+          cover_url: string | null
+          created_at: string
+          excerpt: string | null
+          id: string
+          player_id: string | null
+          proof_note: string | null
+          proof_url: string | null
+          review_note: string | null
+          status: string
+          team_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          body_markdown?: string
+          competition_id?: string | null
+          cover_url?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          player_id?: string | null
+          proof_note?: string | null
+          proof_url?: string | null
+          review_note?: string | null
+          status?: string
+          team_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          body_markdown?: string
+          competition_id?: string | null
+          cover_url?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          player_id?: string | null
+          proof_note?: string | null
+          proof_url?: string | null
+          review_note?: string | null
+          status?: string
+          team_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "news_submissions_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "news_submissions_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "news_submissions_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       player_ratings: {
         Row: {
@@ -895,6 +1044,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          currency: string
           display_name: string | null
           favorite_competition_ids: string[]
           favorite_player_ids: string[]
@@ -909,6 +1059,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          currency?: string
           display_name?: string | null
           favorite_competition_ids?: string[]
           favorite_player_ids?: string[]
@@ -923,6 +1074,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          currency?: string
           display_name?: string | null
           favorite_competition_ids?: string[]
           favorite_player_ids?: string[]
@@ -977,6 +1129,7 @@ export type Database = {
           id: string
           label: string
           position: number
+          season: string | null
           updated_at: string
         }
         Insert: {
@@ -987,6 +1140,7 @@ export type Database = {
           id?: string
           label: string
           position: number
+          season?: string | null
           updated_at?: string
         }
         Update: {
@@ -997,6 +1151,7 @@ export type Database = {
           id?: string
           label?: string
           position?: number
+          season?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -1023,6 +1178,7 @@ export type Database = {
           points_adjust: number
           qualification_color: string | null
           qualification_label: string | null
+          season: string | null
           sort_order: number
           team_id: string
           updated_at: string
@@ -1041,6 +1197,7 @@ export type Database = {
           points_adjust?: number
           qualification_color?: string | null
           qualification_label?: string | null
+          season?: string | null
           sort_order?: number
           team_id: string
           updated_at?: string
@@ -1059,6 +1216,7 @@ export type Database = {
           points_adjust?: number
           qualification_color?: string | null
           qualification_label?: string | null
+          season?: string | null
           sort_order?: number
           team_id?: string
           updated_at?: string
@@ -1097,6 +1255,7 @@ export type Database = {
           media_urls: string[]
           name: string
           short_name: string | null
+          trophies: number
           updated_at: string
           venue_city: string | null
           venue_name: string | null
@@ -1116,6 +1275,7 @@ export type Database = {
           media_urls?: string[]
           name: string
           short_name?: string | null
+          trophies?: number
           updated_at?: string
           venue_city?: string | null
           venue_name?: string | null
@@ -1135,6 +1295,7 @@ export type Database = {
           media_urls?: string[]
           name?: string
           short_name?: string | null
+          trophies?: number
           updated_at?: string
           venue_city?: string | null
           venue_name?: string | null
