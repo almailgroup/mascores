@@ -7,6 +7,8 @@ import { useRealtime } from "@/lib/realtime";
 import { FavoriteButton } from "@/hooks/use-favorites";
 import { FlagIcon } from "@/components/flag";
 import { useI18n } from "@/lib/i18n";
+import { PlayerAvatar } from "@/components/player-avatar";
+import { LinkedNews } from "@/components/linked-news";
 import { ArrowRight } from "lucide-react";
 
 export const Route = createFileRoute("/teams/$id")({
@@ -23,8 +25,8 @@ export const Route = createFileRoute("/teams/$id")({
   component: TeamPage,
 });
 
-type Tab = "matches" | "standings" | "squad" | "info" | "stats" | "media" | "transfers";
-const TABS: Tab[] = ["matches", "standings", "squad", "info", "stats", "media", "transfers"];
+type Tab = "matches" | "standings" | "squad" | "info" | "stats" | "media" | "transfers" | "news";
+const TABS: Tab[] = ["matches", "standings", "squad", "info", "stats", "media", "transfers", "news"];
 
 function TeamPage() {
   const { id } = Route.useParams();
@@ -47,8 +49,14 @@ function TeamPage() {
     return (data ?? []) as unknown as (Match & { home: Team | null; away: Team | null; competition: { name: string; slug: string } | null })[];
   }});
   const rows = useQuery({ queryKey: ["team-standings", id], queryFn: async () => {
-    const { data } = await supabase.from("standings_rows").select("*, competition:competition_id(name,slug)").eq("team_id", id);
-    return (data ?? []) as unknown as (StandingRow & { competition: { name: string; slug: string } | null })[];
+    const { data: mine } = await supabase.from("standings_rows").select("competition_id").eq("team_id", id);
+    const compIds = [...new Set((mine ?? []).map((r) => r.competition_id))];
+    if (compIds.length === 0) return [];
+    const { data } = await supabase.from("standings_rows")
+      .select("*, competition:competition_id(name,slug), team:team_id(id,name,logo_url)")
+      .in("competition_id", compIds)
+      .order("sort_order");
+    return (data ?? []) as unknown as (StandingRow & { competition: { name: string; slug: string } | null; team: { id: string; name: string; logo_url: string | null } | null })[];
   }});
   const coaches = useQuery({ queryKey: ["team-coaches", id], queryFn: async () => {
     const { data } = await supabase.from("coaches").select("*").eq("team_id", id);
