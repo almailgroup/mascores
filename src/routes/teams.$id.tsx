@@ -171,6 +171,8 @@ function TeamPage() {
           <InfoCard label="Stadium" value={[t.venue_name, t.venue_city].filter(Boolean).join(", ") || "—"} />
           <InfoCard label="Coach" value={coaches.data?.map((c) => c.name).join(", ") || t.coach_name || "—"} />
           <InfoCard label="Short name" value={t.short_name ?? "—"} />
+          <InfoCard label="Founded" value={t.founded_on ? new Date(t.founded_on).toLocaleDateString(undefined, { dateStyle: "long" }) : "—"} />
+          <InfoCard label="Trophies" value={String(t.trophies ?? 0)} />
           {t.description && <div className="rounded-2xl border border-border bg-card p-4 text-sm sm:col-span-2">{t.description}</div>}
         </div>
       )}
@@ -208,6 +210,8 @@ function TeamPage() {
           </div>
         ) : <EmptyState title="No transfers yet" />
       )}
+
+      {tab === "news" && <LinkedNews kind="team" id={t.id} />}
     </AppShell>
   );
 }
