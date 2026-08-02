@@ -121,20 +121,29 @@ function CompetitionPage() {
           {c.logo_url && <img src={c.logo_url} alt="" className="h-full w-full object-contain" />}
         </div>
         <div>
-          <h1 className="text-2xl font-bold">{c.name}</h1>
+          <h1 className="text-2xl font-bold">{tx(c.name)}</h1>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <FlagIcon value={c.country_code ?? c.country} />
-            <span>{[c.country, c.season, c.category].filter(Boolean).join(" · ")}</span>
+            <span>{[tx(c.country), season ?? c.season, tx(c.category)].filter(Boolean).join(" · ")}</span>
           </div>
-          {c.description && <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{c.description}</p>}
+          {c.description && <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{tx(c.description)}</p>}
         </div>
       </div>
 
+      {(c.seasons?.length ?? 0) > 0 && (
+        <div className="mb-4 flex flex-wrap gap-2">
+          <button onClick={() => setSeason(null)} className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${season === null ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground"}`}>All seasons</button>
+          {c.seasons.map((s) => (
+            <button key={s} onClick={() => setSeason(s)} className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${season === s ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground"}`}>{s}</button>
+          ))}
+        </div>
+      )}
+
       <div className="mb-6 flex max-w-full gap-1 overflow-x-auto border-b border-border pb-2 text-sm">
-        {(["overview", "matches", "standings", "teams", "awards", "media"] as const).map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 py-2 font-semibold capitalize ${tab === item ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{item}</button>)}
+        {(["overview", "matches", "standings", "teams", "awards", "media", "news"] as const).map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 py-2 font-semibold capitalize ${tab === item ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{item}</button>)}
       </div>
 
-      {tab === "overview" && <div className="grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">{[["Sport", c.sport], ["Format", c.format], ["Teams", String(teams.data?.length ?? 0)], ["Duration", [c.starts_on, c.ends_on].filter(Boolean).join(" — ") || "—"], ["Season", c.season ?? "—"], ["Available seasons", c.seasons?.join(", ") || "—"], ["Title holder", titleHolder?.name ?? "—"], ["Country", c.country ?? "—"]].map(([label, value]) => <div key={label} className="bg-card p-4"><div className="text-[0.65rem] font-bold uppercase text-muted-foreground">{label}</div><div className="mt-1 font-semibold">{value}</div></div>)}</div>}
+      {tab === "overview" && <CompetitionOverviewTab c={c} season={season} teams={teams.data ?? []} titleHolderName={titleHolder?.name ?? null} titles={compTitles.data ?? []} divisions={divisions.data ?? []} />}
 
       {tab === "matches" && <><SectionHeader title="Matches" />
       {matches.data && matches.data.length > 0 ? (
