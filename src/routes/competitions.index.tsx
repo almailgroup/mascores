@@ -4,6 +4,7 @@ import { AppShell, EmptyState, LoadingSkeleton, SectionHeader } from "@/componen
 import { supabase, type Competition } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 import { Trophy } from "lucide-react";
+import { useTx } from "@/lib/auto-translate";
 
 export const Route = createFileRoute("/competitions/")({
   head: () => ({ meta: [{ title: "Competitions — MansourAlmailScores" }] }),
@@ -11,6 +12,7 @@ export const Route = createFileRoute("/competitions/")({
 });
 
 function CompetitionsList() {
+  const tx = useTx();
   useRealtime(["competitions"]);
   const q = useQuery({
     queryKey: ["competitions"],
@@ -32,8 +34,8 @@ function CompetitionsList() {
                 {c.logo_url ? <img src={c.logo_url} alt="" className="h-full w-full object-contain" /> : <Trophy className="h-6 w-6" />}
               </div>
               <div className="min-w-0">
-                <div className="truncate font-semibold">{c.name}</div>
-                <div className="truncate text-xs text-muted-foreground">{[c.country, c.season].filter(Boolean).join(" · ")}</div>
+                <div className="truncate font-semibold">{tx(c.name)}</div>
+                <div className="truncate text-xs text-muted-foreground">{[tx(c.country), c.season].filter(Boolean).join(" · ")}</div>
               </div>
             </Link>
           ))}

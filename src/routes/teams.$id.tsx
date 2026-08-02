@@ -10,6 +10,7 @@ import { useI18n } from "@/lib/i18n";
 import { PlayerAvatar } from "@/components/player-avatar";
 import { LinkedNews } from "@/components/linked-news";
 import { ArrowRight } from "lucide-react";
+import { useTx } from "@/lib/auto-translate";
 
 export const Route = createFileRoute("/teams/$id")({
   head: () => ({
@@ -29,6 +30,7 @@ type Tab = "matches" | "standings" | "squad" | "info" | "stats" | "media" | "tra
 const TABS: Tab[] = ["matches", "standings", "squad", "info", "stats", "media", "transfers", "news"];
 
 function TeamPage() {
+  const tx = useTx();
   const { id } = Route.useParams();
   const { t: tr } = useI18n();
   const [tab, setTab] = useState<Tab>("matches");
@@ -87,10 +89,10 @@ function TeamPage() {
           {t.logo_url && <img src={t.logo_url} className="h-full w-full object-contain" alt="" />}
         </div>
         <div className="min-w-0 flex-1">
-          <h1 className="truncate text-2xl font-bold">{t.name}</h1>
+          <h1 className="truncate text-2xl font-bold">{tx(t.name)}</h1>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <FlagIcon value={t.country_code ?? t.country} />
-            <span className="truncate">{[t.country, t.venue_name].filter(Boolean).join(" · ")}</span>
+            <span className="truncate">{[tx(t.country), tx(t.venue_name)].filter(Boolean).join(" · ")}</span>
           </div>
         </div>
         <FavoriteButton kind="team" id={t.id} size="md" />
@@ -158,7 +160,7 @@ function TeamPage() {
             {squad.data.map((p) => (
               <Link key={p.id} to="/players/$id" params={{ id: p.id }} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 hover:border-primary/50">
                 <PlayerAvatar src={p.photo_url} name={p.name} size="sm" />
-                <div className="min-w-0"><div className="truncate font-medium">{p.name}</div><div className="truncate text-xs text-muted-foreground">{p.position ?? "—"}</div></div>
+                <div className="min-w-0"><div className="truncate font-medium">{tx(p.name)}</div><div className="truncate text-xs text-muted-foreground">{tx(p.position) ?? "—"}</div></div>
               </Link>
             ))}
           </div>
@@ -168,12 +170,12 @@ function TeamPage() {
       {tab === "info" && (
         <div className="grid gap-3 sm:grid-cols-2">
           <InfoCard label="Country" value={t.country ?? "—"} icon={<FlagIcon value={t.country_code ?? t.country} size="md" />} />
-          <InfoCard label="Stadium" value={[t.venue_name, t.venue_city].filter(Boolean).join(", ") || "—"} />
-          <InfoCard label="Coach" value={coaches.data?.map((c) => c.name).join(", ") || t.coach_name || "—"} />
+          <InfoCard label="Stadium" value={[tx(t.venue_name), tx(t.venue_city)].filter(Boolean).join(", ") || "—"} />
+          <InfoCard label="Coach" value={coaches.data?.map((c) => tx(c.name)).join(", ") || tx(t.coach_name) || "—"} />
           <InfoCard label="Short name" value={t.short_name ?? "—"} />
           <InfoCard label="Founded" value={t.founded_on ? new Date(t.founded_on).toLocaleDateString(undefined, { dateStyle: "long" }) : "—"} />
           <InfoCard label="Trophies" value={String(t.trophies ?? 0)} />
-          {t.description && <div className="rounded-2xl border border-border bg-card p-4 text-sm sm:col-span-2">{t.description}</div>}
+          {t.description && <div className="rounded-2xl border border-border bg-card p-4 text-sm sm:col-span-2">{tx(t.description)}</div>}
         </div>
       )}
 

@@ -7,6 +7,7 @@ import { useI18n } from "@/lib/i18n";
 import { useRealtime } from "@/lib/realtime";
 import { useFavorites } from "@/hooks/use-favorites";
 import { Trophy, ChevronLeft, ChevronRight } from "lucide-react";
+import { useTx } from "@/lib/auto-translate";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -25,6 +26,7 @@ export const Route = createFileRoute("/")({
 type MatchWithTeams = Match & { home: Team | null; away: Team | null; competition: { slug: string; name: string; logo_url: string | null } | null };
 
 function Home() {
+  const tx = useTx();
   const { t } = useI18n();
   useRealtime(["competitions", "matches", "news_posts"]);
 
@@ -111,8 +113,8 @@ function Home() {
               <Link key={c.id} to="/competitions/$slug" params={{ slug: c.slug }} className="group flex items-center gap-3 rounded-2xl border border-border bg-card p-4 transition hover:border-primary/50 hover:shadow-lg">
                 <CompLogo logo={c.logo_url} />
                 <div className="min-w-0">
-                  <div className="truncate font-semibold">{c.name}</div>
-                  <div className="truncate text-xs text-muted-foreground">{[c.country, c.season].filter(Boolean).join(" · ")}</div>
+                  <div className="truncate font-semibold">{tx(c.name)}</div>
+                  <div className="truncate text-xs text-muted-foreground">{[tx(c.country), c.season].filter(Boolean).join(" · ")}</div>
                 </div>
               </Link>
             ))}
@@ -128,7 +130,7 @@ function Home() {
               <Link key={n.id} to="/news/$slug" params={{ slug: n.slug }} className="group overflow-hidden rounded-2xl border border-border bg-card transition hover:border-primary/50 hover:shadow-lg">
                 {n.cover_url && <img src={n.cover_url} alt="" className="h-32 w-full object-cover" />}
                 <div className="p-4">
-                  <div className="font-semibold">{n.title}</div>
+                  <div className="font-semibold">{tx(n.title)}</div>
                   {n.excerpt && <div className="mt-1 line-clamp-2 text-xs text-muted-foreground">{n.excerpt}</div>}
                 </div>
               </Link>
@@ -142,6 +144,7 @@ function Home() {
 
 /** Sofascore-style control bar: scope tabs, date stepper and status chips. */
 function ScoreBoard({ liveCount }: { liveCount: number }) {
+  const tx = useTx();
   const { t } = useI18n();
   const { favorites } = useFavorites();
   const [scope, setScope] = useState<"all" | "favourites" | "competitions">("all");
@@ -315,19 +318,20 @@ export function MatchSection({ title, data, loading }: { title: string; data: Ma
 }
 
 export function MatchTile({ m }: { m: MatchWithTeams }) {
+  const tx = useTx();
   const started = ["live", "ht", "ft", "aet", "pen", "awarded"].includes(m.status);
   const isLive = ["live", "ht"].includes(m.status);
   return (
     <Link to="/matches/$id" params={{ id: m.id }} className="group block rounded-2xl border border-border bg-card p-4 transition hover:border-primary/50 hover:shadow-lg">
       <div className="flex items-center justify-between gap-2 text-[0.65rem] font-medium uppercase tracking-widest text-muted-foreground">
-        <span className="truncate">{m.competition?.name}{m.round ? ` · ${m.round}` : ""}</span>
+        <span className="truncate">{tx(m.competition?.name)}{m.round ? ` · ${tx(m.round)}` : ""}</span>
         <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 ${isLive ? "bg-primary/15 text-primary" : "bg-muted"}`}>
           {isLive && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />}
           {m.status === "live" && m.live_minute ? `${m.live_minute}'` : m.status.toUpperCase()}
         </span>
       </div>
       <div className="mt-3 grid items-center gap-2" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
-        <TeamRow name={m.home?.name ?? "TBD"} logo={m.home?.logo_url ?? null} align="right" />
+        <TeamRow name={tx(m.home?.name) ?? "TBD"} logo={m.home?.logo_url ?? null} align="right" />
         <div className="text-center">
           {started ? (
             <div className="text-2xl font-black tabular-nums">
@@ -340,7 +344,7 @@ export function MatchTile({ m }: { m: MatchWithTeams }) {
             <div className="text-xs font-medium text-muted-foreground">{formatKickoff(m.kickoff_at)}</div>
           )}
         </div>
-        <TeamRow name={m.away?.name ?? "TBD"} logo={m.away?.logo_url ?? null} align="left" />
+        <TeamRow name={tx(m.away?.name) ?? "TBD"} logo={m.away?.logo_url ?? null} align="left" />
       </div>
     </Link>
   );

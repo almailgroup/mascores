@@ -46,7 +46,7 @@ export function IntroSplash() {
           <img
             src={src}
             alt="MansourAlmailScores"
-            className={`h-auto w-[min(220px,50vw)] ${isLight ? "" : "drop-shadow-[0_0_40px_rgba(37,99,235,0.45)]"}`}
+            className={`h-auto w-[min(220px,50vw)] ${isLight ? "" : "invert drop-shadow-[0_0_40px_rgba(37,99,235,0.45)]"}`}
           />
           <div className={`text-2xl font-black tracking-tight ${isLight ? "text-slate-900" : "text-white"}`}>MansourAlmailScores</div>
         </div>

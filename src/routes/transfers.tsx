@@ -5,6 +5,7 @@ import { AppShell, EmptyState, LoadingSkeleton } from "@/components/app-shell";
 import { supabase, currentSeason, seasonRange, type Transfer } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 import { ArrowRight, Repeat } from "lucide-react";
+import { useTx } from "@/lib/auto-translate";
 
 export const Route = createFileRoute("/transfers")({
   head: () => ({
@@ -31,6 +32,7 @@ const KIND_TONE: Record<string, string> = {
 };
 
 function TransfersPage() {
+  const tx = useTx();
   useRealtime(["transfers"]);
   const season = currentSeason();
   const { from, to } = seasonRange(season);
@@ -117,13 +119,13 @@ function TransfersPage() {
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-sm font-bold">
                         {r.person_type === "player" && r.player
-                          ? <Link to="/players/$id" params={{ id: r.person_id }} className="hover:text-primary">{r.player.name}</Link>
-                          : (r.player?.name ?? "Unknown")}
+                          ? <Link to="/players/$id" params={{ id: r.person_id }} className="hover:text-primary">{tx(r.player.name)}</Link>
+                          : (tx(r.player?.name) ?? "Unknown")}
                       </div>
                       <div className="mt-1 flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
-                        <span className="truncate">{r.from_club ?? "Free agent"}</span>
+                        <span className="truncate">{tx(r.from_club) ?? "Free agent"}</span>
                         <ArrowRight className="h-3.5 w-3.5 shrink-0 text-primary" />
-                        <span className="truncate font-semibold text-foreground">{r.to_club ?? "—"}</span>
+                        <span className="truncate font-semibold text-foreground">{tx(r.to_club) ?? "—"}</span>
                       </div>
                     </div>
                     <div className="shrink-0 text-right">
