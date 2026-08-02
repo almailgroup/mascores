@@ -5,6 +5,8 @@ import { AppShell, EmptyState, LoadingSkeleton, SectionHeader } from "@/componen
 import { supabase, formatKickoff, type Competition, type Team, type Match, type StandingRow } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 import { FlagIcon } from "@/components/flag";
+import { LinkedNews } from "@/components/linked-news";
+import { useAutoTranslate } from "@/lib/auto-translate";
 import type { Database } from "@/integrations/supabase/types";
 
 type PositionLabel = Database["public"]["Tables"]["standings_position_labels"]["Row"];
@@ -27,7 +29,8 @@ export const Route = createFileRoute("/competitions/$slug")({
 
 function CompetitionPage() {
   const { slug } = Route.useParams();
-  const [tab, setTab] = useState<"overview" | "matches" | "standings" | "teams" | "awards" | "media">("overview");
+  const [tab, setTab] = useState<"overview" | "matches" | "standings" | "teams" | "awards" | "media" | "news">("overview");
+  const [season, setSeason] = useState<string | null>(null);
   useRealtime(["competitions", "teams", "matches", "standings_rows", "competition_awards", "media_items"]);
 
   const comp = useQuery({
@@ -51,23 +54,26 @@ function CompetitionPage() {
 
   const matches = useQuery({
     enabled: !!comp.data,
-    queryKey: ["comp-matches", comp.data?.id],
+    queryKey: ["comp-matches", comp.data?.id, season],
     queryFn: async () => {
-      const { data } = await supabase.from("matches")
+      let query = supabase.from("matches")
         .select("*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url)")
-        .eq("competition_id", comp.data!.id)
-        .order("kickoff_at");
+        .eq("competition_id", comp.data!.id);
+      if (season) query = query.eq("season", season);
+      const { data } = await query.order("kickoff_at");
       return (data ?? []) as unknown as (Match & { home: Team | null; away: Team | null })[];
     },
   });
 
   const standings = useQuery({
     enabled: !!comp.data,
-    queryKey: ["comp-standings", comp.data?.id],
+    queryKey: ["comp-standings", comp.data?.id, season],
     queryFn: async () => {
-      const { data } = await supabase.from("standings_rows")
+      let query = supabase.from("standings_rows")
         .select("*, team:team_id(id,name,logo_url,short_name)")
-        .eq("competition_id", comp.data!.id)
+        .eq("competition_id", comp.data!.id);
+      if (season) query = query.eq("season", season);
+      const { data } = await query
         .order("group_label", { ascending: true, nullsFirst: true })
         .order("sort_order");
       return (data ?? []) as unknown as (StandingRow & { team: Team | null })[];
@@ -85,6 +91,24 @@ function CompetitionPage() {
   const media = useQuery({ enabled: !!comp.data, queryKey: ["competition-media", comp.data?.id], queryFn: async () => (await supabase.from("media_items").select("*").eq("owner_type", "competition").eq("owner_id", comp.data!.id).order("sort_order")).data ?? [] });
   const awards = useQuery({ enabled: !!comp.data, queryKey: ["competition-awards", comp.data?.id], queryFn: async () => (await supabase.from("competition_awards").select("*, player:players(id,name,photo_url)").eq("competition_id", comp.data!.id).order("created_at", { ascending: false })).data ?? [] });
   const titleHolder = teams.data?.find((team) => team.id === comp.data?.title_holder_team_id);
+  const compTitles = useQuery({
+    enabled: !!comp.data,
+    queryKey: ["comp-titles", comp.data?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("competition_teams").select("team_id,titles").eq("competition_id", comp.data!.id).order("titles", { ascending: false });
+      return (data ?? []) as { team_id: string; titles: number }[];
+    },
+  });
+  const divisions = useQuery({
+    enabled: !!comp.data && !!(comp.data.higher_division_id || comp.data.lower_division_id),
+    queryKey: ["comp-divisions", comp.data?.higher_division_id, comp.data?.lower_division_id],
+    queryFn: async () => {
+      const ids = [comp.data!.higher_division_id, comp.data!.lower_division_id].filter((v): v is string => !!v);
+      const { data } = await supabase.from("competitions").select("id,name,slug").in("id", ids);
+      return (data ?? []) as { id: string; name: string; slug: string }[];
+    },
+  });
+  const tx = useAutoTranslate([comp.data?.name, comp.data?.description, comp.data?.country, comp.data?.category]);
 
   if (comp.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;
   if (!comp.data) return <AppShell><EmptyState title="Competition not found" /></AppShell>;
@@ -97,20 +121,29 @@ function CompetitionPage() {
           {c.logo_url && <img src={c.logo_url} alt="" className="h-full w-full object-contain" />}
         </div>
         <div>
-          <h1 className="text-2xl font-bold">{c.name}</h1>
+          <h1 className="text-2xl font-bold">{tx(c.name)}</h1>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <FlagIcon value={c.country_code ?? c.country} />
-            <span>{[c.country, c.season, c.category].filter(Boolean).join(" · ")}</span>
+            <span>{[tx(c.country), season ?? c.season, tx(c.category)].filter(Boolean).join(" · ")}</span>
           </div>
-          {c.description && <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{c.description}</p>}
+          {c.description && <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{tx(c.description)}</p>}
         </div>
       </div>
 
+      {(c.seasons?.length ?? 0) > 0 && (
+        <div className="mb-4 flex flex-wrap gap-2">
+          <button onClick={() => setSeason(null)} className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${season === null ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground"}`}>All seasons</button>
+          {c.seasons.map((s) => (
+            <button key={s} onClick={() => setSeason(s)} className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${season === s ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground"}`}>{s}</button>
+          ))}
+        </div>
+      )}
+
       <div className="mb-6 flex max-w-full gap-1 overflow-x-auto border-b border-border pb-2 text-sm">
-        {(["overview", "matches", "standings", "teams", "awards", "media"] as const).map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 py-2 font-semibold capitalize ${tab === item ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{item}</button>)}
+        {(["overview", "matches", "standings", "teams", "awards", "media", "news"] as const).map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 py-2 font-semibold capitalize ${tab === item ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{item}</button>)}
       </div>
 
-      {tab === "overview" && <div className="grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">{[["Sport", c.sport], ["Format", c.format], ["Teams", String(teams.data?.length ?? 0)], ["Duration", [c.starts_on, c.ends_on].filter(Boolean).join(" — ") || "—"], ["Season", c.season ?? "—"], ["Available seasons", c.seasons?.join(", ") || "—"], ["Title holder", titleHolder?.name ?? "—"], ["Country", c.country ?? "—"]].map(([label, value]) => <div key={label} className="bg-card p-4"><div className="text-[0.65rem] font-bold uppercase text-muted-foreground">{label}</div><div className="mt-1 font-semibold">{value}</div></div>)}</div>}
+      {tab === "overview" && <CompetitionOverviewTab c={c} season={season} teams={teams.data ?? []} titleHolderName={titleHolder?.name ?? null} titles={compTitles.data ?? []} divisions={divisions.data ?? []} />}
 
       {tab === "matches" && <><SectionHeader title="Matches" />
       {matches.data && matches.data.length > 0 ? (
@@ -196,6 +229,60 @@ function CompetitionPage() {
       ) : <EmptyState title="No teams yet" />}</>}
       {tab === "awards" && <>{awards.data && awards.data.length > 0 ? <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{awards.data.map((award) => <div key={award.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4">{award.player?.photo_url ? <img src={award.player.photo_url} alt="" className="h-12 w-12 rounded-full object-cover" /> : <div className="h-12 w-12 rounded-full bg-muted" />}<div><div className="font-bold">{award.player?.name ?? "Player"}</div><div className="text-xs text-muted-foreground">{award.award_type === "player_of_round" ? `Player of round ${award.round_number ?? "—"}` : "Player of the season"}{award.season ? ` · ${award.season}` : ""}</div></div></div>)}</div> : <EmptyState title="No competition awards yet" />}</>}
       {tab === "media" && <>{media.data && media.data.length > 0 ? <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{media.data.map((item) => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="rounded-lg border border-border bg-card p-4 hover:border-primary"><div className="text-xs font-bold uppercase text-primary">{item.source}</div><div className="mt-1 font-semibold">{item.title || "Open media"}</div><div className="mt-1 truncate text-xs text-muted-foreground">{item.url}</div></a>)}</div> : <EmptyState title="No competition media yet" />}</>}
+      {tab === "news" && <LinkedNews kind="competition" id={c.id} />}
     </AppShell>
+  );
+}
+
+function CompetitionOverviewTab({ c, season, teams, titleHolderName, titles, divisions }: {
+  c: Competition;
+  season: string | null;
+  teams: Team[];
+  titleHolderName: string | null;
+  titles: { team_id: string; titles: number }[];
+  divisions: { id: string; name: string; slug: string }[];
+}) {
+  const winners = titles.filter((r) => r.titles > 0);
+  const best = winners[0];
+  const bestTeam = best ? teams.find((team) => team.id === best.team_id) : undefined;
+  const higher = divisions.find((d) => d.id === c.higher_division_id);
+  const lower = divisions.find((d) => d.id === c.lower_division_id);
+  const cells: [string, string][] = [
+    ["Sport", c.sport], ["Format", c.format], ["Teams", String(teams.length)],
+    ["Duration", [c.starts_on, c.ends_on].filter(Boolean).join(" — ") || "—"],
+    ["Season", season ?? c.season ?? "—"], ["Available seasons", c.seasons?.join(", ") || "—"],
+    ["Title holder", titleHolderName ?? "—"],
+    ["Most titles", bestTeam && best ? `${bestTeam.name} (${best.titles})` : "—"],
+    ["Higher division", higher?.name ?? "—"], ["Lower division", lower?.name ?? "—"],
+    ["Country", c.country ?? "—"],
+  ];
+  return (
+    <>
+      <div className="grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
+        {cells.map(([label, value]) => (
+          <div key={label} className="bg-card p-4">
+            <div className="text-[0.65rem] font-bold uppercase text-muted-foreground">{label}</div>
+            <div className="mt-1 font-semibold">{value}</div>
+          </div>
+        ))}
+      </div>
+      {winners.length > 0 && (
+        <div className="mt-6 overflow-hidden rounded-2xl border border-border bg-card">
+          <div className="border-b border-border px-4 py-3 text-sm font-bold">Title winners</div>
+          <div className="divide-y divide-border">
+            {winners.map((r) => {
+              const team = teams.find((tm) => tm.id === r.team_id);
+              return (
+                <Link key={r.team_id} to="/teams/$id" params={{ id: r.team_id }} className="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-accent">
+                  {team?.logo_url ? <img src={team.logo_url} alt="" className="h-5 w-5 object-contain" /> : <span className="h-5 w-5 rounded bg-muted" />}
+                  <span className="min-w-0 flex-1 truncate font-medium">{team?.name ?? "Team"}</span>
+                  <span className="font-black tabular-nums">{r.titles}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </>
   );
 }

@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { ThemeProvider } from "../components/theme-provider";
 import { IntroSplash } from "../components/intro-splash";
 import { I18nProvider } from "../lib/i18n";
+import { CurrencyProvider } from "../lib/currency";
 
 function NotFoundComponent() {
   return (
@@ -136,8 +137,10 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <I18nProvider>
-          <IntroSplash />
-          <Outlet />
+          <CurrencyProvider>
+            <IntroSplash />
+            <Outlet />
+          </CurrencyProvider>
         </I18nProvider>
       </ThemeProvider>
     </QueryClientProvider>

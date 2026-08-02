@@ -6,6 +6,9 @@ import { supabase, formatKickoff, formatHeight, formatDob, type Player, type Tea
 import { FavoriteButton } from "@/hooks/use-favorites";
 import { FlagIcon } from "@/components/flag";
 import { useI18n } from "@/lib/i18n";
+import { PlayerAvatar } from "@/components/player-avatar";
+import { LinkedNews } from "@/components/linked-news";
+import { formatMoney, useCurrency } from "@/lib/currency";
 import { ArrowRight } from "lucide-react";
 
 export const Route = createFileRoute("/players/$id")({
@@ -22,7 +25,7 @@ export const Route = createFileRoute("/players/$id")({
   component: PlayerPage,
 });
 
-type Tab = "details" | "matches" | "media";
+type Tab = "details" | "matches" | "media" | "news";
 
 function age(dob: string | null | undefined) {
   if (!dob) return null;
@@ -34,6 +37,7 @@ function age(dob: string | null | undefined) {
 function PlayerPage() {
   const { id } = Route.useParams();
   const { t: tr } = useI18n();
+  const { currency } = useCurrency();
   const [tab, setTab] = useState<Tab>("details");
 
   const q = useQuery({ queryKey: ["player", id], queryFn: async () => {
@@ -64,9 +68,7 @@ function PlayerPage() {
     <AppShell>
       <div className="mb-4 overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/15 via-card to-card p-6">
         <div className="flex items-center gap-5">
-          <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-primary/30 bg-muted">
-            {p.photo_url ? <img src={p.photo_url} alt={p.name} className="h-full w-full object-cover" /> : <span className="text-3xl font-bold">{p.shirt_number ?? "?"}</span>}
-          </div>
+          <PlayerAvatar src={p.photo_url} name={p.name} size="lg" className="border-2 border-primary/30" />
           <div className="min-w-0 flex-1">
             <h1 className="truncate text-3xl font-black tracking-tight">{p.name}</h1>
             {p.team && (
@@ -81,7 +83,7 @@ function PlayerPage() {
       </div>
 
       <div className="mb-5 flex gap-1 overflow-x-auto rounded-full border border-border bg-card p-1 text-xs">
-        {(["details", "matches", "media"] as const).map((k) => (
+        {(["details", "matches", "media", "news"] as const).map((k) => (
           <button key={k} onClick={() => setTab(k)}
             className={`whitespace-nowrap rounded-full px-5 py-1.5 font-semibold ${tab === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
             {tr(`tab.${k}`)}
@@ -97,7 +99,7 @@ function PlayerPage() {
             <Stat label="Height" value={formatHeight(p.height_cm, "cm")} />
             <Stat label="Position" value={p.position ?? "—"} />
             <Stat label="Shirt" value={p.shirt_number != null ? `#${p.shirt_number}` : "—"} />
-            <Stat label="Market value" value={p.market_value ?? "—"} />
+            <Stat label="Market value" value={formatMoney(p.market_value, currency)} />
           </div>
 
           <h2 className="mb-3 mt-8 text-sm font-bold uppercase tracking-widest text-muted-foreground">Transfer history</h2>
@@ -138,6 +140,8 @@ function PlayerPage() {
           </div>
         ) : <EmptyState title="No media yet" />
       )}
+
+      {tab === "news" && <LinkedNews kind="player" id={p.id} />}
     </AppShell>
   );
 }

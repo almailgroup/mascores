@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, EmptyState, LoadingSkeleton } from "@/components/app-shell";
 import { supabase, type NewsPost } from "@/lib/db";
+import { useAutoTranslate } from "@/lib/auto-translate";
 import { ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/news/$slug")({
@@ -27,22 +28,27 @@ function ArticlePage() {
       return data as NewsPost | null;
     },
   });
+  const n = q.data ?? null;
+  const tx = useAutoTranslate([n?.title, n?.excerpt, n?.body_markdown]);
   if (q.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;
-  if (!q.data) return <AppShell><EmptyState title="Article not found" /></AppShell>;
-  const n = q.data;
+  if (!n) return <AppShell><EmptyState title="Article not found" /></AppShell>;
   return (
     <AppShell>
       <Link to="/news" className="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> News</Link>
       <article className="overflow-hidden rounded-3xl border border-border bg-card">
-        {n.cover_url && <img src={n.cover_url} alt="" className="h-64 w-full object-cover" />}
+        {n.cover_url && (
+          <div className="flex w-full items-center justify-center bg-muted/60">
+            <img src={n.cover_url} alt="" className="max-h-[70vh] w-full object-contain" />
+          </div>
+        )}
         <div className="p-6 sm:p-8">
-          <h1 className="text-2xl font-black tracking-tight sm:text-4xl">{n.title}</h1>
+          <h1 className="text-2xl font-black tracking-tight sm:text-4xl">{tx(n.title)}</h1>
           <div className="mt-2 text-xs text-muted-foreground">
             {n.published_at ? new Date(n.published_at).toLocaleDateString(undefined, { dateStyle: "long" }) : ""}
             {n.author_display ? ` · ${n.author_display}` : ""}
           </div>
           <div className="mt-6 space-y-4 text-[0.95rem] leading-7 text-foreground/90">
-            {n.body_markdown.split(/\n{2,}/).map((para, i) => <p key={i} className="whitespace-pre-wrap">{para}</p>)}
+            {tx(n.body_markdown).split(/\n{2,}/).map((para, i) => <p key={i} className="whitespace-pre-wrap">{para}</p>)}
           </div>
         </div>
       </article>

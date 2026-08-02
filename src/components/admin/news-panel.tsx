@@ -6,6 +6,8 @@ import { Field, Modal, ImageInput, inputCls, btnPrimary, btnGhost, btnDanger } f
 import { uploadMedia } from "./upload";
 import { createArticleDraftWithAlmail } from "@/lib/almail-ai.functions";
 import { readAiImages, type AiImageInput } from "@/lib/image-files";
+import { NewsLinkPicker, type NewsLinks } from "./news-link-picker";
+import { NewsSubmissionsPanel } from "./news-submissions-panel";
 import { Plus, Pencil, Trash2, Sparkles, ImagePlus, Loader2 } from "lucide-react";
 
 type Form = Partial<NewsPost>;
@@ -31,7 +33,14 @@ export function NewsPanel() {
 
   const save = async () => {
     if (!form.title) return;
-    const payload = { ...form, slug: form.slug || slugify(form.title), body_markdown: form.body_markdown ?? "" };
+    const payload = {
+      ...form,
+      slug: form.slug || slugify(form.title),
+      body_markdown: form.body_markdown ?? "",
+      team_id: form.team_id ?? null,
+      competition_id: form.competition_id ?? null,
+      player_id: form.player_id ?? null,
+    };
     if (form.id) await supabase.from("news_posts").update(payload).eq("id", form.id);
     else await supabase.from("news_posts").insert(payload as never);
     setOpen(false); setForm({});
@@ -119,6 +128,12 @@ export function NewsPanel() {
           <Field label="Cover">
             <ImageInput value={form.cover_url ?? null} onChange={(v) => setForm({ ...form, cover_url: v })} onFile={async (f) => { const url = await uploadMedia("news-covers", f); if (url) setForm({ ...form, cover_url: url }); }} />
           </Field>
+          <NewsLinkPicker
+            teamId={form.team_id ?? null}
+            competitionId={form.competition_id ?? null}
+            playerId={form.player_id ?? null}
+            onChange={(links: NewsLinks) => setForm({ ...form, ...links })}
+          />
           <Field label="Excerpt"><textarea rows={2} className={inputCls} value={form.excerpt ?? ""} onChange={(e) => setForm({ ...form, excerpt: e.target.value })} /></Field>
           <Field label="Body (Markdown)"><textarea rows={8} className={inputCls} value={form.body_markdown ?? ""} onChange={(e) => setForm({ ...form, body_markdown: e.target.value })} /></Field>
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={!!form.published_at} onChange={(e) => setForm({ ...form, published_at: e.target.checked ? new Date().toISOString() : null })} /> Publish now</label>
@@ -128,6 +143,10 @@ export function NewsPanel() {
           <button className={btnPrimary} onClick={save}>Save</button>
         </div>
       </Modal>
+
+      <div className="mt-10">
+        <NewsSubmissionsPanel />
+      </div>
     </div>
   );
 }
