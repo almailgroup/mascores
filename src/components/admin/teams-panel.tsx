@@ -35,6 +35,18 @@ export function TeamsPanel({ competitionId }: { competitionId: string }) {
     },
   });
   const libraryQ = useQuery({ queryKey: ["admin", "team-library"], queryFn: async () => (await supabase.from("teams").select("*").order("name")).data as Team[] ?? [] });
+  const titlesQ = useQuery({
+    queryKey: ["admin", "comp-titles", competitionId],
+    queryFn: async () => {
+      const { data } = await supabase.from("competition_teams").select("team_id,titles").eq("competition_id", competitionId);
+      return Object.fromEntries((data ?? []).map((r) => [r.team_id, r.titles ?? 0])) as Record<string, number>;
+    },
+  });
+
+  const setTitles = async (teamId: string, titles: number) => {
+    await supabase.from("competition_teams").update({ titles }).eq("competition_id", competitionId).eq("team_id", teamId);
+    qc.invalidateQueries({ queryKey: ["admin", "comp-titles", competitionId] });
+  };
 
   const save = async () => {
     if (!form.name) return;
@@ -62,14 +74,20 @@ export function TeamsPanel({ competitionId }: { competitionId: string }) {
       </div>
       <div className="grid gap-2">
         {(q.data ?? []).map((t) => (
-          <div key={t.id} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3">
+          <div key={t.id} className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-3 sm:gap-3">
             <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded bg-primary/10">
               {t.logo_url ? <img src={t.logo_url} alt="" className="h-full w-full object-contain" /> : <span className="text-xs">⚽</span>}
             </div>
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0 flex-1 basis-40">
               <div className="truncate font-semibold text-sm">{t.name}</div>
-              <div className="truncate text-xs text-muted-foreground">{[t.country, t.venue_name].filter(Boolean).join(" · ")}</div>
+              <div className="truncate text-xs text-muted-foreground">{[t.country, t.venue_name, `${t.trophies ?? 0} trophies`].filter(Boolean).join(" · ")}</div>
             </div>
+            <label className="flex shrink-0 items-center gap-1 text-[0.65rem] font-semibold uppercase text-muted-foreground">
+              Titles
+              <input type="number" min={0} className="w-16 rounded-lg border border-border bg-background px-2 py-1.5 text-base sm:text-sm"
+                value={titlesQ.data?.[t.id] ?? 0}
+                onChange={(e) => setTitles(t.id, Math.max(0, Number(e.target.value) || 0))} />
+            </label>
             <button className={btnGhost} onClick={() => setSquadOf(t)}><Users className="h-3.5 w-3.5" /> Squad</button>
             <button className={btnGhost} onClick={() => setStaffOf(t)}><UserCog className="h-3.5 w-3.5" /> Coaches</button>
             <button className={btnGhost} onClick={() => { setForm(t); setOpen(true); }}><Pencil className="h-3.5 w-3.5" /></button>
@@ -89,6 +107,8 @@ export function TeamsPanel({ competitionId }: { competitionId: string }) {
           <Field label="Home venue">
             <VenueSelect venue={form.venue_name} city={form.venue_city} onChange={(v, city) => setForm({ ...form, venue_name: v, venue_city: city })} />
           </Field>
+          <Field label="Founded on"><input type="date" className={inputCls} value={form.founded_on ?? ""} onChange={(e) => setForm({ ...form, founded_on: e.target.value || null })} /></Field>
+          <Field label="Total trophies"><input type="number" min={0} className={inputCls} value={form.trophies ?? 0} onChange={(e) => setForm({ ...form, trophies: Math.max(0, Number(e.target.value) || 0) })} /></Field>
           <div className="sm:col-span-2"><Field label="Team logo">
             <ImageInput value={form.logo_url ?? null} onChange={(v) => setForm({ ...form, logo_url: v })} onFile={async (f) => { const url = await uploadMedia("team-logos", f); if (url) setForm({ ...form, logo_url: url }); }} />
           </Field></div>
