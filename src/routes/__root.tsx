@@ -15,6 +15,7 @@ import { ThemeProvider } from "../components/theme-provider";
 import { IntroSplash } from "../components/intro-splash";
 import { I18nProvider } from "../lib/i18n";
 import { CurrencyProvider } from "../lib/currency";
+import { AutoTranslateProvider } from "../lib/auto-translate";
 
 function NotFoundComponent() {
   return (
@@ -138,8 +139,10 @@ function RootComponent() {
       <ThemeProvider>
         <I18nProvider>
           <CurrencyProvider>
-            <IntroSplash />
-            <Outlet />
+            <AutoTranslateProvider>
+              <IntroSplash />
+              <Outlet />
+            </AutoTranslateProvider>
           </CurrencyProvider>
         </I18nProvider>
       </ThemeProvider>
