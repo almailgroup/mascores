@@ -157,7 +157,7 @@ const dict: Record<Lang, Record<string, string>> = {
     "settings.currency": "العملة",
     "settings.currencyHint": "تُدخل القيم السوقية باليورو وتُحوّل تلقائياً.",
     "settings.reporter": "برنامج مراسلي الأخبار",
-    "settings.reporterHint": "انشر أخبار كرة القدم على ManourAlmailScores مقابل 2.99 دولار شهرياً. تُراجع كل مقالة من الإدارة قبل نشرها.",
+    "settings.reporterHint": "انشر أخبار كرة القدم على MansourAlmailScores مقابل 2.99 دولار شهرياً. تُراجع كل مقالة من الإدارة قبل نشرها.",
     "settings.reporterCta": "فتح مكتب المراسلين",
     "settings.deleteAccount": "حذف الحساب",
     "settings.deleteAccountHint": "سيؤدي هذا إلى حذف حسابك وملفك وتفضيلاتك نهائياً.",
