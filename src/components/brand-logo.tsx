@@ -8,11 +8,11 @@ interface BrandLogoProps {
 
 export function BrandLogo({ className, showWordmark = true, variant }: BrandLogoProps) {
   if (variant === "icon" || !showWordmark) {
-    return <img src={logoMark.url} alt="MansourAlmailScores" className={className} />;
+    return <img src={logoMark.url} alt="MansourAlmailScores" className={`${className ?? ""} dark:invert`} />;
   }
   return (
     <span className={`inline-flex items-center gap-2 ${className ?? ""}`}>
-      <img src={logoMark.url} alt="" className="h-full w-auto object-contain" />
+      <img src={logoMark.url} alt="" className="h-full w-auto object-contain dark:invert" />
       <span className="text-base font-black tracking-tight">MansourAlmailScores</span>
     </span>
   );
