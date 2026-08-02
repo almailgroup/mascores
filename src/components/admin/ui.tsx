@@ -9,10 +9,11 @@ export function Field({ label, children }: { label: string; children: ReactNode 
   );
 }
 
-export const inputCls = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary";
-export const btnPrimary = "inline-flex h-9 items-center gap-2 rounded-full bg-primary px-4 text-xs font-semibold text-primary-foreground shadow disabled:opacity-60";
-export const btnGhost = "inline-flex h-9 items-center gap-2 rounded-full border border-border bg-background px-3 text-xs font-medium hover:bg-accent";
-export const btnDanger = "inline-flex h-9 items-center gap-2 rounded-full border border-destructive/40 bg-destructive/10 px-3 text-xs font-medium text-destructive hover:bg-destructive/20";
+// 16px minimum font-size on touch widths keeps iOS Safari from auto-zooming on focus.
+export const inputCls = "w-full max-w-full rounded-lg border border-border bg-background px-3 py-2.5 text-base outline-none focus:border-primary sm:py-2 sm:text-sm";
+export const btnPrimary = "inline-flex h-10 shrink-0 items-center gap-2 rounded-full bg-primary px-4 text-xs font-semibold text-primary-foreground shadow disabled:opacity-60 sm:h-9";
+export const btnGhost = "inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-border bg-background px-3 text-xs font-medium hover:bg-accent sm:h-9";
+export const btnDanger = "inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-destructive/40 bg-destructive/10 px-3 text-xs font-medium text-destructive hover:bg-destructive/20 sm:h-9";
 
 export function Modal({ open, onClose, title, children, wide }: { open: boolean; onClose: () => void; title: string; children: ReactNode; wide?: boolean }) {
   if (!open) return null;
