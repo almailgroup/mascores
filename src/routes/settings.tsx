@@ -6,7 +6,10 @@ import { useI18n, type Lang } from "@/lib/i18n";
 import { useTheme } from "@/components/theme-provider";
 import { AppShell } from "@/components/app-shell";
 import { uploadMedia } from "@/components/admin/upload";
-import { Save, LogOut, ShieldCheck, Loader2, LogIn, Camera } from "lucide-react";
+import { CURRENCIES, useCurrency } from "@/lib/currency";
+import { deleteMyAccount } from "@/lib/account.functions";
+import { useServerFn } from "@tanstack/react-start";
+import { Save, LogOut, ShieldCheck, Loader2, LogIn, Camera, Trash2, Newspaper } from "lucide-react";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({ meta: [{ title: "Settings — MansourAlmailScores" }, { name: "robots", content: "noindex" }] }),
@@ -18,6 +21,9 @@ function SettingsPage() {
   const navigate = useNavigate();
   const { t, lang, setLang } = useI18n();
   const { theme, setTheme } = useTheme();
+  const { currency, setCurrency } = useCurrency();
+  const removeAccount = useServerFn(deleteMyAccount);
+  const [deleting, setDeleting] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [heightUnit, setHeightUnit] = useState<"cm" | "ft">("cm");
@@ -135,6 +141,19 @@ function SettingsPage() {
         </div>
       </section>
 
+      <section className="mt-4 rounded-3xl border border-border bg-card p-6">
+        <div className="mb-1 text-sm font-semibold">{t("settings.currency")}</div>
+        <p className="mb-3 text-xs text-muted-foreground">{t("settings.currencyHint")}</p>
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-7">
+          {CURRENCIES.map((c) => (
+            <button key={c} type="button" onClick={() => setCurrency(c)}
+              className={`rounded-xl border px-2 py-2 text-sm font-semibold ${currency === c ? "border-primary bg-primary/10 text-primary" : "border-border bg-background hover:bg-accent"}`}>
+              {c}
+            </button>
+          ))}
+        </div>
+      </section>
+
       {notice && <div className="mt-4 rounded-md border border-primary/40 bg-primary/10 px-3 py-2 text-sm text-primary">{notice}</div>}
 
       {user && (
@@ -149,11 +168,37 @@ function SettingsPage() {
       )}
 
       {user && <section className="mt-10 rounded-3xl border border-dashed border-border bg-card/60 p-6">
+        <div className="flex items-center gap-2 text-sm font-semibold"><Newspaper className="h-4 w-4 text-primary" /> {t("settings.reporter")}</div>
+        <p className="mt-1 text-xs text-muted-foreground">{t("settings.reporterHint")}</p>
+        <Link to="/contribute" className="mt-3 inline-flex h-9 items-center rounded-full border border-border bg-background px-4 text-sm font-medium hover:bg-accent">
+          {t("settings.reporterCta")}
+        </Link>
+      </section>}
+
+      {user && <section className="mt-4 rounded-3xl border border-dashed border-border bg-card/60 p-6">
         <div className="flex items-center gap-2 text-sm font-semibold"><ShieldCheck className="h-4 w-4 text-primary" /> {t("settings.admin")}</div>
         <p className="mt-1 text-xs text-muted-foreground">{t("settings.adminHint")}</p>
         <Link to="/admin" className="mt-3 inline-flex h-9 items-center rounded-full border border-border bg-background px-4 text-sm font-medium hover:bg-accent">
           {isAdmin ? "Open admin" : "Enter admin"}
         </Link>
+      </section>}
+
+      {user && <section className="mt-4 rounded-3xl border border-destructive/40 bg-destructive/5 p-6">
+        <div className="flex items-center gap-2 text-sm font-semibold text-destructive"><Trash2 className="h-4 w-4" /> {t("settings.deleteAccount")}</div>
+        <p className="mt-1 text-xs text-muted-foreground">{t("settings.deleteAccountHint")}</p>
+        <button disabled={deleting}
+          onClick={async () => {
+            if (!confirm(t("settings.deleteAccountConfirm"))) return;
+            setDeleting(true);
+            try {
+              await removeAccount({});
+              await supabase.auth.signOut();
+              navigate({ to: "/" });
+            } finally { setDeleting(false); }
+          }}
+          className="mt-3 inline-flex h-9 items-center gap-2 rounded-full border border-destructive/50 bg-destructive/10 px-4 text-sm font-semibold text-destructive disabled:opacity-60">
+          {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />} {t("settings.deleteAccount")}
+        </button>
       </section>}
     </AppShell>
   );
