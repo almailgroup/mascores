@@ -6,7 +6,7 @@ import { supabase, formatKickoff, type Competition, type Team, type Match, type 
 import { useRealtime } from "@/lib/realtime";
 import { FlagIcon } from "@/components/flag";
 import { LinkedNews } from "@/components/linked-news";
-import { useAutoTranslate } from "@/lib/auto-translate";
+import { useTx } from "@/lib/auto-translate";
 import type { Database } from "@/integrations/supabase/types";
 
 type PositionLabel = Database["public"]["Tables"]["standings_position_labels"]["Row"];
@@ -108,7 +108,7 @@ function CompetitionPage() {
       return (data ?? []) as { id: string; name: string; slug: string }[];
     },
   });
-  const tx = useAutoTranslate([comp.data?.name, comp.data?.description, comp.data?.country, comp.data?.category]);
+  const tx = useTx();
 
   if (comp.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;
   if (!comp.data) return <AppShell><EmptyState title="Competition not found" /></AppShell>;
@@ -143,7 +143,7 @@ function CompetitionPage() {
         {(["overview", "matches", "standings", "teams", "awards", "media", "news"] as const).map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 py-2 font-semibold capitalize ${tab === item ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{item}</button>)}
       </div>
 
-      {tab === "overview" && <CompetitionOverviewTab c={c} season={season} teams={teams.data ?? []} titleHolderName={titleHolder?.name ?? null} titles={compTitles.data ?? []} divisions={divisions.data ?? []} />}
+      {tab === "overview" && <CompetitionOverviewTab c={c} season={season} teams={teams.data ?? []} titleHolderName={tx(titleHolder?.name) ?? null} titles={compTitles.data ?? []} divisions={divisions.data ?? []} />}
 
       {tab === "matches" && <><SectionHeader title="Matches" />
       {matches.data && matches.data.length > 0 ? (
@@ -152,9 +152,9 @@ function CompetitionPage() {
             <Link key={m.id} to="/matches/$id" params={{ id: m.id }} className="rounded-2xl border border-border bg-card p-4 hover:border-primary/50">
               <div className="text-[0.65rem] uppercase tracking-widest text-muted-foreground">{m.round ?? "—"}</div>
               <div className="mt-2 grid items-center gap-2" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
-                <div className="truncate text-right font-semibold">{m.home?.name ?? "TBD"}</div>
+                <div className="truncate text-right font-semibold">{tx(m.home?.name) ?? "TBD"}</div>
                 <div className="text-center text-sm font-bold">{m.home_score != null ? `${m.home_score} – ${m.away_score}` : formatKickoff(m.kickoff_at)}</div>
-                <div className="truncate font-semibold">{m.away?.name ?? "TBD"}</div>
+                <div className="truncate font-semibold">{tx(m.away?.name) ?? "TBD"}</div>
               </div>
             </Link>
           ))}
@@ -188,7 +188,7 @@ function CompetitionPage() {
                             {r.team ? (
                               <Link to="/teams/$id" params={{ id: r.team.id }} className="flex items-center gap-2 font-medium hover:text-primary">
                                 {r.team.logo_url && <img src={r.team.logo_url} alt="" className="h-5 w-5 object-contain" />}
-                                <span className="truncate">{r.team.name}</span>
+                                <span className="truncate">{tx(r.team.name)}</span>
                               </Link>
                             ) : "—"}
                           </td>
@@ -222,12 +222,12 @@ function CompetitionPage() {
           {teams.data.map((t) => (
             <Link key={t.id} to="/teams/$id" params={{ id: t.id }} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 hover:border-primary/50">
               {t.logo_url && <img src={t.logo_url} alt="" className="h-8 w-8 object-contain" />}
-              <div className="min-w-0"><div className="truncate font-medium">{t.name}</div><div className="truncate text-xs text-muted-foreground">{t.country}</div></div>
+              <div className="min-w-0"><div className="truncate font-medium">{tx(t.name)}</div><div className="truncate text-xs text-muted-foreground">{tx(t.country)}</div></div>
             </Link>
           ))}
         </div>
       ) : <EmptyState title="No teams yet" />}</>}
-      {tab === "awards" && <>{awards.data && awards.data.length > 0 ? <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{awards.data.map((award) => <div key={award.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4">{award.player?.photo_url ? <img src={award.player.photo_url} alt="" className="h-12 w-12 rounded-full object-cover" /> : <div className="h-12 w-12 rounded-full bg-muted" />}<div><div className="font-bold">{award.player?.name ?? "Player"}</div><div className="text-xs text-muted-foreground">{award.award_type === "player_of_round" ? `Player of round ${award.round_number ?? "—"}` : "Player of the season"}{award.season ? ` · ${award.season}` : ""}</div></div></div>)}</div> : <EmptyState title="No competition awards yet" />}</>}
+      {tab === "awards" && <>{awards.data && awards.data.length > 0 ? <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{awards.data.map((award) => <div key={award.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4">{award.player?.photo_url ? <img src={award.player.photo_url} alt="" className="h-12 w-12 rounded-full object-cover" /> : <div className="h-12 w-12 rounded-full bg-muted" />}<div><div className="font-bold">{tx(award.player?.name) ?? "Player"}</div><div className="text-xs text-muted-foreground">{award.award_type === "player_of_round" ? `Player of round ${award.round_number ?? "—"}` : "Player of the season"}{award.season ? ` · ${award.season}` : ""}</div></div></div>)}</div> : <EmptyState title="No competition awards yet" />}</>}
       {tab === "media" && <>{media.data && media.data.length > 0 ? <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{media.data.map((item) => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="rounded-lg border border-border bg-card p-4 hover:border-primary"><div className="text-xs font-bold uppercase text-primary">{item.source}</div><div className="mt-1 font-semibold">{item.title || "Open media"}</div><div className="mt-1 truncate text-xs text-muted-foreground">{item.url}</div></a>)}</div> : <EmptyState title="No competition media yet" />}</>}
       {tab === "news" && <LinkedNews kind="competition" id={c.id} />}
     </AppShell>
