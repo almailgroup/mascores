@@ -123,14 +123,31 @@ function TeamPage() {
 
       {tab === "standings" && (
         rows.data && rows.data.length > 0 ? (
-          <div className="grid gap-2">
-            {rows.data.map((r) => (
-              <Link key={r.id} to="/competitions/$slug" params={{ slug: r.competition?.slug ?? "" }} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4 hover:border-primary/50">
-                <div className="flex-1 font-semibold">{r.competition?.name}</div>
-                <div className="text-xs text-muted-foreground">{r.played} P · {r.won}W {r.drawn}D {r.lost}L</div>
-                <div className="text-lg font-black tabular-nums">{r.points + r.points_adjust}</div>
-              </Link>
-            ))}
+          <div className="grid gap-6">
+            {[...new Map(rows.data.map((r) => [r.competition_id, r])).values()].map((head) => {
+              const group = rows.data!.filter((r) => r.competition_id === head.competition_id);
+              return (
+                <div key={head.competition_id} className="overflow-hidden rounded-2xl border border-border bg-card">
+                  <Link to="/competitions/$slug" params={{ slug: head.competition?.slug ?? "" }} className="flex items-center justify-between gap-2 border-b border-border px-4 py-3 text-sm font-bold hover:text-primary">
+                    {head.competition?.name ?? "Competition"}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                  <div className="divide-y divide-border">
+                    {group.map((r, index) => (
+                      <Link key={r.id} to="/teams/$id" params={{ id: r.team?.id ?? r.team_id }}
+                        className={`flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-accent ${r.team_id === id ? "bg-primary/10 font-bold" : ""}`}>
+                        <span className="w-5 shrink-0 text-xs tabular-nums text-muted-foreground">{index + 1}</span>
+                        {r.team?.logo_url ? <img src={r.team.logo_url} alt="" className="h-5 w-5 shrink-0 object-contain" /> : <span className="h-5 w-5 shrink-0 rounded bg-muted" />}
+                        <span className="min-w-0 flex-1 truncate">{r.team?.name ?? "Team"}</span>
+                        {r.qualification_label && <span className="hidden shrink-0 rounded-full px-2 py-0.5 text-[0.6rem] font-semibold sm:inline" style={{ backgroundColor: `${r.qualification_color ?? "#888"}22`, color: r.qualification_color ?? undefined }}>{r.qualification_label}</span>}
+                        <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{r.played} · {r.gf}:{r.ga}</span>
+                        <span className="w-8 shrink-0 text-right font-black tabular-nums">{r.points + r.points_adjust}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         ) : <EmptyState title="Not in a table yet" />
       )}
@@ -140,9 +157,7 @@ function TeamPage() {
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {squad.data.map((p) => (
               <Link key={p.id} to="/players/$id" params={{ id: p.id }} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 hover:border-primary/50">
-                <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-muted text-sm font-semibold">
-                  {p.photo_url ? <img src={p.photo_url} alt="" className="h-full w-full object-cover" /> : (p.shirt_number ?? "?")}
-                </div>
+                <PlayerAvatar src={p.photo_url} name={p.name} size="sm" />
                 <div className="min-w-0"><div className="truncate font-medium">{p.name}</div><div className="truncate text-xs text-muted-foreground">{p.position ?? "—"}</div></div>
               </Link>
             ))}
