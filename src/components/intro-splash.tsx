@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import logoMark from "@/assets/logo-mark-v2.png.asset.json";
+import logoLight from "@/assets/logo-mark-v2.png.asset.json";
+import logoDark from "@/assets/logo-mark-dark.png";
 import { useTheme } from "./theme-provider";
 
 const SESSION_KEY = "mas-intro-shown";
@@ -27,7 +28,7 @@ export function IntroSplash() {
 
   if (!visible) return null;
   const isLight = theme === "light";
-  const src = logoMark.url;
+  const src = isLight ? logoLight.url : logoDark;
 
   return (
     <div
@@ -46,7 +47,7 @@ export function IntroSplash() {
           <img
             src={src}
             alt="MansourAlmailScores"
-            className={`h-auto w-[min(220px,50vw)] ${isLight ? "" : "invert drop-shadow-[0_0_40px_rgba(37,99,235,0.45)]"}`}
+            className={`h-auto w-[min(220px,50vw)] ${isLight ? "" : "drop-shadow-[0_0_40px_rgba(37,99,235,0.45)]"}`}
           />
           <div className={`text-2xl font-black tracking-tight ${isLight ? "text-slate-900" : "text-white"}`}>MansourAlmailScores</div>
         </div>
