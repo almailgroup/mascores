@@ -203,3 +203,87 @@ function ResultModal({ match, teamName, onClose, onSaved }: { match: Match; team
     </Modal>
   );
 }
+
+type FixtureRow = { home: string; away: string; kickoff_at: string | null; round_number: number | null; venue: string | null; city: string | null };
+
+/** Almail AI reads a fixture list (text or screenshots) and stages matches for one-tap import. */
+function AlmailFixtureImporter({ open, onClose, competitionId, teams, onImported }: { open: boolean; onClose: () => void; competitionId: string; teams: Team[]; onImported: () => void }) {
+  const run = useServerFn(createFixtureDraftsWithAlmail);
+  const [notes, setNotes] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [drafts, setDrafts] = useState<FixtureRow[]>([]);
+  const [images, setImages] = useState<{ name: string; dataUrl: string }[]>([]);
+
+  const match = (name: string) => teams.find((t) => t.name.toLowerCase() === name.trim().toLowerCase())
+    ?? teams.find((t) => t.name.toLowerCase().includes(name.trim().toLowerCase()) || name.trim().toLowerCase().includes(t.name.toLowerCase()));
+
+  const analyse = async () => {
+    setBusy(true); setError(null);
+    try {
+      const result = await run({ data: { notes, images, teams: teams.map((t) => t.name) } });
+      setDrafts(result as FixtureRow[]);
+      if ((result as FixtureRow[]).length === 0) setError("Almail AI could not find any matches in what you shared.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Almail AI is unavailable right now.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const importAll = async () => {
+    const rows = drafts
+      .map((d) => ({ d, home: match(d.home), away: match(d.away) }))
+      .filter((r) => r.home && r.away)
+      .map((r) => ({
+        competition_id: competitionId,
+        home_team_id: r.home!.id,
+        away_team_id: r.away!.id,
+        kickoff_at: r.d.kickoff_at,
+        round_number: r.d.round_number,
+        round: r.d.round_number != null ? `Round ${r.d.round_number}` : null,
+        venue: r.d.venue,
+        city: r.d.city,
+        status: "scheduled",
+      }));
+    if (rows.length === 0) { setError("None of the teams matched this competition’s squad list."); return; }
+    setBusy(true);
+    const { error: insertError } = await supabase.from("matches").insert(rows as never);
+    setBusy(false);
+    if (insertError) { setError(insertError.message); return; }
+    setDrafts([]); setNotes(""); setImages([]); onImported(); onClose();
+  };
+
+  return (
+    <Modal open={open} onClose={onClose} title="Almail AI · import fixtures" wide>
+      <div className="space-y-3">
+        <Field label="Fixture notes">
+          <textarea className={`${inputCls} min-h-28`} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Paste a fixture list, or describe the matches…" />
+        </Field>
+        <Field label="Screenshots (optional)">
+          <input type="file" accept="image/*" multiple className="text-xs" onChange={async (e) => { const files = e.target.files; if (files?.length) setImages(await readAiImages(files)); }} />
+        </Field>
+        {images.length > 0 && <div className="text-xs text-muted-foreground">{images.length} image(s) attached</div>}
+        {error && <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-2 text-xs text-destructive">{error}</div>}
+        {drafts.length > 0 && (
+          <div className="grid gap-2">
+            {drafts.map((d, i) => {
+              const home = match(d.home); const away = match(d.away);
+              return (
+                <div key={i} className="rounded-lg border border-border bg-background p-2 text-xs">
+                  <div className="font-semibold">{d.home} vs {d.away}</div>
+                  <div className="text-muted-foreground">{[d.kickoff_at ? formatKickoff(d.kickoff_at) : "No date", d.round_number != null ? `Round ${d.round_number}` : null, d.venue].filter(Boolean).join(" · ")}</div>
+                  {(!home || !away) && <div className="mt-1 text-destructive">Team not found in this competition — add it first.</div>}
+                </div>
+              );
+            })}
+          </div>
+        )}
+        <div className="flex flex-wrap gap-2">
+          <button className={btnGhost} disabled={busy} onClick={analyse}><Sparkles className="h-3.5 w-3.5" /> {busy ? "Reading…" : "Analyse with Almail AI"}</button>
+          {drafts.length > 0 && <button className={btnPrimary} disabled={busy} onClick={importAll}><Plus className="h-3.5 w-3.5" /> Import {drafts.length} match(es)</button>}
+        </div>
+      </div>
+    </Modal>
+  );
+}
