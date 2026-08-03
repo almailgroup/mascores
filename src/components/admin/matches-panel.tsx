@@ -4,7 +4,10 @@ import { supabase, type Match, type Team, STATUS_LABELS, formatKickoff, roundLab
 import { Field, Modal, inputCls, btnPrimary, btnGhost, btnDanger } from "./ui";
 import { VenueSelect } from "./venue-select";
 import { MatchEditor } from "./match-editor";
-import { Plus, Trash2, SlidersHorizontal, Flag } from "lucide-react";
+import { Plus, Trash2, SlidersHorizontal, Flag, Sparkles } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { createFixtureDraftsWithAlmail } from "@/lib/almail-ai.functions";
+import { readAiImages } from "@/lib/image-files";
 
 export function MatchesPanel({ competitionId }: { competitionId: string }) {
   const qc = useQueryClient();
@@ -12,6 +15,7 @@ export function MatchesPanel({ competitionId }: { competitionId: string }) {
   const [form, setForm] = useState<Partial<Match>>({ status: "scheduled" });
   const [editingMatch, setEditingMatch] = useState<Match | null>(null);
   const [resultOf, setResultOf] = useState<Match | null>(null);
+  const [aiOpen, setAiOpen] = useState(false);
 
   const teamsQ = useQuery({
     queryKey: ["admin", "teams", competitionId],
@@ -75,8 +79,18 @@ export function MatchesPanel({ competitionId }: { competitionId: string }) {
     <div>
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-base font-bold">Matches</h3>
-        <button className={btnPrimary} onClick={() => { setForm({ status: "scheduled" }); setOpen(true); }}><Plus className="h-3.5 w-3.5" /> Add match</button>
+        <div className="flex flex-wrap gap-2">
+          <button className={btnGhost} onClick={() => setAiOpen(true)}><Sparkles className="h-3.5 w-3.5" /> Almail AI</button>
+          <button className={btnPrimary} onClick={() => { setForm({ status: "scheduled" }); setOpen(true); }}><Plus className="h-3.5 w-3.5" /> Add match</button>
+        </div>
       </div>
+      <AlmailFixtureImporter
+        open={aiOpen}
+        onClose={() => setAiOpen(false)}
+        competitionId={competitionId}
+        teams={teams}
+        onImported={() => qc.invalidateQueries({ queryKey: ["admin", "matches", competitionId] })}
+      />
 
       <div className="grid gap-5">
         {grouped.map(([round, list]) => (
