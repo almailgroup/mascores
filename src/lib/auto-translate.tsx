@@ -5,7 +5,17 @@ import { useI18n } from "./i18n";
 
 type Tx = <T extends string | null | undefined>(value: T) => T;
 
-const Ctx = createContext<{ tx: Tx }>({ tx: ((v: unknown) => v) as Tx });
+const Ctx = createContext<{ tx: Tx; num: (v: number | string | null | undefined) => string }>({
+  tx: ((v: unknown) => v) as Tx,
+  num: (v) => (v == null ? "" : String(v)),
+});
+
+const AR_DIGITS = ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"];
+
+/** Arabic mode shows Arabic-Indic numerals everywhere, including inside translated text. */
+export function toArabicDigits(value: string): string {
+  return value.replace(/[0-9]/g, (d) => AR_DIGITS[Number(d)]!);
+}
 
 /**
  * Site-wide machine translation for admin-authored content (club names, competitions,
@@ -51,17 +61,31 @@ export function AutoTranslateProvider({ children }: { children: ReactNode }) {
 
   const tx = useCallback(<T extends string | null | undefined>(value: T): T => {
     if (lang === "en" || !value || typeof value !== "string") return value;
-    if (!/[A-Za-z]/.test(value)) return value;
+    if (!/[A-Za-z]/.test(value)) return toArabicDigits(value) as T;
     request(value);
-    return ((map[value.trim()] ?? value) as T);
+    return toArabicDigits(map[value.trim()] ?? value) as T;
   }, [lang, map, request]) as Tx;
 
-  return <Ctx.Provider value={{ tx }}>{children}</Ctx.Provider>;
+  const num = useCallback(
+    (value: number | string | null | undefined) => {
+      if (value == null) return "";
+      const raw = String(value);
+      return lang === "ar" ? toArabicDigits(raw) : raw;
+    },
+    [lang],
+  );
+
+  return <Ctx.Provider value={{ tx, num }}>{children}</Ctx.Provider>;
 }
 
 /** Translate any admin-authored string into the active language. */
 export function useTx(): Tx {
   return useContext(Ctx).tx;
+}
+
+/** Localize any number (scores, minutes, percentages) for the active language. */
+export function useNum() {
+  return useContext(Ctx).num;
 }
 
 /** Backwards-compatible helper: translate a fixed list of strings. */
