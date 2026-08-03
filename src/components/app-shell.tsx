@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
-import logoMark from "@/assets/logo-mark-v2.png.asset.json";
+import { LogoMark } from "@/components/brand-logo";
 
 type NavItem = { to: "/" | "/search" | "/competitions" | "/news" | "/transfers" | "/settings"; labelKey: string; icon: typeof Home; exact?: boolean };
 const NAV: NavItem[] = [
@@ -40,7 +40,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <Link to="/" className="inline-flex shrink-0 items-center gap-2">
-            <img src={logoMark.url} alt="MansourAlmailScores" className="h-10 w-10 object-contain dark:invert" />
+            <LogoMark className="h-10 w-10 object-contain" />
             <span className="hidden text-base font-black tracking-tight sm:inline">MansourAlmailScores</span>
           </Link>
 
