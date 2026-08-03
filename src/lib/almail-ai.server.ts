@@ -81,3 +81,31 @@ export async function generateArticleDraft(notes: string, images: ImageInput[]):
     body_markdown: String(draft.body_markdown ?? "").slice(0, 30000),
   };
 }
+export type FixtureDraft = {
+  home: string;
+  away: string;
+  kickoff_at: string | null;
+  round_number: number | null;
+  venue: string | null;
+  city: string | null;
+};
+
+export async function generateFixtureDrafts(notes: string, images: ImageInput[], teams: string[]): Promise<FixtureDraft[]> {
+  const text = await runAlmail(
+    `You are Almail AI, a fixture-list parser for a football platform. Read the notes and images and extract every match you can see. Only use these known team names when a name clearly matches one of them: ${teams.join(", ") || "(none supplied)"}. Never invent matches, dates or venues. Return JSON only in the shape {"matches":[{"home":string,"away":string,"kickoff_at":string|null,"round_number":number|null,"venue":string|null,"city":string|null}]}. kickoff_at must be a full ISO 8601 timestamp or null. Notes: ${notes || "No notes supplied."}`,
+    images,
+  );
+  const parsed = parseJson<{ matches?: unknown }>(text);
+  const list = Array.isArray(parsed.matches) ? parsed.matches : [];
+  return list.slice(0, 60).map((raw) => {
+    const row = raw as Partial<FixtureDraft>;
+    return {
+      home: String(row.home ?? "").slice(0, 160),
+      away: String(row.away ?? "").slice(0, 160),
+      kickoff_at: row.kickoff_at && !Number.isNaN(new Date(String(row.kickoff_at)).getTime()) ? new Date(String(row.kickoff_at)).toISOString() : null,
+      round_number: Number.isInteger(row.round_number) && Number(row.round_number) > 0 && Number(row.round_number) <= 200 ? Number(row.round_number) : null,
+      venue: row.venue ? String(row.venue).slice(0, 160) : null,
+      city: row.city ? String(row.city).slice(0, 120) : null,
+    };
+  }).filter((row) => row.home && row.away);
+}
