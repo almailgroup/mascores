@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase, type NewsPost } from "@/lib/db";
 import { EmptyState } from "@/components/app-shell";
 import { useAutoTranslate } from "@/lib/auto-translate";
+import { useI18n } from "@/lib/i18n";
 
 type Kind = "team" | "competition" | "player";
 const COLUMN: Record<Kind, "team_id" | "competition_id" | "player_id"> = {
@@ -28,6 +29,7 @@ export function LinkedNews({ kind, id }: { kind: Kind; id: string }) {
   });
 
   const posts = q.data ?? [];
+  const { lang } = useI18n();
   const tx = useAutoTranslate(posts.flatMap((p) => [p.title, p.excerpt]));
 
   if (q.isLoading) return <div className="h-24 animate-pulse rounded-2xl bg-muted" />;
@@ -43,8 +45,8 @@ export function LinkedNews({ kind, id }: { kind: Kind; id: string }) {
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <div className="line-clamp-2 font-semibold">{tx(p.title)}</div>
-            {p.excerpt && <div className="mt-1 line-clamp-2 text-xs text-muted-foreground">{tx(p.excerpt)}</div>}
+             <div className="line-clamp-2 font-semibold">{lang === "ar" && p.title_ar ? p.title_ar : tx(p.title)}</div>
+             {(p.excerpt || p.excerpt_ar) && <div className="mt-1 line-clamp-2 text-xs text-muted-foreground">{lang === "ar" && p.excerpt_ar ? p.excerpt_ar : tx(p.excerpt)}</div>}
             {p.published_at && <div className="mt-1 text-[0.65rem] text-muted-foreground">{new Date(p.published_at).toLocaleDateString()}</div>}
           </div>
         </Link>

@@ -128,10 +128,10 @@ function Home() {
           <div className="grid gap-3 sm:grid-cols-3">
             {news.data.map((n) => (
               <Link key={n.id} to="/news/$slug" params={{ slug: n.slug }} className="group overflow-hidden rounded-2xl border border-border bg-card transition hover:border-primary/50 hover:shadow-lg">
-                {n.cover_url && <img src={n.cover_url} alt="" className="h-32 w-full object-cover" />}
+                 {n.cover_url && <div className="flex h-32 w-full items-center justify-center bg-muted/60"><img src={n.cover_url} alt="" className="h-full w-full object-contain" /></div>}
                 <div className="p-4">
                   <div className="font-semibold">{tx(n.title)}</div>
-                  {n.excerpt && <div className="mt-1 line-clamp-2 text-xs text-muted-foreground">{n.excerpt}</div>}
+                   {n.excerpt && <div className="mt-1 line-clamp-2 text-xs text-muted-foreground">{tx(n.excerpt)}</div>}
                 </div>
               </Link>
             ))}
@@ -294,7 +294,7 @@ function FavoriteMatches() {
 
 function CompLogo({ logo }: { logo: string | null }) {
   return (
-    <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-primary/10 text-primary">
+     <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl text-primary">
       {logo ? <img src={logo} alt="" className="h-full w-full object-contain" /> : <Trophy className="h-6 w-6" />}
     </div>
   );

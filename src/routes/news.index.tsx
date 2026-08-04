@@ -4,6 +4,7 @@ import { AppShell, EmptyState, LoadingSkeleton, SectionHeader } from "@/componen
 import { supabase, type NewsPost } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 import { useAutoTranslate } from "@/lib/auto-translate";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/news/")({
   head: () => ({ meta: [{ title: "News — MansourAlmailScores" }, { name: "description", content: "Latest football news from MansourAlmailScores." }] }),
@@ -17,10 +18,11 @@ function NewsPage() {
     return (data ?? []) as NewsPost[];
   }});
   const posts = q.data ?? [];
+  const { lang, t } = useI18n();
   const tx = useAutoTranslate(posts.flatMap((n) => [n.title, n.excerpt]));
   return (
     <AppShell>
-      <SectionHeader title="News" />
+       <SectionHeader title={t("nav.news")} />
       {q.isLoading ? <LoadingSkeleton /> : !q.data || q.data.length === 0 ? (
         <EmptyState title="No news yet" />
       ) : (
@@ -33,8 +35,8 @@ function NewsPage() {
                 </div>
               )}
               <div className="p-4">
-                <h2 className="font-semibold">{tx(n.title)}</h2>
-                {n.excerpt && <p className="mt-1 text-sm text-muted-foreground">{tx(n.excerpt)}</p>}
+                 <h2 className="font-semibold">{lang === "ar" && n.title_ar ? n.title_ar : tx(n.title)}</h2>
+                 {(n.excerpt || n.excerpt_ar) && <p className="mt-1 text-sm text-muted-foreground">{lang === "ar" && n.excerpt_ar ? n.excerpt_ar : tx(n.excerpt)}</p>}
                 <div className="mt-2 text-xs text-muted-foreground">{n.published_at ? new Date(n.published_at).toLocaleDateString() : ""}{n.author_display ? ` · ${n.author_display}` : ""}</div>
               </div>
             </Link>
