@@ -73,6 +73,7 @@ function Home() {
         .from("news_posts")
         .select("*")
         .not("published_at", "is", null)
+        .lte("published_at", new Date().toISOString())
         .order("published_at", { ascending: false })
         .limit(3);
       return (data ?? []) as NewsPost[];

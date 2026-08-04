@@ -25,7 +25,7 @@ function ArticlePage() {
   const q = useQuery({
     queryKey: ["news", slug],
     queryFn: async () => {
-      const { data } = await supabase.from("news_posts").select("*").eq("slug", slug).maybeSingle();
+      const { data } = await supabase.from("news_posts").select("*").eq("slug", slug).not("published_at", "is", null).lte("published_at", new Date().toISOString()).maybeSingle();
       return data as NewsPost | null;
     },
   });

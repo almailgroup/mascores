@@ -14,7 +14,7 @@ export const Route = createFileRoute("/news/")({
 function NewsPage() {
   useRealtime(["news_posts"]);
   const q = useQuery({ queryKey: ["news"], queryFn: async () => {
-    const { data } = await supabase.from("news_posts").select("*").not("published_at", "is", null).order("published_at", { ascending: false });
+    const { data } = await supabase.from("news_posts").select("*").not("published_at", "is", null).lte("published_at", new Date().toISOString()).order("published_at", { ascending: false });
     return (data ?? []) as NewsPost[];
   }});
   const posts = q.data ?? [];
