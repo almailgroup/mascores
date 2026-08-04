@@ -60,7 +60,8 @@ function CompetitionPage() {
       let query = supabase.from("matches")
         .select("*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url)")
         .eq("competition_id", comp.data!.id);
-      if (season) query = query.eq("season", season);
+       const selectedSeason = season ?? comp.data!.season;
+       if (selectedSeason) query = query.eq("season", selectedSeason);
       const { data } = await query.order("kickoff_at");
       return (data ?? []) as unknown as (Match & { home: Team | null; away: Team | null })[];
     },
@@ -73,7 +74,8 @@ function CompetitionPage() {
       let query = supabase.from("standings_rows")
         .select("*, team:team_id(id,name,logo_url,short_name)")
         .eq("competition_id", comp.data!.id);
-      if (season) query = query.eq("season", season);
+       const selectedSeason = season ?? comp.data!.season;
+       if (selectedSeason) query = query.eq("season", selectedSeason);
       const { data } = await query
         .order("group_label", { ascending: true, nullsFirst: true })
         .order("sort_order");
@@ -265,7 +267,7 @@ function CompetitionOverviewTab({ c, season, teams, titleHolderName, titles, div
       </div>
       {winners.length > 0 && (
         <div className="mt-6 overflow-hidden rounded-2xl border border-border bg-card">
-          <div className="border-b border-border px-4 py-3 text-sm font-bold">Title winners</div>
+          <div className="border-b border-border px-4 py-3 text-sm font-bold">{tx("Title winners")}</div>
           <div className="divide-y divide-border">
             {winners.map((r) => {
               const team = teams.find((tm) => tm.id === r.team_id);

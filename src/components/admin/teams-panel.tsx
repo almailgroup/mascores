@@ -269,6 +269,7 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
 }
 
 function MediaEditor({ urls, onChange }: { urls: string[]; onChange: (v: string[]) => void }) {
+  const [adding, setAdding] = useState(false);
   return (
     <div className="grid gap-2">
       <div className="flex flex-wrap gap-2">
@@ -280,12 +281,7 @@ function MediaEditor({ urls, onChange }: { urls: string[]; onChange: (v: string[
           </div>
         ))}
       </div>
-      <input type="file" accept="image/*" className="text-xs" onChange={async (e) => {
-        const f = e.target.files?.[0];
-        if (!f) return;
-        const url = await uploadMedia("player-photos", f);
-        if (url) onChange([...urls, url]);
-      }} />
+      {adding ? <ImageInput value={null} onChange={() => {}} onFile={async (file) => { const url = await uploadMedia("player-photos", file); if (url) onChange([...urls, url]); setAdding(false); }} /> : <button type="button" className={btnGhost} onClick={() => setAdding(true)}><ImagePlus className="h-3.5 w-3.5" /> Add and crop photo</button>}
     </div>
   );
 }

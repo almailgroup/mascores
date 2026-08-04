@@ -67,7 +67,7 @@ function TeamPage() {
   const transfers = useQuery({ queryKey: ["team-transfers", id, team.data?.name], enabled: !!team.data, queryFn: async () => {
     const name = team.data!.name;
     const { data } = await supabase.from("transfers").select("*")
-      .or(`from_club.eq.${name},to_club.eq.${name}`).order("moved_on", { ascending: false, nullsFirst: false });
+       .or(`from_club.eq.${name},to_club.eq.${name}`).in("season", ["25/26", "26/27"]).order("moved_on", { ascending: false, nullsFirst: false });
     return (data ?? []) as Transfer[];
   }});
 
