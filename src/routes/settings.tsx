@@ -10,6 +10,7 @@ import { CURRENCIES, useCurrency } from "@/lib/currency";
 import { deleteMyAccount } from "@/lib/account.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { Save, LogOut, ShieldCheck, Loader2, LogIn, Camera, Trash2, Newspaper } from "lucide-react";
+import { ImageCropper } from "@/components/image-cropper";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({ meta: [{ title: "Settings — MansourAlmailScores" }, { name: "robots", content: "noindex" }] }),
@@ -28,6 +29,7 @@ function SettingsPage() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [heightUnit, setHeightUnit] = useState<"cm" | "ft">("cm");
   const [uploading, setUploading] = useState(false);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -87,7 +89,7 @@ function SettingsPage() {
                 className="absolute -bottom-1 -right-1 inline-flex h-8 w-8 items-center justify-center rounded-full border border-border bg-background shadow">
                 {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Camera className="h-3.5 w-3.5" />}
               </button>
-              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => pickAvatar(e.target.files?.[0])} />
+              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) setAvatarFile(file); e.target.value = ""; }} />
             </div>
             <div className="flex-1">
               <label className="text-xs font-medium uppercase tracking-widest text-muted-foreground">{t("settings.displayName")}</label>
@@ -103,6 +105,7 @@ function SettingsPage() {
           </div>
         )}
       </section>
+      {avatarFile && <ImageCropper file={avatarFile} aspect={1} onCancel={() => setAvatarFile(null)} onDone={async (file) => { await pickAvatar(file); setAvatarFile(null); }} />}
 
       <section className="mt-4 grid gap-4 sm:grid-cols-2">
         <div className="rounded-3xl border border-border bg-card p-6">
