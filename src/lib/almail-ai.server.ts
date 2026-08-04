@@ -90,10 +90,10 @@ export async function generateArticleDraft(notes: string, images: ImageInput[]):
 
 export type VenueDraft = { name: string; city: string | null; country: string | null; country_code: string | null; capacity: number | null; description: string | null };
 
-export async function generateVenueDraft(notes: string): Promise<VenueDraft> {
+export async function generateVenueDraft(notes: string, images: ImageInput[] = []): Promise<VenueDraft> {
   const text = await runAlmail(
-    `You are Almail AI, a careful football venue data editor. Extract stadium information only from the supplied text. Never invent missing facts. Return JSON only with exactly these keys: name, city, country, country_code, capacity, description. country_code is a two-letter ISO code or null, capacity is an integer or null, and description is a concise factual summary or null. Text: ${notes}`,
-    [],
+    `You are Almail AI, a careful football venue data editor. Extract stadium information only from the supplied text and attached images. Never invent missing facts. Return JSON only with exactly these keys: name, city, country, country_code, capacity, description. country_code is a two-letter ISO code or null, capacity is an integer or null, and description is a concise factual summary or null. Text: ${notes}`,
+    images,
   );
   const draft = parseJson<VenueDraft>(text);
   return {
