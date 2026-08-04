@@ -751,46 +751,55 @@ export type Database = {
         Row: {
           author_display: string | null
           body_markdown: string
+          body_markdown_ar: string | null
           competition_id: string | null
           cover_url: string | null
           created_at: string
           excerpt: string | null
+          excerpt_ar: string | null
           id: string
           player_id: string | null
           published_at: string | null
           slug: string
           team_id: string | null
           title: string
+          title_ar: string | null
           updated_at: string
         }
         Insert: {
           author_display?: string | null
           body_markdown?: string
+          body_markdown_ar?: string | null
           competition_id?: string | null
           cover_url?: string | null
           created_at?: string
           excerpt?: string | null
+          excerpt_ar?: string | null
           id?: string
           player_id?: string | null
           published_at?: string | null
           slug: string
           team_id?: string | null
           title: string
+          title_ar?: string | null
           updated_at?: string
         }
         Update: {
           author_display?: string | null
           body_markdown?: string
+          body_markdown_ar?: string | null
           competition_id?: string | null
           cover_url?: string | null
           created_at?: string
           excerpt?: string | null
+          excerpt_ar?: string | null
           id?: string
           player_id?: string | null
           published_at?: string | null
           slug?: string
           team_id?: string | null
           title?: string
+          title_ar?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -1298,6 +1307,7 @@ export type Database = {
       }
       teams: {
         Row: {
+          chairman: string | null
           coach_name: string | null
           coach_photo_url: string | null
           competition_id: string | null
@@ -1318,6 +1328,7 @@ export type Database = {
           venue_name: string | null
         }
         Insert: {
+          chairman?: string | null
           coach_name?: string | null
           coach_photo_url?: string | null
           competition_id?: string | null
@@ -1338,6 +1349,7 @@ export type Database = {
           venue_name?: string | null
         }
         Update: {
+          chairman?: string | null
           coach_name?: string | null
           coach_photo_url?: string | null
           competition_id?: string | null
