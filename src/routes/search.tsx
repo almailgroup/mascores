@@ -111,21 +111,21 @@ function SearchPage() {
       {q.length < 2 ? <EmptyState title={tx("Type to search")} /> : !res.data ? null : total === 0 ? <EmptyState title={tx("No results")} /> : (
         <div className="space-y-6">
           {show("competitions") && (
-            <Group title="Competitions">{res.data.comps.map((c) => (
+            <Group title={tx("Competitions")}>{res.data.comps.map((c) => (
               <ResultRow key={c.id} to="/competitions/$slug" params={{ slug: c.slug }}
                 logo={c.logo_url} fallback={<Trophy className="h-4 w-4 text-muted-foreground" />}
                 title={tx(c.name)} country={c.country_code ?? c.country} sub={[tx(c.country), c.season].filter(Boolean).join(" · ")} />
             ))}</Group>
           )}
           {show("clubs") && (
-            <Group title="Teams">{res.data.teams.map((tm) => (
+            <Group title={tx("Teams")}>{res.data.teams.map((tm) => (
               <ResultRow key={tm.id} to="/teams/$id" params={{ id: tm.id }}
                 logo={tm.logo_url} fallback={<Shield className="h-4 w-4 text-muted-foreground" />}
                 title={tx(tm.name)} country={tm.country_code ?? tm.country} sub={tx(tm.country) ?? tm.short_name ?? ""} />
             ))}</Group>
           )}
           {show("players") && (
-            <Group title="Players">{res.data.players.map((p) => (
+            <Group title={tx("Players")}>{res.data.players.map((p) => (
               <ResultRow key={p.id} to="/players/$id" params={{ id: p.id }} round
                 logo={p.photo_url} fallback={<User className="h-4 w-4 text-muted-foreground" />}
                 title={tx(p.name)} country={p.nationality_code ?? p.nationality}
@@ -133,15 +133,15 @@ function SearchPage() {
             ))}</Group>
           )}
           {show("coaches") && (
-            <Group title="Coaches">{res.data.coaches.map((c) => (
+            <Group title={tx("Coaches")}>{res.data.coaches.map((c) => (
               <ResultRow key={c.id} to={c.team ? "/teams/$id" : "/search"} params={c.team ? { id: c.team.id } : {}} round
                 logo={c.photo_url} fallback={<User className="h-4 w-4 text-muted-foreground" />}
                 title={tx(c.name)} country={c.nationality_code ?? c.nationality}
-                sub={[tx(c.team?.name), "Coach"].filter(Boolean).join(" · ")} />
+                sub={[tx(c.team?.name), tx("Coach")].filter(Boolean).join(" · ")} />
             ))}</Group>
           )}
           {show("venues") && (
-            <Group title="Stadiums">{res.data.venues.map((v) => (
+            <Group title={tx("Stadiums")}>{res.data.venues.map((v) => (
               <ResultRow key={v.id} to="/search" params={{}}
                 logo={null} fallback={<Building2 className="h-4 w-4 text-muted-foreground" />}
                 title={tx(v.name)} country={v.country} sub={[tx(v.city), tx(v.country)].filter(Boolean).join(", ")} />

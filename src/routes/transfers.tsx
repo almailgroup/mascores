@@ -5,7 +5,7 @@ import { AppShell, EmptyState, LoadingSkeleton } from "@/components/app-shell";
 import { supabase, currentSeason, seasonRange, type Transfer } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 import { ArrowRight, Repeat } from "lucide-react";
-import { useTx } from "@/lib/auto-translate";
+import { useDates, useNum, useTx } from "@/lib/auto-translate";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/transfers")({
@@ -34,6 +34,8 @@ const KIND_TONE: Record<string, string> = {
 
 function TransfersPage() {
   const tx = useTx();
+  const num = useNum();
+  const dates = useDates();
   const { t } = useI18n();
   useRealtime(["transfers"]);
   const season = currentSeason();
@@ -101,14 +103,14 @@ function TransfersPage() {
       </div>
 
       {q.isLoading ? <LoadingSkeleton /> : grouped.length === 0 ? (
-        <EmptyState title={`No transfers in ${season} yet`} />
+        <EmptyState title={`${tx("No transfers yet")} — ${num(season)}`} />
       ) : (
         <div className="grid gap-6">
           {grouped.map(([day, list]) => (
             <section key={day}>
               <div className="mb-2 flex items-center gap-3">
                 <span className="text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">
-                  {day === "undated" ? "Date to be confirmed" : new Date(day).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" })}
+                  {day === "undated" ? tx("Date to be confirmed") : num(dates.date(day, { day: "numeric", month: "long", year: "numeric" }))}
                 </span>
                 <span className="h-px flex-1 bg-border" />
               </div>
@@ -122,7 +124,7 @@ function TransfersPage() {
                       <div className="truncate text-sm font-bold">
                         {r.person_type === "player" && r.player
                           ? <Link to="/players/$id" params={{ id: r.person_id }} className="hover:text-primary">{tx(r.player.name)}</Link>
-                          : (tx(r.player?.name) ?? "Unknown")}
+                          : (tx(r.player?.name) ?? tx("Unknown"))}
                       </div>
                       <div className="mt-1 flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
                         <span className="truncate">{tx(r.from_club) ?? "Free agent"}</span>

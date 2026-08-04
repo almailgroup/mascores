@@ -3,7 +3,7 @@ import { createLovableAiGatewayProvider } from "./ai-gateway.server";
 
 export type TranslationMap = Record<string, string>;
 
-const MAX_ITEMS = 40;
+const MAX_ITEMS = 120;
 const MAX_CHARS = 6000;
 
 function extractJson(text: string): unknown {
@@ -56,5 +56,22 @@ export async function translateTexts(texts: string[], locale: string): Promise<T
   });
 
   if (inserts.length > 0) await supabaseAdmin.from("translations").insert(inserts);
+  return out;
+}
+
+/** Every cached translation for a locale (used to prewarm the client on language switch). */
+export async function loadDictionary(locale: string): Promise<TranslationMap> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const out: TranslationMap = {};
+  const pageSize = 1000;
+  for (let page = 0; page < 20; page += 1) {
+    const { data } = await supabaseAdmin
+      .from("translations")
+      .select("source_text,translated_text")
+      .eq("locale", locale)
+      .range(page * pageSize, page * pageSize + pageSize - 1);
+    for (const row of data ?? []) out[row.source_text] = row.translated_text;
+    if (!data || data.length < pageSize) break;
+  }
   return out;
 }

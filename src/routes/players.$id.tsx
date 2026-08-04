@@ -11,7 +11,7 @@ import { LinkedNews } from "@/components/linked-news";
 import { formatMoney, useCurrency } from "@/lib/currency";
 import { ArrowRight } from "lucide-react";
 import { useTx } from "@/lib/auto-translate";
-import { useNum } from "@/lib/auto-translate";
+import { useDates, useNum } from "@/lib/auto-translate";
 
 export const Route = createFileRoute("/players/$id")({
   head: () => ({
@@ -39,6 +39,7 @@ function age(dob: string | null | undefined) {
 function PlayerPage() {
   const tx = useTx();
   const num = useNum();
+  const dates = useDates();
   const { id } = Route.useParams();
   const { t: tr } = useI18n();
   const { currency } = useCurrency();
@@ -64,7 +65,7 @@ function PlayerPage() {
   }});
 
   if (q.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;
-  if (!q.data) return <AppShell><EmptyState title="Player not found" /></AppShell>;
+  if (!q.data) return <AppShell><EmptyState title={tx("Player not found")} /></AppShell>;
   const p = q.data;
   const nat = p.nationality_code ?? p.nationality;
 
@@ -99,7 +100,7 @@ function PlayerPage() {
         <>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
              <Stat label={tx("Nationality")} value={tx(p.nationality) ?? "—"} icon={<FlagIcon value={nat} size="md" />} />
-             <Stat label={tx("Date of birth")} value={p.dob ? num(`${formatDob(p.dob)}${age(p.dob) != null ? ` (${age(p.dob)})` : ""}`) : "—"} />
+             <Stat label={tx("Date of birth")} value={p.dob ? num(`${dates.dob(p.dob)}${age(p.dob) != null ? ` (${age(p.dob)})` : ""}`) : "—"} />
              <Stat label={tx("Height")} value={tx(num(formatHeight(p.height_cm, "cm")))} />
              <Stat label={tx("Position")} value={tx(p.position) ?? "—"} />
              <Stat label={tx("Shirt")} value={p.shirt_number != null ? num(`#${p.shirt_number}`) : "—"} />
@@ -115,11 +116,11 @@ function PlayerPage() {
                   <ArrowRight className="h-4 w-4 text-muted-foreground" />
                   <span className="flex-1 truncate font-medium">{tx(r.to_club) ?? "—"}</span>
                   <span className="shrink-0 text-xs text-muted-foreground">{r.fee ?? r.transfer_type ?? ""}</span>
-                  <span className="shrink-0 text-xs text-muted-foreground">{r.moved_on ? new Date(r.moved_on).toLocaleDateString() : ""}</span>
+                  <span className="shrink-0 text-xs text-muted-foreground">{r.moved_on ? num(dates.date(r.moved_on)) : ""}</span>
                 </div>
               ))}
             </div>
-          ) : <EmptyState title="No transfers recorded" />}
+          ) : <EmptyState title={tx("No transfers recorded")} />}
         </>
       )}
 
@@ -129,12 +130,12 @@ function PlayerPage() {
             {matches.data.map((m) => (
               <Link key={m.id} to="/matches/$id" params={{ id: m.id }} className="grid items-center gap-2 rounded-2xl border border-border bg-card p-3 hover:border-primary/50" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
                 <div className="truncate text-right text-sm font-semibold">{tx(m.home?.name) ?? "TBD"}</div>
-                <div className="text-center text-sm font-bold tabular-nums">{m.home_score != null ? `${m.home_score} – ${m.away_score}` : formatKickoff(m.kickoff_at)}</div>
+                <div className="text-center text-sm font-bold tabular-nums">{m.home_score != null ? `${m.home_score} – ${m.away_score}` : num(dates.kickoff(m.kickoff_at))}</div>
                 <div className="truncate text-sm font-semibold">{tx(m.away?.name) ?? "TBD"}</div>
               </Link>
             ))}
           </div>
-        ) : <EmptyState title="No matches yet" />
+        ) : <EmptyState title={tx("No matches yet")} />
       )}
 
       {tab === "media" && (
@@ -142,7 +143,7 @@ function PlayerPage() {
           <div className="grid gap-3 sm:grid-cols-3">
             {p.media_urls.map((u) => <img key={u} src={u} alt="" className="h-48 w-full rounded-2xl border border-border object-cover" />)}
           </div>
-        ) : <EmptyState title="No media yet" />
+        ) : <EmptyState title={tx("No media yet")} />
       )}
 
       {tab === "news" && <LinkedNews kind="player" id={p.id} />}
