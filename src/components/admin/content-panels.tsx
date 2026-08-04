@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Bot, Landmark, Plus, Radio, Repeat2, Sparkles, Trash2 } from "lucide-react";
+import { Bot, ImagePlus, Landmark, Plus, Radio, Repeat2, Sparkles, Trash2 } from "lucide-react";
 import { supabase, type Venue, type Transfer } from "@/lib/db";
 import { CountrySelect } from "@/components/country-select";
 import { Field, ImageInput, inputCls, btnPrimary, btnDanger } from "./ui";
