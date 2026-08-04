@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import { unlockAdmin } from "@/lib/admin.functions";
-import { Loader2, ShieldCheck, ArrowLeft, Bot, CalendarDays, Newspaper, Radio, Repeat2, Trophy, Landmark } from "lucide-react";
+import { Loader2, ShieldCheck, ArrowLeft, Bot, CalendarDays, Newspaper, Radio, Repeat2, Trophy, Landmark, Shield } from "lucide-react";
 import type { Competition } from "@/lib/db";
 import { CompetitionsPanel } from "@/components/admin/competitions-panel";
 import { TeamsPanel } from "@/components/admin/teams-panel";
@@ -29,7 +29,7 @@ function AdminPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [tab, setTab] = useState<"competitions" | "news" | "ai" | "venues" | "channels" | "transfers">("competitions");
+  const [tab, setTab] = useState<"competitions" | "teams" | "news" | "ai" | "venues" | "channels" | "transfers">("competitions");
   const [openComp, setOpenComp] = useState<Competition | null>(null);
   const [compTab, setCompTab] = useState<"overview" | "teams" | "matches" | "standings" | "awards" | "media">("overview");
   const unlock = useServerFn(unlockAdmin);
@@ -109,13 +109,19 @@ function AdminPage() {
           <p className="mt-1 text-sm text-muted-foreground">Competitions, matches, news, AI and reusable libraries in one place.</p>
           <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
             {([
-              ["competitions", Trophy], ["news", Newspaper], ["ai", Bot], ["venues", Landmark], ["channels", Radio], ["transfers", Repeat2],
+              ["competitions", Trophy], ["teams", Shield], ["news", Newspaper], ["ai", Bot], ["venues", Landmark], ["channels", Radio], ["transfers", Repeat2],
             ] as const).map(([k, Icon]) => (
               <button key={k} onClick={() => setTab(k)} className={`flex min-h-20 flex-col items-start justify-between rounded-lg border p-3 text-left font-semibold capitalize ${tab === k ? "border-primary bg-primary/10 text-primary" : "border-border bg-card hover:border-primary/50"}`}><Icon className="h-4 w-4" />{k === "ai" ? "Almail AI" : k}</button>
             ))}
           </div>
           <div className="mt-6">
             {tab === "competitions" && <CompetitionsPanel onOpen={setOpenComp} />}
+            {tab === "teams" && (
+              <div>
+                <p className="mb-4 text-sm text-muted-foreground">Every saved team in one place — create and edit clubs, squads and coaches without opening a competition.</p>
+                <TeamsPanel competitionId={null} />
+              </div>
+            )}
             {tab === "news" && <NewsPanel />}
              {tab === "ai" && <AlmailAiPanel onNews={() => setTab("news")} onCompetitions={() => setTab("competitions")} onVenues={() => setTab("venues")} />}
             {tab === "venues" && <VenuesPanel />}
