@@ -1,10 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, EmptyState } from "@/components/app-shell";
 import { supabase } from "@/lib/db";
 import { FlagIcon } from "@/components/flag";
-import { Search as SearchIcon, Trophy, Shield, User, Building2 } from "lucide-react";
+import { Search as SearchIcon, Trophy, Shield, User, Building2, Clock, X } from "lucide-react";
 import { useTx } from "@/lib/auto-translate";
 
 export const Route = createFileRoute("/search")({
@@ -15,17 +15,36 @@ export const Route = createFileRoute("/search")({
 type Filter = "all" | "clubs" | "competitions" | "players" | "coaches" | "venues";
 const FILTERS: { key: Filter; label: string }[] = [
   { key: "all", label: "All" },
-  { key: "clubs", label: "Clubs" },
+  { key: "clubs", label: "Teams" },
   { key: "competitions", label: "Competitions" },
   { key: "players", label: "Players" },
   { key: "coaches", label: "Coaches" },
   { key: "venues", label: "Stadiums" },
 ];
 
+const HISTORY_KEY = "mas.search.history";
+
+function readHistory(): string[] {
+  if (typeof window === "undefined") return [];
+  try { const raw = JSON.parse(window.localStorage.getItem(HISTORY_KEY) ?? "[]"); return Array.isArray(raw) ? raw.filter((v): v is string => typeof v === "string").slice(0, 12) : []; }
+  catch { return []; }
+}
+
 function SearchPage() {
   const tx = useTx();
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
+  const [history, setHistory] = useState<string[]>([]);
+  useEffect(() => { setHistory(readHistory()); }, []);
+  const writeHistory = (next: string[]) => {
+    setHistory(next);
+    try { window.localStorage.setItem(HISTORY_KEY, JSON.stringify(next)); } catch { /* storage unavailable */ }
+  };
+  const remember = (term: string) => {
+    const clean = term.trim();
+    if (clean.length < 2) return;
+    writeHistory([clean, ...readHistory().filter((item) => item.toLowerCase() !== clean.toLowerCase())].slice(0, 12));
+  };
   const res = useQuery({
     enabled: q.length > 1,
     queryKey: ["search", q],
@@ -57,9 +76,28 @@ function SearchPage() {
     <AppShell>
       <div className="mb-4 flex items-center gap-2 rounded-2xl border border-border bg-card px-4 py-3">
         <SearchIcon className="h-4 w-4 text-muted-foreground" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={tx("Clubs, players, competitions, coaches, stadiums…")}
+        <input value={q} onChange={(e) => setQ(e.target.value)} onBlur={() => remember(q)}
+          onKeyDown={(e) => { if (e.key === "Enter") remember(q); }}
+          placeholder={tx("Teams, players, competitions, coaches, stadiums…")}
           className="flex-1 bg-transparent text-sm outline-none" />
       </div>
+
+      {history.length > 0 && (
+        <div className="mb-5">
+          <div className="mb-2 flex items-center justify-between text-xs font-semibold uppercase text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> {tx("Recent searches")}</span>
+            <button className="font-semibold text-destructive" onClick={() => writeHistory([])}>{tx("Clear all")}</button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {history.map((item) => (
+              <span key={item} className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-3 py-1.5 text-xs">
+                <button onClick={() => setQ(item)} className="font-medium hover:text-primary">{item}</button>
+                <button aria-label={`Remove ${item}`} onClick={() => writeHistory(history.filter((h) => h !== item))} className="text-muted-foreground hover:text-destructive"><X className="h-3 w-3" /></button>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="mb-5 flex gap-1 overflow-x-auto rounded-full border border-border bg-card p-1 text-xs">
         {FILTERS.map((f) => (
@@ -80,7 +118,7 @@ function SearchPage() {
             ))}</Group>
           )}
           {show("clubs") && (
-            <Group title="Clubs">{res.data.teams.map((tm) => (
+            <Group title="Teams">{res.data.teams.map((tm) => (
               <ResultRow key={tm.id} to="/teams/$id" params={{ id: tm.id }}
                 logo={tm.logo_url} fallback={<Shield className="h-4 w-4 text-muted-foreground" />}
                 title={tx(tm.name)} country={tm.country_code ?? tm.country} sub={tx(tm.country) ?? tm.short_name ?? ""} />
