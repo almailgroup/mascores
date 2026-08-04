@@ -8,6 +8,7 @@ import { Field, ImageInput, inputCls, btnPrimary, btnDanger } from "./ui";
 import { uploadMedia } from "./upload";
 import type { Database } from "@/integrations/supabase/types";
 import { createVenueDraftWithAlmail } from "@/lib/almail-ai.functions";
+import { readAiImages, type AiImageInput } from "@/lib/image-files";
 
 type Channel = Database["public"]["Tables"]["broadcast_channels"]["Row"];
 
@@ -15,6 +16,7 @@ export function VenuesPanel() {
   const qc = useQueryClient();
   const [form, setForm] = useState<Partial<Venue>>({});
   const [aiText, setAiText] = useState("");
+  const [aiImages, setAiImages] = useState<AiImageInput[]>([]);
   const [aiBusy, setAiBusy] = useState(false);
   const createVenueDraft = useServerFn(createVenueDraftWithAlmail);
   const q = useQuery({ queryKey: ["admin", "venues"], queryFn: async () => (await supabase.from("venues").select("*").order("name")).data as Venue[] ?? [] });
@@ -24,16 +26,23 @@ export function VenuesPanel() {
     setForm({}); qc.invalidateQueries({ queryKey: ["admin", "venues"] });
   };
   const generate = async () => {
-    if (!aiText.trim()) return;
+    if (!aiText.trim() && aiImages.length === 0) return;
     setAiBusy(true);
-    try { setForm({ ...form, ...(await createVenueDraft({ data: { notes: aiText } })) }); }
+    try { setForm({ ...form, ...(await createVenueDraft({ data: { notes: aiText, images: aiImages } })) }); }
     finally { setAiBusy(false); }
   };
   return <LibraryPanel icon={<Landmark className="h-5 w-5" />} title="Venue library" subtitle="Save stadiums once and reuse them in every match.">
     <div className="mb-5 rounded-lg border border-primary/30 bg-primary/5 p-4">
       <div className="mb-2 flex items-center gap-2 text-sm font-bold"><Sparkles className="h-4 w-4 text-primary" /> Add a venue with Almail AI</div>
       <textarea className={inputCls} rows={4} placeholder="Paste the stadium name, city, country, capacity and any description…" value={aiText} onChange={(e) => setAiText(e.target.value)} />
-      <button className={`${btnPrimary} mt-3`} disabled={aiBusy || !aiText.trim()} onClick={generate}><Sparkles className="h-3.5 w-3.5" />{aiBusy ? "Reading venue…" : "Create editable venue draft"}</button>
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <label className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-full border border-border bg-background px-3 text-xs font-medium">
+          <ImagePlus className="h-3.5 w-3.5" /> Add photos
+          <input type="file" accept="image/*" multiple className="sr-only" onChange={async (e) => { if (e.target.files?.length) setAiImages(await readAiImages(e.target.files)); e.target.value = ""; }} />
+        </label>
+        {aiImages.length > 0 && <span className="text-xs text-muted-foreground">{aiImages.length} photo(s) attached <button type="button" className="ml-1 font-semibold text-destructive" onClick={() => setAiImages([])}>clear</button></span>}
+        <button className={btnPrimary} disabled={aiBusy || (!aiText.trim() && aiImages.length === 0)} onClick={generate}><Sparkles className="h-3.5 w-3.5" />{aiBusy ? "Reading venue…" : "Create editable venue draft"}</button>
+      </div>
     </div>
     <div className="grid gap-2 sm:grid-cols-2">{q.data?.map((v) => <Item key={v.id} title={v.name} subtitle={[v.city, v.country, v.capacity ? `${v.capacity.toLocaleString()} seats` : null].filter(Boolean).join(" · ")} onEdit={() => setForm(v)} onDelete={async () => { await supabase.from("venues").delete().eq("id", v.id); qc.invalidateQueries({ queryKey: ["admin", "venues"] }); }} />)}</div>
     <div className="mt-4 grid gap-3 border-t border-border pt-4 sm:grid-cols-2">
