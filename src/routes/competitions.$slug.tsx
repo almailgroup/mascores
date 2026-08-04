@@ -140,7 +140,7 @@ function CompetitionPage() {
          {(["overview", "matches", "standings", "teams", "awards", "media", "news"] as const).map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 py-2 font-semibold capitalize ${tab === item ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{item === "awards" ? tx("Awards") : t(`tab.${item}`)}</button>)}
       </div>
 
-      {tab === "overview" && <CompetitionOverviewTab c={c} season={season} teams={teams.data ?? []} titleHolderName={tx(titleHolder?.name) ?? null} titles={compTitles.data ?? []} divisions={divisions.data ?? []} />}
+      {tab === "overview" && <CompetitionOverviewTab c={c} season={season} teams={teams.data ?? []} titleHolder={titleHolder ?? null} titles={compTitles.data ?? []} divisions={divisions.data ?? []} />}
 
       {tab === "matches" && <><SectionHeader title={t("tab.matches")} />
       {matches.data && matches.data.length > 0 ? (
@@ -231,11 +231,11 @@ function CompetitionPage() {
   );
 }
 
-function CompetitionOverviewTab({ c, season, teams, titleHolderName, titles, divisions }: {
+function CompetitionOverviewTab({ c, season, teams, titleHolder, titles, divisions }: {
   c: Competition;
   season: string | null;
   teams: Team[];
-  titleHolderName: string | null;
+  titleHolder: Team | null;
   titles: { team_id: string; titles: number }[];
   divisions: { id: string; name: string; slug: string }[];
 }) {
@@ -249,15 +249,17 @@ function CompetitionOverviewTab({ c, season, teams, titleHolderName, titles, div
     ["Sport", c.sport], ["Format", c.format], ["Teams", String(teams.length)],
     ["Duration", [c.starts_on, c.ends_on].filter(Boolean).join(" — ") || "—"],
     ["Season", season ?? c.season ?? "—"],
-    ["Title holder", titleHolderName ?? "—"],
-    ["Most titles", bestTeam && best ? `${tx(bestTeam.name)} (${best.titles})` : "—"],
     ...(higher ? [["Higher division", tx(higher.name) ?? "—"] as [string, string]] : []),
     ...(lower ? [["Lower division", tx(lower.name) ?? "—"] as [string, string]] : []),
     ["Country", c.country ?? "—"],
   ];
   return (
     <>
-      <div className="grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-px grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2">
+        <TeamCell label="Title holder" team={titleHolder} />
+        <TeamCell label="Most titles" team={bestTeam ?? null} note={best ? String(best.titles) : null} />
+      </div>
+      <div className="mt-3 grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
         {cells.map(([label, value]) => (
           <div key={label} className="bg-card p-4">
              <div className="text-[0.65rem] font-bold uppercase text-muted-foreground">{tx(label)}</div>
@@ -283,5 +285,21 @@ function CompetitionOverviewTab({ c, season, teams, titleHolderName, titles, div
         </div>
       )}
     </>
+  );
+}
+
+function TeamCell({ label, team, note }: { label: string; team: Team | null; note?: string | null }) {
+  const tx = useTx();
+  return (
+    <div className="bg-card p-4">
+      <div className="text-[0.65rem] font-bold uppercase text-muted-foreground">{tx(label)}</div>
+      {team ? (
+        <Link to="/teams/$id" params={{ id: team.id }} className="mt-2 flex items-center gap-2 font-semibold hover:text-primary">
+          {team.logo_url ? <img src={team.logo_url} alt="" className="h-7 w-7 object-contain" /> : <span className="h-7 w-7 rounded bg-muted" />}
+          <span className="min-w-0 truncate">{tx(team.name)}</span>
+          {note && <span className="ml-auto font-black tabular-nums">{note}</span>}
+        </Link>
+      ) : <div className="mt-2 font-semibold">—</div>}
+    </div>
   );
 }
