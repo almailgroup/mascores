@@ -10,7 +10,7 @@ import { useI18n } from "@/lib/i18n";
 import { PlayerAvatar } from "@/components/player-avatar";
 import { LinkedNews } from "@/components/linked-news";
 import { ArrowRight } from "lucide-react";
-import { useTx } from "@/lib/auto-translate";
+import { useDates, useNum, useTx } from "@/lib/auto-translate";
 
 export const Route = createFileRoute("/teams/$id")({
   head: () => ({
@@ -31,6 +31,8 @@ const TABS: Tab[] = ["matches", "standings", "squad", "info", "stats", "media", 
 
 function TeamPage() {
   const tx = useTx();
+  const num = useNum();
+  const dates = useDates();
   const { id } = Route.useParams();
   const { t: tr } = useI18n();
   const [tab, setTab] = useState<Tab>("matches");
@@ -72,7 +74,7 @@ function TeamPage() {
   }});
 
   if (team.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;
-  if (!team.data) return <AppShell><EmptyState title="Club not found" /></AppShell>;
+  if (!team.data) return <AppShell><EmptyState title={tx("Club not found")} /></AppShell>;
   const t = team.data;
 
   const played = matches.data?.filter((m) => ["ft", "aet", "pen", "awarded"].includes(m.status)) ?? [];
@@ -114,13 +116,13 @@ function TeamPage() {
               <Link key={m.id} to="/matches/$id" params={{ id: m.id }} className="grid items-center gap-2 rounded-2xl border border-border bg-card p-3 hover:border-primary/50" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
                 <div className="truncate text-right text-sm font-semibold">{m.home?.name ?? "TBD"}</div>
                 <div className="text-center text-sm font-bold tabular-nums">
-                  {m.home_score != null ? `${m.home_score} – ${m.away_score}` : formatKickoff(m.kickoff_at)}
+                  {m.home_score != null ? num(`${m.home_score} – ${m.away_score}`) : num(dates.kickoff(m.kickoff_at))}
                 </div>
                 <div className="truncate text-sm font-semibold">{m.away?.name ?? "TBD"}</div>
               </Link>
             ))}
           </div>
-        ) : <EmptyState title="No matches yet" />
+        ) : <EmptyState title={tx("No matches yet")} />
       )}
 
       {tab === "standings" && (
@@ -131,7 +133,7 @@ function TeamPage() {
               return (
                 <div key={head.competition_id} className="overflow-hidden rounded-2xl border border-border bg-card">
                   <Link to="/competitions/$slug" params={{ slug: head.competition?.slug ?? "" }} className="flex items-center justify-between gap-2 border-b border-border px-4 py-3 text-sm font-bold hover:text-primary">
-                    {head.competition?.name ?? "Competition"}
+                    {tx(head.competition?.name) ?? tx("Competition")}
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                   <div className="divide-y divide-border">
@@ -151,7 +153,7 @@ function TeamPage() {
               );
             })}
           </div>
-        ) : <EmptyState title="Not in a table yet" />
+        ) : <EmptyState title={tx("Not in a table yet")} />
       )}
 
        {tab === "squad" && (
@@ -171,24 +173,24 @@ function TeamPage() {
 
       {tab === "info" && (
         <div className="grid gap-3 sm:grid-cols-2">
-          <InfoCard label="Country" value={t.country ?? "—"} icon={<FlagIcon value={t.country_code ?? t.country} size="md" />} />
-          <InfoCard label="Stadium" value={[tx(t.venue_name), tx(t.venue_city)].filter(Boolean).join(", ") || "—"} />
+          <InfoCard label={tx("Country")} value={tx(t.country) ?? "—"} icon={<FlagIcon value={t.country_code ?? t.country} size="md" />} />
+          <InfoCard label={tx("Stadium")} value={[tx(t.venue_name), tx(t.venue_city)].filter(Boolean).join(", ") || "—"} />
            <InfoCard label={tx("Chairman")} value={tx(t.chairman) ?? "—"} />
-          <InfoCard label="Short name" value={t.short_name ?? "—"} />
-          <InfoCard label="Founded" value={t.founded_on ? new Date(t.founded_on).toLocaleDateString(undefined, { dateStyle: "long" }) : "—"} />
-          <InfoCard label="Trophies" value={String(t.trophies ?? 0)} />
+          <InfoCard label={tx("Short name")} value={t.short_name ?? "—"} />
+          <InfoCard label={tx("Founded")} value={t.founded_on ? num(dates.date(t.founded_on, { dateStyle: "long" })) : "—"} />
+          <InfoCard label={tx("Trophies")} value={String(t.trophies ?? 0)} />
           {t.description && <div className="rounded-2xl border border-border bg-card p-4 text-sm sm:col-span-2">{tx(t.description)}</div>}
         </div>
       )}
 
       {tab === "stats" && (
         <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
-          <InfoCard label="Played" value={String(played.length)} />
-          <InfoCard label="Wins" value={String(wins)} />
-          <InfoCard label="Draws" value={String(draws)} />
-          <InfoCard label="Losses" value={String(losses)} />
-          <InfoCard label="Goals for" value={String(gf)} />
-          <InfoCard label="Goals against" value={String(ga)} />
+          <InfoCard label={tx("Played")} value={String(played.length)} />
+          <InfoCard label={tx("Wins")} value={String(wins)} />
+          <InfoCard label={tx("Draws")} value={String(draws)} />
+          <InfoCard label={tx("Losses")} value={String(losses)} />
+          <InfoCard label={tx("Goals for")} value={String(gf)} />
+          <InfoCard label={tx("Goals against")} value={String(ga)} />
         </div>
       )}
 
@@ -197,7 +199,7 @@ function TeamPage() {
           <div className="grid gap-3 sm:grid-cols-3">
             {t.media_urls.map((u) => <img key={u} src={u} alt="" className="h-40 w-full rounded-2xl border border-border object-cover" />)}
           </div>
-        ) : <EmptyState title="No media yet" />
+        ) : <EmptyState title={tx("No media yet")} />
       )}
 
       {tab === "transfers" && (
@@ -208,11 +210,11 @@ function TeamPage() {
                 <span className="flex-1 truncate">{r.from_club ?? "—"}</span>
                 <ArrowRight className="h-4 w-4 text-muted-foreground" />
                 <span className="flex-1 truncate">{r.to_club ?? "—"}</span>
-                <span className="shrink-0 text-xs text-muted-foreground">{r.moved_on ? new Date(r.moved_on).toLocaleDateString() : ""}</span>
+                <span className="shrink-0 text-xs text-muted-foreground">{r.moved_on ? num(dates.date(r.moved_on)) : ""}</span>
               </div>
             ))}
           </div>
-        ) : <EmptyState title="No transfers yet" />
+        ) : <EmptyState title={tx("No transfers yet")} />
       )}
 
       {tab === "news" && <LinkedNews kind="team" id={t.id} />}

@@ -6,7 +6,7 @@ import { supabase, formatKickoff, STATUS_LABELS, roundLabel, type Match, type Te
 import { useRealtime } from "@/lib/realtime";
 import { useAuth } from "@/hooks/use-auth";
 import { MessageCircle, PlayCircle, Radio } from "lucide-react";
-import { useTx, useNum } from "@/lib/auto-translate";
+import { useTx, useNum, useDates } from "@/lib/auto-translate";
 
 /** Same slot keys the admin pitch board writes, so the public pitch mirrors it. */
 function formationRows(formation: string | null | undefined): string[][] {
@@ -31,6 +31,7 @@ export const Route = createFileRoute("/matches/$id")({
 function MatchPage() {
   const tx = useTx();
   const num = useNum();
+  const dates = useDates();
   const { id } = Route.useParams();
   const { user } = useAuth();
   const [tab, setTab] = useState<"details" | "lineups" | "stats" | "previous" | "media">("details");
@@ -71,7 +72,7 @@ function MatchPage() {
   const ratings = useQuery({ queryKey: ["match-ratings", id], queryFn: async () => (await supabase.from("player_ratings").select("player_id,rating").eq("match_id", id)).data ?? [] });
 
   if (m.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;
-  if (!m.data) return <AppShell><EmptyState title="Match not found" /></AppShell>;
+  if (!m.data) return <AppShell><EmptyState title={tx("Match not found")} /></AppShell>;
   const match = m.data;
   const isLive = ["live", "ht"].includes(match.status);
 
@@ -86,7 +87,7 @@ function MatchPage() {
           </div>
           <div className="text-center">
             {["scheduled"].includes(match.status) ? (
-              <div className="text-sm font-medium text-muted-foreground">{tx(formatKickoff(match.kickoff_at))}</div>
+              <div className="text-sm font-medium text-muted-foreground">{num(dates.kickoff(match.kickoff_at))}</div>
             ) : (
               <div>
                 <div className="text-4xl font-black tabular-nums">{num(match.home_score ?? 0)} – {num(match.away_score ?? 0)}</div>
@@ -129,7 +130,7 @@ function MatchPage() {
           ) : <div className="text-sm text-muted-foreground">{tx("No events yet.")}</div>}
         </div>
 
-        <div className="space-y-4"><div className="rounded-2xl border border-border bg-card p-4"><div className="mb-3 text-sm font-semibold">{tx("Match information")}</div><dl className="grid grid-cols-2 gap-3 text-sm">{[["Date & time", tx(formatKickoff(match.kickoff_at))], ["Stadium", tx(match.venue) || "—"], ["City", tx(match.city) || "—"], ["Referee", tx(match.referee) || "—"]].map(([k,v]) => <div key={k}><dt className="text-xs text-muted-foreground">{tx(k)}</dt><dd className="font-semibold">{v}</dd></div>)}</dl></div>{match.highlight_url && <a href={match.highlight_url} target="_blank" rel="noreferrer" className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4 font-semibold hover:border-primary"><PlayCircle className="h-5 w-5 text-primary" /> {tx("Watch match highlights")}</a>}{prediction.data && <div className="rounded-2xl border border-border bg-card p-4"><div className="mb-3 text-sm font-semibold">{tx("Prediction")}</div><div className="grid grid-cols-3 text-center text-xs"><div><strong className="block text-lg">{num(prediction.data.home_percent)}%</strong>{tx(match.home?.name)}</div><div><strong className="block text-lg">{num(prediction.data.draw_percent)}%</strong>{tx("Draw")}</div><div><strong className="block text-lg">{num(prediction.data.away_percent)}%</strong>{tx(match.away?.name)}</div></div></div>}{broadcasts.data && broadcasts.data.length > 0 && <div className="rounded-2xl border border-border bg-card p-4"><div className="mb-3 flex items-center gap-2 text-sm font-semibold"><Radio className="h-4 w-4" /> {tx("Where to watch")}</div><div className="flex flex-wrap gap-3">{broadcasts.data.map((row, index) => { const channel = Array.isArray(row.channel) ? row.channel[0] : row.channel; return channel ? <div key={channel.id ?? index} className="flex items-center gap-2 text-sm">{channel.logo_url && <img src={channel.logo_url} alt="" className="h-7 w-7 object-contain" />}{tx(channel.name)}</div> : null; })}</div></div>}</div>
+        <div className="space-y-4"><div className="rounded-2xl border border-border bg-card p-4"><div className="mb-3 text-sm font-semibold">{tx("Match information")}</div><dl className="grid grid-cols-2 gap-3 text-sm">{[["Date & time", num(dates.kickoff(match.kickoff_at))], ["Stadium", tx(match.venue) || "—"], ["City", tx(match.city) || "—"], ["Referee", tx(match.referee) || "—"]].map(([k,v]) => <div key={k}><dt className="text-xs text-muted-foreground">{tx(k)}</dt><dd className="font-semibold">{v}</dd></div>)}</dl></div>{match.highlight_url && <a href={match.highlight_url} target="_blank" rel="noreferrer" className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4 font-semibold hover:border-primary"><PlayCircle className="h-5 w-5 text-primary" /> {tx("Watch match highlights")}</a>}{prediction.data && <div className="rounded-2xl border border-border bg-card p-4"><div className="mb-3 text-sm font-semibold">{tx("Prediction")}</div><div className="grid grid-cols-3 text-center text-xs"><div><strong className="block text-lg">{num(prediction.data.home_percent)}%</strong>{tx(match.home?.name)}</div><div><strong className="block text-lg">{num(prediction.data.draw_percent)}%</strong>{tx("Draw")}</div><div><strong className="block text-lg">{num(prediction.data.away_percent)}%</strong>{tx(match.away?.name)}</div></div></div>}{broadcasts.data && broadcasts.data.length > 0 && <div className="rounded-2xl border border-border bg-card p-4"><div className="mb-3 flex items-center gap-2 text-sm font-semibold"><Radio className="h-4 w-4" /> {tx("Where to watch")}</div><div className="flex flex-wrap gap-3">{broadcasts.data.map((row, index) => { const channel = Array.isArray(row.channel) ? row.channel[0] : row.channel; return channel ? <div key={channel.id ?? index} className="flex items-center gap-2 text-sm">{channel.logo_url && <img src={channel.logo_url} alt="" className="h-7 w-7 object-contain" />}{tx(channel.name)}</div> : null; })}</div></div>}</div>
       </div>}
 
       {tab === "lineups" && <div className="grid gap-4 md:grid-cols-2">{([["home", match.home, match.home_formation], ["away", match.away, match.away_formation]] as const).map(([side, team, formation]) => {

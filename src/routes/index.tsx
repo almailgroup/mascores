@@ -7,7 +7,7 @@ import { useI18n } from "@/lib/i18n";
 import { useRealtime } from "@/lib/realtime";
 import { useFavorites } from "@/hooks/use-favorites";
 import { Trophy, ChevronLeft, ChevronRight } from "lucide-react";
-import { useTx } from "@/lib/auto-translate";
+import { useDates, useNum, useTx } from "@/lib/auto-translate";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -146,7 +146,7 @@ function Home() {
 /** Sofascore-style control bar: scope tabs, date stepper and status chips. */
 function ScoreBoard({ liveCount }: { liveCount: number }) {
   const tx = useTx();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const { favorites } = useFavorites();
   const [scope, setScope] = useState<"all" | "favourites" | "competitions">("all");
   const [offset, setOffset] = useState(0);
@@ -196,7 +196,7 @@ function ScoreBoard({ liveCount }: { liveCount: number }) {
   const dayLabel = offset === 0 ? t("board.today")
     : offset === 1 ? t("board.tomorrow")
     : offset === -1 ? t("board.yesterday")
-    : day.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
+    : day.toLocaleDateString(lang === "ar" ? "ar-EG" : "en-GB", { weekday: "short", day: "numeric", month: "short" });
 
   const chip = (key: "live" | "finished" | "upcoming", label: string) => (
     <button
@@ -228,9 +228,9 @@ function ScoreBoard({ liveCount }: { liveCount: number }) {
           ))}
         </div>
         <div className="flex shrink-0 items-center overflow-hidden rounded-full border border-border">
-          <button onClick={() => setOffset(offset - 1)} className="px-2 py-1.5 text-primary hover:bg-accent" aria-label="Previous day"><ChevronLeft className="h-4 w-4" /></button>
+          <button onClick={() => setOffset(offset - 1)} className="px-2 py-1.5 text-primary hover:bg-accent" aria-label={tx("Previous day")}><ChevronLeft className="h-4 w-4" /></button>
           <button onClick={() => setOffset(0)} className="min-w-24 px-2 py-1.5 text-xs font-semibold text-primary">{dayLabel}</button>
-          <button onClick={() => setOffset(offset + 1)} className="px-2 py-1.5 text-primary hover:bg-accent" aria-label="Next day"><ChevronRight className="h-4 w-4" /></button>
+          <button onClick={() => setOffset(offset + 1)} className="px-2 py-1.5 text-primary hover:bg-accent" aria-label={tx("Next day")}><ChevronRight className="h-4 w-4" /></button>
         </div>
       </div>
 
@@ -302,13 +302,14 @@ function CompLogo({ logo }: { logo: string | null }) {
 }
 
 export function MatchSection({ title, data, loading }: { title: string; data: MatchWithTeams[] | undefined; loading: boolean }) {
+  const tx = useTx();
   return (
     <section className="mt-8">
       <SectionHeader title={title} />
       {loading ? (
         <LoadingSkeleton />
       ) : !data || data.length === 0 ? (
-        <EmptyState title="No matches yet" />
+        <EmptyState title={tx("No matches yet")} />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {data.map((m) => <MatchTile key={m.id} m={m} />)}
@@ -320,6 +321,8 @@ export function MatchSection({ title, data, loading }: { title: string; data: Ma
 
 export function MatchTile({ m }: { m: MatchWithTeams }) {
   const tx = useTx();
+  const num = useNum();
+  const dates = useDates();
   const started = ["live", "ht", "ft", "aet", "pen", "awarded"].includes(m.status);
   const isLive = ["live", "ht"].includes(m.status);
   return (
@@ -342,7 +345,7 @@ export function MatchTile({ m }: { m: MatchWithTeams }) {
               )}
             </div>
           ) : (
-            <div className="text-xs font-medium text-muted-foreground">{formatKickoff(m.kickoff_at)}</div>
+            <div className="text-xs font-medium text-muted-foreground">{num(dates.kickoff(m.kickoff_at))}</div>
           )}
         </div>
         <TeamRow name={tx(m.away?.name) ?? "TBD"} logo={m.away?.logo_url ?? null} align="left" />

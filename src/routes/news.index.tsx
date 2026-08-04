@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { AppShell, EmptyState, LoadingSkeleton, SectionHeader } from "@/components/app-shell";
 import { supabase, type NewsPost } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
-import { useAutoTranslate } from "@/lib/auto-translate";
+import { useAutoTranslate, useDates, useNum } from "@/lib/auto-translate";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/news/")({
@@ -19,12 +19,14 @@ function NewsPage() {
   }});
   const posts = q.data ?? [];
   const { lang, t } = useI18n();
+  const num = useNum();
+  const dates = useDates();
   const tx = useAutoTranslate(posts.flatMap((n) => [n.title, n.excerpt]));
   return (
     <AppShell>
        <SectionHeader title={t("nav.news")} />
       {q.isLoading ? <LoadingSkeleton /> : !q.data || q.data.length === 0 ? (
-        <EmptyState title="No news yet" />
+        <EmptyState title={tx("No news yet")} />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {posts.map((n) => (
@@ -37,7 +39,7 @@ function NewsPage() {
               <div className="p-4">
                  <h2 className="font-semibold">{lang === "ar" && n.title_ar ? n.title_ar : tx(n.title)}</h2>
                  {(n.excerpt || n.excerpt_ar) && <p className="mt-1 text-sm text-muted-foreground">{lang === "ar" && n.excerpt_ar ? n.excerpt_ar : tx(n.excerpt)}</p>}
-                <div className="mt-2 text-xs text-muted-foreground">{n.published_at ? new Date(n.published_at).toLocaleDateString() : ""}{n.author_display ? ` · ${n.author_display}` : ""}</div>
+                <div className="mt-2 text-xs text-muted-foreground">{n.published_at ? num(dates.date(n.published_at)) : ""}{n.author_display ? ` · ${n.author_display}` : ""}</div>
               </div>
             </Link>
           ))}

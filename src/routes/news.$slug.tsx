@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, EmptyState, LoadingSkeleton } from "@/components/app-shell";
 import { supabase, type NewsPost } from "@/lib/db";
-import { useAutoTranslate } from "@/lib/auto-translate";
+import { useAutoTranslate, useDates, useNum } from "@/lib/auto-translate";
 import { ArrowLeft } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
@@ -31,9 +31,11 @@ function ArticlePage() {
   });
   const n = q.data ?? null;
   const { lang, t } = useI18n();
+  const num = useNum();
+  const dates = useDates();
   const tx = useAutoTranslate([n?.title, n?.excerpt, n?.body_markdown]);
   if (q.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;
-  if (!n) return <AppShell><EmptyState title="Article not found" /></AppShell>;
+  if (!n) return <AppShell><EmptyState title={tx("Article not found")} /></AppShell>;
   return (
     <AppShell>
        <Link to="/news" className="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> {t("nav.news")}</Link>
@@ -46,7 +48,7 @@ function ArticlePage() {
         <div className="p-6 sm:p-8">
            <h1 className="text-2xl font-black tracking-tight sm:text-4xl">{lang === "ar" && n.title_ar ? n.title_ar : tx(n.title)}</h1>
           <div className="mt-2 text-xs text-muted-foreground">
-            {n.published_at ? new Date(n.published_at).toLocaleDateString(undefined, { dateStyle: "long" }) : ""}
+            {n.published_at ? num(dates.date(n.published_at, { dateStyle: "long" })) : ""}
             {n.author_display ? ` · ${n.author_display}` : ""}
           </div>
           <div className="mt-6 space-y-4 text-[0.95rem] leading-7 text-foreground/90">

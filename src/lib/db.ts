@@ -57,10 +57,16 @@ export const STATUS_LABELS: Record<string, string> = {
   interrupted: "Interrupted",
 };
 
-export function formatKickoff(iso: string | null | undefined): string {
-  if (!iso) return "TBD";
+export function formatKickoff(iso: string | null | undefined, locale?: string): string {
+  if (!iso) return locale?.startsWith("ar") ? "لم يُحدد" : "TBD";
   const d = new Date(iso);
-  return d.toLocaleString(undefined, { weekday: "short", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleString(locale, { weekday: "short", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+
+/** Locale-aware calendar date, used for transfers, news and founding dates. */
+export function formatDate(iso: string | null | undefined, locale?: string, opts?: Intl.DateTimeFormatOptions): string {
+  if (!iso) return "";
+  return new Date(iso).toLocaleDateString(locale, opts);
 }
 
 export function slugify(s: string): string {
@@ -84,9 +90,9 @@ export function seasonRange(label: string): { from: string; to: string } {
   return { from: `${start}-07-01`, to: `${start + 1}-06-30` };
 }
 
-export function formatDob(dob: string | null | undefined): string {
+export function formatDob(dob: string | null | undefined, locale?: string): string {
   if (!dob) return "—";
-  return new Date(dob).toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" });
+  return new Date(dob).toLocaleDateString(locale, { day: "2-digit", month: "short", year: "numeric" });
 }
 
 /** "Round 1" from a numeric round, falling back to any free-text round. */

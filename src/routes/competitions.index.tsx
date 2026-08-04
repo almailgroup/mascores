@@ -4,7 +4,7 @@ import { AppShell, EmptyState, LoadingSkeleton, SectionHeader } from "@/componen
 import { supabase, type Competition } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 import { Trophy } from "lucide-react";
-import { useTx } from "@/lib/auto-translate";
+import { useNum, useTx } from "@/lib/auto-translate";
 
 export const Route = createFileRoute("/competitions/")({
   head: () => ({ meta: [{ title: "Competitions — MansourAlmailScores" }] }),
@@ -13,6 +13,7 @@ export const Route = createFileRoute("/competitions/")({
 
 function CompetitionsList() {
   const tx = useTx();
+  const num = useNum();
   useRealtime(["competitions"]);
   const q = useQuery({
     queryKey: ["competitions"],
@@ -23,9 +24,9 @@ function CompetitionsList() {
   });
   return (
     <AppShell>
-      <SectionHeader title="Competitions" />
+      <SectionHeader title={tx("Competitions")} />
       {q.isLoading ? <LoadingSkeleton /> : !q.data || q.data.length === 0 ? (
-        <EmptyState title="No competitions yet" description="Add one from the admin panel." />
+        <EmptyState title={tx("No competitions yet")} />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {q.data.map((c) => (
@@ -35,7 +36,7 @@ function CompetitionsList() {
               </div>
               <div className="min-w-0">
                 <div className="truncate font-semibold">{tx(c.name)}</div>
-                <div className="truncate text-xs text-muted-foreground">{[tx(c.country), c.season].filter(Boolean).join(" · ")}</div>
+                <div className="truncate text-xs text-muted-foreground">{[tx(c.country), num(c.season)].filter(Boolean).join(" · ")}</div>
               </div>
             </Link>
           ))}

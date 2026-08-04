@@ -6,7 +6,7 @@ import { supabase, formatKickoff, type Competition, type Team, type Match, type 
 import { useRealtime } from "@/lib/realtime";
 import { FlagIcon } from "@/components/flag";
 import { LinkedNews } from "@/components/linked-news";
-import { useNum, useTx } from "@/lib/auto-translate";
+import { useDates, useNum, useTx } from "@/lib/auto-translate";
 import { useI18n } from "@/lib/i18n";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -61,7 +61,7 @@ function CompetitionPage() {
         .select("*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url)")
         .eq("competition_id", comp.data!.id);
        const selectedSeason = season ?? comp.data!.season;
-       if (selectedSeason) query = query.eq("season", selectedSeason);
+       if (selectedSeason) query = query.or(`season.eq.${selectedSeason},season.is.null`);
       const { data } = await query.order("kickoff_at");
       return (data ?? []) as unknown as (Match & { home: Team | null; away: Team | null })[];
     },
@@ -75,7 +75,8 @@ function CompetitionPage() {
         .select("*, team:team_id(id,name,logo_url,short_name)")
         .eq("competition_id", comp.data!.id);
        const selectedSeason = season ?? comp.data!.season;
-       if (selectedSeason) query = query.eq("season", selectedSeason);
+       // Rows created before seasons existed carry a null season — still show them.
+       if (selectedSeason) query = query.or(`season.eq.${selectedSeason},season.is.null`);
       const { data } = await query
         .order("group_label", { ascending: true, nullsFirst: true })
         .order("sort_order");
@@ -113,6 +114,7 @@ function CompetitionPage() {
   });
   const tx = useTx();
   const num = useNum();
+  const dates = useDates();
   const { t } = useI18n();
 
   if (comp.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;
@@ -150,13 +152,13 @@ function CompetitionPage() {
                  <div className="text-[0.65rem] uppercase text-muted-foreground">{m.round_number ? `${tx("Round")} ${num(m.round_number)}` : tx(m.round) ?? "—"}</div>
               <div className="mt-2 grid items-center gap-2" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
                 <div className="truncate text-right font-semibold">{tx(m.home?.name) ?? "TBD"}</div>
-                <div className="text-center text-sm font-bold">{m.home_score != null ? `${m.home_score} – ${m.away_score}` : formatKickoff(m.kickoff_at)}</div>
+                <div className="text-center text-sm font-bold">{m.home_score != null ? `${m.home_score} – ${m.away_score}` : num(dates.kickoff(m.kickoff_at))}</div>
                 <div className="truncate font-semibold">{tx(m.away?.name) ?? "TBD"}</div>
               </div>
             </Link>
           ))}
         </div>
-      ) : <EmptyState title="No matches yet" />}</>}
+      ) : <EmptyState title={tx("No matches yet")} />}</>}
 
       {tab === "standings" && <><SectionHeader title={t("tab.standings")} action={<div />} />
       {standings.data && standings.data.length > 0 ? (
@@ -169,7 +171,7 @@ function CompetitionPage() {
               .filter((l, i, arr) => arr.findIndex((x) => x.label === l.label) === i);
             return (
               <div key={group ?? "single"}>
-                {group && <div className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">{group}</div>}
+                {group && <div className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">{tx(group)}</div>}
                 <div className="overflow-hidden rounded-2xl border border-border bg-card">
                   <table className="w-full text-sm">
                     <thead className="bg-muted/50 text-xs uppercase tracking-widest text-muted-foreground"><tr>
@@ -211,7 +213,7 @@ function CompetitionPage() {
             );
           })}
         </div>
-      ) : <EmptyState title="No standings yet" />}</>}
+      ) : <EmptyState title={tx("No standings yet")} />}</>}
 
       {tab === "teams" && <><SectionHeader title={tx("Teams")} />
       {teams.data && teams.data.length > 0 ? (
@@ -223,9 +225,9 @@ function CompetitionPage() {
             </Link>
           ))}
         </div>
-      ) : <EmptyState title="No teams yet" />}</>}
-      {tab === "awards" && <>{awards.data && awards.data.length > 0 ? <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{awards.data.map((award) => <div key={award.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4">{award.player?.photo_url ? <img src={award.player.photo_url} alt="" className="h-12 w-12 rounded-full object-cover" /> : <div className="h-12 w-12 rounded-full bg-muted" />}<div><div className="font-bold">{tx(award.player?.name) ?? "Player"}</div><div className="text-xs text-muted-foreground">{award.award_type === "player_of_round" ? `Player of round ${award.round_number ?? "—"}` : "Player of the season"}{award.season ? ` · ${award.season}` : ""}</div></div></div>)}</div> : <EmptyState title="No competition awards yet" />}</>}
-      {tab === "media" && <>{media.data && media.data.length > 0 ? <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{media.data.map((item) => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="rounded-lg border border-border bg-card p-4 hover:border-primary"><div className="text-xs font-bold uppercase text-primary">{item.source}</div><div className="mt-1 font-semibold">{item.title || "Open media"}</div><div className="mt-1 truncate text-xs text-muted-foreground">{item.url}</div></a>)}</div> : <EmptyState title="No competition media yet" />}</>}
+      ) : <EmptyState title={tx("No teams yet")} />}</>}
+      {tab === "awards" && <>{awards.data && awards.data.length > 0 ? <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{awards.data.map((award) => <div key={award.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4">{award.player?.photo_url ? <img src={award.player.photo_url} alt="" className="h-12 w-12 rounded-full object-cover" /> : <div className="h-12 w-12 rounded-full bg-muted" />}<div><div className="font-bold">{tx(award.player?.name) ?? tx("Player")}</div><div className="text-xs text-muted-foreground">{award.award_type === "player_of_round" ? `${tx("Player of round")} ${award.round_number ?? "—"}` : tx("Player of the season")}{award.season ? ` · ${award.season}` : ""}</div></div></div>)}</div> : <EmptyState title={tx("No competition awards yet")} />}</>}
+      {tab === "media" && <>{media.data && media.data.length > 0 ? <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{media.data.map((item) => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="rounded-lg border border-border bg-card p-4 hover:border-primary"><div className="text-xs font-bold uppercase text-primary">{item.source}</div><div className="mt-1 font-semibold">{tx(item.title) || tx("Open media")}</div><div className="mt-1 truncate text-xs text-muted-foreground">{item.url}</div></a>)}</div> : <EmptyState title={tx("No competition media yet")} />}</>}
       {tab === "news" && <LinkedNews kind="competition" id={c.id} />}
     </AppShell>
   );
@@ -256,8 +258,8 @@ function CompetitionOverviewTab({ c, season, teams, titleHolder, titles, divisio
   return (
     <>
       <div className="mb-px grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2">
-        <TeamCell label="Title holder" team={titleHolder} />
-        <TeamCell label="Most titles" team={bestTeam ?? null} note={best ? String(best.titles) : null} />
+        <TeamCell label={tx("Title holder")} team={titleHolder} />
+        <TeamCell label={tx("Most titles")} team={bestTeam ?? null} note={best ? String(best.titles) : null} />
       </div>
       <div className="mt-3 grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
         {cells.map(([label, value]) => (

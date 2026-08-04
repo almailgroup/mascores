@@ -57,7 +57,7 @@ export function CountrySelect({
       </div>
       {open && (
         <div className="absolute z-50 mt-1 max-h-64 w-full overflow-y-auto rounded-xl border border-border bg-card p-1 shadow-2xl">
-          {results.length === 0 && <div className="p-3 text-xs text-muted-foreground">No match</div>}
+          {results.length === 0 && <div className="p-3 text-xs text-muted-foreground">{"لا توجد نتيجة مطابقة / No match"}</div>}
           {results.map((c) => (
             <button key={c.code} type="button"
               className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm hover:bg-accent"
