@@ -1,24 +1,40 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { Bot, Landmark, Plus, Radio, Repeat2, Sparkles, Trash2 } from "lucide-react";
 import { supabase, type Venue, type Transfer } from "@/lib/db";
 import { CountrySelect } from "@/components/country-select";
 import { Field, ImageInput, inputCls, btnPrimary, btnDanger } from "./ui";
 import { uploadMedia } from "./upload";
 import type { Database } from "@/integrations/supabase/types";
+import { createVenueDraftWithAlmail } from "@/lib/almail-ai.functions";
 
 type Channel = Database["public"]["Tables"]["broadcast_channels"]["Row"];
 
 export function VenuesPanel() {
   const qc = useQueryClient();
   const [form, setForm] = useState<Partial<Venue>>({});
+  const [aiText, setAiText] = useState("");
+  const [aiBusy, setAiBusy] = useState(false);
+  const createVenueDraft = useServerFn(createVenueDraftWithAlmail);
   const q = useQuery({ queryKey: ["admin", "venues"], queryFn: async () => (await supabase.from("venues").select("*").order("name")).data as Venue[] ?? [] });
   const save = async () => {
     if (!form.name?.trim()) return;
     if (form.id) await supabase.from("venues").update(form).eq("id", form.id); else await supabase.from("venues").insert(form as never);
     setForm({}); qc.invalidateQueries({ queryKey: ["admin", "venues"] });
   };
+  const generate = async () => {
+    if (!aiText.trim()) return;
+    setAiBusy(true);
+    try { setForm({ ...form, ...(await createVenueDraft({ data: { notes: aiText } })) }); }
+    finally { setAiBusy(false); }
+  };
   return <LibraryPanel icon={<Landmark className="h-5 w-5" />} title="Venue library" subtitle="Save stadiums once and reuse them in every match.">
+    <div className="mb-5 rounded-lg border border-primary/30 bg-primary/5 p-4">
+      <div className="mb-2 flex items-center gap-2 text-sm font-bold"><Sparkles className="h-4 w-4 text-primary" /> Add a venue with Almail AI</div>
+      <textarea className={inputCls} rows={4} placeholder="Paste the stadium name, city, country, capacity and any description…" value={aiText} onChange={(e) => setAiText(e.target.value)} />
+      <button className={`${btnPrimary} mt-3`} disabled={aiBusy || !aiText.trim()} onClick={generate}><Sparkles className="h-3.5 w-3.5" />{aiBusy ? "Reading venue…" : "Create editable venue draft"}</button>
+    </div>
     <div className="grid gap-2 sm:grid-cols-2">{q.data?.map((v) => <Item key={v.id} title={v.name} subtitle={[v.city, v.country, v.capacity ? `${v.capacity.toLocaleString()} seats` : null].filter(Boolean).join(" · ")} onEdit={() => setForm(v)} onDelete={async () => { await supabase.from("venues").delete().eq("id", v.id); qc.invalidateQueries({ queryKey: ["admin", "venues"] }); }} />)}</div>
     <div className="mt-4 grid gap-3 border-t border-border pt-4 sm:grid-cols-2">
       <Field label="Venue name"><input className={inputCls} value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
@@ -54,8 +70,8 @@ export function TransfersAdminPanel() {
   </LibraryPanel>;
 }
 
-export function AlmailAiPanel({ onNews, onCompetitions }: { onNews: () => void; onCompetitions: () => void }) {
-  return <LibraryPanel icon={<Bot className="h-5 w-5" />} title="Almail AI studio" subtitle="AI tools are active and create editable drafts—nothing publishes without your review."><div className="grid gap-3 md:grid-cols-2"><button onClick={onCompetitions} className="flex items-start gap-3 rounded-lg border border-border bg-background p-4 text-left hover:border-primary"><Sparkles className="mt-0.5 h-5 w-5 text-primary" /><span><strong className="block">Create a player with AI</strong><span className="text-xs text-muted-foreground">Open a competition → Teams → Squad → Create with Almail AI. Add text and up to six images.</span></span></button><button onClick={onNews} className="flex items-start gap-3 rounded-lg border border-border bg-background p-4 text-left hover:border-primary"><Sparkles className="mt-0.5 h-5 w-5 text-primary" /><span><strong className="block">Write news with AI</strong><span className="text-xs text-muted-foreground">Generate a full editable article from reporting notes and photos.</span></span></button></div></LibraryPanel>;
+export function AlmailAiPanel({ onNews, onCompetitions, onVenues }: { onNews: () => void; onCompetitions: () => void; onVenues: () => void }) {
+  return <LibraryPanel icon={<Bot className="h-5 w-5" />} title="Almail AI studio" subtitle="AI tools create editable drafts—nothing publishes without your review."><div className="grid gap-3 md:grid-cols-2"><button onClick={onCompetitions} className="flex items-start gap-3 rounded-lg border border-border bg-background p-4 text-left hover:border-primary"><Sparkles className="mt-0.5 h-5 w-5 text-primary" /><span><strong className="block">Players and fixtures</strong><span className="text-xs text-muted-foreground">Open a competition to read multiple player images or import a fixture list.</span></span></button><button onClick={onNews} className="flex items-start gap-3 rounded-lg border border-border bg-background p-4 text-left hover:border-primary"><Sparkles className="mt-0.5 h-5 w-5 text-primary" /><span><strong className="block">Bilingual news</strong><span className="text-xs text-muted-foreground">Generate complete English and Arabic editable articles from notes and photos.</span></span></button><button onClick={onVenues} className="flex items-start gap-3 rounded-lg border border-border bg-background p-4 text-left hover:border-primary"><Landmark className="mt-0.5 h-5 w-5 text-primary" /><span><strong className="block">Venue reader</strong><span className="text-xs text-muted-foreground">Paste stadium information and create an editable venue record.</span></span></button></div></LibraryPanel>;
 }
 
 function LibraryPanel({ icon, title, subtitle, children }: { icon: React.ReactNode; title: string; subtitle: string; children: React.ReactNode }) { return <div><div className="mb-5 flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">{icon}</div><div><h2 className="text-lg font-bold">{title}</h2><p className="text-xs text-muted-foreground">{subtitle}</p></div></div>{children}</div>; }

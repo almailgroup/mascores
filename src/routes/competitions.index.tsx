@@ -30,7 +30,7 @@ function CompetitionsList() {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {q.data.map((c) => (
             <Link key={c.id} to="/competitions/$slug" params={{ slug: c.slug }} className="group flex items-center gap-3 rounded-2xl border border-border bg-card p-4 hover:border-primary/50 hover:shadow-lg">
-              <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-primary/10 text-primary">
+               <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl text-primary">
                 {c.logo_url ? <img src={c.logo_url} alt="" className="h-full w-full object-contain" /> : <Trophy className="h-6 w-6" />}
               </div>
               <div className="min-w-0">
