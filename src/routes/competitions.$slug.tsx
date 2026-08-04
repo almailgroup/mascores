@@ -174,25 +174,14 @@ function CompetitionPage() {
                 {group && <div className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">{tx(group)}</div>}
                 <div className="overflow-hidden rounded-2xl border border-border bg-card">
                   <table className="w-full table-fixed text-sm">
-                    <colgroup>
-                      <col className="w-9" />
-                      <col />
-                      <col className="w-9" />
-                      <col className="w-9" />
-                      <col className="w-9" />
-                      <col className="w-9" />
-                      <col className="hidden w-9 sm:table-column" />
-                      <col className="hidden w-9 sm:table-column" />
-                      <col className="w-11" />
-                    </colgroup>
                     <thead className="bg-muted/50 text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground"><tr>
-                       <th className="py-2.5 text-center">#</th>
-                       <th className="py-2.5 text-start ps-1">{tx("Team")}</th>
-                      <th className="py-2.5 text-center">P</th><th className="py-2.5 text-center">W</th>
-                      <th className="py-2.5 text-center">D</th><th className="py-2.5 text-center">L</th>
-                      <th className="hidden py-2.5 text-center sm:table-cell">GF</th>
-                      <th className="hidden py-2.5 text-center sm:table-cell">GA</th>
-                      <th className="py-2.5 pe-3 text-center">Pts</th>
+                       <th className="w-9 py-2.5 text-center">#</th>
+                       <th className="py-2.5 ps-1 text-start">{tx("Team")}</th>
+                      <th className="w-9 py-2.5 text-center">P</th><th className="w-9 py-2.5 text-center">W</th>
+                      <th className="w-9 py-2.5 text-center">D</th><th className="w-9 py-2.5 text-center">L</th>
+                      <th className="hidden w-9 py-2.5 text-center sm:table-cell">GF</th>
+                      <th className="hidden w-9 py-2.5 text-center sm:table-cell">GA</th>
+                      <th className="w-12 py-2.5 pe-3 text-center">Pts</th>
                     </tr></thead>
                     <tbody>{rows.map((r, i) => {
                       const lbl = labels.find((l) => l.position === i + 1);
