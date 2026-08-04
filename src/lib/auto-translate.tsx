@@ -7,9 +7,14 @@ import { UI_AR } from "./ui-phrases";
 
 type Tx = <T extends string | null | undefined>(value: T) => T;
 
-const Ctx = createContext<{ tx: Tx; num: (v: number | string | null | undefined) => string }>({
+const Ctx = createContext<{
+  tx: Tx;
+  num: (v: number | string | null | undefined) => string;
+  reverse: (v: string) => string[];
+}>({
   tx: ((v: unknown) => v) as Tx,
   num: (v) => (v == null ? "" : String(v)),
+  reverse: () => [],
 });
 
 const AR_DIGITS = ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"];
@@ -18,6 +23,20 @@ const CACHE_KEY = "mas.translations.ar";
 /** Arabic mode shows Arabic-Indic numerals everywhere, including inside translated text. */
 export function toArabicDigits(value: string): string {
   return value.replace(/[0-9]/g, (d) => AR_DIGITS[Number(d)]!);
+}
+
+const AR_DIACRITICS = /[\u064B-\u0652\u0640]/g;
+
+/** Loose Arabic normalisation so "العربي" matches "العربى" and friends. */
+function normalizeAr(value: string): string {
+  return value
+    .replace(AR_DIACRITICS, "")
+    .replace(/[إأآا]/g, "ا")
+    .replace(/[ىي]/g, "ي")
+    .replace(/ة/g, "ه")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
 }
 
 /**
@@ -105,7 +124,29 @@ export function AutoTranslateProvider({ children }: { children: ReactNode }) {
     [lang],
   );
 
-  return <Ctx.Provider value={{ tx, num }}>{children}</Ctx.Provider>;
+  /** Arabic query -> the original English strings it was translated from (for search). */
+  const reverse = useCallback(
+    (value: string) => {
+      const needle = normalizeAr(value);
+      if (!needle || needle.length < 2) return [];
+      const out = new Set<string>();
+      const collect = (source: string, translated: string) => {
+        if (out.size >= 12) return;
+        if (normalizeAr(translated).includes(needle)) out.add(source);
+      };
+      for (const [source, translated] of Object.entries(UI_AR)) collect(source, translated);
+      for (const [source, translated] of Object.entries(map)) collect(source, translated);
+      return [...out];
+    },
+    [map],
+  );
+
+  return <Ctx.Provider value={{ tx, num, reverse }}>{children}</Ctx.Provider>;
+}
+
+/** Map an Arabic search term back to the English source terms stored in the database. */
+export function useReverseTranslate() {
+  return useContext(Ctx).reverse;
 }
 
 /** Translate any admin-authored string into the active language. */
