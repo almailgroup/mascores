@@ -14,3 +14,6 @@ export const almailFixtureInputSchema = z.object({
   images: z.array(imageSchema).max(6),
   teams: z.array(z.string().trim().min(1).max(160)).max(80),
 });
+export const almailVenueInputSchema = z.object({
+  notes: z.string().trim().min(1).max(10_000),
+});

@@ -18,6 +18,9 @@ export type ArticleDraft = {
   title: string;
   excerpt: string;
   body_markdown: string;
+  title_ar: string;
+  excerpt_ar: string;
+  body_markdown_ar: string;
 };
 
 function parseJson<T>(text: string): T {
@@ -71,7 +74,7 @@ export async function generatePlayerDraft(notes: string, images: ImageInput[]): 
 
 export async function generateArticleDraft(notes: string, images: ImageInput[]): Promise<ArticleDraft> {
   const text = await runAlmail(
-    `You are Almail AI, the newsroom assistant for a professional football scores platform. Draft a factual, neutral football article from only the supplied notes and visible image information. Do not invent quotes, scores, dates, identities, or events. Return JSON only with exactly these keys: title, excerpt, body_markdown. The body should use clean Markdown and a journalistic structure. Notes: ${notes}`,
+    `You are Almail AI, the bilingual newsroom assistant for a professional football scores platform. Draft the same factual, neutral article in English and Modern Standard Arabic from only the supplied notes and visible image information. Do not invent quotes, scores, dates, identities, or events. Return JSON only with exactly these keys: title, excerpt, body_markdown, title_ar, excerpt_ar, body_markdown_ar. Both bodies should use clean Markdown and a journalistic structure. The Arabic must be a complete natural translation, including the headline and summary. Notes: ${notes}`,
     images,
   );
   const draft = parseJson<ArticleDraft>(text);
@@ -79,6 +82,27 @@ export async function generateArticleDraft(notes: string, images: ImageInput[]):
     title: String(draft.title ?? "").slice(0, 180),
     excerpt: String(draft.excerpt ?? "").slice(0, 320),
     body_markdown: String(draft.body_markdown ?? "").slice(0, 30000),
+    title_ar: String(draft.title_ar ?? "").slice(0, 180),
+    excerpt_ar: String(draft.excerpt_ar ?? "").slice(0, 320),
+    body_markdown_ar: String(draft.body_markdown_ar ?? "").slice(0, 30000),
+  };
+}
+
+export type VenueDraft = { name: string; city: string | null; country: string | null; country_code: string | null; capacity: number | null; description: string | null };
+
+export async function generateVenueDraft(notes: string): Promise<VenueDraft> {
+  const text = await runAlmail(
+    `You are Almail AI, a careful football venue data editor. Extract stadium information only from the supplied text. Never invent missing facts. Return JSON only with exactly these keys: name, city, country, country_code, capacity, description. country_code is a two-letter ISO code or null, capacity is an integer or null, and description is a concise factual summary or null. Text: ${notes}`,
+    [],
+  );
+  const draft = parseJson<VenueDraft>(text);
+  return {
+    name: String(draft.name ?? "").slice(0, 160),
+    city: draft.city ? String(draft.city).slice(0, 120) : null,
+    country: draft.country ? String(draft.country).slice(0, 100) : null,
+    country_code: /^[A-Za-z]{2}$/.test(String(draft.country_code)) ? String(draft.country_code).toUpperCase() : null,
+    capacity: Number.isInteger(draft.capacity) && Number(draft.capacity) > 0 ? Number(draft.capacity) : null,
+    description: draft.description ? String(draft.description).slice(0, 3000) : null,
   };
 }
 export type FixtureDraft = {
