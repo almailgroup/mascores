@@ -32,7 +32,6 @@ export function Modal({ open, onClose, title, children, wide }: { open: boolean;
 }
 
 export function ImageInput({ value, onChange, onFile, placeholder, aspect = 1 }: { value: string | null; onChange: (v: string | null) => void; onFile: (f: File) => Promise<void>; placeholder?: string; aspect?: number }) {
-  const [pending, setPending] = useState<File | null>(null);
   const [cropExisting, setCropExisting] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,13 +48,10 @@ export function ImageInput({ value, onChange, onFile, placeholder, aspect = 1 }:
       </div>
        <label className="inline-flex h-10 cursor-pointer items-center rounded-full border border-border bg-background px-3 text-xs font-medium">
          {uploading ? "Uploading…" : "Choose image"}
-         <input type="file" accept="image/*" disabled={uploading} onChange={(e) => { const f = e.target.files?.[0]; if (f) setPending(f); e.target.value = ""; }} className="sr-only" />
+         <input type="file" accept="image/*" disabled={uploading} onChange={async (e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) await finish(f); }} className="sr-only" />
        </label>
       {value && <button type="button" onClick={() => setCropExisting(true)} className="text-xs font-semibold text-primary">Crop</button>}
       {value && <button type="button" onClick={() => onChange(null)} className="text-xs text-muted-foreground hover:text-destructive">{placeholder ?? "Clear"}</button>}
-      {pending && (
-         <ImageCropper file={pending} aspect={aspect} onCancel={() => setPending(null)} onDone={async (f) => { await finish(f); setPending(null); }} />
-      )}
       {cropExisting && value && (
          <ImageCropper src={value} aspect={aspect} onCancel={() => setCropExisting(false)} onDone={async (f) => { await finish(f); setCropExisting(false); }} />
       )}
