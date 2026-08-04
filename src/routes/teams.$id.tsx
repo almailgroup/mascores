@@ -140,12 +140,12 @@ function TeamPage() {
                     {group.map((r, index) => (
                       <Link key={r.id} to="/teams/$id" params={{ id: r.team?.id ?? r.team_id }}
                         className={`flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-accent ${r.team_id === id ? "bg-primary/10 font-bold" : ""}`}>
-                        <span className="w-5 shrink-0 text-xs tabular-nums text-muted-foreground">{index + 1}</span>
+                        <span className="w-5 shrink-0 text-xs tabular-nums text-muted-foreground">{num(index + 1)}</span>
                         {r.team?.logo_url ? <img src={r.team.logo_url} alt="" className="h-5 w-5 shrink-0 object-contain" /> : <span className="h-5 w-5 shrink-0 rounded bg-muted" />}
-                        <span className="min-w-0 flex-1 truncate">{r.team?.name ?? "Team"}</span>
-                        {r.qualification_label && <span className="hidden shrink-0 rounded-full px-2 py-0.5 text-[0.6rem] font-semibold sm:inline" style={{ backgroundColor: `${r.qualification_color ?? "#888"}22`, color: r.qualification_color ?? undefined }}>{r.qualification_label}</span>}
-                        <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{r.played} · {r.gf}:{r.ga}</span>
-                        <span className="w-8 shrink-0 text-right font-black tabular-nums">{r.points + r.points_adjust}</span>
+                        <span className="min-w-0 flex-1 truncate">{tx(r.team?.name) ?? tx("Team")}</span>
+                        {r.qualification_label && <span className="hidden shrink-0 rounded-full px-2 py-0.5 text-[0.6rem] font-semibold sm:inline" style={{ backgroundColor: `${r.qualification_color ?? "#888"}22`, color: r.qualification_color ?? undefined }}>{tx(r.qualification_label)}</span>}
+                        <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{num(r.played)} · {num(r.gf)}:{num(r.ga)}</span>
+                        <span className="w-8 shrink-0 text-end font-black tabular-nums">{num(r.points + r.points_adjust)}</span>
                       </Link>
                     ))}
                   </div>

@@ -173,27 +173,36 @@ function CompetitionPage() {
               <div key={group ?? "single"}>
                 {group && <div className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">{tx(group)}</div>}
                 <div className="overflow-hidden rounded-2xl border border-border bg-card">
-                  <table className="w-full text-sm">
-                    <thead className="bg-muted/50 text-xs uppercase tracking-widest text-muted-foreground"><tr>
-                       <th className="p-3 text-left">#</th><th className="text-left">{tx("Team")}</th>
-                      <th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>Pts</th>
+                  <table className="w-full table-fixed text-sm">
+                    <thead className="bg-muted/50 text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground"><tr>
+                       <th className="w-9 py-2.5 text-center">#</th>
+                       <th className="py-2.5 ps-1 text-start">{tx("Team")}</th>
+                      <th className="w-9 py-2.5 text-center">P</th><th className="w-9 py-2.5 text-center">W</th>
+                      <th className="w-9 py-2.5 text-center">D</th><th className="w-9 py-2.5 text-center">L</th>
+                      <th className="hidden w-9 py-2.5 text-center sm:table-cell">GF</th>
+                      <th className="hidden w-9 py-2.5 text-center sm:table-cell">GA</th>
+                      <th className="w-12 py-2.5 pe-3 text-center">Pts</th>
                     </tr></thead>
                     <tbody>{rows.map((r, i) => {
                       const lbl = labels.find((l) => l.position === i + 1);
                       return (
-                        <tr key={r.id} className="border-t border-border" style={{ borderLeft: lbl ? `4px solid ${lbl.color}` : "4px solid transparent" }}>
-                           <td className="p-3 tabular-nums">{num(i + 1)}</td>
-                          <td className="p-3">
+                        <tr key={r.id} className="border-t border-border align-middle" style={{ borderInlineStart: lbl ? `4px solid ${lbl.color}` : "4px solid transparent" }}>
+                           <td className="py-2.5 text-center text-xs tabular-nums text-muted-foreground">{num(i + 1)}</td>
+                          <td className="py-2.5 ps-1">
                             {r.team ? (
-                              <Link to="/teams/$id" params={{ id: r.team.id }} className="flex items-center gap-2 font-medium hover:text-primary">
-                                {r.team.logo_url && <img src={r.team.logo_url} alt="" className="h-5 w-5 object-contain" />}
+                              <Link to="/teams/$id" params={{ id: r.team.id }} className="flex min-w-0 items-center gap-2 font-medium hover:text-primary">
+                                {r.team.logo_url && <img src={r.team.logo_url} alt="" className="h-5 w-5 shrink-0 object-contain" />}
                                 <span className="truncate">{tx(r.team.name)}</span>
                               </Link>
                             ) : "—"}
                           </td>
-                           <td className="text-center">{num(r.played)}</td><td className="text-center">{num(r.won)}</td><td className="text-center">{num(r.drawn)}</td>
-                           <td className="text-center">{num(r.lost)}</td><td className="text-center">{num(r.gf)}</td><td className="text-center">{num(r.ga)}</td>
-                           <td className="text-center font-bold">{num(r.points + r.points_adjust)}</td>
+                           <td className="py-2.5 text-center tabular-nums">{num(r.played)}</td>
+                           <td className="py-2.5 text-center tabular-nums">{num(r.won)}</td>
+                           <td className="py-2.5 text-center tabular-nums">{num(r.drawn)}</td>
+                           <td className="py-2.5 text-center tabular-nums">{num(r.lost)}</td>
+                           <td className="hidden py-2.5 text-center tabular-nums sm:table-cell">{num(r.gf)}</td>
+                           <td className="hidden py-2.5 text-center tabular-nums sm:table-cell">{num(r.ga)}</td>
+                           <td className="py-2.5 pe-3 text-center font-bold tabular-nums">{num(r.points + r.points_adjust)}</td>
                         </tr>
                       );
                     })}
