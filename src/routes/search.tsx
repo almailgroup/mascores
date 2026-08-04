@@ -5,7 +5,7 @@ import { AppShell, EmptyState } from "@/components/app-shell";
 import { supabase } from "@/lib/db";
 import { FlagIcon } from "@/components/flag";
 import { Search as SearchIcon, Trophy, Shield, User, Building2, Clock, X } from "lucide-react";
-import { useTx } from "@/lib/auto-translate";
+import { useReverseTranslate, useTx } from "@/lib/auto-translate";
 
 export const Route = createFileRoute("/search")({
   head: () => ({ meta: [{ title: "Search — MansourAlmailScores" }, { name: "robots", content: "noindex" }] }),
@@ -32,6 +32,7 @@ function readHistory(): string[] {
 
 function SearchPage() {
   const tx = useTx();
+  const reverse = useReverseTranslate();
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [history, setHistory] = useState<string[]>([]);
@@ -45,17 +46,19 @@ function SearchPage() {
     if (clean.length < 2) return;
     writeHistory([clean, ...readHistory().filter((item) => item.toLowerCase() !== clean.toLowerCase())].slice(0, 12));
   };
+  const terms = [q.trim(), ...(/[\u0600-\u06FF]/.test(q) ? reverse(q) : [])].filter((t) => t.length > 1);
+  const orFilter = (columns: string[]) =>
+    columns.flatMap((col) => terms.map((t) => `${col}.ilike.%${t.replace(/[,()]/g, " ")}%`)).join(",");
   const res = useQuery({
     enabled: q.length > 1,
-    queryKey: ["search", q],
+    queryKey: ["search", q, terms.join("|")],
     queryFn: async () => {
-      const term = `%${q}%`;
       const [teams, players, comps, coaches, venues] = await Promise.all([
-        supabase.from("teams").select("id,name,short_name,country,country_code,logo_url").ilike("name", term).limit(20),
-        supabase.from("players").select("id,name,position,photo_url,nationality,nationality_code,team:team_id(id,name,logo_url)").ilike("name", term).limit(20),
-        supabase.from("competitions").select("id,slug,name,country,country_code,logo_url,season").ilike("name", term).limit(20),
-        supabase.from("coaches").select("id,name,nationality,nationality_code,photo_url,team:team_id(id,name,logo_url)").ilike("name", term).limit(20),
-        supabase.from("venues").select("id,name,city,country").ilike("name", term).limit(20),
+        supabase.from("teams").select("id,name,short_name,country,country_code,logo_url").or(orFilter(["name", "short_name"])).limit(20),
+        supabase.from("players").select("id,name,position,photo_url,nationality,nationality_code,team:team_id(id,name,logo_url)").or(orFilter(["name"])).limit(20),
+        supabase.from("competitions").select("id,slug,name,country,country_code,logo_url,season").or(orFilter(["name"])).limit(20),
+        supabase.from("coaches").select("id,name,nationality,nationality_code,photo_url,team:team_id(id,name,logo_url)").or(orFilter(["name"])).limit(20),
+        supabase.from("venues").select("id,name,city,country").or(orFilter(["name", "city"])).limit(20),
       ]);
       return {
         teams: teams.data ?? [],
