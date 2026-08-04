@@ -33,8 +33,16 @@ export function AutoTranslateProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     asked.current = new Set();
     queue.current = new Set();
-    setMap({});
+    if (lang === "ar") {
+      try { setMap(JSON.parse(localStorage.getItem("mas.translations.ar") ?? "{}") as Record<string, string>); }
+      catch { setMap({}); }
+    } else setMap({});
   }, [lang]);
+
+  useEffect(() => {
+    if (lang !== "ar" || Object.keys(map).length === 0) return;
+    try { localStorage.setItem("mas.translations.ar", JSON.stringify(map)); } catch { /* cache is optional */ }
+  }, [lang, map]);
 
   const flush = useCallback(async () => {
     timer.current = null;

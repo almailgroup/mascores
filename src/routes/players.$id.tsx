@@ -11,6 +11,7 @@ import { LinkedNews } from "@/components/linked-news";
 import { formatMoney, useCurrency } from "@/lib/currency";
 import { ArrowRight } from "lucide-react";
 import { useTx } from "@/lib/auto-translate";
+import { useNum } from "@/lib/auto-translate";
 
 export const Route = createFileRoute("/players/$id")({
   head: () => ({
@@ -37,6 +38,7 @@ function age(dob: string | null | undefined) {
 
 function PlayerPage() {
   const tx = useTx();
+  const num = useNum();
   const { id } = Route.useParams();
   const { t: tr } = useI18n();
   const { currency } = useCurrency();
@@ -96,15 +98,15 @@ function PlayerPage() {
       {tab === "details" && (
         <>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            <Stat label="Nationality" value={p.nationality ?? "—"} icon={<FlagIcon value={nat} size="md" />} />
-            <Stat label="Date of birth" value={p.dob ? `${formatDob(p.dob)}${age(p.dob) != null ? ` (${age(p.dob)})` : ""}` : "—"} />
-            <Stat label="Height" value={formatHeight(p.height_cm, "cm")} />
-            <Stat label="Position" value={tx(p.position) ?? "—"} />
-            <Stat label="Shirt" value={p.shirt_number != null ? `#${p.shirt_number}` : "—"} />
-            <Stat label="Market value" value={formatMoney(p.market_value, currency)} />
+             <Stat label={tx("Nationality")} value={tx(p.nationality) ?? "—"} icon={<FlagIcon value={nat} size="md" />} />
+             <Stat label={tx("Date of birth")} value={p.dob ? num(`${formatDob(p.dob)}${age(p.dob) != null ? ` (${age(p.dob)})` : ""}`) : "—"} />
+             <Stat label={tx("Height")} value={tx(num(formatHeight(p.height_cm, "cm")))} />
+             <Stat label={tx("Position")} value={tx(p.position) ?? "—"} />
+             <Stat label={tx("Shirt")} value={p.shirt_number != null ? num(`#${p.shirt_number}`) : "—"} />
+             <Stat label={tx("Market value")} value={tx(num(formatMoney(p.market_value, currency)))} />
           </div>
 
-          <h2 className="mb-3 mt-8 text-sm font-bold uppercase tracking-widest text-muted-foreground">Transfer history</h2>
+           <h2 className="mb-3 mt-8 text-sm font-bold uppercase text-muted-foreground">{tx("Transfer history")}</h2>
           {transfers.data && transfers.data.length > 0 ? (
             <div className="grid gap-2">
               {transfers.data.map((r) => (
