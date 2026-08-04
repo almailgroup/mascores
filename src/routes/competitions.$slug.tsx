@@ -6,7 +6,8 @@ import { supabase, formatKickoff, type Competition, type Team, type Match, type 
 import { useRealtime } from "@/lib/realtime";
 import { FlagIcon } from "@/components/flag";
 import { LinkedNews } from "@/components/linked-news";
-import { useTx } from "@/lib/auto-translate";
+import { useNum, useTx } from "@/lib/auto-translate";
+import { useI18n } from "@/lib/i18n";
 import type { Database } from "@/integrations/supabase/types";
 
 type PositionLabel = Database["public"]["Tables"]["standings_position_labels"]["Row"];
@@ -59,7 +60,8 @@ function CompetitionPage() {
       let query = supabase.from("matches")
         .select("*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url)")
         .eq("competition_id", comp.data!.id);
-      if (season) query = query.eq("season", season);
+       const selectedSeason = season ?? comp.data!.season;
+       if (selectedSeason) query = query.eq("season", selectedSeason);
       const { data } = await query.order("kickoff_at");
       return (data ?? []) as unknown as (Match & { home: Team | null; away: Team | null })[];
     },
@@ -72,7 +74,8 @@ function CompetitionPage() {
       let query = supabase.from("standings_rows")
         .select("*, team:team_id(id,name,logo_url,short_name)")
         .eq("competition_id", comp.data!.id);
-      if (season) query = query.eq("season", season);
+       const selectedSeason = season ?? comp.data!.season;
+       if (selectedSeason) query = query.eq("season", selectedSeason);
       const { data } = await query
         .order("group_label", { ascending: true, nullsFirst: true })
         .order("sort_order");
@@ -109,6 +112,8 @@ function CompetitionPage() {
     },
   });
   const tx = useTx();
+  const num = useNum();
+  const { t } = useI18n();
 
   if (comp.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;
   if (!comp.data) return <AppShell><EmptyState title="Competition not found" /></AppShell>;
@@ -116,41 +121,33 @@ function CompetitionPage() {
 
   return (
     <AppShell>
-      <div className="mb-6 flex items-center gap-4 rounded-3xl border border-border bg-card p-6">
-        <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-primary/10 text-primary">
+       <div className="mb-4 flex items-center gap-4 border-b border-border pb-5">
+         <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl text-primary">
           {c.logo_url && <img src={c.logo_url} alt="" className="h-full w-full object-contain" />}
         </div>
         <div>
           <h1 className="text-2xl font-bold">{tx(c.name)}</h1>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+           <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
             <FlagIcon value={c.country_code ?? c.country} />
-            <span>{[tx(c.country), season ?? c.season, tx(c.category)].filter(Boolean).join(" · ")}</span>
+             <span>{[tx(c.country), tx(c.category)].filter(Boolean).join(" · ")}</span>
+             {(c.seasons?.length ?? 0) > 0 && <select aria-label="Season" className="ml-2 rounded-full border border-border bg-background px-3 py-1 font-semibold text-foreground" value={season ?? c.season ?? c.seasons[0]} onChange={(e) => setSeason(e.target.value)}>{c.seasons.map((item) => <option key={item} value={item}>{num(item)}</option>)}</select>}
           </div>
           {c.description && <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{tx(c.description)}</p>}
         </div>
       </div>
 
-      {(c.seasons?.length ?? 0) > 0 && (
-        <div className="mb-4 flex flex-wrap gap-2">
-          <button onClick={() => setSeason(null)} className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${season === null ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground"}`}>All seasons</button>
-          {c.seasons.map((s) => (
-            <button key={s} onClick={() => setSeason(s)} className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${season === s ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground"}`}>{s}</button>
-          ))}
-        </div>
-      )}
-
       <div className="mb-6 flex max-w-full gap-1 overflow-x-auto border-b border-border pb-2 text-sm">
-        {(["overview", "matches", "standings", "teams", "awards", "media", "news"] as const).map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 py-2 font-semibold capitalize ${tab === item ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{item}</button>)}
+         {(["overview", "matches", "standings", "teams", "awards", "media", "news"] as const).map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 py-2 font-semibold capitalize ${tab === item ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{item === "awards" ? tx("Awards") : t(`tab.${item}`)}</button>)}
       </div>
 
       {tab === "overview" && <CompetitionOverviewTab c={c} season={season} teams={teams.data ?? []} titleHolderName={tx(titleHolder?.name) ?? null} titles={compTitles.data ?? []} divisions={divisions.data ?? []} />}
 
-      {tab === "matches" && <><SectionHeader title="Matches" />
+      {tab === "matches" && <><SectionHeader title={t("tab.matches")} />
       {matches.data && matches.data.length > 0 ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {matches.data.map((m) => (
             <Link key={m.id} to="/matches/$id" params={{ id: m.id }} className="rounded-2xl border border-border bg-card p-4 hover:border-primary/50">
-              <div className="text-[0.65rem] uppercase tracking-widest text-muted-foreground">{m.round ?? "—"}</div>
+                 <div className="text-[0.65rem] uppercase text-muted-foreground">{m.round_number ? `${tx("Round")} ${num(m.round_number)}` : tx(m.round) ?? "—"}</div>
               <div className="mt-2 grid items-center gap-2" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
                 <div className="truncate text-right font-semibold">{tx(m.home?.name) ?? "TBD"}</div>
                 <div className="text-center text-sm font-bold">{m.home_score != null ? `${m.home_score} – ${m.away_score}` : formatKickoff(m.kickoff_at)}</div>
@@ -161,7 +158,7 @@ function CompetitionPage() {
         </div>
       ) : <EmptyState title="No matches yet" />}</>}
 
-      {tab === "standings" && <><SectionHeader title="Standings" action={<div />} />
+      {tab === "standings" && <><SectionHeader title={t("tab.standings")} action={<div />} />
       {standings.data && standings.data.length > 0 ? (
         <div className="space-y-6">
           {groupsOf(standings.data).map(([group, rows]) => {
@@ -176,14 +173,14 @@ function CompetitionPage() {
                 <div className="overflow-hidden rounded-2xl border border-border bg-card">
                   <table className="w-full text-sm">
                     <thead className="bg-muted/50 text-xs uppercase tracking-widest text-muted-foreground"><tr>
-                      <th className="p-3 text-left">#</th><th className="text-left">Team</th>
+                       <th className="p-3 text-left">#</th><th className="text-left">{tx("Team")}</th>
                       <th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>Pts</th>
                     </tr></thead>
                     <tbody>{rows.map((r, i) => {
                       const lbl = labels.find((l) => l.position === i + 1);
                       return (
                         <tr key={r.id} className="border-t border-border" style={{ borderLeft: lbl ? `4px solid ${lbl.color}` : "4px solid transparent" }}>
-                          <td className="p-3 tabular-nums">{i + 1}</td>
+                           <td className="p-3 tabular-nums">{num(i + 1)}</td>
                           <td className="p-3">
                             {r.team ? (
                               <Link to="/teams/$id" params={{ id: r.team.id }} className="flex items-center gap-2 font-medium hover:text-primary">
@@ -192,9 +189,9 @@ function CompetitionPage() {
                               </Link>
                             ) : "—"}
                           </td>
-                          <td className="text-center">{r.played}</td><td className="text-center">{r.won}</td><td className="text-center">{r.drawn}</td>
-                          <td className="text-center">{r.lost}</td><td className="text-center">{r.gf}</td><td className="text-center">{r.ga}</td>
-                          <td className="text-center font-bold">{r.points + r.points_adjust}</td>
+                           <td className="text-center">{num(r.played)}</td><td className="text-center">{num(r.won)}</td><td className="text-center">{num(r.drawn)}</td>
+                           <td className="text-center">{num(r.lost)}</td><td className="text-center">{num(r.gf)}</td><td className="text-center">{num(r.ga)}</td>
+                           <td className="text-center font-bold">{num(r.points + r.points_adjust)}</td>
                         </tr>
                       );
                     })}
@@ -205,7 +202,7 @@ function CompetitionPage() {
                   <div className="mt-2 flex flex-wrap gap-3 text-xs text-muted-foreground">
                     {used.map((l) => (
                       <span key={l.id} className="inline-flex items-center gap-1.5">
-                        <span className="h-2.5 w-2.5 rounded-full" style={{ background: l.color }} />{l.label}
+                         <span className="h-2.5 w-2.5 rounded-full" style={{ background: l.color }} />{tx(l.label)}
                       </span>
                     ))}
                   </div>
@@ -216,7 +213,7 @@ function CompetitionPage() {
         </div>
       ) : <EmptyState title="No standings yet" />}</>}
 
-      {tab === "teams" && <><SectionHeader title="Teams" />
+      {tab === "teams" && <><SectionHeader title={tx("Teams")} />
       {teams.data && teams.data.length > 0 ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {teams.data.map((t) => (
@@ -251,10 +248,11 @@ function CompetitionOverviewTab({ c, season, teams, titleHolderName, titles, div
   const cells: [string, string][] = [
     ["Sport", c.sport], ["Format", c.format], ["Teams", String(teams.length)],
     ["Duration", [c.starts_on, c.ends_on].filter(Boolean).join(" — ") || "—"],
-    ["Season", season ?? c.season ?? "—"], ["Available seasons", c.seasons?.join(", ") || "—"],
+    ["Season", season ?? c.season ?? "—"],
     ["Title holder", titleHolderName ?? "—"],
     ["Most titles", bestTeam && best ? `${tx(bestTeam.name)} (${best.titles})` : "—"],
-    ["Higher division", tx(higher?.name) ?? "—"], ["Lower division", tx(lower?.name) ?? "—"],
+    ...(higher ? [["Higher division", tx(higher.name) ?? "—"] as [string, string]] : []),
+    ...(lower ? [["Lower division", tx(lower.name) ?? "—"] as [string, string]] : []),
     ["Country", c.country ?? "—"],
   ];
   return (
@@ -262,14 +260,14 @@ function CompetitionOverviewTab({ c, season, teams, titleHolderName, titles, div
       <div className="grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
         {cells.map(([label, value]) => (
           <div key={label} className="bg-card p-4">
-            <div className="text-[0.65rem] font-bold uppercase text-muted-foreground">{label}</div>
-            <div className="mt-1 font-semibold">{value}</div>
+             <div className="text-[0.65rem] font-bold uppercase text-muted-foreground">{tx(label)}</div>
+             <div className="mt-1 font-semibold">{tx(value)}</div>
           </div>
         ))}
       </div>
       {winners.length > 0 && (
         <div className="mt-6 overflow-hidden rounded-2xl border border-border bg-card">
-          <div className="border-b border-border px-4 py-3 text-sm font-bold">Title winners</div>
+          <div className="border-b border-border px-4 py-3 text-sm font-bold">{tx("Title winners")}</div>
           <div className="divide-y divide-border">
             {winners.map((r) => {
               const team = teams.find((tm) => tm.id === r.team_id);

@@ -6,6 +6,7 @@ import { supabase, currentSeason, seasonRange, type Transfer } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 import { ArrowRight, Repeat } from "lucide-react";
 import { useTx } from "@/lib/auto-translate";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/transfers")({
   head: () => ({
@@ -33,6 +34,7 @@ const KIND_TONE: Record<string, string> = {
 
 function TransfersPage() {
   const tx = useTx();
+  const { t } = useI18n();
   useRealtime(["transfers"]);
   const season = currentSeason();
   const { from, to } = seasonRange(season);
@@ -84,15 +86,15 @@ function TransfersPage() {
             <Repeat className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-black tracking-tight">Transfers</h1>
-            <p className="text-xs text-muted-foreground">Season {season} · {rows.length} moves</p>
+             <h1 className="text-2xl font-black tracking-tight">{t("nav.transfers")}</h1>
+             <p className="text-xs text-muted-foreground">{tx("Season")} {tx(season)} · {rows.length} {tx("moves")}</p>
           </div>
         </div>
         <div className="mt-4 flex w-fit gap-1 rounded-full border border-border bg-background/70 p-1 text-xs">
           {(["all", "player", "coach"] as const).map((k) => (
             <button key={k} onClick={() => setKind(k)}
               className={`rounded-full px-4 py-1.5 font-semibold capitalize ${kind === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-              {k === "all" ? "All" : k === "player" ? "Players" : "Coaches"}
+               {tx(k === "all" ? "All" : k === "player" ? "Players" : "Coaches")}
             </button>
           ))}
         </div>
@@ -131,7 +133,7 @@ function TransfersPage() {
                     <div className="shrink-0 text-right">
                       {r.transfer_type && (
                         <span className={`rounded-full px-2.5 py-1 text-[0.6rem] font-bold uppercase tracking-wider ${KIND_TONE[r.transfer_type] ?? "bg-primary/15 text-primary"}`}>
-                          {r.transfer_type}
+                           {tx(r.transfer_type)}
                         </span>
                       )}
                       {r.fee && <div className="mt-1 text-xs font-semibold tabular-nums">{r.fee}</div>}

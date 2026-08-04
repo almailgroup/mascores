@@ -75,7 +75,7 @@ export function TeamsPanel({ competitionId }: { competitionId: string }) {
       <div className="grid gap-2">
         {(q.data ?? []).map((t) => (
           <div key={t.id} className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-3 sm:gap-3">
-            <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded bg-primary/10">
+             <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded">
               {t.logo_url ? <img src={t.logo_url} alt="" className="h-full w-full object-contain" /> : <span className="text-xs">⚽</span>}
             </div>
             <div className="min-w-0 flex-1 basis-40">
@@ -109,6 +109,7 @@ export function TeamsPanel({ competitionId }: { competitionId: string }) {
           </Field>
           <Field label="Founded on"><input type="date" className={inputCls} value={form.founded_on ?? ""} onChange={(e) => setForm({ ...form, founded_on: e.target.value || null })} /></Field>
           <Field label="Total trophies"><input type="number" min={0} className={inputCls} value={form.trophies ?? 0} onChange={(e) => setForm({ ...form, trophies: Math.max(0, Number(e.target.value) || 0) })} /></Field>
+           <Field label="Chairman"><input className={inputCls} value={form.chairman ?? ""} onChange={(e) => setForm({ ...form, chairman: e.target.value || null })} /></Field>
           <div className="sm:col-span-2"><Field label="Team logo">
             <ImageInput value={form.logo_url ?? null} onChange={(v) => setForm({ ...form, logo_url: v })} onFile={async (f) => { const url = await uploadMedia("team-logos", f); if (url) setForm({ ...form, logo_url: url }); }} />
           </Field></div>
@@ -186,11 +187,13 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
 
   return (
     <Modal open onClose={onClose} title={`${team.name} — squad`} wide>
-      <div className="mb-4 grid gap-2">
-        {(q.data ?? []).map((p) => (
+       <div className="mb-4 grid gap-5">
+         {POSITIONS.map((position) => {
+           const players = (q.data ?? []).filter((player) => (player.position ?? "Unknown") === position);
+           return <section key={position}><h4 className="mb-2 text-xs font-bold uppercase text-muted-foreground">{position}</h4><div className="grid gap-2">{players.map((p) => (
           <div key={p.id} className="flex items-center gap-3 rounded-lg border border-border bg-background p-2">
-            <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-primary/10">
-              {p.photo_url ? <img src={p.photo_url} alt="" className="h-full w-full object-cover" /> : <span className="text-[0.6rem]">{p.shirt_number ?? "?"}</span>}
+             <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-muted">
+               {p.photo_url ? <img src={p.photo_url} alt="" className="h-full w-full object-cover" /> : <Users className="h-4 w-4 text-muted-foreground" />}
             </div>
             <div className="min-w-0 flex-1">
               <div className="truncate text-sm font-medium">{p.name}</div>
@@ -199,7 +202,8 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
             <button className={btnGhost} onClick={() => { setForm(p); setEditing(true); }}><Pencil className="h-3 w-3" /></button>
             <button className={btnDanger} onClick={() => remove(p.id)}><Trash2 className="h-3 w-3" /></button>
           </div>
-        ))}
+         ))}{players.length === 0 && <div className="rounded border border-dashed border-border p-3 text-center text-xs text-muted-foreground">No {position.toLowerCase()}s</div>}</div></section>;
+         })}
         {q.data && q.data.length === 0 && <div className="rounded border border-dashed border-border p-3 text-center text-xs text-muted-foreground">No players yet.</div>}
       </div>
 
@@ -265,6 +269,7 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
 }
 
 function MediaEditor({ urls, onChange }: { urls: string[]; onChange: (v: string[]) => void }) {
+  const [adding, setAdding] = useState(false);
   return (
     <div className="grid gap-2">
       <div className="flex flex-wrap gap-2">
@@ -276,12 +281,7 @@ function MediaEditor({ urls, onChange }: { urls: string[]; onChange: (v: string[
           </div>
         ))}
       </div>
-      <input type="file" accept="image/*" className="text-xs" onChange={async (e) => {
-        const f = e.target.files?.[0];
-        if (!f) return;
-        const url = await uploadMedia("player-photos", f);
-        if (url) onChange([...urls, url]);
-      }} />
+      {adding ? <ImageInput value={null} onChange={() => {}} onFile={async (file) => { const url = await uploadMedia("player-photos", file); if (url) onChange([...urls, url]); setAdding(false); }} /> : <button type="button" className={btnGhost} onClick={() => setAdding(true)}><ImagePlus className="h-3.5 w-3.5" /> Add and crop photo</button>}
     </div>
   );
 }

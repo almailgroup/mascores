@@ -34,20 +34,32 @@ export function Modal({ open, onClose, title, children, wide }: { open: boolean;
 export function ImageInput({ value, onChange, onFile, placeholder, aspect = 1 }: { value: string | null; onChange: (v: string | null) => void; onFile: (f: File) => Promise<void>; placeholder?: string; aspect?: number }) {
   const [pending, setPending] = useState<File | null>(null);
   const [cropExisting, setCropExisting] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const finish = async (file: File) => {
+    setUploading(true);
+    setError(null);
+    try { await onFile(file); } catch { setError("Upload failed. Please try again."); }
+    finally { setUploading(false); }
+  };
   return (
     <div className="flex flex-wrap items-center gap-3">
       <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg border border-border bg-muted/40">
         {value ? <img src={value} alt="" className="h-full w-full object-contain" /> : <span className="text-[0.6rem] text-muted-foreground">img</span>}
       </div>
-      <input type="file" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) setPending(f); e.target.value = ""; }} className="text-xs" />
+       <label className="inline-flex h-10 cursor-pointer items-center rounded-full border border-border bg-background px-3 text-xs font-medium">
+         {uploading ? "Uploading…" : "Choose image"}
+         <input type="file" accept="image/*" disabled={uploading} onChange={(e) => { const f = e.target.files?.[0]; if (f) setPending(f); e.target.value = ""; }} className="sr-only" />
+       </label>
       {value && <button type="button" onClick={() => setCropExisting(true)} className="text-xs font-semibold text-primary">Crop</button>}
       {value && <button type="button" onClick={() => onChange(null)} className="text-xs text-muted-foreground hover:text-destructive">{placeholder ?? "Clear"}</button>}
       {pending && (
-        <ImageCropper file={pending} aspect={aspect} onCancel={() => setPending(null)} onDone={async (f) => { setPending(null); await onFile(f); }} />
+         <ImageCropper file={pending} aspect={aspect} onCancel={() => setPending(null)} onDone={async (f) => { await finish(f); setPending(null); }} />
       )}
       {cropExisting && value && (
-        <ImageCropper src={value} aspect={aspect} onCancel={() => setCropExisting(false)} onDone={async (f) => { setCropExisting(false); await onFile(f); }} />
+         <ImageCropper src={value} aspect={aspect} onCancel={() => setCropExisting(false)} onDone={async (f) => { await finish(f); setCropExisting(false); }} />
       )}
+       {error && <span className="basis-full text-xs text-destructive">{error}</span>}
     </div>
   );
 }

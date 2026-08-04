@@ -57,7 +57,7 @@ function SearchPage() {
     <AppShell>
       <div className="mb-4 flex items-center gap-2 rounded-2xl border border-border bg-card px-4 py-3">
         <SearchIcon className="h-4 w-4 text-muted-foreground" />
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Clubs, players, competitions, coaches, stadiums…"
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={tx("Clubs, players, competitions, coaches, stadiums…")}
           className="flex-1 bg-transparent text-sm outline-none" />
       </div>
 
@@ -65,12 +65,12 @@ function SearchPage() {
         {FILTERS.map((f) => (
           <button key={f.key} onClick={() => setFilter(f.key)}
             className={`whitespace-nowrap rounded-full px-4 py-1.5 font-semibold ${filter === f.key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-            {f.label}
+             {tx(f.label)}
           </button>
         ))}
       </div>
 
-      {q.length < 2 ? <EmptyState title="Type to search" /> : !res.data ? null : total === 0 ? <EmptyState title="No results" /> : (
+      {q.length < 2 ? <EmptyState title={tx("Type to search")} /> : !res.data ? null : total === 0 ? <EmptyState title={tx("No results")} /> : (
         <div className="space-y-6">
           {show("competitions") && (
             <Group title="Competitions">{res.data.comps.map((c) => (
@@ -137,11 +137,12 @@ function ResultRow({ to, params, logo, fallback, title, sub, country, round }: {
 }
 
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
+  const tx = useTx();
   const arr = Array.isArray(children) ? children : [children];
   if (!arr.length) return null;
   return (
     <section>
-      <h2 className="mb-2 text-sm font-semibold uppercase tracking-widest text-muted-foreground">{title}</h2>
+      <h2 className="mb-2 text-sm font-semibold uppercase text-muted-foreground">{tx(title)}</h2>
       <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{children}</div>
     </section>
   );

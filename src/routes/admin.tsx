@@ -117,7 +117,7 @@ function AdminPage() {
           <div className="mt-6">
             {tab === "competitions" && <CompetitionsPanel onOpen={setOpenComp} />}
             {tab === "news" && <NewsPanel />}
-            {tab === "ai" && <AlmailAiPanel onNews={() => setTab("news")} onCompetitions={() => setTab("competitions")} />}
+             {tab === "ai" && <AlmailAiPanel onNews={() => setTab("news")} onCompetitions={() => setTab("competitions")} onVenues={() => setTab("venues")} />}
             {tab === "venues" && <VenuesPanel />}
             {tab === "channels" && <ChannelsPanel />}
             {tab === "transfers" && <TransfersAdminPanel />}
@@ -131,7 +131,7 @@ function AdminPage() {
 function CompetitionOverview({ competition }: { competition: Competition }) {
   const items = [
     ["Sport", competition.sport], ["Format", competition.format], ["Current season", competition.season],
-    ["Available seasons", competition.seasons?.join(", ") || "—"], ["Starts", competition.starts_on || "—"], ["Ends", competition.ends_on || "—"],
+    ["Starts", competition.starts_on || "—"], ["Ends", competition.ends_on || "—"],
   ];
   return <div><div className="mb-4 flex items-center gap-2"><CalendarDays className="h-4 w-4 text-primary" /><h2 className="font-bold">Competition setup</h2></div><div className="grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2 lg:grid-cols-3">{items.map(([label, value]) => <div key={label} className="bg-card p-4"><div className="text-[0.65rem] font-semibold uppercase text-muted-foreground">{label}</div><div className="mt-1 text-sm font-semibold">{value || "—"}</div></div>)}</div><p className="mt-4 text-sm text-muted-foreground">Use Teams for the saved club library, Matches for schedules and match centres, and Standings for groups and qualification labels.</p></div>;
 }

@@ -23,6 +23,7 @@ export function ImageCropper({
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const drag = useRef<{ x: number; y: number } | null>(null);
   const boxRef = useRef<HTMLDivElement | null>(null);
 
@@ -51,7 +52,7 @@ export function ImageCropper({
     setBusy(true);
     try {
       const boxW = box.clientWidth;
-      const boxH = boxW / aspect;
+      const boxH = box.clientHeight;
       const base = Math.max(boxW / img.width, boxH / img.height);
       const scale = base * zoom;
       const out = document.createElement("canvas");
@@ -69,16 +70,20 @@ export function ImageCropper({
       ctx.drawImage(img, cx - drawW / 2, cy - drawH / 2, drawW, drawH);
       const blob = await new Promise<Blob | null>((resolve) => out.toBlob(resolve, "image/png", 0.95));
       if (!blob) throw new Error("no blob");
-      await onDone(new File([blob], (file?.name.replace(/\.\w+$/, "") ?? "image") + "-crop.png", { type: "image/png" }));
+      const name = `${file?.name.replace(/\.[^.]+$/, "") ?? "image"}-crop.png`;
+      const cropped = typeof File === "function"
+        ? new File([blob], name, { type: "image/png", lastModified: Date.now() })
+        : Object.assign(blob, { name, lastModified: Date.now() }) as File;
+      await onDone(cropped);
     } catch {
-      if (file) await onDone(file);
+      setError("The crop could not be saved. Please try another image.");
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-3 backdrop-blur-sm" onClick={onCancel}>
+    <div className="fixed inset-0 z-[80] flex items-center justify-center overscroll-contain bg-black/70 p-3 backdrop-blur-sm" onClick={onCancel}>
       <div className="w-full max-w-md rounded-3xl border border-border bg-card p-4" onClick={(e) => e.stopPropagation()}>
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-bold">Crop image</h3>
@@ -92,9 +97,10 @@ export function ImageCropper({
               ref={boxRef}
               className="relative w-full touch-none overflow-hidden rounded-2xl border border-border bg-muted"
               style={{ aspectRatio: String(aspect) }}
-              onPointerDown={(e) => { drag.current = { x: e.clientX - offset.x, y: e.clientY - offset.y }; (e.target as HTMLElement).setPointerCapture(e.pointerId); }}
+               onPointerDown={(e) => { e.preventDefault(); drag.current = { x: e.clientX - offset.x, y: e.clientY - offset.y }; e.currentTarget.setPointerCapture(e.pointerId); }}
               onPointerMove={(e) => { if (drag.current) setOffset({ x: e.clientX - drag.current.x, y: e.clientY - drag.current.y }); }}
-              onPointerUp={() => { drag.current = null; }}
+               onPointerUp={(e) => { drag.current = null; e.currentTarget.releasePointerCapture(e.pointerId); }}
+               onPointerCancel={() => { drag.current = null; }}
             >
               {url && (
                 <img
@@ -102,7 +108,11 @@ export function ImageCropper({
                   alt=""
                   draggable={false}
                   className="pointer-events-none absolute left-1/2 top-1/2 max-w-none select-none"
-                  style={{ transform: `translate(-50%,-50%) translate(${offset.x}px,${offset.y}px) scale(${zoom})`, width: "100%", height: "100%", objectFit: "cover" }}
+                   style={{
+                     transform: `translate(-50%,-50%) translate(${offset.x}px,${offset.y}px) scale(${zoom})`,
+                     width: img && img.width / img.height >= aspect ? "auto" : "100%",
+                     height: img && img.width / img.height >= aspect ? "100%" : "auto",
+                   }}
                 />
               )}
             </div>
@@ -112,6 +122,7 @@ export function ImageCropper({
             </label>
           </>
         )}
+        {error && <p className="mt-3 text-xs text-destructive">{error}</p>}
         <div className="mt-4 flex justify-end gap-2">
           <button className="inline-flex h-9 items-center rounded-full border border-border px-3 text-xs font-medium" onClick={onCancel}>Cancel</button>
           {!failed && <button disabled={busy || !img} className="inline-flex h-9 items-center rounded-full bg-primary px-4 text-xs font-semibold text-primary-foreground disabled:opacity-60" onClick={commit}>{busy ? "Saving…" : "Use crop"}</button>}

@@ -37,6 +37,9 @@ export function NewsPanel() {
       ...form,
       slug: form.slug || slugify(form.title),
       body_markdown: form.body_markdown ?? "",
+      title_ar: form.title_ar ?? null,
+      excerpt_ar: form.excerpt_ar ?? null,
+      body_markdown_ar: form.body_markdown_ar ?? null,
       team_id: form.team_id ?? null,
       competition_id: form.competition_id ?? null,
       player_id: form.player_id ?? null,
@@ -136,6 +139,10 @@ export function NewsPanel() {
           />
           <Field label="Excerpt"><textarea rows={2} className={inputCls} value={form.excerpt ?? ""} onChange={(e) => setForm({ ...form, excerpt: e.target.value })} /></Field>
           <Field label="Body (Markdown)"><textarea rows={8} className={inputCls} value={form.body_markdown ?? ""} onChange={(e) => setForm({ ...form, body_markdown: e.target.value })} /></Field>
+           <div className="border-t border-border pt-3 text-sm font-bold">Arabic edition</div>
+           <Field label="Arabic title"><input dir="rtl" className={inputCls} value={form.title_ar ?? ""} onChange={(e) => setForm({ ...form, title_ar: e.target.value })} /></Field>
+           <Field label="Arabic excerpt"><textarea dir="rtl" rows={2} className={inputCls} value={form.excerpt_ar ?? ""} onChange={(e) => setForm({ ...form, excerpt_ar: e.target.value })} /></Field>
+           <Field label="Arabic body (Markdown)"><textarea dir="rtl" rows={8} className={inputCls} value={form.body_markdown_ar ?? ""} onChange={(e) => setForm({ ...form, body_markdown_ar: e.target.value })} /></Field>
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={!!form.published_at} onChange={(e) => setForm({ ...form, published_at: e.target.checked ? new Date().toISOString() : null })} /> Publish now</label>
         </div>
         <div className="mt-5 flex justify-end gap-2">

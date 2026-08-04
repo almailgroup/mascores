@@ -67,7 +67,7 @@ function TeamPage() {
   const transfers = useQuery({ queryKey: ["team-transfers", id, team.data?.name], enabled: !!team.data, queryFn: async () => {
     const name = team.data!.name;
     const { data } = await supabase.from("transfers").select("*")
-      .or(`from_club.eq.${name},to_club.eq.${name}`).order("moved_on", { ascending: false, nullsFirst: false });
+       .or(`from_club.eq.${name},to_club.eq.${name}`).in("season", ["25/26", "26/27"]).order("moved_on", { ascending: false, nullsFirst: false });
     return (data ?? []) as Transfer[];
   }});
 
@@ -85,7 +85,7 @@ function TeamPage() {
   return (
     <AppShell>
       <div className="mb-4 flex items-center gap-4 rounded-3xl border border-border bg-card p-6">
-        <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-primary/10">
+        <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl">
           {t.logo_url && <img src={t.logo_url} className="h-full w-full object-contain" alt="" />}
         </div>
         <div className="min-w-0 flex-1">
@@ -154,24 +154,26 @@ function TeamPage() {
         ) : <EmptyState title="Not in a table yet" />
       )}
 
-      {tab === "squad" && (
-        squad.data && squad.data.length > 0 ? (
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {squad.data.map((p) => (
+       {tab === "squad" && (
+         <div className="space-y-7">
+           <section><h2 className="mb-3 text-sm font-bold uppercase text-muted-foreground">{tx("Coach")}</h2>{coaches.data && coaches.data.length > 0 ? <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{coaches.data.map((coach) => <div key={coach.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3"><PlayerAvatar src={coach.photo_url} name={coach.name} size="sm" /><div><div className="font-medium">{tx(coach.name)}</div><div className="text-xs text-muted-foreground">{tx(coach.nationality) ?? "—"}</div></div></div>)}</div> : <EmptyState title={tx("No coach")} />}</section>
+           {(["Goalkeeper", "Defender", "Midfielder", "Forward", "Unknown"] as const).map((position) => {
+             const players = (squad.data ?? []).filter((player) => (player.position ?? "Unknown") === position);
+             return <section key={position}><h2 className="mb-3 text-sm font-bold uppercase text-muted-foreground">{tx(position)}</h2>{players.length > 0 ? <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{players.map((p) => (
               <Link key={p.id} to="/players/$id" params={{ id: p.id }} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 hover:border-primary/50">
                 <PlayerAvatar src={p.photo_url} name={p.name} size="sm" />
                 <div className="min-w-0"><div className="truncate font-medium">{tx(p.name)}</div><div className="truncate text-xs text-muted-foreground">{tx(p.position) ?? "—"}</div></div>
               </Link>
-            ))}
-          </div>
-        ) : <EmptyState title="No players yet" />
+             ))}</div> : <EmptyState title={tx(`No ${position.toLowerCase()}s`)} />}</section>;
+           })}
+         </div>
       )}
 
       {tab === "info" && (
         <div className="grid gap-3 sm:grid-cols-2">
           <InfoCard label="Country" value={t.country ?? "—"} icon={<FlagIcon value={t.country_code ?? t.country} size="md" />} />
           <InfoCard label="Stadium" value={[tx(t.venue_name), tx(t.venue_city)].filter(Boolean).join(", ") || "—"} />
-          <InfoCard label="Coach" value={coaches.data?.map((c) => tx(c.name)).join(", ") || tx(t.coach_name) || "—"} />
+           <InfoCard label={tx("Chairman")} value={tx(t.chairman) ?? "—"} />
           <InfoCard label="Short name" value={t.short_name ?? "—"} />
           <InfoCard label="Founded" value={t.founded_on ? new Date(t.founded_on).toLocaleDateString(undefined, { dateStyle: "long" }) : "—"} />
           <InfoCard label="Trophies" value={String(t.trophies ?? 0)} />
