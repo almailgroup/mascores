@@ -38,5 +38,5 @@ export const createVenueDraftWithAlmail = createServerFn({ method: "POST" })
     const { data: isAdmin, error } = await context.supabase.rpc("is_admin", { _uid: context.userId });
     if (error || !isAdmin) throw new Error("Administrator access required.");
     const { generateVenueDraft } = await import("./almail-ai.server");
-    return generateVenueDraft(data.notes);
+    return generateVenueDraft(data.notes, data.images ?? []);
   });

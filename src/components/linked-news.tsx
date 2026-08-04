@@ -22,6 +22,7 @@ export function LinkedNews({ kind, id }: { kind: Kind; id: string }) {
         .select("*")
         .eq(COLUMN[kind], id)
         .not("published_at", "is", null)
+        .lte("published_at", new Date().toISOString())
         .order("published_at", { ascending: false })
         .limit(30);
       return (data ?? []) as NewsPost[];

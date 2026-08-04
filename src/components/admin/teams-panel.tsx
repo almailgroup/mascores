@@ -16,7 +16,7 @@ type TeamForm = Partial<Team>;
 type PlayerForm = Partial<Player>;
 type CoachForm = Partial<Coach>;
 
-export function TeamsPanel({ competitionId }: { competitionId: string }) {
+export function TeamsPanel({ competitionId }: { competitionId: string | null }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<TeamForm>({});
@@ -28,6 +28,7 @@ export function TeamsPanel({ competitionId }: { competitionId: string }) {
   const q = useQuery({
     queryKey: ["admin", "teams", competitionId],
     queryFn: async () => {
+      if (!competitionId) return ((await supabase.from("teams").select("*").order("name")).data ?? []) as Team[];
       const { data: links } = await supabase.from("competition_teams").select("team_id").eq("competition_id", competitionId);
       const ids = (links ?? []).map((link) => link.team_id);
       const { data } = ids.length ? await supabase.from("teams").select("*").in("id", ids).order("name") : await supabase.from("teams").select("*").eq("competition_id", competitionId).order("name");
@@ -38,23 +39,25 @@ export function TeamsPanel({ competitionId }: { competitionId: string }) {
   const titlesQ = useQuery({
     queryKey: ["admin", "comp-titles", competitionId],
     queryFn: async () => {
+      if (!competitionId) return {} as Record<string, number>;
       const { data } = await supabase.from("competition_teams").select("team_id,titles").eq("competition_id", competitionId);
       return Object.fromEntries((data ?? []).map((r) => [r.team_id, r.titles ?? 0])) as Record<string, number>;
     },
   });
 
   const setTitles = async (teamId: string, titles: number) => {
+    if (!competitionId) return;
     await supabase.from("competition_teams").update({ titles }).eq("competition_id", competitionId).eq("team_id", teamId);
     qc.invalidateQueries({ queryKey: ["admin", "comp-titles", competitionId] });
   };
 
   const save = async () => {
     if (!form.name) return;
-    const payload = { ...form, competition_id: competitionId };
+    const payload = competitionId ? { ...form, competition_id: competitionId } : { ...form };
     if (form.id) await supabase.from("teams").update(payload).eq("id", form.id);
     else {
       const { data } = await supabase.from("teams").insert(payload as never).select("id").single();
-      if (data) await supabase.from("competition_teams").insert({ competition_id: competitionId, team_id: data.id } as never);
+      if (data && competitionId) await supabase.from("competition_teams").insert({ competition_id: competitionId, team_id: data.id } as never);
     }
     setOpen(false); setForm({});
     qc.invalidateQueries({ queryKey: ["admin", "teams", competitionId] });
@@ -70,7 +73,7 @@ export function TeamsPanel({ competitionId }: { competitionId: string }) {
     <div>
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-base font-bold">Teams</h3>
-        <div className="flex flex-wrap gap-2"><button className={btnGhost} onClick={() => setLibraryOpen(true)}><Library className="h-3.5 w-3.5" /> Add existing</button><button className={btnPrimary} onClick={() => { setForm({}); setOpen(true); }}><Plus className="h-3.5 w-3.5" /> New team</button></div>
+        <div className="flex flex-wrap gap-2">{competitionId && <button className={btnGhost} onClick={() => setLibraryOpen(true)}><Library className="h-3.5 w-3.5" /> Add existing</button>}<button className={btnPrimary} onClick={() => { setForm({}); setOpen(true); }}><Plus className="h-3.5 w-3.5" /> New team</button></div>
       </div>
       <div className="grid gap-2">
         {(q.data ?? []).map((t) => (
@@ -82,12 +85,12 @@ export function TeamsPanel({ competitionId }: { competitionId: string }) {
               <div className="truncate font-semibold text-sm">{t.name}</div>
               <div className="truncate text-xs text-muted-foreground">{[t.country, t.venue_name, `${t.trophies ?? 0} trophies`].filter(Boolean).join(" · ")}</div>
             </div>
-            <label className="flex shrink-0 items-center gap-1 text-[0.65rem] font-semibold uppercase text-muted-foreground">
+            {competitionId && <label className="flex shrink-0 items-center gap-1 text-[0.65rem] font-semibold uppercase text-muted-foreground">
               Titles
               <input type="number" min={0} className="w-16 rounded-lg border border-border bg-background px-2 py-1.5 text-base sm:text-sm"
                 value={titlesQ.data?.[t.id] ?? 0}
                 onChange={(e) => setTitles(t.id, Math.max(0, Number(e.target.value) || 0))} />
-            </label>
+            </label>}
             <button className={btnGhost} onClick={() => setSquadOf(t)}><Users className="h-3.5 w-3.5" /> Squad</button>
             <button className={btnGhost} onClick={() => setStaffOf(t)}><UserCog className="h-3.5 w-3.5" /> Coaches</button>
             <button className={btnGhost} onClick={() => { setForm(t); setOpen(true); }}><Pencil className="h-3.5 w-3.5" /></button>
