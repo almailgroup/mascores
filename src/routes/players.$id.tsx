@@ -2,7 +2,7 @@ import { TeamCrest } from "@/components/team-crest";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { AppShell, EmptyState, LoadingSkeleton } from "@/components/app-shell";
+import { AppShell, BackButton, EmptyState, LoadingSkeleton } from "@/components/app-shell";
 import { supabase, formatKickoff, formatHeight, formatDob, type Player, type Team, type Match, type Transfer } from "@/lib/db";
 import { FavoriteButton } from "@/hooks/use-favorites";
 import { FlagIcon } from "@/components/flag";
@@ -72,6 +72,7 @@ function PlayerPage() {
 
   return (
     <AppShell>
+      <BackButton />
       <div className="mb-4 overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/15 via-card to-card p-6">
         <div className="flex items-center gap-5">
           <PlayerAvatar src={p.photo_url} name={p.name} size="lg" className="border-2 border-primary/30" />
