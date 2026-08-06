@@ -2,7 +2,7 @@ import { TeamCrest } from "@/components/team-crest";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { AppShell, EmptyState, LoadingSkeleton } from "@/components/app-shell";
+import { AppShell, BackButton, EmptyState, LoadingSkeleton } from "@/components/app-shell";
 import { supabase, formatKickoff, STATUS_LABELS, roundLabel, type Match, type Team, type MatchEvent, type Lineup, type Player } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 import { useAuth } from "@/hooks/use-auth";
@@ -70,6 +70,15 @@ function MatchPage() {
   const broadcasts = useQuery({ queryKey: ["match-broadcasts", id], queryFn: async () => (await supabase.from("match_broadcasts").select("channel:broadcast_channels(id,name,logo_url,country_code)").eq("match_id", id)).data ?? [] });
   const media = useQuery({ queryKey: ["match-media", id], queryFn: async () => (await supabase.from("media_items").select("*").eq("owner_type", "match").eq("owner_id", id).order("sort_order")).data ?? [] });
   const chat = useQuery({ queryKey: ["match-chat", id], queryFn: async () => (await supabase.from("match_chat_messages").select("*").eq("match_id", id).order("created_at").limit(100)).data ?? [] });
+  const chatAuthors = useQuery({
+    enabled: (chat.data?.length ?? 0) > 0,
+    queryKey: ["match-chat-authors", id, chat.data?.length ?? 0],
+    queryFn: async () => {
+      const ids = [...new Set((chat.data ?? []).map((c) => c.user_id))];
+      const { data } = await supabase.rpc("chat_author_profiles", { _ids: ids });
+      return (data ?? []) as { id: string; display_name: string | null; avatar_url: string | null }[];
+    },
+  });
   const ratings = useQuery({ queryKey: ["match-ratings", id], queryFn: async () => (await supabase.from("player_ratings").select("player_id,rating").eq("match_id", id)).data ?? [] });
 
   if (m.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;
@@ -79,8 +88,14 @@ function MatchPage() {
 
   return (
     <AppShell>
+      <BackButton />
       <div className="mb-6 rounded-3xl border border-border bg-card p-6">
-        <div className="text-xs uppercase tracking-widest text-muted-foreground">{tx(match.competition?.name)}{roundLabel(match.round_number, match.round) ? ` · ${roundLabel(match.round_number, match.round)}` : ""}</div>
+        <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
+          {match.competition ? (
+            <Link to="/competitions/$slug" params={{ slug: match.competition.slug }} className="font-semibold hover:text-primary">{tx(match.competition.name)}</Link>
+          ) : null}
+          {roundLabel(match.round_number, match.round) ? <span>· {roundLabel(match.round_number, match.round)}</span> : null}
+        </div>
         <div className="mt-4 grid items-center gap-4" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
           <div className="text-right">
             <div className="ml-auto"><TeamCrest name={match.home?.name} logo={match.home?.logo_url} className="h-14 w-14" rounded="rounded-2xl" /></div>
