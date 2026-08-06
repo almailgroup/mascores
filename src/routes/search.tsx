@@ -80,8 +80,7 @@ function SearchPage() {
     <AppShell>
       <div className="mb-4 flex items-center gap-2 rounded-2xl border border-border bg-card px-4 py-3">
         <SearchIcon className="h-4 w-4 text-muted-foreground" />
-        <input value={q} onChange={(e) => setQ(e.target.value)} onBlur={() => remember(q)}
-          onKeyDown={(e) => { if (e.key === "Enter") remember(q); }}
+        <input value={q} onChange={(e) => setQ(e.target.value)}
           placeholder={tx("Teams, players, competitions, coaches, stadiums…")}
           className="flex-1 bg-transparent text-sm outline-none" />
       </div>
@@ -89,14 +88,17 @@ function SearchPage() {
       {history.length > 0 && (
         <div className="mb-5">
           <div className="mb-2 flex items-center justify-between text-xs font-semibold uppercase text-muted-foreground">
-            <span className="inline-flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> {tx("Recent searches")}</span>
+            <span className="inline-flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> {tx("Recently viewed")}</span>
             <button className="font-semibold text-destructive" onClick={() => writeHistory([])}>{tx("Clear all")}</button>
           </div>
           <div className="flex flex-wrap gap-2">
             {history.map((item) => (
-              <span key={item} className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-3 py-1.5 text-xs">
-                <button onClick={() => setQ(item)} className="font-medium hover:text-primary">{item}</button>
-                <button aria-label={`Remove ${item}`} onClick={() => writeHistory(history.filter((h) => h !== item))} className="text-muted-foreground hover:text-destructive"><X className="h-3 w-3" /></button>
+              <span key={item.key} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1.5 text-xs">
+                <Link to={item.to as never} params={item.params as never} className="inline-flex items-center gap-1.5 font-medium hover:text-primary">
+                  {item.logo ? <img src={item.logo} alt="" className="h-4 w-4 object-contain" /> : null}
+                  {tx(item.label)}
+                </Link>
+                <button aria-label={`Remove ${item.label}`} onClick={() => writeHistory(history.filter((h) => h.key !== item.key))} className="text-muted-foreground hover:text-destructive"><X className="h-3 w-3" /></button>
               </span>
             ))}
           </div>
