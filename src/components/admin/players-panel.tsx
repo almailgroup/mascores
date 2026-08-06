@@ -45,7 +45,7 @@ export function PlayersPanel() {
       <div className="grid gap-2">
         {(q.data ?? []).map((p) => (
           <div key={p.id} className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-3">
-            <PlayerAvatar src={p.photo_url} name={p.name} className="h-9 w-9" />
+            <PlayerAvatar src={p.photo_url} name={p.name} />
             <div className="min-w-0 flex-1 basis-40">
               <div className="truncate text-sm font-semibold">{p.name}</div>
               <div className="truncate text-xs text-muted-foreground">{[p.team?.name ?? "Free agent", p.position, p.shirt_number ? `#${p.shirt_number}` : null].filter(Boolean).join(" · ")}</div>
