@@ -8,6 +8,7 @@ import { Plus, Trash2, SlidersHorizontal, Flag, Sparkles } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { createFixtureDraftsWithAlmail } from "@/lib/almail-ai.functions";
 import { readAiImages } from "@/lib/image-files";
+import { TeamCrest } from "@/components/team-crest";
 
 export function MatchesPanel({ competitionId }: { competitionId: string }) {
   const qc = useQueryClient();
@@ -37,6 +38,7 @@ export function MatchesPanel({ competitionId }: { competitionId: string }) {
 
   const teams = teamsQ.data ?? [];
   const teamName = (id: string | null | undefined) => teams.find((t) => t.id === id)?.name ?? "TBD";
+  const teamLogo = (id: string | null | undefined) => teams.find((t) => t.id === id)?.logo_url ?? null;
   const matches = matchesQ.data ?? [];
 
   const grouped = useMemo(() => {
@@ -104,7 +106,13 @@ export function MatchesPanel({ competitionId }: { competitionId: string }) {
                 <div key={m.id} className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-3">
                   <div className="w-16 text-[0.65rem] font-semibold uppercase tracking-widest text-muted-foreground">{(STATUS_LABELS[m.status] ?? m.status)}</div>
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-semibold">{teamName(m.home_team_id)} <span className="mx-1 text-muted-foreground">vs</span> {teamName(m.away_team_id)}</div>
+                    <div className="flex min-w-0 items-center gap-2 text-sm font-semibold">
+                      <TeamCrest name={teamName(m.home_team_id)} logo={teamLogo(m.home_team_id)} className="h-6 w-6" />
+                      <span className="truncate">{teamName(m.home_team_id)}</span>
+                      <span className="text-muted-foreground">vs</span>
+                      <TeamCrest name={teamName(m.away_team_id)} logo={teamLogo(m.away_team_id)} className="h-6 w-6" />
+                      <span className="truncate">{teamName(m.away_team_id)}</span>
+                    </div>
                     <div className="truncate text-xs text-muted-foreground">{formatKickoff(m.kickoff_at)}{m.venue ? ` · ${m.venue}` : ""}</div>
                   </div>
                   {(m.home_score != null || m.away_score != null) && <div className="text-sm font-black tabular-nums">{m.home_score ?? 0}–{m.away_score ?? 0}</div>}
