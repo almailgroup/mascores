@@ -42,6 +42,7 @@ function ContributePage() {
   const [phone, setPhone] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [applying, setApplying] = useState(false);
+  const [applyError, setApplyError] = useState<string | null>(null);
   const [code, setCode] = useState("");
   const [codeMsg, setCodeMsg] = useState<string | null>(null);
   const [codeBusy, setCodeBusy] = useState(false);
@@ -81,8 +82,8 @@ function ContributePage() {
 
   const apply = async () => {
     if (!user || !handle.trim() || !fullName.trim() || (!phone.trim() && !contactEmail.trim())) return;
-    setApplying(true);
-    await supabase.from("news_reporters").insert({
+    setApplying(true); setApplyError(null);
+    const { error: insertError } = await supabase.from("news_reporters").insert({
       user_id: user.id,
       platform,
       handle: handle.replace(/^@/, ""),
@@ -91,7 +92,8 @@ function ContributePage() {
       email: contactEmail.trim() || null,
     } as never);
     setApplying(false);
-    qc.invalidateQueries({ queryKey: ["reporter", user.id] });
+    if (insertError) { setApplyError(insertError.message); return; }
+    await qc.invalidateQueries({ queryKey: ["reporter", user.id] });
   };
 
   const submitCode = async () => {
@@ -150,6 +152,10 @@ function ContributePage() {
             <LogIn className="h-4 w-4" /> {t("nav.signIn")}
           </Link>
         </div>
+      ) : reporter.isPending ? (
+        <div className="mt-6 flex items-center gap-2 rounded-3xl border border-border bg-card p-6 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" /> Loading your reporter status…
+        </div>
       ) : !reporter.data ? (
         <div className="mt-6 grid gap-4 lg:grid-cols-2">
           <section className="rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/15 via-card to-card p-6">
@@ -203,6 +209,7 @@ function ContributePage() {
                 {applying ? <Loader2 className="h-4 w-4 animate-spin" /> : <BadgeCheck className="h-4 w-4" />} Send my details
               </button>
               <p className="text-[0.7rem] text-muted-foreground">A phone number or an email is required so the admin can respond to you. If you have not heard back within 2 days, email <a href="mailto:mansouralmailscores@gmail.com" className="font-semibold text-primary">mansouralmailscores@gmail.com</a>.</p>
+              {applyError && <p className="text-xs text-destructive">{applyError}</p>}
             </div>
           </section>
         </div>
