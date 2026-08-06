@@ -11,7 +11,7 @@ import { PlayerAvatar } from "@/components/player-avatar";
 import { releasePlayerToFreeAgent, transferPlayerToClub, deletePlayerForever } from "@/lib/player-moves";
 import { TeamCrest } from "@/components/team-crest";
 import { VenueSelect } from "./venue-select";
-import { Plus, Pencil, Trash2, UserCog, UserMinus, ImagePlus, Library } from "lucide-react";
+import { Plus, Pencil, Trash2, Users, UserCog, UserMinus, ImagePlus, Library } from "lucide-react";
 
 type TeamForm = Partial<Team>;
 type PlayerForm = Partial<Player>;
