@@ -1,5 +1,5 @@
-import { Link, useLocation } from "@tanstack/react-router";
-import { Home, Search, Trophy, Newspaper, ArrowLeftRight, Settings, LogIn } from "lucide-react";
+import { Link, useLocation, useRouter } from "@tanstack/react-router";
+import { Home, Search, Trophy, Newspaper, ArrowLeftRight, Settings, LogIn, ArrowLeft } from "lucide-react";
 import { useEffect, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -117,6 +117,21 @@ export function SectionHeader({ title, action }: { title: string; action?: React
       <h2 className="text-lg font-bold tracking-tight sm:text-xl">{title}</h2>
       {action}
     </div>
+  );
+}
+
+/** Back control for detail pages — steps through history, falling back to the home page. */
+export function BackButton({ className = "" }: { className?: string }) {
+  const router = useRouter();
+  const { t } = useI18n();
+  return (
+    <button
+      type="button"
+      onClick={() => { if (router.history.canGoBack()) router.history.back(); else router.navigate({ to: "/" }); }}
+      className={`mb-4 inline-flex h-9 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-sm font-medium text-muted-foreground transition hover:text-foreground ${className}`}
+    >
+      <ArrowLeft className="h-4 w-4" /> {t("nav.back") === "nav.back" ? "Back" : t("nav.back")}
+    </button>
   );
 }
 

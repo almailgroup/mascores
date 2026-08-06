@@ -9,7 +9,7 @@ import { uploadMedia } from "@/components/admin/upload";
 import { CURRENCIES, useCurrency } from "@/lib/currency";
 import { deleteMyAccount } from "@/lib/account.functions";
 import { useServerFn } from "@tanstack/react-start";
-import { Save, LogOut, ShieldCheck, Loader2, LogIn, Camera, Trash2, Newspaper } from "lucide-react";
+import { Save, LogOut, ShieldCheck, Loader2, LogIn, Camera, Trash2 } from "lucide-react";
 import { ImageCropper } from "@/components/image-cropper";
 
 export const Route = createFileRoute("/settings")({
@@ -171,14 +171,6 @@ function SettingsPage() {
       )}
 
       {user && <section className="mt-10 rounded-3xl border border-dashed border-border bg-card/60 p-6">
-        <div className="flex items-center gap-2 text-sm font-semibold"><Newspaper className="h-4 w-4 text-primary" /> {t("settings.reporter")}</div>
-        <p className="mt-1 text-xs text-muted-foreground">{t("settings.reporterHint")}</p>
-        <Link to="/contribute" className="mt-3 inline-flex h-9 items-center rounded-full border border-border bg-background px-4 text-sm font-medium hover:bg-accent">
-          {t("settings.reporterCta")}
-        </Link>
-      </section>}
-
-      {user && <section className="mt-4 rounded-3xl border border-dashed border-border bg-card/60 p-6">
         <div className="flex items-center gap-2 text-sm font-semibold"><ShieldCheck className="h-4 w-4 text-primary" /> {t("settings.admin")}</div>
         <p className="mt-1 text-xs text-muted-foreground">{t("settings.adminHint")}</p>
         <Link to="/admin" className="mt-3 inline-flex h-9 items-center rounded-full border border-border bg-background px-4 text-sm font-medium hover:bg-accent">
