@@ -2,7 +2,7 @@ import { TeamCrest } from "@/components/team-crest";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { AppShell, EmptyState, LoadingSkeleton } from "@/components/app-shell";
+import { AppShell, BackButton, EmptyState, LoadingSkeleton } from "@/components/app-shell";
 import { supabase, formatKickoff, STATUS_LABELS, roundLabel, type Match, type Team, type MatchEvent, type Lineup, type Player } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 import { useAuth } from "@/hooks/use-auth";
@@ -70,6 +70,15 @@ function MatchPage() {
   const broadcasts = useQuery({ queryKey: ["match-broadcasts", id], queryFn: async () => (await supabase.from("match_broadcasts").select("channel:broadcast_channels(id,name,logo_url,country_code)").eq("match_id", id)).data ?? [] });
   const media = useQuery({ queryKey: ["match-media", id], queryFn: async () => (await supabase.from("media_items").select("*").eq("owner_type", "match").eq("owner_id", id).order("sort_order")).data ?? [] });
   const chat = useQuery({ queryKey: ["match-chat", id], queryFn: async () => (await supabase.from("match_chat_messages").select("*").eq("match_id", id).order("created_at").limit(100)).data ?? [] });
+  const chatAuthors = useQuery({
+    enabled: (chat.data?.length ?? 0) > 0,
+    queryKey: ["match-chat-authors", id, chat.data?.length ?? 0],
+    queryFn: async () => {
+      const ids = [...new Set((chat.data ?? []).map((c) => c.user_id))];
+      const { data } = await supabase.rpc("chat_author_profiles", { _ids: ids });
+      return (data ?? []) as { id: string; display_name: string | null; avatar_url: string | null }[];
+    },
+  });
   const ratings = useQuery({ queryKey: ["match-ratings", id], queryFn: async () => (await supabase.from("player_ratings").select("player_id,rating").eq("match_id", id)).data ?? [] });
 
   if (m.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;
@@ -79,8 +88,14 @@ function MatchPage() {
 
   return (
     <AppShell>
+      <BackButton />
       <div className="mb-6 rounded-3xl border border-border bg-card p-6">
-        <div className="text-xs uppercase tracking-widest text-muted-foreground">{tx(match.competition?.name)}{roundLabel(match.round_number, match.round) ? ` · ${roundLabel(match.round_number, match.round)}` : ""}</div>
+        <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
+          {match.competition ? (
+            <Link to="/competitions/$slug" params={{ slug: match.competition.slug }} className="font-semibold hover:text-primary">{tx(match.competition.name)}</Link>
+          ) : null}
+          {roundLabel(match.round_number, match.round) ? <span>· {roundLabel(match.round_number, match.round)}</span> : null}
+        </div>
         <div className="mt-4 grid items-center gap-4" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
           <div className="text-right">
             <div className="ml-auto"><TeamCrest name={match.home?.name} logo={match.home?.logo_url} className="h-14 w-14" rounded="rounded-2xl" /></div>
@@ -172,7 +187,7 @@ function MatchPage() {
       })}</div>}
       {tab === "stats" && <div className="rounded-2xl border border-border bg-card p-4">{stats.data && stats.data.length > 0 ? stats.data.map((item) => <div key={item.id} className="grid grid-cols-[1fr_2fr_1fr] border-t border-border py-3 text-center first:border-0"><strong>{num(item.home_value)}</strong><span className="text-muted-foreground">{tx(item.label)}</span><strong>{num(item.away_value)}</strong></div>) : <p className="text-sm text-muted-foreground">{tx("No statistics published yet.")}</p>}</div>}
       {tab === "previous" && <PreviousMatches competitionId={match.competition_id} currentId={match.id} />}
-      {tab === "media" && <div className="grid gap-6 lg:grid-cols-2"><div><h3 className="mb-3 font-bold">{tx("Videos & media")}</h3><div className="grid gap-2">{media.data?.map((item) => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="rounded-xl border border-border bg-card p-4 hover:border-primary"><div className="text-xs font-bold uppercase text-primary">{item.source}</div><div className="mt-1 font-semibold">{tx(item.title) || tx("Open media")}</div></a>)}{media.data?.length === 0 && <p className="text-sm text-muted-foreground">{tx("No media posted.")}</p>}</div></div><div><h3 className="mb-3 flex items-center gap-2 font-bold"><MessageCircle className="h-4 w-4" /> {tx("Match chat")}</h3><div className="max-h-80 space-y-2 overflow-y-auto rounded-xl border border-border bg-card p-3">{chat.data?.map((message) => <div key={message.id} className="rounded-lg bg-muted p-2 text-sm">{message.body}</div>)}{chat.data?.length === 0 && <p className="text-sm text-muted-foreground">{tx("No messages yet.")}</p>}</div>{user ? <form className="mt-2 flex gap-2" onSubmit={async (event) => { event.preventDefault(); const body = chatBody.trim(); if (!body) return; const blocked = /\b(fuck|shit|bitch|cunt)\b/i.test(body); if (blocked) return alert("Please keep the chat respectful."); await supabase.from("match_chat_messages").insert({ match_id: id, user_id: user.id, body } as never); setChatBody(""); chat.refetch(); }}><input className="min-w-0 flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm" value={chatBody} onChange={(e) => setChatBody(e.target.value)} maxLength={500} placeholder={tx("Write a message…")} /><button className="rounded-lg bg-primary px-4 text-sm font-bold text-primary-foreground">{tx("Send")}</button></form> : <Link to="/auth" className="mt-2 block rounded-lg border border-border p-3 text-center text-sm font-semibold">{tx("Sign in to join the chat")}</Link>}</div></div>}
+      {tab === "media" && <div className="grid gap-6 lg:grid-cols-2"><div><h3 className="mb-3 font-bold">{tx("Videos & media")}</h3><div className="grid gap-2">{media.data?.map((item) => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="rounded-xl border border-border bg-card p-4 hover:border-primary"><div className="text-xs font-bold uppercase text-primary">{item.source}</div><div className="mt-1 font-semibold">{tx(item.title) || tx("Open media")}</div></a>)}{media.data?.length === 0 && <p className="text-sm text-muted-foreground">{tx("No media posted.")}</p>}</div></div><div><h3 className="mb-3 flex items-center gap-2 font-bold"><MessageCircle className="h-4 w-4" /> {tx("Match chat")}</h3><div className="max-h-80 space-y-2 overflow-y-auto rounded-xl border border-border bg-card p-3">{chat.data?.map((message) => { const author = chatAuthors.data?.find((a) => a.id === message.user_id); const name = author?.display_name || tx("Supporter"); return (<div key={message.id} className="flex items-start gap-2"><span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-muted text-xs font-bold">{author?.avatar_url ? <img src={author.avatar_url} alt="" className="h-full w-full object-cover" /> : name.slice(0, 1).toUpperCase()}</span><div className="min-w-0 flex-1 rounded-lg bg-muted px-3 py-2 text-sm"><div className="text-xs font-semibold text-primary">{name}</div><div className="break-words">{message.body}</div></div></div>); })}{chat.data?.length === 0 && <p className="text-sm text-muted-foreground">{tx("No messages yet.")}</p>}</div>{user ? <form className="mt-2 flex gap-2" onSubmit={async (event) => { event.preventDefault(); const body = chatBody.trim(); if (!body) return; const blocked = /\b(fuck|shit|bitch|cunt)\b/i.test(body); if (blocked) return alert("Please keep the chat respectful."); await supabase.from("match_chat_messages").insert({ match_id: id, user_id: user.id, body } as never); setChatBody(""); chat.refetch(); }}><input className="min-w-0 flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm" value={chatBody} onChange={(e) => setChatBody(e.target.value)} maxLength={500} placeholder={tx("Write a message…")} /><button className="rounded-lg bg-primary px-4 text-sm font-bold text-primary-foreground">{tx("Send")}</button></form> : <Link to="/auth" className="mt-2 block rounded-lg border border-border p-3 text-center text-sm font-semibold">{tx("Sign in to join the chat")}</Link>}</div></div>}
     </AppShell>
   );
 }

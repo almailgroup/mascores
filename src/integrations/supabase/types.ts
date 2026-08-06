@@ -1496,6 +1496,14 @@ export type Database = {
     }
     Functions: {
       admin_unlock_allowed: { Args: { _uid: string }; Returns: boolean }
+      chat_author_profiles: {
+        Args: { _ids: string[] }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          id: string
+        }[]
+      }
       grant_admin: { Args: { _uid: string }; Returns: undefined }
       is_admin: { Args: { _uid: string }; Returns: boolean }
       recompute_standings: { Args: { _comp: string }; Returns: undefined }

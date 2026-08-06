@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { AppShell, EmptyState, LoadingSkeleton } from "@/components/app-shell";
+import { AppShell, BackButton, EmptyState, LoadingSkeleton } from "@/components/app-shell";
 import { supabase, formatKickoff, type Team, type Player, type Match, type StandingRow, type Coach, type Transfer } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 import { FavoriteButton } from "@/hooks/use-favorites";
@@ -80,6 +80,7 @@ function TeamPage() {
   if (t.is_temporary) {
     return (
       <AppShell>
+      <BackButton />
         <div className="mx-auto max-w-lg rounded-3xl border border-border bg-card p-8 text-center">
           <TeamCrest name={t.name} logo={t.logo_url} className="mx-auto h-16 w-16" rounded="rounded-2xl" />
           <h1 className="mt-4 text-xl font-bold">{tx(t.name)}</h1>

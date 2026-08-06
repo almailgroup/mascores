@@ -1,5 +1,5 @@
 import { TeamCrest } from "@/components/team-crest";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, SectionHeader, EmptyState, LoadingSkeleton } from "@/components/app-shell";
@@ -322,6 +322,7 @@ export function MatchSection({ title, data, loading }: { title: string; data: Ma
 
 export function MatchTile({ m }: { m: MatchWithTeams }) {
   const tx = useTx();
+  const navigate = useNavigate();
   const num = useNum();
   const dates = useDates();
   const started = ["live", "ht", "ft", "aet", "pen", "awarded"].includes(m.status);
@@ -329,7 +330,16 @@ export function MatchTile({ m }: { m: MatchWithTeams }) {
   return (
     <Link to="/matches/$id" params={{ id: m.id }} className="group block rounded-2xl border border-border bg-card p-4 transition hover:border-primary/50 hover:shadow-lg">
       <div className="flex items-center justify-between gap-2 text-[0.65rem] font-medium uppercase tracking-widest text-muted-foreground">
-        <span className="truncate">{tx(m.competition?.name)}{m.round ? ` · ${tx(m.round)}` : ""}</span>
+        <span className="flex min-w-0 items-center gap-1.5">
+          {m.competition?.logo_url && <img src={m.competition.logo_url} alt="" className="h-4 w-4 shrink-0 object-contain" />}
+          <span
+            role="link"
+            tabIndex={0}
+            onClick={(e) => { if (!m.competition) return; e.preventDefault(); e.stopPropagation(); navigate({ to: "/competitions/$slug", params: { slug: m.competition.slug } }); }}
+            className="truncate hover:text-primary"
+          >{tx(m.competition?.name)}</span>
+          {m.round ? <span className="shrink-0">· {tx(m.round)}</span> : null}
+        </span>
         <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 ${isLive ? "bg-primary/15 text-primary" : "bg-muted"}`}>
           {isLive && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />}
           {m.status === "live" && m.live_minute ? `${m.live_minute}'` : m.status.toUpperCase()}

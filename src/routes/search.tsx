@@ -22,12 +22,17 @@ const FILTERS: { key: Filter; label: string }[] = [
   { key: "venues", label: "Stadiums" },
 ];
 
-const HISTORY_KEY = "mas.search.history";
+const HISTORY_KEY = "mas.search.visited";
 
-function readHistory(): string[] {
+/** A result the user actually opened — stored so they can jump straight back to it. */
+type Visited = { key: string; label: string; kind: Filter; to: string; params: Record<string, string>; logo?: string | null };
+
+function readHistory(): Visited[] {
   if (typeof window === "undefined") return [];
-  try { const raw = JSON.parse(window.localStorage.getItem(HISTORY_KEY) ?? "[]"); return Array.isArray(raw) ? raw.filter((v): v is string => typeof v === "string").slice(0, 12) : []; }
-  catch { return []; }
+  try {
+    const raw = JSON.parse(window.localStorage.getItem(HISTORY_KEY) ?? "[]");
+    return Array.isArray(raw) ? (raw as Visited[]).filter((v) => v && typeof v.key === "string" && typeof v.to === "string").slice(0, 12) : [];
+  } catch { return []; }
 }
 
 function SearchPage() {
@@ -35,17 +40,13 @@ function SearchPage() {
   const reverse = useReverseTranslate();
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
-  const [history, setHistory] = useState<string[]>([]);
+  const [history, setHistory] = useState<Visited[]>([]);
   useEffect(() => { setHistory(readHistory()); }, []);
-  const writeHistory = (next: string[]) => {
+  const writeHistory = (next: Visited[]) => {
     setHistory(next);
     try { window.localStorage.setItem(HISTORY_KEY, JSON.stringify(next)); } catch { /* storage unavailable */ }
   };
-  const remember = (term: string) => {
-    const clean = term.trim();
-    if (clean.length < 2) return;
-    writeHistory([clean, ...readHistory().filter((item) => item.toLowerCase() !== clean.toLowerCase())].slice(0, 12));
-  };
+  const remember = (entry: Visited) => writeHistory([entry, ...readHistory().filter((item) => item.key !== entry.key)].slice(0, 12));
   const terms = [q.trim(), ...(/[\u0600-\u06FF]/.test(q) ? reverse(q) : [])].filter((t) => t.length > 1);
   const orFilter = (columns: string[]) =>
     columns.flatMap((col) => terms.map((t) => `${col}.ilike.%${t.replace(/[,()]/g, " ")}%`)).join(",");
@@ -79,8 +80,7 @@ function SearchPage() {
     <AppShell>
       <div className="mb-4 flex items-center gap-2 rounded-2xl border border-border bg-card px-4 py-3">
         <SearchIcon className="h-4 w-4 text-muted-foreground" />
-        <input value={q} onChange={(e) => setQ(e.target.value)} onBlur={() => remember(q)}
-          onKeyDown={(e) => { if (e.key === "Enter") remember(q); }}
+        <input value={q} onChange={(e) => setQ(e.target.value)}
           placeholder={tx("Teams, players, competitions, coaches, stadiums…")}
           className="flex-1 bg-transparent text-sm outline-none" />
       </div>
@@ -88,14 +88,17 @@ function SearchPage() {
       {history.length > 0 && (
         <div className="mb-5">
           <div className="mb-2 flex items-center justify-between text-xs font-semibold uppercase text-muted-foreground">
-            <span className="inline-flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> {tx("Recent searches")}</span>
+            <span className="inline-flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> {tx("Recently viewed")}</span>
             <button className="font-semibold text-destructive" onClick={() => writeHistory([])}>{tx("Clear all")}</button>
           </div>
           <div className="flex flex-wrap gap-2">
             {history.map((item) => (
-              <span key={item} className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-3 py-1.5 text-xs">
-                <button onClick={() => setQ(item)} className="font-medium hover:text-primary">{item}</button>
-                <button aria-label={`Remove ${item}`} onClick={() => writeHistory(history.filter((h) => h !== item))} className="text-muted-foreground hover:text-destructive"><X className="h-3 w-3" /></button>
+              <span key={item.key} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1.5 text-xs">
+                <Link to={item.to as never} params={item.params as never} className="inline-flex items-center gap-1.5 font-medium hover:text-primary">
+                  {item.logo ? <img src={item.logo} alt="" className="h-4 w-4 object-contain" /> : null}
+                  {tx(item.label)}
+                </Link>
+                <button aria-label={`Remove ${item.label}`} onClick={() => writeHistory(history.filter((h) => h.key !== item.key))} className="text-muted-foreground hover:text-destructive"><X className="h-3 w-3" /></button>
               </span>
             ))}
           </div>
@@ -117,14 +120,16 @@ function SearchPage() {
             <Group title={tx("Competitions")}>{res.data.comps.map((c) => (
               <ResultRow key={c.id} to="/competitions/$slug" params={{ slug: c.slug }}
                 logo={c.logo_url} fallback={<Trophy className="h-4 w-4 text-muted-foreground" />}
-                title={tx(c.name)} country={c.country_code ?? c.country} sub={[tx(c.country), c.season].filter(Boolean).join(" · ")} />
+                title={tx(c.name)} country={c.country_code ?? c.country} sub={[tx(c.country), c.season].filter(Boolean).join(" · ")}
+                onOpen={() => remember({ key: `comp:${c.id}`, label: c.name, kind: "competitions", to: "/competitions/$slug", params: { slug: c.slug }, logo: c.logo_url })} />
             ))}</Group>
           )}
           {show("clubs") && (
             <Group title={tx("Teams")}>{res.data.teams.map((tm) => (
               <ResultRow key={tm.id} to="/teams/$id" params={{ id: tm.id }}
                 logo={tm.logo_url} fallback={<Shield className="h-4 w-4 text-muted-foreground" />}
-                title={tx(tm.name)} country={tm.country_code ?? tm.country} sub={tx(tm.country) ?? tm.short_name ?? ""} />
+                title={tx(tm.name)} country={tm.country_code ?? tm.country} sub={tx(tm.country) ?? tm.short_name ?? ""}
+                onOpen={() => remember({ key: `team:${tm.id}`, label: tm.name, kind: "clubs", to: "/teams/$id", params: { id: tm.id }, logo: tm.logo_url })} />
             ))}</Group>
           )}
           {show("players") && (
@@ -132,7 +137,8 @@ function SearchPage() {
               <ResultRow key={p.id} to="/players/$id" params={{ id: p.id }} round
                 logo={p.photo_url} fallback={<User className="h-4 w-4 text-muted-foreground" />}
                 title={tx(p.name)} country={p.nationality_code ?? p.nationality}
-                sub={[tx(p.team?.name), tx(p.position)].filter(Boolean).join(" · ")} />
+                sub={[tx(p.team?.name), tx(p.position)].filter(Boolean).join(" · ")}
+                onOpen={() => remember({ key: `player:${p.id}`, label: p.name, kind: "players", to: "/players/$id", params: { id: p.id }, logo: p.photo_url })} />
             ))}</Group>
           )}
           {show("coaches") && (
@@ -156,12 +162,12 @@ function SearchPage() {
   );
 }
 
-function ResultRow({ to, params, logo, fallback, title, sub, country, round }: {
+function ResultRow({ to, params, logo, fallback, title, sub, country, round, onOpen }: {
   to: string; params: Record<string, string>; logo: string | null | undefined;
-  fallback: React.ReactNode; title: string; sub?: string; country?: string | null; round?: boolean;
+  fallback: React.ReactNode; title: string; sub?: string; country?: string | null; round?: boolean; onOpen?: () => void;
 }) {
   return (
-    <Link to={to as never} params={params as never}
+    <Link to={to as never} params={params as never} onClick={onOpen}
       className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 transition hover:border-primary/50">
       <div className={`flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden ${round ? "rounded-full" : "rounded-xl"} border border-border bg-muted/40`}>
         {logo ? <img src={logo} alt="" className={`h-full w-full ${round ? "object-cover" : "object-contain p-1"}`} /> : fallback}
