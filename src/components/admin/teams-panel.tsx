@@ -222,24 +222,6 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
   );
 }
 
-function MediaEditor({ urls, onChange }: { urls: string[]; onChange: (v: string[]) => void }) {
-  const [adding, setAdding] = useState(false);
-  return (
-    <div className="grid gap-2">
-      <div className="flex flex-wrap gap-2">
-        {urls.map((u) => (
-          <div key={u} className="relative h-14 w-14 overflow-hidden rounded-lg border border-border">
-            <img src={u} alt="" className="h-full w-full object-cover" />
-            <button type="button" onClick={() => onChange(urls.filter((x) => x !== u))}
-              className="absolute right-0 top-0 bg-black/60 px-1 text-[0.6rem] text-white">✕</button>
-          </div>
-        ))}
-      </div>
-      {adding ? <ImageInput value={null} onChange={() => {}} onFile={async (file) => { const url = await uploadMedia("player-photos", file); if (url) onChange([...urls, url]); setAdding(false); }} /> : <button type="button" className={btnGhost} onClick={() => setAdding(true)}><ImagePlus className="h-3.5 w-3.5" /> Add and crop photo</button>}
-    </div>
-  );
-}
-
 function CoachesModal({ team, onClose }: { team: Team; onClose: () => void }) {
   const qc = useQueryClient();
   const [form, setForm] = useState<CoachForm>({});
