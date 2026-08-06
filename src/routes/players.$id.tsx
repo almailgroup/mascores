@@ -1,3 +1,4 @@
+import { TeamCrest } from "@/components/team-crest";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -78,7 +79,7 @@ function PlayerPage() {
             <h1 className="truncate text-3xl font-black tracking-tight">{tx(p.name)}</h1>
             {p.team && (
               <Link to="/teams/$id" params={{ id: p.team.id }} className="mt-1 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary">
-                {p.team.logo_url && <img src={p.team.logo_url} alt="" className="h-5 w-5 object-contain" />}
+                <TeamCrest name={p.team.name} logo={p.team.logo_url} className="h-5 w-5" />
                 {tx(p.team.name)}
               </Link>
             )}

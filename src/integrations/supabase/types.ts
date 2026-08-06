@@ -832,6 +832,7 @@ export type Database = {
           code_redeemed_at: string | null
           created_at: string
           email: string | null
+          full_name: string | null
           handle: string
           id: string
           phone: string | null
@@ -846,6 +847,7 @@ export type Database = {
           code_redeemed_at?: string | null
           created_at?: string
           email?: string | null
+          full_name?: string | null
           handle: string
           id?: string
           phone?: string | null
@@ -860,6 +862,7 @@ export type Database = {
           code_redeemed_at?: string | null
           created_at?: string
           email?: string | null
+          full_name?: string | null
           handle?: string
           id?: string
           phone?: string | null
@@ -1318,6 +1321,7 @@ export type Database = {
           founded_on: string | null
           group_label: string | null
           id: string
+          is_temporary: boolean
           logo_url: string | null
           media_urls: string[]
           name: string
@@ -1339,6 +1343,7 @@ export type Database = {
           founded_on?: string | null
           group_label?: string | null
           id?: string
+          is_temporary?: boolean
           logo_url?: string | null
           media_urls?: string[]
           name: string
@@ -1360,6 +1365,7 @@ export type Database = {
           founded_on?: string | null
           group_label?: string | null
           id?: string
+          is_temporary?: boolean
           logo_url?: string | null
           media_urls?: string[]
           name?: string

@@ -10,7 +10,8 @@ import { uploadMedia } from "@/components/admin/upload";
 import { createArticleDraftWithAlmail } from "@/lib/almail-ai.functions";
 import { readAiImages, type AiImageInput } from "@/lib/image-files";
 import { NewsLinkPicker, type NewsLinks } from "@/components/admin/news-link-picker";
-import { Loader2, LogIn, Sparkles, ImagePlus, Send, BadgeCheck } from "lucide-react";
+import { redeemReporterCode } from "@/lib/reporter.functions";
+import { Loader2, LogIn, Sparkles, ImagePlus, Send, BadgeCheck, Mail, KeyRound, Share2, CheckCircle2 } from "lucide-react";
 
 export const Route = createFileRoute("/contribute")({
   head: () => ({
@@ -37,7 +38,14 @@ function ContributePage() {
 
   const [platform, setPlatform] = useState<string>("tiktok");
   const [handle, setHandle] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
   const [applying, setApplying] = useState(false);
+  const [code, setCode] = useState("");
+  const [codeMsg, setCodeMsg] = useState<string | null>(null);
+  const [codeBusy, setCodeBusy] = useState(false);
+  const redeem = useServerFn(redeemReporterCode);
 
   const [title, setTitle] = useState("");
   const [excerpt, setExcerpt] = useState("");
@@ -72,12 +80,29 @@ function ContributePage() {
   });
 
   const apply = async () => {
-    if (!user || !handle.trim()) return;
+    if (!user || !handle.trim() || !fullName.trim() || (!phone.trim() && !contactEmail.trim())) return;
     setApplying(true);
-    const code = `MAS-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
-    await supabase.from("news_reporters").insert({ user_id: user.id, platform, handle: handle.replace(/^@/, ""), access_code: code } as never);
+    await supabase.from("news_reporters").insert({
+      user_id: user.id,
+      platform,
+      handle: handle.replace(/^@/, ""),
+      full_name: fullName.trim(),
+      phone: phone.trim() || null,
+      email: contactEmail.trim() || null,
+    } as never);
     setApplying(false);
     qc.invalidateQueries({ queryKey: ["reporter", user.id] });
+  };
+
+  const submitCode = async () => {
+    if (!code.trim()) return;
+    setCodeBusy(true); setCodeMsg(null);
+    try {
+      const res = await redeem({ data: { code: code.trim() } });
+      if (res.ok) { setCodeMsg(null); qc.invalidateQueries({ queryKey: ["reporter", user?.id] }); }
+      else setCodeMsg(res.reason === "no-application" ? "Register your details first." : "That access code is not valid yet.");
+    } catch { setCodeMsg("Could not check that code. Please try again."); }
+    finally { setCodeBusy(false); }
   };
 
   const generate = async () => {
@@ -126,30 +151,77 @@ function ContributePage() {
           </Link>
         </div>
       ) : !reporter.data ? (
-        <section className="mt-6 max-w-xl rounded-3xl border border-border bg-card p-6">
-          <div className="text-sm font-semibold">Apply as a reporter</div>
-          <p className="mt-1 text-xs text-muted-foreground">$2.99 / month. Tell us where you publish so the main admin can verify you. You receive an access code once approved.</p>
-          <div className="mt-4 grid gap-3">
-            <div>
-              <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Platform</label>
-              <select className={`${inputCls} mt-1`} value={platform} onChange={(e) => setPlatform(e.target.value)}>
-                {PLATFORMS.map((p) => <option key={p} value={p}>{p}</option>)}
-              </select>
+        <div className="mt-6 grid gap-4 lg:grid-cols-2">
+          <section className="rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/15 via-card to-card p-6">
+            <div className="flex items-center gap-2 text-sm font-bold"><Mail className="h-4 w-4 text-primary" /> How to get access</div>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Contact <a href="mailto:mansouralmailscores@gmail.com" className="font-semibold text-primary">mansouralmailscores@gmail.com</a> to be given access to the news desk. The
+              <strong className="text-foreground"> $2.99 / month subscription is included</strong> with your reporter access.
+            </p>
+            <ul className="mt-4 grid gap-2 text-sm">
+              {[
+                "Publish football news that the main admin reviews before it goes live",
+                "Show your own social media username on every article you publish",
+                "Draft in English and Arabic instantly with Almail AI",
+              ].map((line) => (
+                <li key={line} className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><span className="text-muted-foreground">{line}</span></li>
+              ))}
+            </ul>
+          </section>
+
+          <section className="rounded-3xl border border-border bg-card p-6">
+            <div className="text-sm font-semibold">Register your details</div>
+            <p className="mt-1 text-xs text-muted-foreground">The main admin checks your information and replies with an access code.</p>
+            <div className="mt-4 grid gap-3">
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Full name</label>
+                <input className={`${inputCls} mt-1`} maxLength={120} placeholder="Your name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Phone</label>
+                  <input className={`${inputCls} mt-1`} maxLength={40} placeholder="+965…" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Email</label>
+                  <input className={`${inputCls} mt-1`} maxLength={160} placeholder="you@example.com" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} />
+                </div>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Platform</label>
+                  <select className={`${inputCls} mt-1`} value={platform} onChange={(e) => setPlatform(e.target.value)}>
+                    {PLATFORMS.map((p) => <option key={p} value={p}>{p}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Username</label>
+                  <input className={`${inputCls} mt-1`} placeholder="@username" value={handle} onChange={(e) => setHandle(e.target.value)} />
+                </div>
+              </div>
+              <button disabled={applying || !handle.trim() || !fullName.trim() || (!phone.trim() && !contactEmail.trim())} onClick={apply} className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground disabled:opacity-60">
+                {applying ? <Loader2 className="h-4 w-4 animate-spin" /> : <BadgeCheck className="h-4 w-4" />} Send my details
+              </button>
+              <p className="text-[0.7rem] text-muted-foreground">A phone number or an email is required so the admin can respond to you.</p>
             </div>
-            <div>
-              <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Handle</label>
-              <input className={`${inputCls} mt-1`} placeholder="@username" value={handle} onChange={(e) => setHandle(e.target.value)} />
-            </div>
-            <button disabled={applying || !handle.trim()} onClick={apply} className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground disabled:opacity-60">
-              {applying ? <Loader2 className="h-4 w-4 animate-spin" /> : <BadgeCheck className="h-4 w-4" />} Start $2.99 / month subscription
+          </section>
+        </div>
+      ) : reporter.data.status !== "active" ? (
+        <section className="mt-6 max-w-xl rounded-3xl border border-border bg-card p-6 text-sm">
+          <div className="font-semibold">Your details are with the main admin</div>
+          <p className="mt-1 text-muted-foreground">{reporter.data.full_name ? `${reporter.data.full_name} · ` : ""}@{reporter.data.handle} on {reporter.data.platform}.</p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Email <a href="mailto:mansouralmailscores@gmail.com" className="font-semibold text-primary">mansouralmailscores@gmail.com</a> if you have not heard back. Once the admin sends your
+            access code, enter it below to open the news desk. Subscription $2.99 / month is included.
+          </p>
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span className="inline-flex h-10 items-center gap-2 rounded-full border border-border px-3 text-xs font-semibold"><KeyRound className="h-3.5 w-3.5 text-primary" /> Access code</span>
+            <input className={`${inputCls} max-w-[12rem]`} placeholder="MAS-XXXXXX" value={code} onChange={(e) => setCode(e.target.value)} />
+            <button disabled={codeBusy || !code.trim()} onClick={submitCode} className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground disabled:opacity-60">
+              {codeBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Share2 className="h-4 w-4" />} Unlock news desk
             </button>
           </div>
-        </section>
-      ) : reporter.data.status !== "approved" ? (
-        <section className="mt-6 max-w-xl rounded-3xl border border-border bg-card p-6 text-sm">
-          <div className="font-semibold">Application under review</div>
-          <p className="mt-1 text-muted-foreground">@{reporter.data.handle} on {reporter.data.platform} · status {reporter.data.status}.</p>
-          <p className="mt-2 text-xs text-muted-foreground">Your access code is <span className="font-mono font-semibold">{reporter.data.access_code}</span>. Share it with the main admin to confirm your identity. Once approved you can submit news only — no other admin tools.</p>
+          {codeMsg && <div className="mt-2 text-xs text-destructive">{codeMsg}</div>}
         </section>
       ) : (
         <section className="mt-6 grid gap-4">

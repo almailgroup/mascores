@@ -41,7 +41,7 @@ function ArticlePage() {
        <Link to="/news" className="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> {t("nav.news")}</Link>
       <article className="overflow-hidden rounded-3xl border border-border bg-card">
         {n.cover_url && (
-          <div className="flex w-full items-center justify-center bg-muted/60">
+          <div className="flex w-full items-center justify-center bg-gradient-to-br from-primary/25 via-card to-background">
             <img src={n.cover_url} alt="" className="max-h-[70vh] w-full object-contain" />
           </div>
         )}

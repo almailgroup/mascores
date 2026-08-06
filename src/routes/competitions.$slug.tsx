@@ -1,3 +1,4 @@
+import { TeamCrest } from "@/components/team-crest";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -191,7 +192,7 @@ function CompetitionPage() {
                           <td className="py-2.5 ps-1">
                             {r.team ? (
                               <Link to="/teams/$id" params={{ id: r.team.id }} className="flex min-w-0 items-center gap-2 font-medium hover:text-primary">
-                                {r.team.logo_url && <img src={r.team.logo_url} alt="" className="h-5 w-5 shrink-0 object-contain" />}
+                                <TeamCrest name={r.team.name} logo={r.team.logo_url} className="h-5 w-5 shrink-0" />
                                 <span className="truncate">{tx(r.team.name)}</span>
                               </Link>
                             ) : "—"}
@@ -229,7 +230,7 @@ function CompetitionPage() {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {teams.data.map((t) => (
             <Link key={t.id} to="/teams/$id" params={{ id: t.id }} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 hover:border-primary/50">
-              {t.logo_url && <img src={t.logo_url} alt="" className="h-8 w-8 object-contain" />}
+              <TeamCrest name={t.name} logo={t.logo_url} className="h-8 w-8 shrink-0" />
               <div className="min-w-0"><div className="truncate font-medium">{tx(t.name)}</div><div className="truncate text-xs text-muted-foreground">{tx(t.country)}</div></div>
             </Link>
           ))}
@@ -286,7 +287,7 @@ function CompetitionOverviewTab({ c, season, teams, titleHolder, titles, divisio
               const team = teams.find((tm) => tm.id === r.team_id);
               return (
                 <Link key={r.team_id} to="/teams/$id" params={{ id: r.team_id }} className="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-accent">
-                  {team?.logo_url ? <img src={team.logo_url} alt="" className="h-5 w-5 object-contain" /> : <span className="h-5 w-5 rounded bg-muted" />}
+                  <TeamCrest name={team?.name} logo={team?.logo_url} className="h-5 w-5 shrink-0" />
                   <span className="min-w-0 flex-1 truncate font-medium">{tx(team?.name) ?? "Team"}</span>
                   <span className="font-black tabular-nums">{r.titles}</span>
                 </Link>
@@ -306,7 +307,7 @@ function TeamCell({ label, team, note }: { label: string; team: Team | null; not
       <div className="text-[0.65rem] font-bold uppercase text-muted-foreground">{tx(label)}</div>
       {team ? (
         <Link to="/teams/$id" params={{ id: team.id }} className="mt-2 flex items-center gap-2 font-semibold hover:text-primary">
-          {team.logo_url ? <img src={team.logo_url} alt="" className="h-7 w-7 object-contain" /> : <span className="h-7 w-7 rounded bg-muted" />}
+          <TeamCrest name={team.name} logo={team.logo_url} className="h-7 w-7 shrink-0" />
           <span className="min-w-0 truncate">{tx(team.name)}</span>
           {note && <span className="ml-auto font-black tabular-nums">{note}</span>}
         </Link>

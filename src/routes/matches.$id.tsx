@@ -1,3 +1,4 @@
+import { TeamCrest } from "@/components/team-crest";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -82,7 +83,7 @@ function MatchPage() {
         <div className="text-xs uppercase tracking-widest text-muted-foreground">{tx(match.competition?.name)}{roundLabel(match.round_number, match.round) ? ` · ${roundLabel(match.round_number, match.round)}` : ""}</div>
         <div className="mt-4 grid items-center gap-4" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
           <div className="text-right">
-            {match.home?.logo_url && <img src={match.home.logo_url} className="ml-auto h-14 w-14 object-contain" alt="" />}
+            <div className="ml-auto"><TeamCrest name={match.home?.name} logo={match.home?.logo_url} className="h-14 w-14" rounded="rounded-2xl" /></div>
             <div className="mt-2 text-lg font-bold">{tx(match.home?.name) ?? "TBD"}</div>
           </div>
           <div className="text-center">
@@ -103,7 +104,7 @@ function MatchPage() {
             </div>
           </div>
           <div>
-            {match.away?.logo_url && <img src={match.away.logo_url} className="h-14 w-14 object-contain" alt="" />}
+            <TeamCrest name={match.away?.name} logo={match.away?.logo_url} className="h-14 w-14" rounded="rounded-2xl" />
             <div className="mt-2 text-lg font-bold">{tx(match.away?.name) ?? "TBD"}</div>
           </div>
         </div>

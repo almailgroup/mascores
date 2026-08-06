@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase, slugify } from "@/lib/db";
 import { Modal, inputCls, btnPrimary, btnGhost, btnDanger } from "./ui";
-import { Check, X, FileText, ExternalLink } from "lucide-react";
+import { Check, X, FileText, ExternalLink, KeyRound } from "lucide-react";
 
 type Submission = {
   id: string;
@@ -72,6 +72,13 @@ export function NewsSubmissionsPanel() {
     qc.invalidateQueries({ queryKey: ["admin", "news-reporters"] });
   };
 
+  /** Generate an access code to send the reporter manually — they redeem it themselves. */
+  const generateCode = async (id: string) => {
+    const code = `MAS-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+    await supabase.from("news_reporters").update({ access_code: code }).eq("id", id);
+    qc.invalidateQueries({ queryKey: ["admin", "news-reporters"] });
+  };
+
   return (
     <div>
       <h2 className="mb-3 text-lg font-bold">Reporter submissions</h2>
@@ -94,11 +101,13 @@ export function NewsSubmissionsPanel() {
         {(reporters.data ?? []).map((r) => (
           <div key={r.id} className="flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card p-3 text-sm">
             <div className="min-w-0 flex-1">
-              <div className="truncate font-semibold">@{r.handle} <span className="text-xs font-normal text-muted-foreground">· {r.platform}</span></div>
-              <div className="text-xs text-muted-foreground">Subscription: {r.subscription_status} · Access code: {r.access_code ?? "—"}</div>
+              <div className="truncate font-semibold">{r.full_name ? `${r.full_name} · ` : ""}@{r.handle} <span className="text-xs font-normal text-muted-foreground">· {r.platform}</span></div>
+              <div className="text-xs text-muted-foreground">{[r.phone, r.email].filter(Boolean).join(" · ") || "No contact supplied"}</div>
+              <div className="text-xs text-muted-foreground">Code: <span className="font-mono">{r.access_code ?? "—"}</span>{r.code_redeemed_at ? " · redeemed" : ""}</div>
             </div>
             <span className="shrink-0 text-xs font-semibold uppercase text-muted-foreground">{r.status}</span>
-            <button className={btnGhost} onClick={() => setReporter(r.id, "approved")}><Check className="h-3.5 w-3.5" /> Approve</button>
+            <button className={btnGhost} onClick={() => generateCode(r.id)}><KeyRound className="h-3.5 w-3.5" /> Generate code</button>
+            <button className={btnGhost} onClick={() => setReporter(r.id, "active")}><Check className="h-3.5 w-3.5" /> Activate</button>
             <button className={btnDanger} onClick={() => setReporter(r.id, "rejected")}><X className="h-3.5 w-3.5" /> Reject</button>
           </div>
         ))}

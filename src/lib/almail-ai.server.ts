@@ -133,3 +133,33 @@ export async function generateFixtureDrafts(notes: string, images: ImageInput[],
     };
   }).filter((row) => row.home && row.away);
 }
+
+export type TransferDraft = {
+  from_club: string | null;
+  to_club: string | null;
+  moved_on: string | null;
+  fee: string | null;
+  transfer_type: string | null;
+  season: string | null;
+};
+
+/** Read a transfer/career history table from notes or screenshots. */
+export async function generateTransferDrafts(notes: string, images: ImageInput[], personName = ""): Promise<TransferDraft[]> {
+  const text = await runAlmail(
+    `You are Almail AI, a transfer-history parser for a football platform. Read the notes and images and extract every career move${personName ? ` for ${personName}` : ""}. Never invent moves, clubs, fees or dates. Return JSON only in the shape {"transfers":[{"from_club":string|null,"to_club":string|null,"moved_on":"YYYY-MM-DD"|null,"fee":string|null,"transfer_type":string|null,"season":"YY/YY"|null}]}. transfer_type must be one of Transfer, Loan, Loan return, Free agent, Youth promotion, Retired, Appointed, Left, or null. Notes: ${notes || "No notes supplied."}`,
+    images,
+  );
+  const parsed = parseJson<{ transfers?: unknown }>(text);
+  const list = Array.isArray(parsed.transfers) ? parsed.transfers : [];
+  return list.slice(0, 40).map((raw) => {
+    const row = raw as Partial<TransferDraft>;
+    return {
+      from_club: row.from_club ? String(row.from_club).slice(0, 160) : null,
+      to_club: row.to_club ? String(row.to_club).slice(0, 160) : null,
+      moved_on: /^\d{4}-\d{2}-\d{2}$/.test(String(row.moved_on)) ? String(row.moved_on) : null,
+      fee: row.fee ? String(row.fee).slice(0, 80) : null,
+      transfer_type: row.transfer_type ? String(row.transfer_type).slice(0, 40) : null,
+      season: /^\d{2}\/\d{2}$/.test(String(row.season)) ? String(row.season) : null,
+    };
+  }).filter((row) => row.from_club || row.to_club);
+}
