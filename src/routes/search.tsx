@@ -120,14 +120,16 @@ function SearchPage() {
             <Group title={tx("Competitions")}>{res.data.comps.map((c) => (
               <ResultRow key={c.id} to="/competitions/$slug" params={{ slug: c.slug }}
                 logo={c.logo_url} fallback={<Trophy className="h-4 w-4 text-muted-foreground" />}
-                title={tx(c.name)} country={c.country_code ?? c.country} sub={[tx(c.country), c.season].filter(Boolean).join(" · ")} />
+                title={tx(c.name)} country={c.country_code ?? c.country} sub={[tx(c.country), c.season].filter(Boolean).join(" · ")}
+                onOpen={() => remember({ key: `comp:${c.id}`, label: c.name, kind: "competitions", to: "/competitions/$slug", params: { slug: c.slug }, logo: c.logo_url })} />
             ))}</Group>
           )}
           {show("clubs") && (
             <Group title={tx("Teams")}>{res.data.teams.map((tm) => (
               <ResultRow key={tm.id} to="/teams/$id" params={{ id: tm.id }}
                 logo={tm.logo_url} fallback={<Shield className="h-4 w-4 text-muted-foreground" />}
-                title={tx(tm.name)} country={tm.country_code ?? tm.country} sub={tx(tm.country) ?? tm.short_name ?? ""} />
+                title={tx(tm.name)} country={tm.country_code ?? tm.country} sub={tx(tm.country) ?? tm.short_name ?? ""}
+                onOpen={() => remember({ key: `team:${tm.id}`, label: tm.name, kind: "clubs", to: "/teams/$id", params: { id: tm.id }, logo: tm.logo_url })} />
             ))}</Group>
           )}
           {show("players") && (
@@ -135,7 +137,8 @@ function SearchPage() {
               <ResultRow key={p.id} to="/players/$id" params={{ id: p.id }} round
                 logo={p.photo_url} fallback={<User className="h-4 w-4 text-muted-foreground" />}
                 title={tx(p.name)} country={p.nationality_code ?? p.nationality}
-                sub={[tx(p.team?.name), tx(p.position)].filter(Boolean).join(" · ")} />
+                sub={[tx(p.team?.name), tx(p.position)].filter(Boolean).join(" · ")}
+                onOpen={() => remember({ key: `player:${p.id}`, label: p.name, kind: "players", to: "/players/$id", params: { id: p.id }, logo: p.photo_url })} />
             ))}</Group>
           )}
           {show("coaches") && (
@@ -159,12 +162,12 @@ function SearchPage() {
   );
 }
 
-function ResultRow({ to, params, logo, fallback, title, sub, country, round }: {
+function ResultRow({ to, params, logo, fallback, title, sub, country, round, onOpen }: {
   to: string; params: Record<string, string>; logo: string | null | undefined;
-  fallback: React.ReactNode; title: string; sub?: string; country?: string | null; round?: boolean;
+  fallback: React.ReactNode; title: string; sub?: string; country?: string | null; round?: boolean; onOpen?: () => void;
 }) {
   return (
-    <Link to={to as never} params={params as never}
+    <Link to={to as never} params={params as never} onClick={onOpen}
       className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 transition hover:border-primary/50">
       <div className={`flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden ${round ? "rounded-full" : "rounded-xl"} border border-border bg-muted/40`}>
         {logo ? <img src={logo} alt="" className={`h-full w-full ${round ? "object-cover" : "object-contain p-1"}`} /> : fallback}
