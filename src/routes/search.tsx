@@ -22,12 +22,17 @@ const FILTERS: { key: Filter; label: string }[] = [
   { key: "venues", label: "Stadiums" },
 ];
 
-const HISTORY_KEY = "mas.search.history";
+const HISTORY_KEY = "mas.search.visited";
 
-function readHistory(): string[] {
+/** A result the user actually opened — stored so they can jump straight back to it. */
+type Visited = { key: string; label: string; kind: Filter; to: string; params: Record<string, string>; logo?: string | null };
+
+function readHistory(): Visited[] {
   if (typeof window === "undefined") return [];
-  try { const raw = JSON.parse(window.localStorage.getItem(HISTORY_KEY) ?? "[]"); return Array.isArray(raw) ? raw.filter((v): v is string => typeof v === "string").slice(0, 12) : []; }
-  catch { return []; }
+  try {
+    const raw = JSON.parse(window.localStorage.getItem(HISTORY_KEY) ?? "[]");
+    return Array.isArray(raw) ? (raw as Visited[]).filter((v) => v && typeof v.key === "string" && typeof v.to === "string").slice(0, 12) : [];
+  } catch { return []; }
 }
 
 function SearchPage() {
@@ -35,17 +40,13 @@ function SearchPage() {
   const reverse = useReverseTranslate();
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
-  const [history, setHistory] = useState<string[]>([]);
+  const [history, setHistory] = useState<Visited[]>([]);
   useEffect(() => { setHistory(readHistory()); }, []);
-  const writeHistory = (next: string[]) => {
+  const writeHistory = (next: Visited[]) => {
     setHistory(next);
     try { window.localStorage.setItem(HISTORY_KEY, JSON.stringify(next)); } catch { /* storage unavailable */ }
   };
-  const remember = (term: string) => {
-    const clean = term.trim();
-    if (clean.length < 2) return;
-    writeHistory([clean, ...readHistory().filter((item) => item.toLowerCase() !== clean.toLowerCase())].slice(0, 12));
-  };
+  const remember = (entry: Visited) => writeHistory([entry, ...readHistory().filter((item) => item.key !== entry.key)].slice(0, 12));
   const terms = [q.trim(), ...(/[\u0600-\u06FF]/.test(q) ? reverse(q) : [])].filter((t) => t.length > 1);
   const orFilter = (columns: string[]) =>
     columns.flatMap((col) => terms.map((t) => `${col}.ilike.%${t.replace(/[,()]/g, " ")}%`)).join(",");
