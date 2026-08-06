@@ -6,10 +6,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import { unlockAdmin } from "@/lib/admin.functions";
-import { Loader2, ShieldCheck, ArrowLeft, Bot, CalendarDays, Newspaper, Radio, Repeat2, Trophy, Landmark, Shield } from "lucide-react";
+import { Loader2, ShieldCheck, ArrowLeft, Bot, CalendarDays, Newspaper, Radio, Repeat2, Trophy, Landmark, Shield, Users, LogOut } from "lucide-react";
 import type { Competition } from "@/lib/db";
 import { CompetitionsPanel } from "@/components/admin/competitions-panel";
 import { TeamsPanel } from "@/components/admin/teams-panel";
+import { PlayersPanel } from "@/components/admin/players-panel";
 import { MatchesPanel } from "@/components/admin/matches-panel";
 import { StandingsPanel } from "@/components/admin/standings-panel";
 import { NewsPanel } from "@/components/admin/news-panel";
@@ -29,7 +30,7 @@ function AdminPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [tab, setTab] = useState<"competitions" | "teams" | "news" | "ai" | "venues" | "channels" | "transfers">("competitions");
+  const [tab, setTab] = useState<"competitions" | "teams" | "players" | "news" | "ai" | "venues" | "channels" | "transfers">("competitions");
   const [openComp, setOpenComp] = useState<Competition | null>(null);
   const [compTab, setCompTab] = useState<"overview" | "teams" | "matches" | "standings" | "awards" | "media">("overview");
   const unlock = useServerFn(unlockAdmin);
@@ -105,11 +106,21 @@ function AdminPage() {
         </div>
       ) : (
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Admin control centre</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Competitions, matches, news, AI and reusable libraries in one place.</p>
-          <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Admin control centre</h1>
+              <p className="mt-1 text-sm text-muted-foreground">Competitions, matches, players, news, AI and reusable libraries in one place.</p>
+            </div>
+            <button
+              onClick={async () => { await supabase.auth.signOut(); navigate({ to: "/" }); }}
+              className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-semibold hover:bg-accent"
+            >
+              <LogOut className="h-4 w-4" /> Sign out
+            </button>
+          </div>
+          <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
             {([
-              ["competitions", Trophy], ["teams", Shield], ["news", Newspaper], ["ai", Bot], ["venues", Landmark], ["channels", Radio], ["transfers", Repeat2],
+              ["competitions", Trophy], ["teams", Shield], ["players", Users], ["news", Newspaper], ["ai", Bot], ["venues", Landmark], ["channels", Radio], ["transfers", Repeat2],
             ] as const).map(([k, Icon]) => (
               <button key={k} onClick={() => setTab(k)} className={`flex min-h-20 flex-col items-start justify-between rounded-lg border p-3 text-left font-semibold capitalize ${tab === k ? "border-primary bg-primary/10 text-primary" : "border-border bg-card hover:border-primary/50"}`}><Icon className="h-4 w-4" />{k === "ai" ? "Almail AI" : k}</button>
             ))}
@@ -122,6 +133,7 @@ function AdminPage() {
                 <TeamsPanel competitionId={null} />
               </div>
             )}
+            {tab === "players" && <PlayersPanel />}
             {tab === "news" && <NewsPanel />}
              {tab === "ai" && <AlmailAiPanel onNews={() => setTab("news")} onCompetitions={() => setTab("competitions")} onVenues={() => setTab("venues")} />}
             {tab === "venues" && <VenuesPanel />}
