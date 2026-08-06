@@ -213,7 +213,7 @@ function ContributePage() {
             </div>
           </section>
         </div>
-      ) : reporter.data.status !== "active" ? (
+      ) : !["active", "approved"].includes(reporter.data.status ?? "") ? (
         <section className="mt-6 max-w-xl rounded-3xl border border-border bg-card p-6 text-sm">
           <div className="font-semibold">Your details are with the main admin</div>
           <p className="mt-1 text-muted-foreground">{reporter.data.full_name ? `${reporter.data.full_name} · ` : ""}@{reporter.data.handle} on {reporter.data.platform}.</p>
