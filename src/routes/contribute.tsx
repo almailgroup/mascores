@@ -42,6 +42,7 @@ function ContributePage() {
   const [phone, setPhone] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [applying, setApplying] = useState(false);
+  const [applyError, setApplyError] = useState<string | null>(null);
   const [code, setCode] = useState("");
   const [codeMsg, setCodeMsg] = useState<string | null>(null);
   const [codeBusy, setCodeBusy] = useState(false);
@@ -81,8 +82,8 @@ function ContributePage() {
 
   const apply = async () => {
     if (!user || !handle.trim() || !fullName.trim() || (!phone.trim() && !contactEmail.trim())) return;
-    setApplying(true);
-    await supabase.from("news_reporters").insert({
+    setApplying(true); setApplyError(null);
+    const { error: insertError } = await supabase.from("news_reporters").insert({
       user_id: user.id,
       platform,
       handle: handle.replace(/^@/, ""),
@@ -91,7 +92,8 @@ function ContributePage() {
       email: contactEmail.trim() || null,
     } as never);
     setApplying(false);
-    qc.invalidateQueries({ queryKey: ["reporter", user.id] });
+    if (insertError) { setApplyError(insertError.message); return; }
+    await qc.invalidateQueries({ queryKey: ["reporter", user.id] });
   };
 
   const submitCode = async () => {
