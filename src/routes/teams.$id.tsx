@@ -6,6 +6,7 @@ import { supabase, formatKickoff, type Team, type Player, type Match, type Stand
 import { useRealtime } from "@/lib/realtime";
 import { FavoriteButton } from "@/hooks/use-favorites";
 import { FlagIcon } from "@/components/flag";
+import { TeamCrest } from "@/components/team-crest";
 import { useI18n } from "@/lib/i18n";
 import { PlayerAvatar } from "@/components/player-avatar";
 import { LinkedNews } from "@/components/linked-news";
@@ -76,6 +77,17 @@ function TeamPage() {
   if (team.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;
   if (!team.data) return <AppShell><EmptyState title={tx("Club not found")} /></AppShell>;
   const t = team.data;
+  if (t.is_temporary) {
+    return (
+      <AppShell>
+        <div className="mx-auto max-w-lg rounded-3xl border border-border bg-card p-8 text-center">
+          <TeamCrest name={t.name} logo={t.logo_url} className="mx-auto h-16 w-16" rounded="rounded-2xl" />
+          <h1 className="mt-4 text-xl font-bold">{tx(t.name)}</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{tx("Temporary club — no profile details are published for this club.")}</p>
+        </div>
+      </AppShell>
+    );
+  }
 
   const played = matches.data?.filter((m) => ["ft", "aet", "pen", "awarded"].includes(m.status)) ?? [];
   const wins = played.filter((m) => (m.home_team_id === id ? (m.home_score ?? 0) > (m.away_score ?? 0) : (m.away_score ?? 0) > (m.home_score ?? 0))).length;
@@ -87,9 +99,7 @@ function TeamPage() {
   return (
     <AppShell>
       <div className="mb-4 flex items-center gap-4 rounded-3xl border border-border bg-card p-6">
-        <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl">
-          {t.logo_url && <img src={t.logo_url} className="h-full w-full object-contain" alt="" />}
-        </div>
+        <TeamCrest name={t.name} logo={t.logo_url} className="h-16 w-16 shrink-0" rounded="rounded-2xl" />
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-2xl font-bold">{tx(t.name)}</h1>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -141,7 +151,7 @@ function TeamPage() {
                       <Link key={r.id} to="/teams/$id" params={{ id: r.team?.id ?? r.team_id }}
                         className={`flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-accent ${r.team_id === id ? "bg-primary/10 font-bold" : ""}`}>
                         <span className="w-5 shrink-0 text-xs tabular-nums text-muted-foreground">{num(index + 1)}</span>
-                        {r.team?.logo_url ? <img src={r.team.logo_url} alt="" className="h-5 w-5 shrink-0 object-contain" /> : <span className="h-5 w-5 shrink-0 rounded bg-muted" />}
+                        <TeamCrest name={r.team?.name} logo={r.team?.logo_url} className="h-5 w-5 shrink-0" />
                         <span className="min-w-0 flex-1 truncate">{tx(r.team?.name) ?? tx("Team")}</span>
                         {r.qualification_label && <span className="hidden shrink-0 rounded-full px-2 py-0.5 text-[0.6rem] font-semibold sm:inline" style={{ backgroundColor: `${r.qualification_color ?? "#888"}22`, color: r.qualification_color ?? undefined }}>{tx(r.qualification_label)}</span>}
                         <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{num(r.played)} · {num(r.gf)}:{num(r.ga)}</span>

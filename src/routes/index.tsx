@@ -357,9 +357,9 @@ export function MatchTile({ m }: { m: MatchWithTeams }) {
 function TeamRow({ name, logo, align }: { name: string; logo: string | null; align: "left" | "right" }) {
   return (
     <div className={`flex items-center gap-2 ${align === "right" ? "justify-end" : "justify-start"}`}>
-      {align === "left" && logo && <img src={logo} alt="" className="h-6 w-6 shrink-0 object-contain" loading="lazy" />}
+      {align === "left" && <TeamCrest name={name} logo={logo} className="h-6 w-6 shrink-0" />}
       <span className="truncate text-sm font-semibold">{name}</span>
-      {align === "right" && logo && <img src={logo} alt="" className="h-6 w-6 shrink-0 object-contain" loading="lazy" />}
+      {align === "right" && <TeamCrest name={name} logo={logo} className="h-6 w-6 shrink-0" />}
     </div>
   );
 }
