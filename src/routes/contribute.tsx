@@ -202,7 +202,7 @@ function ContributePage() {
               <button disabled={applying || !handle.trim() || !fullName.trim() || (!phone.trim() && !contactEmail.trim())} onClick={apply} className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground disabled:opacity-60">
                 {applying ? <Loader2 className="h-4 w-4 animate-spin" /> : <BadgeCheck className="h-4 w-4" />} Send my details
               </button>
-              <p className="text-[0.7rem] text-muted-foreground">A phone number or an email is required so the admin can respond to you.</p>
+              <p className="text-[0.7rem] text-muted-foreground">A phone number or an email is required so the admin can respond to you. If you have not heard back within 2 days, email <a href="mailto:mansouralmailscores@gmail.com" className="font-semibold text-primary">mansouralmailscores@gmail.com</a>.</p>
             </div>
           </section>
         </div>
