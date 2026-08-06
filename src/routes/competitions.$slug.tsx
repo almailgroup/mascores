@@ -2,7 +2,7 @@ import { TeamCrest } from "@/components/team-crest";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { AppShell, EmptyState, LoadingSkeleton, SectionHeader } from "@/components/app-shell";
+import { AppShell, BackButton, EmptyState, LoadingSkeleton, SectionHeader } from "@/components/app-shell";
 import { supabase, formatKickoff, type Competition, type Team, type Match, type StandingRow } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 import { FlagIcon } from "@/components/flag";
@@ -124,6 +124,7 @@ function CompetitionPage() {
 
   return (
     <AppShell>
+      <BackButton />
        <div className="mb-4 flex items-center gap-4 border-b border-border pb-5">
          <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl text-primary">
           {c.logo_url && <img src={c.logo_url} alt="" className="h-full w-full object-contain" />}
