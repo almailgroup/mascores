@@ -7,7 +7,7 @@ import { supabase, formatKickoff, type Competition, type Match, type Team, type 
 import { useI18n } from "@/lib/i18n";
 import { useRealtime } from "@/lib/realtime";
 import { useFavorites, FavoriteButton } from "@/hooks/use-favorites";
-import { FlagIcon } from "@/components/flag";
+import { MatchGroups, MatchRow, type MatchWithTeams } from "@/components/match-list";
 import { Trophy, ChevronLeft, ChevronRight } from "lucide-react";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
 
@@ -25,8 +25,6 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-type LocalUnused = never;
-export type MatchWithTeams = Match & { home: Team | null; away: Team | null; competition: { slug: string; name: string; logo_url: string | null; country?: string | null; country_code?: string | null } | null };
 
 function Home() {
   const tx = useTx();
