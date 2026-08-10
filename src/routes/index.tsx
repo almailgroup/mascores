@@ -6,7 +6,8 @@ import { AppShell, SectionHeader, EmptyState, LoadingSkeleton } from "@/componen
 import { supabase, formatKickoff, type Competition, type Match, type Team, type NewsPost } from "@/lib/db";
 import { useI18n } from "@/lib/i18n";
 import { useRealtime } from "@/lib/realtime";
-import { useFavorites } from "@/hooks/use-favorites";
+import { useFavorites, FavoriteButton } from "@/hooks/use-favorites";
+import { MatchGroups, MatchRow, type MatchWithTeams } from "@/components/match-list";
 import { Trophy, ChevronLeft, ChevronRight } from "lucide-react";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
 
@@ -24,7 +25,6 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-type MatchWithTeams = Match & { home: Team | null; away: Team | null; competition: { slug: string; name: string; logo_url: string | null } | null };
 
 function Home() {
   const tx = useTx();
@@ -45,7 +45,7 @@ function Home() {
       const now = new Date().toISOString();
       const { data } = await supabase
         .from("matches")
-        .select("*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url)")
+        .select("*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url,country,country_code)")
         .gte("kickoff_at", now)
         .order("kickoff_at")
         .limit(9);
@@ -58,7 +58,7 @@ function Home() {
     queryFn: async () => {
       const { data } = await supabase
         .from("matches")
-        .select("*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url)")
+        .select("*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url,country,country_code)")
         .in("status", ["live", "ht"])
         .order("kickoff_at")
         .limit(6);
@@ -86,7 +86,7 @@ function Home() {
     queryFn: async () => {
       const { data } = await supabase
         .from("matches")
-        .select("*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url)")
+        .select("*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url,country,country_code)")
         .in("status", ["ft", "aet", "pen", "awarded"])
         .order("kickoff_at", { ascending: false })
         .limit(6);
@@ -168,7 +168,7 @@ function ScoreBoard({ liveCount }: { liveCount: number }) {
       end.setDate(end.getDate() + 1);
       const { data } = await supabase
         .from("matches")
-        .select("*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url)")
+        .select("*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url,country,country_code)")
         .gte("kickoff_at", start.toISOString())
         .lt("kickoff_at", end.toISOString())
         .order("kickoff_at");
@@ -187,12 +187,6 @@ function ScoreBoard({ liveCount }: { liveCount: number }) {
     if (status === "upcoming") return m.status === "scheduled";
     return true;
   });
-
-  const groups = new Map<string, MatchWithTeams[]>();
-  for (const m of rows) {
-    const key = m.competition?.name ?? "Other";
-    groups.set(key, [...(groups.get(key) ?? []), m]);
-  }
 
   const dayLabel = offset === 0 ? t("board.today")
     : offset === 1 ? t("board.tomorrow")
@@ -246,20 +240,8 @@ function ScoreBoard({ liveCount }: { liveCount: number }) {
           <LoadingSkeleton count={3} className="h-16" />
         ) : rows.length === 0 ? (
           <div className="py-6 text-center text-sm text-muted-foreground">{t("board.none")}</div>
-        ) : scope === "competitions" ? (
-          <div className="space-y-5">
-            {[...groups.entries()].map(([name, ms]) => (
-              <div key={name}>
-                <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                  {ms[0].competition?.logo_url && <img src={ms[0].competition.logo_url} alt="" className="h-4 w-4 object-contain" />}
-                  {name}
-                </div>
-                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{ms.map((m) => <MatchTile key={m.id} m={m} />)}</div>
-              </div>
-            ))}
-          </div>
         ) : (
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{rows.map((m) => <MatchTile key={m.id} m={m} />)}</div>
+          <MatchGroups data={rows} />
         )}
       </div>
     </section>
@@ -275,7 +257,7 @@ function FavoriteMatches() {
     enabled: ready && (ids.length > 0 || teamIds.length > 0),
     queryKey: ["fav-matches", ids.join(","), teamIds.join(",")],
     queryFn: async () => {
-      const sel = "*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url)";
+      const sel = "*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url,country,country_code)";
       const out: MatchWithTeams[] = [];
       if (ids.length) {
         const { data } = await supabase.from("matches").select(sel).in("id", ids).order("kickoff_at");
@@ -312,9 +294,7 @@ export function MatchSection({ title, data, loading }: { title: string; data: Ma
       ) : !data || data.length === 0 ? (
         <EmptyState title={tx("No matches yet")} />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {data.map((m) => <MatchTile key={m.id} m={m} />)}
-        </div>
+        <MatchGroups data={data} />
       )}
     </section>
   );

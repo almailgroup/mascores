@@ -29,6 +29,20 @@ export const Route = createFileRoute("/matches/$id")({
   component: MatchPage,
 });
 
+/** Crest + name that navigates to the club page. */
+function TeamHeadline({ team, align }: { team: Team | null; align: "left" | "right" }) {
+  const tx = useTx();
+  const body = (
+    <>
+      <TeamCrest name={team?.name} logo={team?.logo_url} className="h-14 w-14" rounded="rounded-2xl" />
+      <span className="mt-2 block text-lg font-bold">{tx(team?.name) ?? "TBD"}</span>
+    </>
+  );
+  const cls = `flex flex-col ${align === "right" ? "items-end text-right" : "items-start text-left"}`;
+  if (!team) return <div className={cls}>{body}</div>;
+  return <Link to="/teams/$id" params={{ id: team.id }} className={`${cls} transition hover:text-primary`}>{body}</Link>;
+}
+
 function MatchPage() {
   const tx = useTx();
   const num = useNum();
@@ -97,10 +111,7 @@ function MatchPage() {
           {roundLabel(match.round_number, match.round) ? <span>· {roundLabel(match.round_number, match.round)}</span> : null}
         </div>
         <div className="mt-4 grid items-center gap-4" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
-          <div className="text-right">
-            <div className="ml-auto"><TeamCrest name={match.home?.name} logo={match.home?.logo_url} className="h-14 w-14" rounded="rounded-2xl" /></div>
-            <div className="mt-2 text-lg font-bold">{tx(match.home?.name) ?? "TBD"}</div>
-          </div>
+          <TeamHeadline team={match.home} align="right" />
           <div className="text-center">
             {["scheduled"].includes(match.status) ? (
               <div className="text-sm font-medium text-muted-foreground">{num(dates.kickoff(match.kickoff_at))}</div>
@@ -118,10 +129,7 @@ function MatchPage() {
               {match.status === "live" && match.live_minute ? ` · ${num(match.live_minute)}'` : ""}
             </div>
           </div>
-          <div>
-            <TeamCrest name={match.away?.name} logo={match.away?.logo_url} className="h-14 w-14" rounded="rounded-2xl" />
-            <div className="mt-2 text-lg font-bold">{tx(match.away?.name) ?? "TBD"}</div>
-          </div>
+          <TeamHeadline team={match.away} align="left" />
         </div>
         {match.venue && <div className="mt-4 text-center text-xs text-muted-foreground">{tx(match.venue)}{match.city ? ` · ${tx(match.city)}` : ""}</div>}
       </div>
