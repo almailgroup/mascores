@@ -170,15 +170,7 @@ function SettingsPage() {
         </div>
       )}
 
-      {user && <section className="mt-10 rounded-3xl border border-dashed border-border bg-card/60 p-6">
-        <div className="flex items-center gap-2 text-sm font-semibold"><ShieldCheck className="h-4 w-4 text-primary" /> {t("settings.admin")}</div>
-        <p className="mt-1 text-xs text-muted-foreground">{t("settings.adminHint")}</p>
-        <Link to="/admin" className="mt-3 inline-flex h-9 items-center rounded-full border border-border bg-background px-4 text-sm font-medium hover:bg-accent">
-          {isAdmin ? "Open admin" : "Enter admin"}
-        </Link>
-      </section>}
-
-      {user && <section className="mt-4 rounded-3xl border border-destructive/40 bg-destructive/5 p-6">
+      {user && <section className="mt-10 rounded-3xl border border-destructive/40 bg-destructive/5 p-6">
         <div className="flex items-center gap-2 text-sm font-semibold text-destructive"><Trash2 className="h-4 w-4" /> {t("settings.deleteAccount")}</div>
         <p className="mt-1 text-xs text-muted-foreground">{t("settings.deleteAccountHint")}</p>
         <button disabled={deleting}
