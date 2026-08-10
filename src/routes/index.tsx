@@ -45,7 +45,7 @@ function Home() {
       const now = new Date().toISOString();
       const { data } = await supabase
         .from("matches")
-        .select("*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url)")
+        .select("*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url,country,country_code)")
         .gte("kickoff_at", now)
         .order("kickoff_at")
         .limit(9);
@@ -58,7 +58,7 @@ function Home() {
     queryFn: async () => {
       const { data } = await supabase
         .from("matches")
-        .select("*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url)")
+        .select("*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url,country,country_code)")
         .in("status", ["live", "ht"])
         .order("kickoff_at")
         .limit(6);
@@ -86,7 +86,7 @@ function Home() {
     queryFn: async () => {
       const { data } = await supabase
         .from("matches")
-        .select("*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url)")
+        .select("*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url,country,country_code)")
         .in("status", ["ft", "aet", "pen", "awarded"])
         .order("kickoff_at", { ascending: false })
         .limit(6);
@@ -168,7 +168,7 @@ function ScoreBoard({ liveCount }: { liveCount: number }) {
       end.setDate(end.getDate() + 1);
       const { data } = await supabase
         .from("matches")
-        .select("*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url)")
+        .select("*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url,country,country_code)")
         .gte("kickoff_at", start.toISOString())
         .lt("kickoff_at", end.toISOString())
         .order("kickoff_at");
@@ -275,7 +275,7 @@ function FavoriteMatches() {
     enabled: ready && (ids.length > 0 || teamIds.length > 0),
     queryKey: ["fav-matches", ids.join(","), teamIds.join(",")],
     queryFn: async () => {
-      const sel = "*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url)";
+      const sel = "*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url,country,country_code)";
       const out: MatchWithTeams[] = [];
       if (ids.length) {
         const { data } = await supabase.from("matches").select(sel).in("id", ids).order("kickoff_at");
