@@ -49,9 +49,9 @@ function TeamPage() {
   }});
   const matches = useQuery({ queryKey: ["team-matches", id], queryFn: async () => {
     const { data } = await supabase.from("matches")
-      .select("*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url), competition:competition_id(name,slug)")
+      .select("*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url,country,country_code)")
       .or(`home_team_id.eq.${id},away_team_id.eq.${id}`).order("kickoff_at", { ascending: false });
-    return (data ?? []) as unknown as (Match & { home: Team | null; away: Team | null; competition: { name: string; slug: string } | null })[];
+    return (data ?? []) as unknown as MatchWithTeams[];
   }});
   const rows = useQuery({ queryKey: ["team-standings", id], queryFn: async () => {
     const { data: mine } = await supabase.from("standings_rows").select("competition_id").eq("team_id", id);
@@ -122,15 +122,31 @@ function TeamPage() {
 
       {tab === "matches" && (
         matches.data && matches.data.length > 0 ? (
-          <div className="grid gap-2">
-            {matches.data.map((m) => (
-              <Link key={m.id} to="/matches/$id" params={{ id: m.id }} className="grid items-center gap-2 rounded-2xl border border-border bg-card p-3 hover:border-primary/50" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
-                <div className="truncate text-right text-sm font-semibold">{m.home?.name ?? "TBD"}</div>
-                <div className="text-center text-sm font-bold tabular-nums">
-                  {m.home_score != null ? num(`${m.home_score} – ${m.away_score}`) : num(dates.kickoff(m.kickoff_at))}
+          <div className="space-y-3">
+            {[...matches.data.reduce((map, m) => {
+              const key = m.competition?.slug ?? "other";
+              map.set(key, [...(map.get(key) ?? []), m]);
+              return map;
+            }, new Map<string, MatchWithTeams[]>()).values()].map((ms) => (
+              <div key={ms[0].competition?.slug ?? "other"} className="overflow-hidden rounded-2xl border border-border bg-card">
+                {ms[0].competition ? (
+                  <Link to="/competitions/$slug" params={{ slug: ms[0].competition.slug }} className="flex items-center gap-2.5 border-b border-border px-4 py-3 hover:bg-accent">
+                    {ms[0].competition.logo_url ? <img src={ms[0].competition.logo_url} alt="" className="h-7 w-7 shrink-0 object-contain" /> : null}
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-bold">{tx(ms[0].competition.name)}</span>
+                      {ms[0].competition.country ? (
+                        <span className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <FlagIcon value={ms[0].competition.country_code ?? ms[0].competition.country} />
+                          <span className="truncate">{tx(ms[0].competition.country)}</span>
+                        </span>
+                      ) : null}
+                    </span>
+                  </Link>
+                ) : null}
+                <div className="divide-y divide-border">
+                  {ms.map((m) => <MatchRow key={m.id} m={m} highlightTeamId={id} />)}
                 </div>
-                <div className="truncate text-sm font-semibold">{m.away?.name ?? "TBD"}</div>
-              </Link>
+              </div>
             ))}
           </div>
         ) : <EmptyState title={tx("No matches yet")} />
