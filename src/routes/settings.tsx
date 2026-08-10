@@ -9,7 +9,7 @@ import { uploadMedia } from "@/components/admin/upload";
 import { CURRENCIES, useCurrency } from "@/lib/currency";
 import { deleteMyAccount } from "@/lib/account.functions";
 import { useServerFn } from "@tanstack/react-start";
-import { Save, LogOut, ShieldCheck, Loader2, LogIn, Camera, Trash2 } from "lucide-react";
+import { Save, LogOut, Loader2, LogIn, Camera, Trash2 } from "lucide-react";
 import { ImageCropper } from "@/components/image-cropper";
 
 export const Route = createFileRoute("/settings")({
@@ -33,21 +33,16 @@ function SettingsPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
     if (!user) return;
     (async () => {
-      const [{ data: prof }, { data: admin }] = await Promise.all([
-        supabase.from("profiles").select("display_name,language,avatar_url,height_unit").eq("id", user.id).maybeSingle(),
-        supabase.from("admins").select("user_id").eq("user_id", user.id).maybeSingle(),
-      ]);
+      const { data: prof } = await supabase.from("profiles").select("display_name,language,avatar_url,height_unit").eq("id", user.id).maybeSingle();
       setDisplayName(prof?.display_name ?? "");
       setAvatarUrl(prof?.avatar_url ?? null);
       if (prof?.height_unit === "ft" || prof?.height_unit === "cm") setHeightUnit(prof.height_unit);
       if (prof?.language && (prof.language === "en" || prof.language === "ar")) setLang(prof.language as Lang);
-      setIsAdmin(!!admin);
     })();
   }, [user, authLoading, setLang]);
 
