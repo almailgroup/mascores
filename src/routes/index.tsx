@@ -247,20 +247,8 @@ function ScoreBoard({ liveCount }: { liveCount: number }) {
           <LoadingSkeleton count={3} className="h-16" />
         ) : rows.length === 0 ? (
           <div className="py-6 text-center text-sm text-muted-foreground">{t("board.none")}</div>
-        ) : scope === "competitions" ? (
-          <div className="space-y-5">
-            {[...groups.entries()].map(([name, ms]) => (
-              <div key={name}>
-                <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                  {ms[0].competition?.logo_url && <img src={ms[0].competition.logo_url} alt="" className="h-4 w-4 object-contain" />}
-                  {name}
-                </div>
-                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{ms.map((m) => <MatchTile key={m.id} m={m} />)}</div>
-              </div>
-            ))}
-          </div>
         ) : (
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{rows.map((m) => <MatchTile key={m.id} m={m} />)}</div>
+          <MatchGroups data={rows} />
         )}
       </div>
     </section>
