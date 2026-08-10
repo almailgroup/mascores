@@ -7,6 +7,7 @@ import { supabase, formatKickoff, type Competition, type Match, type Team, type 
 import { useI18n } from "@/lib/i18n";
 import { useRealtime } from "@/lib/realtime";
 import { useFavorites } from "@/hooks/use-favorites";
+import { FlagIcon } from "@/components/flag";
 import { Trophy, ChevronLeft, ChevronRight } from "lucide-react";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
 
