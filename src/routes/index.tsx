@@ -189,12 +189,6 @@ function ScoreBoard({ liveCount }: { liveCount: number }) {
     return true;
   });
 
-  const groups = new Map<string, MatchWithTeams[]>();
-  for (const m of rows) {
-    const key = m.competition?.name ?? "Other";
-    groups.set(key, [...(groups.get(key) ?? []), m]);
-  }
-
   const dayLabel = offset === 0 ? t("board.today")
     : offset === 1 ? t("board.tomorrow")
     : offset === -1 ? t("board.yesterday")
