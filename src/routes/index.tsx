@@ -25,7 +25,7 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-type MatchWithTeams = Match & { home: Team | null; away: Team | null; competition: { slug: string; name: string; logo_url: string | null; country?: string | null; country_code?: string | null } | null };
+export type MatchWithTeams = Match & { home: Team | null; away: Team | null; competition: { slug: string; name: string; logo_url: string | null; country?: string | null; country_code?: string | null } | null };
 
 function Home() {
   const tx = useTx();

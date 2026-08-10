@@ -11,6 +11,7 @@ import { useI18n } from "@/lib/i18n";
 import { PlayerAvatar } from "@/components/player-avatar";
 import { LinkedNews } from "@/components/linked-news";
 import { ArrowRight } from "lucide-react";
+import { MatchRow, type MatchWithTeams } from "@/routes/index";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
 
 export const Route = createFileRoute("/teams/$id")({
