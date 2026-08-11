@@ -293,14 +293,22 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
   const featured = matches.find((match) => ["live", "ht"].includes(match.status)) ?? matches.find((match) => match.status === "scheduled") ?? matches.at(-1);
   const cells: [string, string][] = [
     ["Sport", c.sport], ["Format", c.format], ["Teams", String(teams.length)],
-    ["Duration", [c.starts_on, c.ends_on].filter(Boolean).join(" — ") || "—"],
     ["Season", season ?? c.season ?? "—"],
-    ...(higher ? [["Higher division", tx(higher.name) ?? "—"] as [string, string]] : []),
-    ...(lower ? [["Lower division", tx(lower.name) ?? "—"] as [string, string]] : []),
     ["Country", c.country ?? "—"],
   ];
   return (
     <div className="space-y-5">
+      <section className="flex items-center gap-3 rounded-lg border border-border bg-card p-4">
+        {c.logo_url ? <img src={c.logo_url} alt="" className="h-14 w-14 shrink-0 object-contain sm:h-16 sm:w-16" /> : <Trophy className="h-12 w-12 shrink-0 text-primary" />}
+        <div className="min-w-0">
+          <div className="truncate text-sm font-bold sm:text-base">{tx(c.name)}</div>
+          <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[0.7rem] text-muted-foreground">
+            <FlagIcon value={c.country_code ?? c.country} />
+            <span className="truncate">{[tx(c.country), tx(c.format)].filter(Boolean).join(" · ")}</span>
+          </div>
+        </div>
+      </section>
+      <SeasonProgress startsOn={c.starts_on} endsOn={c.ends_on} />
       {featured && (
         <section className="overflow-hidden rounded-lg border border-border bg-card">
           <div className="flex items-center justify-between border-b border-border px-4 py-3"><div><div className="text-[0.65rem] font-bold uppercase text-primary">{tx(featured.status === "scheduled" ? "Featured match" : "Latest match")}</div><div className="mt-0.5 text-xs text-muted-foreground">{featured.round_number ? `${tx("Round")} ${num(featured.round_number)}` : tx(featured.round)}</div></div><CalendarDays className="h-4 w-4 text-muted-foreground" /></div>
