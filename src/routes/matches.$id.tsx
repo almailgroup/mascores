@@ -1,15 +1,16 @@
 import { TeamCrest } from "@/components/team-crest";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AppShell, BackButton, EmptyState, LoadingSkeleton } from "@/components/app-shell";
-import { supabase, formatKickoff, STATUS_LABELS, roundLabel, type Match, type Team, type MatchEvent, type Lineup, type Player } from "@/lib/db";
+import { supabase, STATUS_LABELS, roundLabel, matchClockSeconds, formatClock, type Match, type Team, type MatchEvent, type Lineup, type Player } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 import { PlayCircle, Radio } from "lucide-react";
 import { useTx, useNum, useDates } from "@/lib/auto-translate";
 import { MatchChat } from "@/components/match-chat";
 import { MatchPrediction } from "@/components/match-prediction";
 import { MapPin, Users } from "lucide-react";
+import { FlagIcon } from "@/components/flag";
 
 /** Same slot keys the admin pitch board writes, so the public pitch mirrors it. */
 function formationRows(formation: string | null | undefined): string[][] {
@@ -56,9 +57,9 @@ function MatchPage() {
     queryKey: ["match", id],
     queryFn: async () => {
       const { data } = await supabase.from("matches")
-        .select("*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url), competition:competition_id(id,name,slug,country,country_code)")
+        .select("*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url), competition:competition_id(id,name,slug,logo_url,sport,country,country_code)")
         .eq("id", id).maybeSingle();
-      return data as (Match & { home: Team | null; away: Team | null; competition: { id: string; name: string; slug: string; country: string | null; country_code: string | null } | null }) | null;
+      return data as (Match & { home: Team | null; away: Team | null; competition: { id: string; name: string; slug: string; logo_url: string | null; sport: string; country: string | null; country_code: string | null } | null }) | null;
     },
   });
   const events = useQuery({
@@ -89,21 +90,37 @@ function MatchPage() {
   if (!m.data) return <AppShell><EmptyState title={tx("Match not found")} /></AppShell>;
   const match = m.data;
   const isLive = ["live", "ht"].includes(match.status);
+  const hasStarted = !["scheduled", "postponed", "cancelled"].includes(match.status);
+  const lineupsVisible = match.lineups_published && (lineups.data?.length ?? 0) > 0;
+  const tabs: ("details" | "lineups" | "stats" | "previous" | "media")[] = ["details", ...(lineupsVisible ? ["lineups" as const] : []), "stats", "previous", "media"];
+  const [, tickClock] = useState(0);
+  useEffect(() => {
+    if (!match.timer_running) return;
+    const interval = window.setInterval(() => tickClock((value) => value + 1), 1000);
+    return () => window.clearInterval(interval);
+  }, [match.timer_running]);
+  const clock = matchClockSeconds(match);
+  const liveMinute = Math.max(match.live_minute ?? 0, Math.floor(clock / 60) + (clock % 60 > 0 ? 1 : 0));
 
   return (
     <AppShell>
       <BackButton />
       <div className="mb-6 rounded-3xl border border-border bg-card p-6">
-        <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           {match.competition ? (
-            <Link to="/competitions/$slug" params={{ slug: match.competition.slug }} className="font-semibold hover:text-primary">{tx(match.competition.name)}</Link>
+            <Link to="/competitions/$slug" params={{ slug: match.competition.slug }} className="flex min-w-0 flex-wrap items-center gap-2 font-semibold hover:text-primary">
+              {match.competition.logo_url && <img src={match.competition.logo_url} alt="" className="h-7 w-7 shrink-0 object-contain" />}
+              <span className="capitalize">{tx(match.competition.sport)}</span>
+              {match.competition.country && <><span>·</span><FlagIcon value={match.competition.country_code ?? match.competition.country} /><span>{tx(match.competition.country)}</span></>}
+              <span>·</span><span>{tx(match.competition.name)}</span>
+            </Link>
           ) : null}
           {roundLabel(match.round_number, match.round) ? <span>· {roundLabel(match.round_number, match.round)}</span> : null}
         </div>
         <div className="mt-4 grid items-center gap-4" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
           <TeamHeadline team={match.home} align="right" />
           <div className="text-center">
-            {["scheduled"].includes(match.status) ? (
+            {["scheduled", "postponed", "cancelled"].includes(match.status) ? (
               <div className="text-sm font-medium text-muted-foreground">{num(dates.kickoff(match.kickoff_at))}</div>
             ) : (
               <div>
@@ -115,8 +132,7 @@ function MatchPage() {
             )}
             <div className={`mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs ${isLive ? "bg-primary/15 text-primary" : "bg-muted"}`}>
               {isLive && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />}
-              {tx(STATUS_LABELS[match.status] ?? match.status)}
-              {match.status === "live" && match.live_minute ? ` · ${num(match.live_minute)}'` : ""}
+              {match.status === "live" ? `${num(liveMinute)}' · ${num(formatClock(clock))}` : tx(STATUS_LABELS[match.status] ?? match.status)}
             </div>
           </div>
           <TeamHeadline team={match.away} align="left" />
@@ -125,11 +141,11 @@ function MatchPage() {
       </div>
 
       <div className="mb-6 flex max-w-full gap-1 overflow-x-auto border-b border-border pb-2 text-sm">
-        {(["details", "lineups", "stats", "previous", "media"] as const).map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 py-2 font-semibold capitalize ${tab === item ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{tx(item === "media" ? "Media & chat" : item === "previous" ? "Previous matches" : item === "details" ? "Details" : item === "lineups" ? "Lineups" : "Stats")}</button>)}
+        {tabs.map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 py-2 font-semibold capitalize ${tab === item ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{tx(item === "media" ? "Media" : item === "previous" ? "Previous matches" : item === "details" ? "Details" : item === "lineups" ? "Lineups" : "Stats")}</button>)}
       </div>
 
       {tab === "details" && <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
-        <div className="overflow-hidden rounded-2xl border border-border bg-card">
+        {hasStarted && <div className="overflow-hidden rounded-2xl border border-border bg-card">
           <div className="border-b border-border bg-muted/40 px-4 py-2.5 text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Timeline")}</div>
           {events.data && events.data.length > 0 ? (
             <ul className="divide-y divide-border">
@@ -151,15 +167,15 @@ function MatchPage() {
               ))}
             </ul>
           ) : <div className="px-4 py-6 text-center text-sm text-muted-foreground">{tx("No events yet.")}</div>}
-        </div>
+        </div>}
 
         <div className="space-y-4">
-          <MatchPrediction matchId={id} homeName={match.home?.name} awayName={match.away?.name} fallback={prediction.data ?? null} />
+          {match.status === "scheduled" && <MatchPrediction matchId={id} homeLogo={match.home?.logo_url} awayLogo={match.away?.logo_url} fallback={prediction.data ?? null} />}
 
           <div className="overflow-hidden rounded-2xl border border-border bg-card">
             <div className="border-b border-border bg-muted/40 px-4 py-2.5 text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Match information")}</div>
             <dl className="grid gap-3 p-4 text-sm sm:grid-cols-2">
-              {([["Date & time", num(dates.kickoff(match.kickoff_at))], ["Stadium", tx(match.venue) || "—"], ["City", tx(match.city) || "—"], ["Referee", tx(match.referee) || "—"]] as [string, string][]).map(([k, v]) => (
+              {([["Competition", tx(match.competition?.name)], ["Date & time", num(dates.kickoff(match.kickoff_at))], ["Stadium", tx(match.venue)], ["City", tx(match.city)], ["Referee", tx(match.referee)]] as [string, string | null | undefined][]).filter((item): item is [string, string] => !!item[1]).map(([k, v]) => (
                 <div key={k} className="min-w-0">
                   <dt className="flex items-center gap-1 text-[0.65rem] uppercase tracking-wide text-muted-foreground">{k === "Stadium" ? <MapPin className="h-3 w-3" /> : k === "Referee" ? <Users className="h-3 w-3" /> : null}{tx(k)}</dt>
                   <dd className="mt-0.5 break-words font-semibold">{v}</dd>
@@ -168,10 +184,10 @@ function MatchPage() {
             </dl>
           </div>
 
-          {broadcasts.data && broadcasts.data.length > 0 && (
-            <div className="overflow-hidden rounded-2xl border border-border bg-card">
+          <div className="overflow-hidden rounded-2xl border border-border bg-card">
               <div className="flex items-center gap-2 border-b border-border bg-muted/40 px-4 py-2.5 text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground"><Radio className="h-3.5 w-3.5" /> {tx("Where to watch")}</div>
               <div className="flex flex-wrap gap-2 p-4">
+                {broadcasts.data?.length === 0 && <p className="text-sm text-muted-foreground">{tx("No channel yet.")}</p>}
                 {broadcasts.data.map((row, index) => {
                   const channel = Array.isArray(row.channel) ? row.channel[0] : row.channel;
                   return channel ? (
@@ -182,13 +198,13 @@ function MatchPage() {
                 })}
               </div>
             </div>
-          )}
 
           {match.highlight_url && <a href={match.highlight_url} target="_blank" rel="noreferrer" className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4 font-semibold hover:border-primary"><PlayCircle className="h-5 w-5 text-primary" /> {tx("Watch match highlights")}</a>}
+          <MatchChat matchId={id} />
         </div>
       </div>}
 
-      {tab === "lineups" && <div className="grid gap-4 md:grid-cols-2">{([["home", match.home, match.home_formation], ["away", match.away, match.away_formation]] as const).map(([side, team, formation]) => {
+      {tab === "lineups" && lineupsVisible && <div className="grid gap-4 md:grid-cols-2">{([["home", match.home, match.home_formation], ["away", match.away, match.away_formation]] as const).map(([side, team, formation]) => {
         const rows = lineups.data?.filter((item) => item.team_id === team?.id) ?? [];
         const starters = rows.filter((r) => r.is_starting);
         const bench = rows.filter((r) => !r.is_starting);
@@ -226,7 +242,7 @@ function MatchPage() {
       })}</div>}
       {tab === "stats" && <div className="rounded-2xl border border-border bg-card p-4">{stats.data && stats.data.length > 0 ? stats.data.map((item) => <div key={item.id} className="grid grid-cols-[1fr_2fr_1fr] border-t border-border py-3 text-center first:border-0"><strong>{num(item.home_value)}</strong><span className="text-muted-foreground">{tx(item.label)}</span><strong>{num(item.away_value)}</strong></div>) : <p className="text-sm text-muted-foreground">{tx("No statistics published yet.")}</p>}</div>}
       {tab === "previous" && <PreviousMatches competitionId={match.competition_id} currentId={match.id} />}
-      {tab === "media" && <div className="grid gap-6 lg:grid-cols-2"><div><h3 className="mb-3 font-bold">{tx("Videos & media")}</h3><div className="grid gap-2">{media.data?.map((item) => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="rounded-xl border border-border bg-card p-4 hover:border-primary"><div className="text-xs font-bold uppercase text-primary">{item.source}</div><div className="mt-1 font-semibold">{tx(item.title) || tx("Open media")}</div></a>)}{media.data?.length === 0 && <p className="text-sm text-muted-foreground">{tx("No media posted.")}</p>}</div></div><MatchChat matchId={id} /></div>}
+      {tab === "media" && <div><h3 className="mb-3 font-bold">{tx("Videos & media")}</h3><div className="grid gap-2">{media.data?.map((item) => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="rounded-xl border border-border bg-card p-4 hover:border-primary"><div className="text-xs font-bold uppercase text-primary">{item.source}</div><div className="mt-1 font-semibold">{tx(item.title) || tx("Open media")}</div></a>)}{media.data?.length === 0 && <p className="text-sm text-muted-foreground">{tx("No media posted.")}</p>}</div></div>}
     </AppShell>
   );
 }
