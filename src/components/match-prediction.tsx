@@ -7,10 +7,10 @@ import { useTx, useNum } from "@/lib/auto-translate";
 type Choice = "home" | "draw" | "away";
 
 /** "Who will win?" poll — every signed-in visitor gets one changeable vote. */
-export function MatchPrediction({ matchId, homeName, awayName, fallback }: {
+export function MatchPrediction({ matchId, homeLogo, awayLogo, fallback }: {
   matchId: string;
-  homeName: string | null | undefined;
-  awayName: string | null | undefined;
+  homeLogo: string | null | undefined;
+  awayLogo: string | null | undefined;
   fallback?: { home_percent: number; draw_percent: number; away_percent: number } | null;
 }) {
   const tx = useTx();
@@ -41,10 +41,10 @@ export function MatchPrediction({ matchId, homeName, awayName, fallback }: {
     qc.invalidateQueries({ queryKey: ["match-prediction-votes", matchId] });
   };
 
-  const options: [Choice, string][] = [
-    ["home", tx(homeName) ?? tx("Home")],
-    ["draw", tx("Draw")],
-    ["away", tx(awayName) ?? tx("Away")],
+  const options: [Choice, string, string | null | undefined][] = [
+    ["home", tx("Home"), homeLogo],
+    ["draw", tx("Draw"), null],
+    ["away", tx("Away"), awayLogo],
   ];
 
   return (
@@ -54,7 +54,7 @@ export function MatchPrediction({ matchId, homeName, awayName, fallback }: {
         <div className="text-[0.65rem] text-muted-foreground">{num(total)} {tx("votes")}</div>
       </div>
       <div className="grid grid-cols-3 gap-2">
-        {options.map(([choice, label]) => {
+        {options.map(([choice, label, logo]) => {
           const value = pct(choice);
           const active = mine === choice;
           return (
@@ -65,8 +65,8 @@ export function MatchPrediction({ matchId, homeName, awayName, fallback }: {
               onClick={() => vote(choice)}
               className={`overflow-hidden rounded-xl border p-2 text-center transition disabled:cursor-default ${active ? "border-primary bg-primary/10" : "border-border bg-background hover:border-primary/50"}`}
             >
-              <div className="text-lg font-black tabular-nums">{num(value)}%</div>
-              <div className="mt-0.5 line-clamp-2 text-[0.65rem] font-semibold leading-tight text-muted-foreground">{label}</div>
+              <div className="flex h-8 items-center justify-center">{logo ? <img src={logo} alt={label} className="h-8 w-8 object-contain" /> : <span className="text-xs font-bold">{label}</span>}</div>
+              <div className="mt-1 text-lg font-black tabular-nums">{num(value)}%</div>
               <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
                 <div className="h-full rounded-full bg-primary" style={{ width: `${value}%` }} />
               </div>

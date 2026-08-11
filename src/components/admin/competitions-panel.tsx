@@ -81,7 +81,7 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
               {["Professional", "Amateur", "Youth", "Women", "Reserves", "International", "Club", "Cup", "Futsal", "Friendly", "Other"].map((item) => <option key={item} value={item}>{item}</option>)}
             </select>
           </Field>
-          <Field label="Season"><input className={inputCls} placeholder="2025/26" value={form.season ?? ""} onChange={(e) => setForm({ ...form, season: e.target.value })} /></Field>
+          <Field label="Season"><input className={inputCls} placeholder="2025/2026" value={form.season ?? ""} onChange={(e) => setForm({ ...form, season: e.target.value })} /></Field>
           <Field label="Seasons"><div className="space-y-2"><div className="flex flex-wrap gap-2">{(form.seasons ?? []).map((season) => <button type="button" key={season} className="rounded-full border border-border px-3 py-1 text-xs" onClick={() => setForm({ ...form, seasons: (form.seasons ?? []).filter((item) => item !== season) })}>{season} ×</button>)}</div><input className={inputCls} placeholder="Add a season, for example 25/26, then press Enter" onKeyDown={(e) => { if (e.key !== "Enter") return; e.preventDefault(); const season = e.currentTarget.value.trim(); if (season && !(form.seasons ?? []).includes(season)) setForm({ ...form, seasons: [...(form.seasons ?? []), season] }); e.currentTarget.value = ""; }} /></div></Field>
           <Field label="Format">
             <select className={inputCls} value={form.format ?? "league"} onChange={(e) => setForm({ ...form, format: e.target.value })}>

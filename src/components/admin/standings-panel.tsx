@@ -17,10 +17,10 @@ export function StandingsPanel({ competitionId, season = null }: { competitionId
     queryKey: ["admin", "teams", competitionId, season],
     queryFn: async () => {
       let linkQuery = supabase.from("competition_teams").select("team_id").eq("competition_id", competitionId);
-      if (season) linkQuery = linkQuery.or(`season.eq.${season},season.is.null`);
+      if (season) linkQuery = linkQuery.eq("season", season);
       const { data: links } = await linkQuery;
       const ids = (links ?? []).map((link) => link.team_id);
-      const { data } = ids.length ? await supabase.from("teams").select("*").in("id", ids).order("name") : await supabase.from("teams").select("*").eq("competition_id", competitionId).order("name");
+      const { data } = ids.length ? await supabase.from("teams").select("*").in("id", ids).order("name") : { data: [] };
       return (data ?? []) as Team[];
     },
   });
@@ -29,16 +29,18 @@ export function StandingsPanel({ competitionId, season = null }: { competitionId
     queryKey: ["admin", "standings", competitionId, season],
     queryFn: async () => {
       let query = supabase.from("standings_rows").select("*").eq("competition_id", competitionId);
-      if (season) query = query.or(`season.eq.${season},season.is.null`);
+      if (season) query = query.eq("season", season);
       const { data } = await query.order("sort_order");
       return (data ?? []) as StandingRow[];
     },
   });
 
   const labelsQ = useQuery({
-    queryKey: ["admin", "position-labels", competitionId],
+    queryKey: ["admin", "position-labels", competitionId, season],
     queryFn: async () => {
-      const { data } = await supabase.from("standings_position_labels").select("*").eq("competition_id", competitionId);
+      let query = supabase.from("standings_position_labels").select("*").eq("competition_id", competitionId);
+      if (season) query = query.eq("season", season);
+      const { data } = await query;
       return (data ?? []) as PositionLabel[];
     },
   });
@@ -80,7 +82,7 @@ export function StandingsPanel({ competitionId, season = null }: { competitionId
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ["admin", "standings", competitionId, season] });
-    qc.invalidateQueries({ queryKey: ["admin", "position-labels", competitionId] });
+    qc.invalidateQueries({ queryKey: ["admin", "position-labels", competitionId, season] });
   };
 
   const reorder = async (group: string, fromId: string, toId: string) => {
@@ -190,11 +192,12 @@ export function StandingsPanel({ competitionId, season = null }: { competitionId
         open={!!labelTarget}
         onClose={() => setLabelTarget(null)}
         competitionId={competitionId}
+        season={season}
         target={labelTarget}
         library={libraryQ.data ?? []}
         existing={labelTarget ? labelFor(labelTarget.group ?? SINGLE, labelTarget.position) : null}
         onSaved={() => {
-          qc.invalidateQueries({ queryKey: ["admin", "position-labels", competitionId] });
+          qc.invalidateQueries({ queryKey: ["admin", "position-labels", competitionId, season] });
           qc.invalidateQueries({ queryKey: ["admin", "label-library"] });
           setLabelTarget(null);
         }}
@@ -310,11 +313,12 @@ function GroupTable({
 }
 
 function LabelModal({
-  open, onClose, competitionId, target, library, existing, onSaved,
+  open, onClose, competitionId, season, target, library, existing, onSaved,
 }: {
   open: boolean;
   onClose: () => void;
   competitionId: string;
+  season: string | null;
   target: { group: string | null; position: number } | null;
   library: StandingLabel[];
   existing: PositionLabel | null;
@@ -339,7 +343,7 @@ function LabelModal({
         await supabase.from("standings_position_labels").update({ label: text, color: hex }).eq("id", existing.id);
       } else {
         await supabase.from("standings_position_labels").insert({
-          competition_id: competitionId, group_label: target.group, position: target.position, label: text, color: hex,
+          competition_id: competitionId, season, group_label: target.group, position: target.position, label: text, color: hex,
         } as never);
       }
       if (store && !library.some((l) => l.label.toLowerCase() === text.toLowerCase())) {

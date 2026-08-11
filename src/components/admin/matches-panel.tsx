@@ -24,10 +24,10 @@ export function MatchesPanel({ competitionId, season = null, friendly = false }:
     queryKey: ["admin", "teams", competitionId, season],
     queryFn: async () => {
       let linkQuery = supabase.from("competition_teams").select("team_id").eq("competition_id", competitionId);
-      if (season) linkQuery = linkQuery.or(`season.eq.${season},season.is.null`);
+      if (season) linkQuery = linkQuery.eq("season", season);
       const { data: links } = await linkQuery;
       const ids = (links ?? []).map((link) => link.team_id);
-      const { data } = ids.length ? await supabase.from("teams").select("*").in("id", ids).order("name") : await supabase.from("teams").select("*").eq("competition_id", competitionId).order("name");
+      const { data } = ids.length ? await supabase.from("teams").select("*").in("id", ids).order("name") : { data: [] };
       return (data ?? []) as Team[];
     },
   });
@@ -36,7 +36,7 @@ export function MatchesPanel({ competitionId, season = null, friendly = false }:
     queryKey: ["admin", "matches", competitionId, season],
     queryFn: async () => {
       let query = supabase.from("matches").select("*").eq("competition_id", competitionId);
-      if (season) query = query.or(`season.eq.${season},season.is.null`);
+      if (season) query = query.eq("season", season);
       const { data } = await query.order("kickoff_at", { nullsFirst: true });
       return (data ?? []) as Match[];
     },
@@ -153,7 +153,7 @@ export function MatchesPanel({ competitionId, season = null, friendly = false }:
                     </div>
                   </div>
                   <div className="mt-2 flex flex-wrap gap-2">
-                    {isPast(m) && noResult(m) && <button className={btnPrimary} onClick={() => setResultOf(m)}><Flag className="h-3.5 w-3.5" /> End result</button>}
+                    {(isPast(m) && noResult(m) || m.status === "awarded") && <button className={btnPrimary} onClick={() => setResultOf(m)}><Flag className="h-3.5 w-3.5" /> {m.status === "awarded" ? "Set awarded score" : "End result"}</button>}
                     <button className={btnGhost} onClick={() => setEditingMatch(m)}><SlidersHorizontal className="h-3.5 w-3.5" /> Manage</button>
                     <button className={btnDanger} onClick={() => remove(m.id)}><Trash2 className="h-3.5 w-3.5" /></button>
                   </div>

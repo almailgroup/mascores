@@ -51,10 +51,10 @@ function CompetitionPage() {
     queryFn: async () => {
       let linkQuery = supabase.from("competition_teams").select("team_id").eq("competition_id", comp.data!.id);
       const selectedSeason = season ?? comp.data!.season;
-      if (selectedSeason) linkQuery = linkQuery.or(`season.eq.${selectedSeason},season.is.null`);
+       if (selectedSeason) linkQuery = linkQuery.eq("season", selectedSeason);
       const { data: links } = await linkQuery;
       const ids = (links ?? []).map((link) => link.team_id);
-      const { data } = ids.length ? await supabase.from("teams").select("*").in("id", ids).order("name") : await supabase.from("teams").select("*").eq("competition_id", comp.data!.id).order("name");
+      const { data } = ids.length ? await supabase.from("teams").select("*").in("id", ids).order("name") : { data: [] };
       return (data ?? []) as Team[];
     },
   });
@@ -67,7 +67,7 @@ function CompetitionPage() {
         .select("*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url,country,country_code)")
         .eq("competition_id", comp.data!.id);
        const selectedSeason = season ?? comp.data!.season;
-       if (selectedSeason) query = query.or(`season.eq.${selectedSeason},season.is.null`);
+       if (selectedSeason) query = query.eq("season", selectedSeason);
       const { data } = await query.order("kickoff_at");
       return (data ?? []) as unknown as MatchWithTeams[];
     },
@@ -81,8 +81,7 @@ function CompetitionPage() {
         .select("*, team:team_id(id,name,logo_url,short_name)")
         .eq("competition_id", comp.data!.id);
        const selectedSeason = season ?? comp.data!.season;
-       // Rows created before seasons existed carry a null season — still show them.
-       if (selectedSeason) query = query.or(`season.eq.${selectedSeason},season.is.null`);
+       if (selectedSeason) query = query.eq("season", selectedSeason);
       const { data } = await query
         .order("group_label", { ascending: true, nullsFirst: true })
         .order("sort_order");
@@ -92,9 +91,12 @@ function CompetitionPage() {
 
   const posLabels = useQuery({
     enabled: !!comp.data,
-    queryKey: ["comp-position-labels", comp.data?.id],
+    queryKey: ["comp-position-labels", comp.data?.id, season],
     queryFn: async () => {
-      const { data } = await supabase.from("standings_position_labels").select("*").eq("competition_id", comp.data!.id);
+      let query = supabase.from("standings_position_labels").select("*").eq("competition_id", comp.data!.id);
+      const selectedSeason = season ?? comp.data!.season;
+      if (selectedSeason) query = query.eq("season", selectedSeason);
+      const { data } = await query;
       return (data ?? []) as PositionLabel[];
     },
   });
