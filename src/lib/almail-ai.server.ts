@@ -1,4 +1,4 @@
-import { streamText } from "ai";
+import { generateText } from "ai";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
 
 type ImageInput = { dataUrl: string; name: string };
@@ -33,7 +33,7 @@ function parseJson<T>(text: string): T {
 
 async function runAlmail(prompt: string, images: ImageInput[]) {
   const apiKey = process.env["LOVABLE_API_KEY"];
-  if (!apiKey) throw new Error("Almail AI is not configured.");
+  if (!apiKey) throw new Error("Almail AI is not configured yet. Add the AI key in the backend settings.");
   const provider = createLovableAiGatewayProvider(apiKey);
   const content: Array<
     | { type: "text"; text: string }
@@ -46,12 +46,28 @@ async function runAlmail(prompt: string, images: ImageInput[]) {
     content.push({ type: "image", image: match[2], mediaType: match[1] });
   }
 
-  const result = streamText({
-    model: provider("openai/gpt-5.6-sol"),
-    providerOptions: { lovable: { reasoningEffort: "none" } },
-    messages: [{ role: "user", content }],
-  });
-  return result.text;
+  try {
+    const result = await generateText({
+      model: provider("google/gemini-2.5-flash"),
+      messages: [{ role: "user", content }],
+    });
+    if (!result.text.trim()) throw new Error("Almail AI returned an empty answer. Try again with clearer notes or photos.");
+    return result.text;
+  } catch (error) {
+    throw new Error(describeAiError(error));
+  }
+}
+
+/** Turn gateway/network failures into something an editor can act on. */
+export function describeAiError(error: unknown): string {
+  const raw = error instanceof Error ? `${error.message} ${JSON.stringify((error as { responseBody?: unknown }).responseBody ?? "")}` : String(error);
+  if (/402|payment_required|not enough credits|insufficient/i.test(raw)) {
+    return "Almail AI is out of AI credits. Top up the workspace AI credits and try again.";
+  }
+  if (/429|rate.?limit/i.test(raw)) return "Almail AI is rate limited right now. Wait a moment and try again.";
+  if (/401|403|unauthorized|forbidden|api key/i.test(raw)) return "Almail AI could not authenticate with the AI service.";
+  if (/timeout|ETIMEDOUT|fetch failed|ENOTFOUND/i.test(raw)) return "Almail AI could not reach the AI service. Check the connection and try again.";
+  return error instanceof Error && error.message ? error.message : "Almail AI could not complete this request.";
 }
 
 export async function generatePlayerDraft(notes: string, images: ImageInput[]): Promise<PlayerDraft> {

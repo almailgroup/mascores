@@ -10,7 +10,7 @@ import { TeamCrest } from "@/components/team-crest";
 import { useI18n } from "@/lib/i18n";
 import { PlayerAvatar } from "@/components/player-avatar";
 import { LinkedNews } from "@/components/linked-news";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Landmark } from "lucide-react";
 import { MatchRow, type MatchWithTeams } from "@/components/match-list";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
 
@@ -73,6 +73,10 @@ function TeamPage() {
     const { data } = await supabase.from("transfers").select("*")
        .or(`from_club.eq.${name},to_club.eq.${name}`).in("season", ["25/26", "26/27"]).order("moved_on", { ascending: false, nullsFirst: false });
     return (data ?? []) as Transfer[];
+  }});
+  const venue = useQuery({ queryKey: ["team-venue", team.data?.venue_name], enabled: !!team.data?.venue_name, queryFn: async () => {
+    const { data } = await supabase.from("venues").select("id,name").eq("name", team.data!.venue_name!).maybeSingle();
+    return (data ?? null) as { id: string; name: string } | null;
   }});
 
   if (team.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;
@@ -202,7 +206,13 @@ function TeamPage() {
       {tab === "info" && (
         <div className="grid gap-3 sm:grid-cols-2">
           <InfoCard label={tx("Country")} value={tx(t.country) ?? "—"} icon={<FlagIcon value={t.country_code ?? t.country} size="md" />} />
-          <InfoCard label={tx("Stadium")} value={[tx(t.venue_name), tx(t.venue_city)].filter(Boolean).join(", ") || "—"} />
+          {venue.data ? (
+            <Link to="/venues/$id" params={{ id: venue.data.id }} className="block transition hover:opacity-80">
+              <InfoCard label={tx("Stadium")} value={[tx(t.venue_name), tx(t.venue_city)].filter(Boolean).join(", ") || "—"} icon={<Landmark className="h-4 w-4 text-primary" />} />
+            </Link>
+          ) : (
+            <InfoCard label={tx("Stadium")} value={[tx(t.venue_name), tx(t.venue_city)].filter(Boolean).join(", ") || "—"} />
+          )}
            <InfoCard label={tx("Chairman")} value={tx(t.chairman) ?? "—"} />
           <InfoCard label={tx("Short name")} value={t.short_name ?? "—"} />
           <InfoCard label={tx("Founded")} value={t.founded_on ? num(dates.date(t.founded_on, { dateStyle: "long" })) : "—"} />

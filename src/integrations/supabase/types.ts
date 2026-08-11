@@ -358,6 +358,7 @@ export type Database = {
         Row: {
           body: string
           created_at: string
+          edited_at: string | null
           id: string
           match_id: string
           user_id: string
@@ -365,6 +366,7 @@ export type Database = {
         Insert: {
           body: string
           created_at?: string
+          edited_at?: string | null
           id?: string
           match_id: string
           user_id: string
@@ -372,6 +374,7 @@ export type Database = {
         Update: {
           body?: string
           created_at?: string
+          edited_at?: string | null
           id?: string
           match_id?: string
           user_id?: string
@@ -382,6 +385,57 @@ export type Database = {
             columns: ["match_id"]
             isOneToOne: false
             referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      match_chat_reports: {
+        Row: {
+          author_id: string | null
+          created_at: string
+          id: string
+          match_id: string
+          message_body: string
+          message_id: string | null
+          reason: string | null
+          reporter_id: string
+          status: string
+        }
+        Insert: {
+          author_id?: string | null
+          created_at?: string
+          id?: string
+          match_id: string
+          message_body: string
+          message_id?: string | null
+          reason?: string | null
+          reporter_id: string
+          status?: string
+        }
+        Update: {
+          author_id?: string | null
+          created_at?: string
+          id?: string
+          match_id?: string
+          message_body?: string
+          message_id?: string | null
+          reason?: string | null
+          reporter_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_chat_reports_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_chat_reports_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "match_chat_messages"
             referencedColumns: ["id"]
           },
         ]

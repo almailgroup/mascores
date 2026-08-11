@@ -8,6 +8,7 @@ import { useRealtime } from "@/lib/realtime";
 import { FlagIcon } from "@/components/flag";
 import { LinkedNews } from "@/components/linked-news";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
+import { MatchRow, type MatchWithTeams } from "@/components/match-list";
 import { useI18n } from "@/lib/i18n";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -59,12 +60,12 @@ function CompetitionPage() {
     queryKey: ["comp-matches", comp.data?.id, season],
     queryFn: async () => {
       let query = supabase.from("matches")
-        .select("*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url)")
+        .select("*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url,country,country_code)")
         .eq("competition_id", comp.data!.id);
        const selectedSeason = season ?? comp.data!.season;
        if (selectedSeason) query = query.or(`season.eq.${selectedSeason},season.is.null`);
       const { data } = await query.order("kickoff_at");
-      return (data ?? []) as unknown as (Match & { home: Team | null; away: Team | null })[];
+      return (data ?? []) as unknown as MatchWithTeams[];
     },
   });
 
@@ -148,18 +149,7 @@ function CompetitionPage() {
 
       {tab === "matches" && <><SectionHeader title={t("tab.matches")} />
       {matches.data && matches.data.length > 0 ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {matches.data.map((m) => (
-            <Link key={m.id} to="/matches/$id" params={{ id: m.id }} className="rounded-2xl border border-border bg-card p-4 hover:border-primary/50">
-                 <div className="text-[0.65rem] uppercase text-muted-foreground">{m.round_number ? `${tx("Round")} ${num(m.round_number)}` : tx(m.round) ?? "—"}</div>
-              <div className="mt-2 grid items-center gap-2" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
-                <div className="truncate text-right font-semibold">{tx(m.home?.name) ?? "TBD"}</div>
-                <div className="text-center text-sm font-bold">{m.home_score != null ? `${m.home_score} – ${m.away_score}` : num(dates.kickoff(m.kickoff_at))}</div>
-                <div className="truncate font-semibold">{tx(m.away?.name) ?? "TBD"}</div>
-              </div>
-            </Link>
-          ))}
-        </div>
+        <CompetitionMatches data={matches.data} />
       ) : <EmptyState title={tx("No matches yet")} />}</>}
 
       {tab === "standings" && <><SectionHeader title={t("tab.standings")} action={<div />} />
@@ -245,6 +235,42 @@ function CompetitionPage() {
 }
 
 function CompetitionOverviewTab({ c, season, teams, titleHolder, titles, divisions }: {
+  c: Competition;
+  season: string | null;
+  teams: Team[];
+  titleHolder: Team | null;
+  titles: { team_id: string; titles: number }[];
+  divisions: { id: string; name: string; slug: string }[];
+}) {
+  return <CompetitionOverviewInner c={c} season={season} teams={teams} titleHolder={titleHolder} titles={titles} divisions={divisions} />;
+}
+
+/** Sofascore-style rounds: one card per round, compact rows inside. */
+function CompetitionMatches({ data }: { data: MatchWithTeams[] }) {
+  const tx = useTx();
+  const num = useNum();
+  const groups = new Map<string, MatchWithTeams[]>();
+  for (const m of data) {
+    const key = m.round_number ? `#${m.round_number}` : (m.round ?? "");
+    groups.set(key, [...(groups.get(key) ?? []), m]);
+  }
+  return (
+    <div className="space-y-3">
+      {[...groups.entries()].map(([key, ms]) => (
+        <div key={key || "all"} className="overflow-hidden rounded-2xl border border-border bg-card">
+          <div className="border-b border-border px-4 py-3 text-sm font-bold">
+            {key.startsWith("#") ? `${tx("Round")} ${num(Number(key.slice(1)))}` : (tx(key) || tx("Matches"))}
+          </div>
+          <div className="divide-y divide-border">
+            {ms.map((m) => <MatchRow key={m.id} m={m} />)}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divisions }: {
   c: Competition;
   season: string | null;
   teams: Team[];
