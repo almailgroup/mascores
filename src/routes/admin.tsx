@@ -33,6 +33,7 @@ function AdminPage() {
   const [busy, setBusy] = useState(false);
   const [tab, setTab] = useState<"competitions" | "teams" | "players" | "news" | "ai" | "venues" | "channels" | "transfers" | "reports">("competitions");
   const [openComp, setOpenComp] = useState<Competition | null>(null);
+  const [adminSeason, setAdminSeason] = useState<string | null>(null);
   const [compTab, setCompTab] = useState<"overview" | "teams" | "matches" | "standings" | "awards" | "media">("overview");
   const unlock = useServerFn(unlockAdmin);
 
@@ -87,7 +88,7 @@ function AdminPage() {
             </button>
             {openComp.logo_url && <img src={openComp.logo_url} alt="" className="h-8 w-8 shrink-0 object-contain" />}
             <span className="min-w-0 flex-1 truncate text-sm font-bold">{openComp.name}</span>
-            <SeasonPicker competition={openComp} onChange={(c) => setOpenComp(c)} season={adminSeason} onSeason={setAdminSeason} />
+            <SeasonPicker competition={openComp} onChange={setOpenComp} season={adminSeason} onSeason={setAdminSeason} />
           </div>
           <div className="flex max-w-full gap-1 overflow-x-auto border-b border-border pb-2 text-xs">
             {(["overview", "teams", "matches", "standings", "awards", "media"] as const).map((k) => (
@@ -97,7 +98,7 @@ function AdminPage() {
           <div className="mt-6">
             {compTab === "overview" && <CompetitionOverview competition={openComp} />}
             {compTab === "teams" && <TeamsPanel competitionId={openComp.id} />}
-            {compTab === "matches" && <MatchesPanel competitionId={openComp.id} />}
+            {compTab === "matches" && <MatchesPanel competitionId={openComp.id} season={adminSeason ?? openComp.season ?? null} />}
             {compTab === "standings" && <StandingsPanel competitionId={openComp.id} />}
             {compTab === "awards" && <CompetitionAwardsManager competitionId={openComp.id} />}
             {compTab === "media" && <MediaManager ownerType="competition" ownerId={openComp.id} />}
@@ -147,6 +148,60 @@ function AdminPage() {
 }
 
 function CompetitionOverview({ competition }: { competition: Competition }) {
+  return <CompetitionSetup competition={competition} />;
+}
+
+/** Season switcher with inline creation of a new or past season. */
+function SeasonPicker({ competition, onChange, season, onSeason }: { competition: Competition; onChange: (c: Competition) => void; season: string | null; onSeason: (s: string) => void }) {
+  const [creating, setCreating] = useState(false);
+  const [value, setValue] = useState("");
+  const [busy, setBusy] = useState(false);
+  const seasons = competition.seasons?.length ? competition.seasons : (competition.season ? [competition.season] : []);
+  const current = season ?? competition.season ?? seasons[0] ?? "";
+
+  const create = async (makeCurrent: boolean) => {
+    const next = value.trim();
+    if (!next || busy) return;
+    setBusy(true);
+    const list = seasons.includes(next) ? seasons : [...seasons, next];
+    const payload = makeCurrent ? { seasons: list, season: next } : { seasons: list };
+    await supabase.from("competitions").update(payload).eq("id", competition.id);
+    onChange({ ...competition, ...payload } as Competition);
+    onSeason(next);
+    setBusy(false);
+    setValue("");
+    setCreating(false);
+  };
+
+  return (
+    <div className="relative shrink-0">
+      <select
+        aria-label="Season"
+        className="rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold"
+        value={creating ? "__new" : current}
+        onChange={(e) => { if (e.target.value === "__new") setCreating(true); else onSeason(e.target.value); }}
+      >
+        {seasons.length === 0 && <option value="">No season</option>}
+        {seasons.map((item) => <option key={item} value={item}>{item}</option>)}
+        <option value="__new">Create season…</option>
+      </select>
+      {creating && (
+        <div className="absolute end-0 z-40 mt-2 w-64 rounded-2xl border border-border bg-card p-3 shadow-xl">
+          <div className="text-xs font-semibold">New or past season</div>
+          <input autoFocus className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 text-base sm:text-sm" placeholder="26/27" value={value} onChange={(e) => setValue(e.target.value)} />
+          <p className="mt-1 text-[0.65rem] text-muted-foreground">Teams, matches and standings you add while this season is selected are saved to it.</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button disabled={busy} className="rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground disabled:opacity-60" onClick={() => create(true)}>Create current</button>
+            <button disabled={busy} className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold" onClick={() => create(false)}>Add past season</button>
+            <button className="rounded-full px-2 py-1.5 text-xs text-muted-foreground" onClick={() => { setCreating(false); setValue(""); }}>Cancel</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CompetitionSetup({ competition }: { competition: Competition }) {
   const items = [
     ["Sport", competition.sport], ["Format", competition.format], ["Current season", competition.season],
     ["Starts", competition.starts_on || "—"], ["Ends", competition.ends_on || "—"],
