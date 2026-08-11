@@ -356,6 +356,49 @@ function TeamCell({ label, team, note }: { label: string; team: Team | null; not
     <div className="rounded-lg border border-border bg-card p-4">
       <div className="text-[0.65rem] font-bold uppercase text-muted-foreground">{tx(label)}</div>
       {team ? (
+        <Link to="/teams/$id" params={{ id: team.id }} className="mt-2 flex items-center gap-2 text-sm font-semibold hover:text-primary">
+          <TeamCrest name={team.name} logo={team.logo_url} className="h-7 w-7 shrink-0" />
+          <span className="min-w-0 truncate">{tx(team.name)}</span>
+          {note && <span className="ms-auto font-black tabular-nums">{note}</span>}
+        </Link>
+      ) : <div className="mt-2 text-sm font-semibold">—</div>}
+    </div>
+  );
+}
+
+/** Tournament duration as a live progress bar between the start and end dates. */
+function SeasonProgress({ startsOn, endsOn }: { startsOn: string | null; endsOn: string | null }) {
+  const tx = useTx();
+  const dates = useDates();
+  const num = useNum();
+  if (!startsOn || !endsOn) return null;
+  const start = new Date(startsOn).getTime();
+  const end = new Date(endsOn).getTime();
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return null;
+  const pct = Math.max(0, Math.min(100, Math.round(((Date.now() - start) / (end - start)) * 100)));
+  return (
+    <section className="rounded-lg border border-border bg-card p-4">
+      <div className="flex items-center justify-between text-[0.65rem] font-bold uppercase tracking-wide text-muted-foreground">
+        <span>{tx("Duration")}</span>
+        <span className="tabular-nums">{num(pct)}%</span>
+      </div>
+      <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
+        <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
+      </div>
+      <div className="mt-2 flex items-center justify-between text-[0.7rem] text-muted-foreground">
+        <span className="tabular-nums">{num(dates.day(startsOn))}</span>
+        <span className="tabular-nums">{num(dates.day(endsOn))}</span>
+      </div>
+    </section>
+  );
+}
+
+function TeamCellUnused({ label, team, note }: { label: string; team: Team | null; note?: string | null }) {
+  const tx = useTx();
+  return (
+    <div className="rounded-lg border border-border bg-card p-4">
+      <div className="text-[0.65rem] font-bold uppercase text-muted-foreground">{tx(label)}</div>
+      {team ? (
         <Link to="/teams/$id" params={{ id: team.id }} className="mt-2 flex items-center gap-2 font-semibold hover:text-primary">
           <TeamCrest name={team.name} logo={team.logo_url} className="h-7 w-7 shrink-0" />
           <span className="min-w-0 truncate">{tx(team.name)}</span>
