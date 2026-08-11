@@ -1,69 +1,40 @@
-## Scope
+# Competition, Arabic, favorites, transfers, and admin update
 
-This request covers ~40 distinct changes across the admin CMS, public pages, AI features, auth and security. It's far too much for one safe pass, so it's split into phases that each ship something working. I'll start at Phase 1 and continue down the list; tell me if you want a different order.
+## What will change
 
----
+### Competition overview
+- Rebuild the overview to match the references: compact branded header with season selector, tabs, competition identity and dates, featured fixture, media rows, title-holder/most-titles blocks, and optional higher/lower division cards.
+- Keep existing content such as sport, format, team count, awards, news, and linked navigation, but place it in the new hierarchy rather than removing it.
+- Preserve the current professional match-list and standings tabs.
 
-### Phase 1 — Foundations (data + fixes you'll feel immediately)
+### Arabic switching
+- Add a full-screen language-change loading state so partially translated English content is never shown while Arabic data is loading.
+- Make translation readiness explicit: preload the cached dictionary, translate missing visible content in batches, and only reveal the page when the current language is ready.
+- Audit fixed labels in the touched competition, player, favorites, match-list, and admin surfaces so they switch immediately, including dates, scores, status text, currency, and units.
 
-Database additions:
-- `teams`: `founded_on`, reusable across competitions (team library, decoupled from a single competition)
-- `venues`: images, capacity, city/country — editable as its own admin section
-- `competitions`: `sport` (football, basketball, American football, hockey, …), `season` list, `title_holder_team_id`, `higher_division_id`, `lower_division_id`, `format` (league / groups / knockout / groups+knockout)
-- `matches`: `referee`, `highlight_url`, `round_number` (numeric only)
-- new tables: `broadcast_channels` (name + logo, saved for reuse), `match_broadcasts`, `match_chat_messages`, `player_ratings`, `player_media` (with `source`: youtube/facebook/instagram/tiktok/upload), `competition_awards` (player of round / player of season), `match_stats`, `match_predictions`
-- `player_media`/`team_media`/`match_media` replace the plain URL arrays so social embeds work
+### Player profile and transfers
+- Reduce the player header scale to the compact reference proportions while keeping the portrait, team link, and favorite action.
+- Redesign transfer history as clean chronological rows with destination club crest/monogram, club name, date, fee/type, and proper currency styling.
+- Resolve saved clubs to existing team records for their logos; typed external clubs keep a polished monogram fallback.
 
-Immediate fixes in the same phase:
-- Transfers page: only current season (26/27); full history stays on the player profile
-- Transfers page redesign
-- Player profile shows date of birth (not just age)
-- Match round shows "Round 1" everywhere; admin enters a number only
-- Settings page works when signed out — only the profile block shows "Sign in"
-- Remove all "Sync" buttons; everything saves automatically
-- Remove the "Done" button in player editing
-- White version of the logo mark for dark mode
-- Sign-in screen no longer shows the Lovable consent wording
-- Security review + fixes
+### Favorites and match notifications
+- Add a dedicated Favorites view with separate sections for matches, teams, players, and competitions, plus “View all” links from the home favorites area.
+- Persist favorite matches for signed-in users in the profile, while retaining local favorites for signed-out visitors.
+- Add match notification/bell controls. Favoriting a club automatically marks its fixtures as followed; users can still override individual match alerts.
+- Surface followed/favorite matches reliably on the home page and favorites view.
 
-### Phase 2 — Admin rebuild (simpler + mobile friendly)
+### Admin match manager
+- Recompose the match editor around the mobile references: match header, Info, Lineups, and Post-match sections; simple date/time/round/venue fields; list-or-pitch lineup setup; clear team/player selection; match status confirmation; and event controls with editable timeline rows.
+- Retain the existing capabilities absent from the screenshots: referee, highlights, notes, live timer, predictions, statistics, channels, media, substitutions, cards, penalties, and lineup publishing.
+- Keep desktop usable while prioritizing an iPhone-friendly single-column flow with stable sizing and no zoom-out.
 
-- Full mobile-first admin layout (no more page zoom-out on phone)
-- Simplified match manager: one screen per match with clear steps
-- Visual lineup board: pick a formation (4-3-3 etc.), drag existing players onto slots, "Confirm" before it goes public; or the simple names+numbers mode
-- Standings: add/remove teams per group with buttons
-- Team library: "Add existing team" when building a new competition; team data persists
-- Squad: "Add existing player" — moving a player auto-writes a transfer and removes them from the old club
-- Transfers editor: admin can enter clubs not in the system
-- Separate venue editor with images
-- Media manager: upload or paste YouTube / Facebook / Instagram / TikTok links
-- Image cropper on every upload, plus re-crop of existing images; news covers no longer crop badly
-- Competition editor: sport, format, seasons, title holder, divisions, player of the round/season, ratings
-- Channel editor with logos, saved for reuse
-
-### Phase 3 — Almail AI
-
-- Almail AI player creator: attach one or several photos or free text → generates a full player card for review
-- Almail AI news writer: attach a photo and/or notes → generates the article
-- Almail AI translator: automatic Arabic translation of stored content (team names, player names, news) with caching, so switching to Arabic translates everything
-
-### Phase 4 — Public pages
-
-- Competition page: seasons selector at the top; bar 1 info (title holder, team count, duration, divisions, promoted/relegated), bar 2 matches with filters (date / group / round / team), bar 3 standings
-- Match page: bar 1 details (competition + round, highlight, timeline with clickable scorers, lineups with player faces, player of round/season, prediction, date/time/country/stadium/referee, where to watch with channel logos), bar 2 lineups (with card/sub symbols), bar 3 stats + standings, bar 4 previous matches, bar 5 videos/media
-- Match chat box for signed-in users, with a profanity filter
-- Upcoming matches show competition logo, name and country, clickable to the competition
-- Favorites shows favorite competitions, teams and players
-- Player ratings shown with a colour scale (green = best)
-- Profile: display name + new profile picture upload
-- Settings: cm / feet toggle
-
----
+### Admin access and backend check
+- Keep the current admin password and add `200903` as a second server-only password; neither password will be exposed in browser code.
+- Verify the live database connection and the reads/writes used by competitions, favorites, transfers, and admin match management.
+- Add only the minimal profile fields needed to persist favorite matches and per-match notifications, with existing profile RLS retained.
 
 ## Technical notes
-
-- All new public tables get GRANTs plus RLS: public read, admin-only write via `is_admin()`. Chat messages: signed-in insert, own-row delete, admin moderate.
-- AI features run through Lovable AI on the server (`createServerFn`), with image input for the player-card and article generators.
-- Arabic translation is cached in a `translations` table keyed by source text + locale, so each string is translated once.
-- Team reuse means `teams.competition_id` becomes advisory only; membership lives in `competition_teams` (already present).
-- Realtime stays on for matches, events and standings.
+- Database schema changes will be applied through a migration and will not weaken existing row-level security.
+- The admin unlock comparison remains timing-safe and rate-limited.
+- Existing design tokens, dark/light themes, bilingual direction handling, and reusable team/player crest components remain authoritative.
+- Additional admin screenshots sent afterward can refine the same match-management structure without replacing the retained controls above.
