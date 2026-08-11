@@ -89,9 +89,9 @@ function PlayerPage() {
            <div className="min-w-0 flex-1">
              <h1 className="text-sm font-bold leading-snug break-words sm:text-xl">{tx(p.name)}</h1>
             {p.team && (
-              <Link to="/teams/$id" params={{ id: p.team.id }} className="mt-1 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary">
-                <TeamCrest name={p.team.name} logo={p.team.logo_url} className="h-5 w-5" />
-                {tx(p.team.name)}
+              <Link to="/teams/$id" params={{ id: p.team.id }} className="mt-1 inline-flex min-w-0 max-w-full items-center gap-1.5 text-[0.7rem] font-medium text-muted-foreground hover:text-primary sm:text-sm">
+                <TeamCrest name={p.team.name} logo={p.team.logo_url} className="h-4 w-4 shrink-0 sm:h-5 sm:w-5" />
+                <span className="truncate">{tx(p.team.name)}</span>
               </Link>
             )}
           </div>
