@@ -284,6 +284,7 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
   media: { id: string; url: string; source: string; title: string | null }[];
 }) {
   const tx = useTx();
+  const num = useNum();
   const winners = titles.filter((r) => r.titles > 0);
   const best = winners[0];
   const bestTeam = best ? teams.find((team) => team.id === best.team_id) : undefined;

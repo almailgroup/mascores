@@ -6,7 +6,8 @@ import {
 } from "@/lib/db";
 import { Field, Modal, inputCls, btnPrimary, btnGhost, btnDanger } from "./ui";
 import { VenueSelect } from "./venue-select";
-import { Play, Pause, Plus, Trash2, RotateCcw, Check } from "lucide-react";
+import { Play, Pause, Plus, Trash2, RotateCcw, Check, Info, ListChecks, Radio, BarChart3 } from "lucide-react";
+import { TeamCrest } from "@/components/team-crest";
 import { MediaManager } from "./media-manager";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -64,11 +65,16 @@ export function MatchEditor({ match: initial, teams, onClose }: { match: Match; 
   };
 
   return (
-    <Modal open onClose={onClose} title={`${teamName(match.home_team_id)} vs ${teamName(match.away_team_id)}`} wide>
-      <div className="mb-5 flex w-fit gap-1 rounded-full border border-border bg-background p-1 text-xs">
-        {([["main", "Match details"], ["lineups", "Lineups"], ["live", "Live centre"], ["extras", "Stats, TV & media"]] as const).map(([k, l]) => (
+    <Modal open onClose={onClose} title="Manage match" wide fullPage>
+      <div className="mb-5 grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-lg border border-border bg-background p-4">
+        <TeamSummary team={teams.find((team) => team.id === match.home_team_id)} />
+        <div className="text-center"><div className="text-xl font-black tabular-nums">{match.home_score ?? 0} – {match.away_score ?? 0}</div><div className="mt-1 text-[0.65rem] font-semibold uppercase text-muted-foreground">{STATUS_LABELS[match.status] ?? match.status}</div></div>
+        <TeamSummary team={teams.find((team) => team.id === match.away_team_id)} away />
+      </div>
+      <div className="mb-6 grid grid-cols-4 gap-1 rounded-lg border border-border bg-background p-1 text-[0.65rem] sm:text-xs">
+        {([["main", "Info", Info], ["lineups", "Lineups", ListChecks], ["live", "Live", Radio], ["extras", "Post-match", BarChart3]] as const).map(([k, l, Icon]) => (
           <button key={k} onClick={() => setTab(k)}
-            className={`rounded-full px-4 py-1.5 font-semibold ${tab === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>{l}</button>
+            className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-md px-2 font-semibold ${tab === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}><Icon className="h-4 w-4" />{l}</button>
         ))}
       </div>
       {tab === "main" && <MainTab match={match} teams={teams} onSaved={refresh} />}
@@ -77,6 +83,10 @@ export function MatchEditor({ match: initial, teams, onClose }: { match: Match; 
       {tab === "extras" && <ExtrasTab match={match} teams={teams} />}
     </Modal>
   );
+}
+
+function TeamSummary({ team, away = false }: { team: Team | undefined; away?: boolean }) {
+  return <div className={`flex min-w-0 items-center gap-2 ${away ? "flex-row-reverse text-end" : ""}`}><TeamCrest name={team?.name} logo={team?.logo_url} className="h-10 w-10" /><span className="truncate text-xs font-bold sm:text-sm">{team?.name ?? "TBD"}</span></div>;
 }
 
 function ExtrasTab({ match, teams }: { match: Match; teams: Team[] }) {
@@ -124,7 +134,9 @@ function MainTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
   const local = form.kickoff_at ? new Date(new Date(form.kickoff_at).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : "";
 
   return (
-    <div>
+    <div className="space-y-5">
+      <section className="rounded-lg border border-border bg-background/40 p-4">
+        <div className="mb-4"><h3 className="font-bold">Match information</h3><p className="text-xs text-muted-foreground">Schedule the fixture and set its basic presentation.</p></div>
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Home team">
           <select className={inputCls} value={form.home_team_id ?? ""} onChange={(e) => setForm({ ...form, home_team_id: e.target.value || null })}>
@@ -151,6 +163,12 @@ function MainTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
         <div className="sm:col-span-2"><Field label="Notes"><textarea rows={2} className={inputCls} value={form.notes ?? ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></Field></div>
       </div>
       <div className="mt-4 flex justify-end"><button className={btnPrimary} onClick={save}>Save details</button></div>
+      </section>
+      <section className="rounded-lg border border-border bg-background/40 p-4">
+        <h3 className="font-bold">Match status</h3>
+        <p className="mt-1 text-xs text-muted-foreground">Use the Live tab to run the clock and add events. Choose a final or interrupted state there when play ends.</p>
+        <div className="mt-3 flex flex-wrap gap-2">{["scheduled", "postponed", "cancelled"].map((status) => <button key={status} type="button" onClick={() => setForm({ ...form, status })} className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${form.status === status ? "border-primary bg-primary/10 text-primary" : "border-border"}`}>{STATUS_LABELS[status]}</button>)}</div>
+      </section>
     </div>
   );
 }
@@ -246,7 +264,8 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
   };
 
   return (
-    <div>
+    <div className="space-y-4">
+      <div><h3 className="font-bold">Lineup setup</h3><p className="text-xs text-muted-foreground">Choose a simple list or place the starting eleven on a formation pitch.</p></div>
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <span className="text-[0.65rem] font-semibold uppercase tracking-widest text-muted-foreground">Display as</span>
         {(["list", "formation"] as const).map((m) => (
@@ -386,10 +405,10 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
   }, [scores.h, scores.a, eventsQ.isLoading, match.id, match.home_score, match.away_score]);
 
   return (
-    <div className="grid gap-6 md:grid-cols-2">
+    <div className="grid gap-5 lg:grid-cols-2">
       <div>
         {/* Clock */}
-        <div className="rounded-2xl border border-border bg-background/50 p-4 text-center">
+        <div className="rounded-lg border border-border bg-background/50 p-4 text-center">
           <div className="text-4xl font-black tabular-nums">{formatClock(seconds)}</div>
           <div className="mt-1 text-[0.65rem] uppercase tracking-widest text-muted-foreground">{minute}′ · {STATUS_LABELS[match.status] ?? match.status}</div>
           <div className="mt-3 flex flex-wrap justify-center gap-2">
@@ -409,7 +428,8 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
         </div>
 
         {/* Quick event buttons */}
-        <div className="mt-4 flex flex-wrap gap-2">
+        <h3 className="mb-2 mt-5 text-sm font-bold">Add match event</h3>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {EVENT_TYPES.map((t) => (
             <button key={t.v} className={btnGhost} onClick={() => setComposer({ type: t.v })}>{t.l}</button>
           ))}

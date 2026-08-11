@@ -8,6 +8,7 @@ import { useFavorites } from "@/hooks/use-favorites";
 import { supabase, type Competition, type Player, type Team } from "@/lib/db";
 import { useTx } from "@/lib/auto-translate";
 import { Trophy } from "lucide-react";
+import type { ReactNode } from "react";
 
 export const Route = createFileRoute("/favorites")({
   head: () => ({ meta: [
@@ -45,6 +46,6 @@ function FavoritesPage() {
   </AppShell>;
 }
 
-function FavoriteSection({ title, children }: { title: string; children: React.ReactNode }) {
+function FavoriteSection({ title, children }: { title: string; children: ReactNode }) {
   return <section className="mb-9"><SectionHeader title={title} />{children}</section>;
 }

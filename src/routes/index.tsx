@@ -272,8 +272,8 @@ function FavoriteMatches() {
       return [...new Map(out.map((m) => [m.id, m])).values()];
     },
   });
-  if (!q.data || q.data.length === 0) return null;
-  return <section className="mt-8"><SectionHeader title={t("home.favMatches")} action={<Link to="/favorites" className="text-sm font-semibold text-primary">View all</Link>} /><MatchGroups data={q.data} /></section>;
+  if (!ready) return null;
+  return <section className="mt-8"><SectionHeader title={t("home.favMatches")} action={<Link to="/favorites" className="text-sm font-semibold text-primary">View all</Link>} />{q.data?.length ? <MatchGroups data={q.data} /> : <EmptyState title="No favorite matches yet" />}</section>;
 }
 
 function CompLogo({ logo }: { logo: string | null }) {
