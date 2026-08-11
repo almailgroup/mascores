@@ -242,6 +242,42 @@ function CompetitionOverviewTab({ c, season, teams, titleHolder, titles, divisio
   titles: { team_id: string; titles: number }[];
   divisions: { id: string; name: string; slug: string }[];
 }) {
+  return <CompetitionOverviewInner c={c} season={season} teams={teams} titleHolder={titleHolder} titles={titles} divisions={divisions} />;
+}
+
+/** Sofascore-style rounds: one card per round, compact rows inside. */
+function CompetitionMatches({ data }: { data: MatchWithTeams[] }) {
+  const tx = useTx();
+  const num = useNum();
+  const groups = new Map<string, MatchWithTeams[]>();
+  for (const m of data) {
+    const key = m.round_number ? `#${m.round_number}` : (m.round ?? "");
+    groups.set(key, [...(groups.get(key) ?? []), m]);
+  }
+  return (
+    <div className="space-y-3">
+      {[...groups.entries()].map(([key, ms]) => (
+        <div key={key || "all"} className="overflow-hidden rounded-2xl border border-border bg-card">
+          <div className="border-b border-border px-4 py-3 text-sm font-bold">
+            {key.startsWith("#") ? `${tx("Round")} ${num(Number(key.slice(1)))}` : (tx(key) || tx("Matches"))}
+          </div>
+          <div className="divide-y divide-border">
+            {ms.map((m) => <MatchRow key={m.id} m={m} />)}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divisions }: {
+  c: Competition;
+  season: string | null;
+  teams: Team[];
+  titleHolder: Team | null;
+  titles: { team_id: string; titles: number }[];
+  divisions: { id: string; name: string; slug: string }[];
+}) {
   const tx = useTx();
   const winners = titles.filter((r) => r.titles > 0);
   const best = winners[0];
