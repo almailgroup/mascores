@@ -177,6 +177,7 @@ export type Database = {
           competition_id: string
           created_at: string
           id: string
+          season: string | null
           team_id: string
           titles: number
         }
@@ -184,6 +185,7 @@ export type Database = {
           competition_id: string
           created_at?: string
           id?: string
+          season?: string | null
           team_id: string
           titles?: number
         }
@@ -191,6 +193,7 @@ export type Database = {
           competition_id?: string
           created_at?: string
           id?: string
+          season?: string | null
           team_id?: string
           titles?: number
         }
@@ -569,6 +572,41 @@ export type Database = {
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      match_prediction_votes: {
+        Row: {
+          choice: string
+          created_at: string
+          id: string
+          match_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          choice: string
+          created_at?: string
+          id?: string
+          match_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          choice?: string
+          created_at?: string
+          id?: string
+          match_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_prediction_votes_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
             referencedColumns: ["id"]
           },
         ]
