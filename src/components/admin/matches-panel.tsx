@@ -10,18 +10,22 @@ import { createFixtureDraftsWithAlmail } from "@/lib/almail-ai.functions";
 import { readAiImages } from "@/lib/image-files";
 import { TeamCrest } from "@/components/team-crest";
 
-export function MatchesPanel({ competitionId, season = null }: { competitionId: string; season?: string | null }) {
+export function MatchesPanel({ competitionId, season = null, friendly = false }: { competitionId: string; season?: string | null; friendly?: boolean }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<Partial<Match>>({ status: "scheduled" });
   const [editingMatch, setEditingMatch] = useState<Match | null>(null);
   const [resultOf, setResultOf] = useState<Match | null>(null);
   const [aiOpen, setAiOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<"all" | "scheduled" | "live" | "finished" | "needs_result">("all");
 
   const teamsQ = useQuery({
-    queryKey: ["admin", "teams", competitionId],
+    queryKey: ["admin", "teams", competitionId, season],
     queryFn: async () => {
-      const { data: links } = await supabase.from("competition_teams").select("team_id").eq("competition_id", competitionId);
+      let linkQuery = supabase.from("competition_teams").select("team_id").eq("competition_id", competitionId);
+      if (season) linkQuery = linkQuery.or(`season.eq.${season},season.is.null`);
+      const { data: links } = await linkQuery;
       const ids = (links ?? []).map((link) => link.team_id);
       const { data } = ids.length ? await supabase.from("teams").select("*").in("id", ids).order("name") : await supabase.from("teams").select("*").eq("competition_id", competitionId).order("name");
       return (data ?? []) as Team[];
@@ -41,17 +45,33 @@ export function MatchesPanel({ competitionId, season = null }: { competitionId: 
   const teams = teamsQ.data ?? [];
   const teamName = (id: string | null | undefined) => teams.find((t) => t.id === id)?.name ?? "TBD";
   const teamLogo = (id: string | null | undefined) => teams.find((t) => t.id === id)?.logo_url ?? null;
-  const matches = matchesQ.data ?? [];
+  const allMatches = matchesQ.data ?? [];
+
+  const isPastRaw = (m: Match) => !!m.kickoff_at && new Date(m.kickoff_at).getTime() < Date.now();
+  const noResultRaw = (m: Match) => m.home_score == null && m.away_score == null;
+
+  const matches = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return allMatches.filter((m) => {
+      if (term && !`${teamName(m.home_team_id)} ${teamName(m.away_team_id)}`.toLowerCase().includes(term)) return false;
+      if (filter === "scheduled") return m.status === "scheduled";
+      if (filter === "live") return ["live", "ht"].includes(m.status);
+      if (filter === "finished") return !["scheduled", "live", "ht"].includes(m.status);
+      if (filter === "needs_result") return isPastRaw(m) && noResultRaw(m);
+      return true;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allMatches, search, filter, teams]);
 
   const grouped = useMemo(() => {
     const map = new Map<string, Match[]>();
     for (const m of matches) {
-      const k = roundLabel(m.round_number, m.round) ?? "Unassigned round";
+      const k = friendly ? "All matches" : (roundLabel(m.round_number, m.round) ?? "Unassigned round");
       if (!map.has(k)) map.set(k, []);
       map.get(k)!.push(m);
     }
     return [...map.entries()];
-  }, [matches]);
+  }, [matches, friendly]);
 
   const create = async () => {
     if (!form.home_team_id || !form.away_team_id) { alert("Pick both teams first."); return; }
@@ -61,8 +81,8 @@ export function MatchesPanel({ competitionId, season = null }: { competitionId: 
       home_team_id: form.home_team_id,
       away_team_id: form.away_team_id,
       kickoff_at: form.kickoff_at ?? null,
-      round_number: form.round_number ?? null,
-      round: form.round_number != null ? `Round ${form.round_number}` : null,
+      round_number: friendly ? null : (form.round_number ?? null),
+      round: !friendly && form.round_number != null ? `Round ${form.round_number}` : null,
       venue: form.venue ?? null,
       city: form.city ?? null,
       status: "scheduled",
@@ -77,16 +97,24 @@ export function MatchesPanel({ competitionId, season = null }: { competitionId: 
     qc.invalidateQueries({ queryKey: ["admin", "matches", competitionId] });
   };
 
-  const isPast = (m: Match) => !!m.kickoff_at && new Date(m.kickoff_at).getTime() < Date.now();
-  const noResult = (m: Match) => m.home_score == null && m.away_score == null;
+  const isPast = isPastRaw;
+  const noResult = noResultRaw;
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-base font-bold">Matches</h3>
-        <div className="flex flex-wrap gap-2">
-          <button className={btnGhost} onClick={() => setAiOpen(true)}><Sparkles className="h-3.5 w-3.5" /> Almail AI</button>
-          <button className={btnPrimary} onClick={() => { setForm({ status: "scheduled" }); setOpen(true); }}><Plus className="h-3.5 w-3.5" /> Add match</button>
+      <div className="mb-3 grid gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h3 className="text-base font-bold">Matches <span className="text-xs font-medium text-muted-foreground">({allMatches.length})</span></h3>
+          <div className="flex flex-wrap gap-2">
+            <button className={btnGhost} onClick={() => setAiOpen(true)}><Sparkles className="h-3.5 w-3.5" /> Almail AI</button>
+            <button className={btnPrimary} onClick={() => { setForm({ status: "scheduled" }); setOpen(true); }}><Plus className="h-3.5 w-3.5" /> Add match</button>
+          </div>
+        </div>
+        <input className={inputCls} placeholder="Search by team…" value={search} onChange={(e) => setSearch(e.target.value)} />
+        <div className="flex gap-1.5 overflow-x-auto pb-1">
+          {([["all", "All"], ["needs_result", "Needs result"], ["live", "Live"], ["scheduled", "Upcoming"], ["finished", "Finished"]] as const).map(([key, label]) => (
+            <button key={key} onClick={() => setFilter(key)} className={`shrink-0 rounded-full px-3 py-1.5 text-[0.7rem] font-semibold ${filter === key ? "bg-primary text-primary-foreground" : "border border-border bg-card text-muted-foreground"}`}>{label}</button>
+          ))}
         </div>
       </div>
       <AlmailFixtureImporter
@@ -134,7 +162,7 @@ export function MatchesPanel({ competitionId, season = null }: { competitionId: 
             </div>
           </div>
         ))}
-        {matches.length === 0 && <div className="rounded-xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">No matches yet.</div>}
+        {matches.length === 0 && <div className="rounded-xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">{allMatches.length === 0 ? "No matches yet." : "No matches match this filter."}</div>}
       </div>
 
       <Modal open={open} onClose={() => setOpen(false)} title="New match" wide>
@@ -156,7 +184,7 @@ export function MatchesPanel({ competitionId, season = null }: { competitionId: 
               value={form.kickoff_at ? new Date(new Date(form.kickoff_at).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ""}
               onChange={(e) => setForm({ ...form, kickoff_at: e.target.value ? new Date(e.target.value).toISOString() : null })} />
           </Field>
-          <Field label="Round number"><input type="number" min={1} inputMode="numeric" className={inputCls} placeholder="1" value={form.round_number ?? ""} onChange={(e) => setForm({ ...form, round_number: e.target.value ? Number(e.target.value) : null })} /></Field>
+          {!friendly && <Field label="Round number"><input type="number" min={1} inputMode="numeric" className={inputCls} placeholder="1" value={form.round_number ?? ""} onChange={(e) => setForm({ ...form, round_number: e.target.value ? Number(e.target.value) : null })} /></Field>}
           <div className="sm:col-span-2">
             <Field label="Venue"><VenueSelect venue={form.venue} city={form.city} onChange={(v, c) => setForm({ ...form, venue: v, city: c })} /></Field>
           </div>

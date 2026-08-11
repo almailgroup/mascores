@@ -79,7 +79,7 @@ function AdminPage() {
   }
 
   return (
-    <AppShell>
+    <AppShell bare={!!openComp}>
       {openComp ? (
         <div>
           <div className="mb-3 flex min-w-0 items-center gap-2">
@@ -91,16 +91,19 @@ function AdminPage() {
             <SeasonPicker competition={openComp} onChange={setOpenComp} season={adminSeason} onSeason={setAdminSeason} />
           </div>
           <div className="flex max-w-full gap-1 overflow-x-auto border-b border-border pb-2 text-xs">
-            {(["overview", "teams", "matches", "standings", "awards", "media"] as const).map((k) => (
+            {(openComp.format === "friendly"
+              ? (["overview", "teams", "matches", "media"] as const)
+              : (["overview", "teams", "matches", "standings", "awards", "media"] as const)
+            ).map((k) => (
               <button key={k} onClick={() => setCompTab(k)} className={`rounded-full px-4 py-1.5 font-semibold capitalize ${compTab === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>{k}</button>
             ))}
           </div>
           <div className="mt-6">
             {compTab === "overview" && <CompetitionOverview competition={openComp} />}
-            {compTab === "teams" && <TeamsPanel competitionId={openComp.id} />}
-            {compTab === "matches" && <MatchesPanel competitionId={openComp.id} season={adminSeason ?? openComp.season ?? null} />}
-            {compTab === "standings" && <StandingsPanel competitionId={openComp.id} />}
-            {compTab === "awards" && <CompetitionAwardsManager competitionId={openComp.id} />}
+            {compTab === "teams" && <TeamsPanel competitionId={openComp.id} season={adminSeason ?? openComp.season ?? null} />}
+            {compTab === "matches" && <MatchesPanel competitionId={openComp.id} season={adminSeason ?? openComp.season ?? null} friendly={openComp.format === "friendly"} />}
+            {compTab === "standings" && openComp.format !== "friendly" && <StandingsPanel competitionId={openComp.id} season={adminSeason ?? openComp.season ?? null} />}
+            {compTab === "awards" && openComp.format !== "friendly" && <CompetitionAwardsManager competitionId={openComp.id} />}
             {compTab === "media" && <MediaManager ownerType="competition" ownerId={openComp.id} />}
           </div>
         </div>

@@ -17,7 +17,7 @@ type TeamForm = Partial<Team>;
 type PlayerForm = Partial<Player>;
 type CoachForm = Partial<Coach>;
 
-export function TeamsPanel({ competitionId }: { competitionId: string | null }) {
+export function TeamsPanel({ competitionId, season = null }: { competitionId: string | null; season?: string | null }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<TeamForm>({});
@@ -27,10 +27,12 @@ export function TeamsPanel({ competitionId }: { competitionId: string | null }) 
   const [libraryTeamId, setLibraryTeamId] = useState("");
 
   const q = useQuery({
-    queryKey: ["admin", "teams", competitionId],
+    queryKey: ["admin", "teams", competitionId, season],
     queryFn: async () => {
       if (!competitionId) return ((await supabase.from("teams").select("*").order("name")).data ?? []) as Team[];
-      const { data: links } = await supabase.from("competition_teams").select("team_id").eq("competition_id", competitionId);
+      let linkQuery = supabase.from("competition_teams").select("team_id").eq("competition_id", competitionId);
+      if (season) linkQuery = linkQuery.or(`season.eq.${season},season.is.null`);
+      const { data: links } = await linkQuery;
       const ids = (links ?? []).map((link) => link.team_id);
       const { data } = ids.length ? await supabase.from("teams").select("*").in("id", ids).order("name") : await supabase.from("teams").select("*").eq("competition_id", competitionId).order("name");
       return (data ?? []) as Team[];
@@ -58,10 +60,11 @@ export function TeamsPanel({ competitionId }: { competitionId: string | null }) 
     if (form.id) await supabase.from("teams").update(payload).eq("id", form.id);
     else {
       const { data } = await supabase.from("teams").insert(payload as never).select("id").single();
-      if (data && competitionId) await supabase.from("competition_teams").insert({ competition_id: competitionId, team_id: data.id } as never);
+      if (data && competitionId) await supabase.from("competition_teams").insert({ competition_id: competitionId, team_id: data.id, season } as never);
     }
     setOpen(false); setForm({});
     qc.invalidateQueries({ queryKey: ["admin", "teams", competitionId] });
+    qc.invalidateQueries({ queryKey: ["admin", "team-library"] });
   };
 
   const remove = async (id: string) => {
@@ -129,7 +132,7 @@ export function TeamsPanel({ competitionId }: { competitionId: string | null }) 
 
       <Modal open={libraryOpen} onClose={() => setLibraryOpen(false)} title="Add an existing team">
         <Field label="Saved team"><select className={inputCls} value={libraryTeamId} onChange={(e) => setLibraryTeamId(e.target.value)}><option value="">Choose a team</option>{(libraryQ.data ?? []).filter((team) => !(q.data ?? []).some((current) => current.id === team.id)).map((team) => <option key={team.id} value={team.id}>{team.name}{team.country ? ` · ${team.country}` : ""}</option>)}</select></Field>
-        <div className="mt-4 flex justify-end gap-2"><button className={btnGhost} onClick={() => setLibraryOpen(false)}>Cancel</button><button className={btnPrimary} disabled={!libraryTeamId} onClick={async () => { await supabase.from("competition_teams").insert({ competition_id: competitionId, team_id: libraryTeamId } as never); setLibraryTeamId(""); setLibraryOpen(false); qc.invalidateQueries({ queryKey: ["admin", "teams", competitionId] }); }}>Add to competition</button></div>
+        <div className="mt-4 flex justify-end gap-2"><button className={btnGhost} onClick={() => setLibraryOpen(false)}>Cancel</button><button className={btnPrimary} disabled={!libraryTeamId} onClick={async () => { await supabase.from("competition_teams").insert({ competition_id: competitionId, team_id: libraryTeamId, season } as never); setLibraryTeamId(""); setLibraryOpen(false); qc.invalidateQueries({ queryKey: ["admin", "teams", competitionId] }); qc.invalidateQueries({ queryKey: ["admin", "standings", competitionId] }); }}>Add to competition</button></div>
       </Modal>
 
       {squadOf && <SquadModal team={squadOf} onClose={() => setSquadOf(null)} />}

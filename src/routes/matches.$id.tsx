@@ -8,6 +8,8 @@ import { useRealtime } from "@/lib/realtime";
 import { PlayCircle, Radio } from "lucide-react";
 import { useTx, useNum, useDates } from "@/lib/auto-translate";
 import { MatchChat } from "@/components/match-chat";
+import { MatchPrediction } from "@/components/match-prediction";
+import { MapPin, Users } from "lucide-react";
 
 /** Same slot keys the admin pitch board writes, so the public pitch mirrors it. */
 function formationRows(formation: string | null | undefined): string[][] {
@@ -126,23 +128,64 @@ function MatchPage() {
         {(["details", "lineups", "stats", "previous", "media"] as const).map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 py-2 font-semibold capitalize ${tab === item ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{tx(item === "media" ? "Media & chat" : item === "previous" ? "Previous matches" : item === "details" ? "Details" : item === "lineups" ? "Lineups" : "Stats")}</button>)}
       </div>
 
-      {tab === "details" && <div className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-2xl border border-border bg-card p-4">
-          <div className="mb-3 text-sm font-semibold">{tx("Timeline")}</div>
+      {tab === "details" && <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
+        <div className="overflow-hidden rounded-2xl border border-border bg-card">
+          <div className="border-b border-border bg-muted/40 px-4 py-2.5 text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Timeline")}</div>
           {events.data && events.data.length > 0 ? (
-            <ul className="space-y-2 text-sm">
-              {events.data.map((e) => (
-                <li key={e.id} className="flex items-start gap-3">
-                  <span className="w-10 shrink-0 text-right font-mono text-xs text-muted-foreground">{e.minute != null ? num(e.minute) : "-"}{e.extra ? `+${num(e.extra)}` : ""}'</span>
-                   <span className="inline-flex items-center gap-1"><EventIcon type={e.type} /> {e.player ? <Link to="/players/$id" params={{ id: e.player.id }} className="font-semibold hover:text-primary">{tx(e.player.name)}</Link> : <span>{e.description ?? e.type}</span>}</span>
-                  <span className="ml-auto text-xs text-muted-foreground">{tx(e.team?.name)}</span>
+            <ul className="divide-y divide-border">
+              {timelineWithBreaks(events.data, match.status, match.home_team_id).map((entry) => entry.kind === "divider" ? (
+                <li key={entry.key} className="flex items-center justify-center gap-2 bg-muted/40 px-4 py-1.5 text-[0.6rem] font-bold uppercase tracking-widest text-muted-foreground">
+                  {tx(entry.label)}{entry.score ? <span className="tabular-nums">{num(entry.score)}</span> : null}
+                </li>
+              ) : (
+                <li key={entry.event.id} className={`flex items-center gap-3 px-4 py-2.5 ${entry.side === "away" ? "flex-row-reverse text-end" : ""}`}>
+                  <span className="w-9 shrink-0 font-mono text-[0.7rem] text-muted-foreground">{entry.event.minute != null ? num(entry.event.minute) : "-"}{entry.event.extra ? `+${num(entry.event.extra)}` : ""}'</span>
+                  <EventIcon type={entry.event.type} />
+                  <span className="min-w-0 flex-1">
+                    {entry.event.player ? (
+                      <Link to="/players/$id" params={{ id: entry.event.player.id }} className="block truncate text-sm font-semibold hover:text-primary">{tx(entry.event.player.name)}</Link>
+                    ) : <span className="block truncate text-sm font-semibold">{entry.event.description ?? tx(entry.event.type)}</span>}
+                    <span className="block truncate text-[0.65rem] text-muted-foreground">{tx(EVENT_LABELS[entry.event.type] ?? entry.event.type)}{entry.event.team ? ` · ${tx(entry.event.team.name)}` : ""}</span>
+                  </span>
                 </li>
               ))}
             </ul>
-          ) : <div className="text-sm text-muted-foreground">{tx("No events yet.")}</div>}
+          ) : <div className="px-4 py-6 text-center text-sm text-muted-foreground">{tx("No events yet.")}</div>}
         </div>
 
-        <div className="space-y-4"><div className="rounded-2xl border border-border bg-card p-4"><div className="mb-3 text-sm font-semibold">{tx("Match information")}</div><dl className="grid grid-cols-2 gap-3 text-sm">{[["Date & time", num(dates.kickoff(match.kickoff_at))], ["Stadium", tx(match.venue) || "—"], ["City", tx(match.city) || "—"], ["Referee", tx(match.referee) || "—"]].map(([k,v]) => <div key={k}><dt className="text-xs text-muted-foreground">{tx(k)}</dt><dd className="font-semibold">{v}</dd></div>)}</dl></div>{match.highlight_url && <a href={match.highlight_url} target="_blank" rel="noreferrer" className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4 font-semibold hover:border-primary"><PlayCircle className="h-5 w-5 text-primary" /> {tx("Watch match highlights")}</a>}{prediction.data && <div className="rounded-2xl border border-border bg-card p-4"><div className="mb-3 text-sm font-semibold">{tx("Prediction")}</div><div className="grid grid-cols-3 text-center text-xs"><div><strong className="block text-lg">{num(prediction.data.home_percent)}%</strong>{tx(match.home?.name)}</div><div><strong className="block text-lg">{num(prediction.data.draw_percent)}%</strong>{tx("Draw")}</div><div><strong className="block text-lg">{num(prediction.data.away_percent)}%</strong>{tx(match.away?.name)}</div></div></div>}{broadcasts.data && broadcasts.data.length > 0 && <div className="rounded-2xl border border-border bg-card p-4"><div className="mb-3 flex items-center gap-2 text-sm font-semibold"><Radio className="h-4 w-4" /> {tx("Where to watch")}</div><div className="flex flex-wrap gap-3">{broadcasts.data.map((row, index) => { const channel = Array.isArray(row.channel) ? row.channel[0] : row.channel; return channel ? <div key={channel.id ?? index} className="flex items-center gap-2 text-sm">{channel.logo_url && <img src={channel.logo_url} alt="" className="h-7 w-7 object-contain" />}{tx(channel.name)}</div> : null; })}</div></div>}</div>
+        <div className="space-y-4">
+          <MatchPrediction matchId={id} homeName={match.home?.name} awayName={match.away?.name} fallback={prediction.data ?? null} />
+
+          <div className="overflow-hidden rounded-2xl border border-border bg-card">
+            <div className="border-b border-border bg-muted/40 px-4 py-2.5 text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Match information")}</div>
+            <dl className="grid gap-3 p-4 text-sm sm:grid-cols-2">
+              {([["Date & time", num(dates.kickoff(match.kickoff_at))], ["Stadium", tx(match.venue) || "—"], ["City", tx(match.city) || "—"], ["Referee", tx(match.referee) || "—"]] as [string, string][]).map(([k, v]) => (
+                <div key={k} className="min-w-0">
+                  <dt className="flex items-center gap-1 text-[0.65rem] uppercase tracking-wide text-muted-foreground">{k === "Stadium" ? <MapPin className="h-3 w-3" /> : k === "Referee" ? <Users className="h-3 w-3" /> : null}{tx(k)}</dt>
+                  <dd className="mt-0.5 break-words font-semibold">{v}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+
+          {broadcasts.data && broadcasts.data.length > 0 && (
+            <div className="overflow-hidden rounded-2xl border border-border bg-card">
+              <div className="flex items-center gap-2 border-b border-border bg-muted/40 px-4 py-2.5 text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground"><Radio className="h-3.5 w-3.5" /> {tx("Where to watch")}</div>
+              <div className="flex flex-wrap gap-2 p-4">
+                {broadcasts.data.map((row, index) => {
+                  const channel = Array.isArray(row.channel) ? row.channel[0] : row.channel;
+                  return channel ? (
+                    <div key={channel.id ?? index} className="flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-2 text-xs font-semibold">
+                      {channel.logo_url && <img src={channel.logo_url} alt="" className="h-6 w-6 object-contain" />}{tx(channel.name)}
+                    </div>
+                  ) : null;
+                })}
+              </div>
+            </div>
+          )}
+
+          {match.highlight_url && <a href={match.highlight_url} target="_blank" rel="noreferrer" className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4 font-semibold hover:border-primary"><PlayCircle className="h-5 w-5 text-primary" /> {tx("Watch match highlights")}</a>}
+        </div>
       </div>}
 
       {tab === "lineups" && <div className="grid gap-4 md:grid-cols-2">{([["home", match.home, match.home_formation], ["away", match.away, match.away_formation]] as const).map(([side, team, formation]) => {
@@ -196,5 +239,30 @@ function PreviousMatches({ competitionId, currentId }: { competitionId: string; 
 
 function EventIcon({ type }: { type: string }) {
   const map: Record<string, string> = { goal: "⚽", own_goal: "⚽", penalty: "⚽", missed_penalty: "❌", yellow: "🟨", red: "🟥", second_yellow: "🟨🟥", sub: "🔁" };
-  return <span>{map[type] ?? "•"}</span>;
+  return <span className="shrink-0 text-base leading-none">{map[type] ?? "•"}</span>;
+}
+
+const EVENT_LABELS: Record<string, string> = {
+  goal: "Goal", own_goal: "Own goal", penalty: "Penalty goal", missed_penalty: "Missed penalty",
+  yellow: "Yellow card", red: "Red card", second_yellow: "Second yellow", sub: "Substitution",
+};
+
+type TimelineEvent = MatchEvent & { player: Player | null; team: Team | null };
+type TimelineEntry =
+  | { kind: "divider"; key: string; label: string; score?: string }
+  | { kind: "event"; event: TimelineEvent; side: "home" | "away" };
+
+/** Insert half-time and full-time dividers into an ordered event list. */
+function timelineWithBreaks(events: TimelineEvent[], status: string, homeTeamId: string | null): TimelineEntry[] {
+  const out: TimelineEntry[] = [];
+  let htAdded = false;
+  for (const event of events) {
+    if (!htAdded && (event.minute ?? 0) > 45) {
+      out.push({ kind: "divider", key: "ht", label: "HT" });
+      htAdded = true;
+    }
+    out.push({ kind: "event", event, side: event.team_id && event.team_id !== homeTeamId ? "away" : "home" });
+  }
+  if (!["scheduled", "live", "ht"].includes(status)) out.push({ kind: "divider", key: "ft", label: "FT" });
+  return out;
 }

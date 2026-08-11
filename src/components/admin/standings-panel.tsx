@@ -9,14 +9,16 @@ type PositionLabel = Database["public"]["Tables"]["standings_position_labels"]["
 
 const SINGLE = "__single__";
 
-export function StandingsPanel({ competitionId }: { competitionId: string }) {
+export function StandingsPanel({ competitionId, season = null }: { competitionId: string; season?: string | null }) {
   const qc = useQueryClient();
   const [labelTarget, setLabelTarget] = useState<{ group: string | null; position: number } | null>(null);
 
   const teamsQ = useQuery({
-    queryKey: ["admin", "teams", competitionId],
+    queryKey: ["admin", "teams", competitionId, season],
     queryFn: async () => {
-      const { data: links } = await supabase.from("competition_teams").select("team_id").eq("competition_id", competitionId);
+      let linkQuery = supabase.from("competition_teams").select("team_id").eq("competition_id", competitionId);
+      if (season) linkQuery = linkQuery.or(`season.eq.${season},season.is.null`);
+      const { data: links } = await linkQuery;
       const ids = (links ?? []).map((link) => link.team_id);
       const { data } = ids.length ? await supabase.from("teams").select("*").in("id", ids).order("name") : await supabase.from("teams").select("*").eq("competition_id", competitionId).order("name");
       return (data ?? []) as Team[];
@@ -24,9 +26,11 @@ export function StandingsPanel({ competitionId }: { competitionId: string }) {
   });
 
   const rowsQ = useQuery({
-    queryKey: ["admin", "standings", competitionId],
+    queryKey: ["admin", "standings", competitionId, season],
     queryFn: async () => {
-      const { data } = await supabase.from("standings_rows").select("*").eq("competition_id", competitionId).order("sort_order");
+      let query = supabase.from("standings_rows").select("*").eq("competition_id", competitionId);
+      if (season) query = query.or(`season.eq.${season},season.is.null`);
+      const { data } = await query.order("sort_order");
       return (data ?? []) as StandingRow[];
     },
   });
@@ -60,12 +64,12 @@ export function StandingsPanel({ competitionId }: { competitionId: string }) {
     synced.current = true;
     (async () => {
       await supabase.from("standings_rows").insert(
-        missing.map((t, i) => ({ competition_id: competitionId, team_id: t.id, sort_order: rows.length + i })) as never,
+        missing.map((t, i) => ({ competition_id: competitionId, team_id: t.id, sort_order: rows.length + i, season })) as never,
       );
-      qc.invalidateQueries({ queryKey: ["admin", "standings", competitionId] });
+      qc.invalidateQueries({ queryKey: ["admin", "standings", competitionId, season] });
       synced.current = false;
     })();
-  }, [teams, rows, teamsQ.isLoading, rowsQ.isLoading, competitionId, qc]);
+  }, [teams, rows, teamsQ.isLoading, rowsQ.isLoading, competitionId, season, qc]);
 
   const groups = useMemo(() => {
     const set = new Set<string>();
@@ -75,7 +79,7 @@ export function StandingsPanel({ competitionId }: { competitionId: string }) {
   }, [rows]);
 
   const invalidate = () => {
-    qc.invalidateQueries({ queryKey: ["admin", "standings", competitionId] });
+    qc.invalidateQueries({ queryKey: ["admin", "standings", competitionId, season] });
     qc.invalidateQueries({ queryKey: ["admin", "position-labels", competitionId] });
   };
 
@@ -87,7 +91,7 @@ export function StandingsPanel({ competitionId }: { competitionId: string }) {
     const next = [...list];
     const [moved] = next.splice(from, 1);
     next.splice(to, 0, moved);
-    qc.setQueryData<StandingRow[]>(["admin", "standings", competitionId], (old) =>
+    qc.setQueryData<StandingRow[]>(["admin", "standings", competitionId, season], (old) =>
       (old ?? []).map((r) => {
         const idx = next.findIndex((n) => n.id === r.id);
         return idx >= 0 ? { ...r, sort_order: idx } : r;
@@ -104,7 +108,7 @@ export function StandingsPanel({ competitionId }: { competitionId: string }) {
     if (groups.length === 1 && groups[0] === SINGLE && rows.length > 0) {
       await supabase.from("standings_rows").update({ group_label: name }).eq("competition_id", competitionId).is("group_label", null);
     } else {
-      qc.setQueryData<StandingRow[]>(["admin", "standings", competitionId], (o) => o ?? []);
+      qc.setQueryData<StandingRow[]>(["admin", "standings", competitionId, season], (o) => o ?? []);
     }
     invalidate();
     setPendingGroups((g) => (g.includes(name) ? g : [...g, name]));
