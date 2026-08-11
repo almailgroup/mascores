@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Trophy } from "lucide-react";
 import { TeamCrest } from "@/components/team-crest";
 import { FlagIcon } from "@/components/flag";
-import { FavoriteButton } from "@/hooks/use-favorites";
+import { FavoriteButton, MatchNotificationButton } from "@/hooks/use-favorites";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
 import type { Match, Team } from "@/lib/db";
 
@@ -86,7 +86,10 @@ export function MatchRow({ m, highlightTeamId }: { m: MatchWithTeams; highlightT
         {line(m.home, m.home_score)}
         {line(m.away, m.away_score)}
       </div>
-      <FavoriteButton kind="match" id={m.id} />
+       <div className="flex shrink-0 items-center gap-1">
+         <MatchNotificationButton matchId={m.id} teamIds={[m.home_team_id, m.away_team_id]} />
+         <FavoriteButton kind="match" id={m.id} />
+       </div>
     </Link>
   );
 }

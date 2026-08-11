@@ -1,6 +1,16 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { postChatSchema, editChatSchema, reportChatSchema } from "./chat.schemas";
+import { postChatSchema, editChatSchema, reportChatSchema, chatAuthorsSchema } from "./chat.schemas";
+
+export const getChatAuthorProfiles = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => chatAuthorsSchema.parse(input))
+  .handler(async ({ data }) => {
+    if (data.ids.length === 0) return [];
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: profiles, error } = await supabaseAdmin.rpc("chat_author_profiles", { _ids: data.ids });
+    if (error) throw new Error("Could not load chat profiles.");
+    return profiles ?? [];
+  });
 
 export const postChatMessage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

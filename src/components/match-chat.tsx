@@ -6,7 +6,7 @@ import { Copy, Flag, MessageCircle, MoreHorizontal, Pencil, Trash2, Loader2 } fr
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
-import { postChatMessage, editChatMessage, reportChatMessage } from "@/lib/chat.functions";
+import { getChatAuthorProfiles, postChatMessage, editChatMessage, reportChatMessage } from "@/lib/chat.functions";
 
 type ChatMessage = { id: string; user_id: string; body: string; created_at: string; edited_at: string | null };
 
@@ -26,6 +26,7 @@ export function MatchChat({ matchId }: { matchId: string }) {
   const send = useServerFn(postChatMessage);
   const edit = useServerFn(editChatMessage);
   const report = useServerFn(reportChatMessage);
+  const getAuthors = useServerFn(getChatAuthorProfiles);
 
   const chat = useQuery({
     queryKey: ["match-chat", matchId],
@@ -36,8 +37,7 @@ export function MatchChat({ matchId }: { matchId: string }) {
     queryKey: ["match-chat-authors", matchId, chat.data?.length ?? 0],
     queryFn: async () => {
       const ids = [...new Set((chat.data ?? []).map((c) => c.user_id))];
-      const { data } = await supabase.rpc("chat_author_profiles", { _ids: ids });
-      return (data ?? []) as { id: string; display_name: string | null; avatar_url: string | null }[];
+       return await getAuthors({ data: { ids } });
     },
   });
 
