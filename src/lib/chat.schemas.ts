@@ -14,3 +14,7 @@ export const reportChatSchema = z.object({
   messageId: z.string().uuid(),
   reason: z.string().trim().max(300).default(""),
 });
+
+export const chatAuthorsSchema = z.object({
+  ids: z.array(z.string().uuid()).max(200),
+});

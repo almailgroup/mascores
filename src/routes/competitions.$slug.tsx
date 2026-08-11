@@ -11,6 +11,7 @@ import { useDates, useNum, useTx } from "@/lib/auto-translate";
 import { MatchRow, type MatchWithTeams } from "@/components/match-list";
 import { useI18n } from "@/lib/i18n";
 import type { Database } from "@/integrations/supabase/types";
+import { CalendarDays, ChevronRight, Play, Trophy } from "lucide-react";
 
 type PositionLabel = Database["public"]["Tables"]["standings_position_labels"]["Row"];
 type Row = StandingRow & { team: Team | null };
@@ -145,7 +146,7 @@ function CompetitionPage() {
          {(["overview", "matches", "standings", "teams", "awards", "media", "news"] as const).map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 py-2 font-semibold capitalize ${tab === item ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{item === "awards" ? tx("Awards") : t(`tab.${item}`)}</button>)}
       </div>
 
-      {tab === "overview" && <CompetitionOverviewTab c={c} season={season} teams={teams.data ?? []} titleHolder={titleHolder ?? null} titles={compTitles.data ?? []} divisions={divisions.data ?? []} />}
+       {tab === "overview" && <CompetitionOverviewTab c={c} season={season} teams={teams.data ?? []} titleHolder={titleHolder ?? null} titles={compTitles.data ?? []} divisions={divisions.data ?? []} matches={matches.data ?? []} media={media.data ?? []} />}
 
       {tab === "matches" && <><SectionHeader title={t("tab.matches")} />
       {matches.data && matches.data.length > 0 ? (
@@ -234,15 +235,17 @@ function CompetitionPage() {
   );
 }
 
-function CompetitionOverviewTab({ c, season, teams, titleHolder, titles, divisions }: {
+function CompetitionOverviewTab({ c, season, teams, titleHolder, titles, divisions, matches, media }: {
   c: Competition;
   season: string | null;
   teams: Team[];
   titleHolder: Team | null;
   titles: { team_id: string; titles: number }[];
   divisions: { id: string; name: string; slug: string }[];
+  matches: MatchWithTeams[];
+  media: { id: string; url: string; source: string; title: string | null }[];
 }) {
-  return <CompetitionOverviewInner c={c} season={season} teams={teams} titleHolder={titleHolder} titles={titles} divisions={divisions} />;
+  return <CompetitionOverviewInner c={c} season={season} teams={teams} titleHolder={titleHolder} titles={titles} divisions={divisions} matches={matches} media={media} />;
 }
 
 /** Sofascore-style rounds: one card per round, compact rows inside. */
@@ -270,20 +273,24 @@ function CompetitionMatches({ data }: { data: MatchWithTeams[] }) {
   );
 }
 
-function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divisions }: {
+function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divisions, matches, media }: {
   c: Competition;
   season: string | null;
   teams: Team[];
   titleHolder: Team | null;
   titles: { team_id: string; titles: number }[];
   divisions: { id: string; name: string; slug: string }[];
+  matches: MatchWithTeams[];
+  media: { id: string; url: string; source: string; title: string | null }[];
 }) {
   const tx = useTx();
+  const num = useNum();
   const winners = titles.filter((r) => r.titles > 0);
   const best = winners[0];
   const bestTeam = best ? teams.find((team) => team.id === best.team_id) : undefined;
   const higher = divisions.find((d) => d.id === c.higher_division_id);
   const lower = divisions.find((d) => d.id === c.lower_division_id);
+  const featured = matches.find((match) => ["live", "ht"].includes(match.status)) ?? matches.find((match) => match.status === "scheduled") ?? matches.at(-1);
   const cells: [string, string][] = [
     ["Sport", c.sport], ["Format", c.format], ["Teams", String(teams.length)],
     ["Duration", [c.starts_on, c.ends_on].filter(Boolean).join(" — ") || "—"],
@@ -293,12 +300,19 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
     ["Country", c.country ?? "—"],
   ];
   return (
-    <>
-      <div className="mb-px grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2">
+    <div className="space-y-5">
+      {featured && (
+        <section className="overflow-hidden rounded-lg border border-border bg-card">
+          <div className="flex items-center justify-between border-b border-border px-4 py-3"><div><div className="text-[0.65rem] font-bold uppercase text-primary">{tx(featured.status === "scheduled" ? "Featured match" : "Latest match")}</div><div className="mt-0.5 text-xs text-muted-foreground">{featured.round_number ? `${tx("Round")} ${num(featured.round_number)}` : tx(featured.round)}</div></div><CalendarDays className="h-4 w-4 text-muted-foreground" /></div>
+          <MatchRow m={featured} />
+        </section>
+      )}
+      {media.length > 0 && <section><SectionHeader title={tx("Highlights and media")} /><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{media.slice(0, 3).map((item) => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="group flex min-h-28 items-end overflow-hidden rounded-lg border border-border bg-primary/10 p-4 hover:border-primary"><div className="flex min-w-0 items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground"><Play className="h-4 w-4" /></span><div className="min-w-0"><div className="truncate font-bold">{tx(item.title) ?? tx("Competition media")}</div><div className="text-xs uppercase text-muted-foreground">{tx(item.source)}</div></div></div></a>)}</div></section>}
+      <div className="grid gap-3 sm:grid-cols-2">
         <TeamCell label={tx("Title holder")} team={titleHolder} />
         <TeamCell label={tx("Most titles")} team={bestTeam ?? null} note={best ? String(best.titles) : null} />
       </div>
-      <div className="mt-3 grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
         {cells.map(([label, value]) => (
           <div key={label} className="bg-card p-4">
              <div className="text-[0.65rem] font-bold uppercase text-muted-foreground">{tx(label)}</div>
@@ -306,6 +320,7 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
           </div>
         ))}
       </div>
+      {(higher || lower) && <div className="grid gap-3 sm:grid-cols-2">{[higher, lower].filter((division): division is { id: string; name: string; slug: string } => Boolean(division)).map((division) => <Link key={division.id} to="/competitions/$slug" params={{ slug: division.slug }} className="flex items-center gap-3 rounded-lg border border-border bg-card p-4 hover:border-primary"><Trophy className="h-7 w-7 text-primary" /><div className="min-w-0 flex-1"><div className="text-[0.65rem] font-bold uppercase text-muted-foreground">{division.id === c.higher_division_id ? tx("Higher division") : tx("Lower division")}</div><div className="truncate font-semibold">{tx(division.name)}</div></div><ChevronRight className="h-4 w-4 text-muted-foreground" /></Link>)}</div>}
       {winners.length > 0 && (
         <div className="mt-6 overflow-hidden rounded-2xl border border-border bg-card">
           <div className="border-b border-border px-4 py-3 text-sm font-bold">{tx("Title winners")}</div>
@@ -323,14 +338,14 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }
 
 function TeamCell({ label, team, note }: { label: string; team: Team | null; note?: string | null }) {
   const tx = useTx();
   return (
-    <div className="bg-card p-4">
+    <div className="rounded-lg border border-border bg-card p-4">
       <div className="text-[0.65rem] font-bold uppercase text-muted-foreground">{tx(label)}</div>
       {team ? (
         <Link to="/teams/$id" params={{ id: team.id }} className="mt-2 flex items-center gap-2 font-semibold hover:text-primary">

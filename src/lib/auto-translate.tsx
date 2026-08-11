@@ -11,10 +11,12 @@ const Ctx = createContext<{
   tx: Tx;
   num: (v: number | string | null | undefined) => string;
   reverse: (v: string) => string[];
+  ready: boolean;
 }>({
   tx: ((v: unknown) => v) as Tx,
   num: (v) => (v == null ? "" : String(v)),
   reverse: () => [],
+  ready: true,
 });
 
 const AR_DIGITS = ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"];
@@ -50,6 +52,7 @@ export function AutoTranslateProvider({ children }: { children: ReactNode }) {
   const translate = useServerFn(translateContent);
   const loadDictionary = useServerFn(translationDictionary);
   const [map, setMap] = useState<Record<string, string>>({});
+  const [ready, setReady] = useState(true);
   const asked = useRef(new Set<string>());
   const queue = useRef(new Set<string>());
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -58,7 +61,8 @@ export function AutoTranslateProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     asked.current = new Set();
     queue.current = new Set();
-    if (lang !== "ar") { setMap({}); return; }
+    if (lang !== "ar") { setMap({}); setReady(true); return; }
+    setReady(false);
     let alive = true;
     try {
       const cached = JSON.parse(localStorage.getItem(CACHE_KEY) ?? "{}") as Record<string, string>;
@@ -67,7 +71,8 @@ export function AutoTranslateProvider({ children }: { children: ReactNode }) {
     // Prewarm the full server-side dictionary once so nothing waits on the AI translator.
     void loadDictionary({ data: { locale: "ar" } })
       .then((dict) => { if (alive && dict && Object.keys(dict).length > 0) setMap((prev) => ({ ...dict, ...prev })); })
-      .catch(() => undefined);
+      .catch(() => undefined)
+      .finally(() => { if (alive && queue.current.size === 0 && inflight.current === 0) setReady(true); });
     return () => { alive = false; };
   }, [lang, loadDictionary]);
 
@@ -89,6 +94,7 @@ export function AutoTranslateProvider({ children }: { children: ReactNode }) {
       batch.forEach((item) => asked.current.delete(item));
     } finally {
       inflight.current -= 1;
+      if (queue.current.size === 0 && inflight.current === 0) setReady(true);
     }
     // Keep several batches in flight so long pages translate in parallel, not one after another.
     if (queue.current.size > 0 && inflight.current < 4) void flush();
@@ -98,6 +104,7 @@ export function AutoTranslateProvider({ children }: { children: ReactNode }) {
     if (lang !== "ar") return;
     const key = value.trim();
     if (!key || key.length > 6000 || asked.current.has(key)) return;
+    setReady(false);
     asked.current.add(key);
     queue.current.add(key);
     if (!timer.current) timer.current = setTimeout(() => { void flush(); }, 20);
@@ -141,7 +148,11 @@ export function AutoTranslateProvider({ children }: { children: ReactNode }) {
     [map],
   );
 
-  return <Ctx.Provider value={{ tx, num, reverse }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ tx, num, reverse, ready }}>{children}</Ctx.Provider>;
+}
+
+export function useTranslationReady() {
+  return useContext(Ctx).ready;
 }
 
 /** Map an Arabic search term back to the English source terms stored in the database. */
