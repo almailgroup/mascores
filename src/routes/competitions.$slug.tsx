@@ -8,6 +8,7 @@ import { useRealtime } from "@/lib/realtime";
 import { FlagIcon } from "@/components/flag";
 import { LinkedNews } from "@/components/linked-news";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
+import { MatchRow, type MatchWithTeams } from "@/components/match-list";
 import { useI18n } from "@/lib/i18n";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -59,12 +60,12 @@ function CompetitionPage() {
     queryKey: ["comp-matches", comp.data?.id, season],
     queryFn: async () => {
       let query = supabase.from("matches")
-        .select("*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url)")
+        .select("*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url,country,country_code)")
         .eq("competition_id", comp.data!.id);
        const selectedSeason = season ?? comp.data!.season;
        if (selectedSeason) query = query.or(`season.eq.${selectedSeason},season.is.null`);
       const { data } = await query.order("kickoff_at");
-      return (data ?? []) as unknown as (Match & { home: Team | null; away: Team | null })[];
+      return (data ?? []) as unknown as MatchWithTeams[];
     },
   });
 
@@ -148,18 +149,7 @@ function CompetitionPage() {
 
       {tab === "matches" && <><SectionHeader title={t("tab.matches")} />
       {matches.data && matches.data.length > 0 ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {matches.data.map((m) => (
-            <Link key={m.id} to="/matches/$id" params={{ id: m.id }} className="rounded-2xl border border-border bg-card p-4 hover:border-primary/50">
-                 <div className="text-[0.65rem] uppercase text-muted-foreground">{m.round_number ? `${tx("Round")} ${num(m.round_number)}` : tx(m.round) ?? "—"}</div>
-              <div className="mt-2 grid items-center gap-2" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
-                <div className="truncate text-right font-semibold">{tx(m.home?.name) ?? "TBD"}</div>
-                <div className="text-center text-sm font-bold">{m.home_score != null ? `${m.home_score} – ${m.away_score}` : num(dates.kickoff(m.kickoff_at))}</div>
-                <div className="truncate font-semibold">{tx(m.away?.name) ?? "TBD"}</div>
-              </div>
-            </Link>
-          ))}
-        </div>
+        <CompetitionMatches data={matches.data} />
       ) : <EmptyState title={tx("No matches yet")} />}</>}
 
       {tab === "standings" && <><SectionHeader title={t("tab.standings")} action={<div />} />
