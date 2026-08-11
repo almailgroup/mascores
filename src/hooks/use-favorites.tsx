@@ -146,12 +146,14 @@ export function MatchNotificationButton({ matchId, teamIds = [] }: { matchId: st
   }, [user]);
 
   const explicit = alerts.includes(matchId);
-  const active = explicit || inherited;
+  // For a followed club the saved match id is a deliberate mute override;
+  // otherwise it is an explicit opt-in for this individual fixture.
+  const active = inherited ? !explicit : explicit;
   return (
     <button
       type="button"
       aria-label={active ? "Disable match notifications" : "Enable match notifications"}
-      title={inherited && !explicit ? "Following this club's matches" : active ? "Disable match notifications" : "Enable match notifications"}
+      title={inherited && active ? "Following this club's matches" : active ? "Disable match notifications" : "Enable match notifications"}
       disabled={!loaded}
       onClick={async (event) => {
         event.preventDefault(); event.stopPropagation();

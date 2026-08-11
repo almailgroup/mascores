@@ -72,7 +72,7 @@ export function AutoTranslateProvider({ children }: { children: ReactNode }) {
     void loadDictionary({ data: { locale: "ar" } })
       .then((dict) => { if (alive && dict && Object.keys(dict).length > 0) setMap((prev) => ({ ...dict, ...prev })); })
       .catch(() => undefined)
-      .finally(() => { if (alive) setReady(true); });
+      .finally(() => { if (alive && queue.current.size === 0 && inflight.current === 0) setReady(true); });
     return () => { alive = false; };
   }, [lang, loadDictionary]);
 
