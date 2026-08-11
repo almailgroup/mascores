@@ -3,7 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, SectionHeader, EmptyState, LoadingSkeleton } from "@/components/app-shell";
-import { supabase, formatKickoff, type Competition, type Match, type Team, type NewsPost } from "@/lib/db";
+import { supabase, formatKickoff, matchClockSeconds, type Competition, type Match, type Team, type NewsPost } from "@/lib/db";
 import { useI18n } from "@/lib/i18n";
 import { useRealtime } from "@/lib/realtime";
 import { useFavorites, FavoriteButton } from "@/hooks/use-favorites";
