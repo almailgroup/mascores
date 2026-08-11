@@ -15,7 +15,8 @@ import { ThemeProvider } from "../components/theme-provider";
 import { IntroSplash } from "../components/intro-splash";
 import { I18nProvider } from "../lib/i18n";
 import { CurrencyProvider } from "../lib/currency";
-import { AutoTranslateProvider } from "../lib/auto-translate";
+import { AutoTranslateProvider, useTranslationReady } from "../lib/auto-translate";
+import { BrandLogo } from "../components/brand-logo";
 
 function NotFoundComponent() {
   return (
@@ -141,11 +142,29 @@ function RootComponent() {
           <CurrencyProvider>
             <AutoTranslateProvider>
               <IntroSplash />
-              <Outlet />
+              <LanguageReadyGate><Outlet /></LanguageReadyGate>
             </AutoTranslateProvider>
           </CurrencyProvider>
         </I18nProvider>
       </ThemeProvider>
     </QueryClientProvider>
+  );
+}
+
+function LanguageReadyGate({ children }: { children: ReactNode }) {
+  const ready = useTranslationReady();
+  return (
+    <>
+      <div className={ready ? "contents" : "pointer-events-none select-none opacity-0"}>{children}</div>
+      {!ready && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background text-foreground" role="status" aria-live="polite">
+          <div className="flex flex-col items-center gap-4">
+            <BrandLogo className="h-14" />
+            <span className="h-7 w-7 animate-spin rounded-full border-2 border-border border-t-primary" />
+            <p className="text-sm font-semibold">جارٍ تجهيز النسخة العربية…</p>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

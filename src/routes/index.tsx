@@ -273,7 +273,7 @@ function FavoriteMatches() {
     },
   });
   if (!q.data || q.data.length === 0) return null;
-  return <MatchSection title={t("home.favMatches")} data={q.data} loading={false} />;
+  return <section className="mt-8"><SectionHeader title={t("home.favMatches")} action={<Link to="/favorites" className="text-sm font-semibold text-primary">View all</Link>} /><MatchGroups data={q.data} /></section>;
 }
 
 function CompLogo({ logo }: { logo: string | null }) {
