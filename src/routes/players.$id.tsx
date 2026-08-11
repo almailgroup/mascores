@@ -125,15 +125,20 @@ function PlayerPage() {
               {transfers.data.map((r) => {
                 const from = transferClubs.data?.find((team) => team.name === r.from_club);
                 const to = transferClubs.data?.find((team) => team.name === r.to_club);
-                return <div key={r.id} className="grid grid-cols-[2.5rem_minmax(0,1fr)_auto] items-center gap-3 border-b border-border p-3 last:border-b-0 sm:grid-cols-[3rem_minmax(0,1fr)_auto]">
-                  <TeamCrest name={to?.name ?? r.to_club ?? r.from_club} logo={to?.logo_url ?? from?.logo_url ?? null} className="h-10 w-10" />
+                return <div key={r.id} className="grid grid-cols-[2.25rem_minmax(0,1fr)] items-start gap-3 border-b border-border p-3 last:border-b-0 sm:grid-cols-[3rem_minmax(0,1fr)]">
+                  <TeamCrest name={to?.name ?? r.to_club ?? r.from_club} logo={to?.logo_url ?? from?.logo_url ?? null} className="h-9 w-9 sm:h-10 sm:w-10" />
                   <div className="min-w-0">
-                    <div className="flex min-w-0 items-center gap-1.5 text-sm font-semibold"><span className="truncate">{tx(r.from_club) ?? tx("Free agent")}</span><ArrowRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" /><span className="truncate">{tx(r.to_club) ?? tx("Free agent")}</span></div>
-                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground"><span>{tx(r.transfer_type)}</span>{r.season && <span>{num(r.season)}</span>}</div>
-                  </div>
-                  <div className="text-end">
-                    <div className="text-sm font-bold">{r.fee ? tx(r.fee) : tx("Free")}</div>
-                    {r.moved_on && <div className="mt-1 flex items-center gap-1 text-[0.65rem] text-muted-foreground"><CalendarDays className="h-3 w-3" />{num(dates.date(r.moved_on))}</div>}
+                    <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[0.8rem] font-semibold leading-snug sm:text-sm">
+                      <span className="break-words">{tx(r.from_club) ?? tx("Free agent")}</span>
+                      <ArrowRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                      <span className="break-words">{tx(r.to_club) ?? tx("Free agent")}</span>
+                    </div>
+                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.7rem] text-muted-foreground sm:text-xs">
+                      <span>{tx(r.transfer_type)}</span>
+                      {r.season && <span>{num(r.season)}</span>}
+                      <span className="font-bold text-foreground">{r.fee ? tx(r.fee) : tx("Free")}</span>
+                      {r.moved_on && <span className="flex items-center gap-1"><CalendarDays className="h-3 w-3" />{num(dates.date(r.moved_on))}</span>}
+                    </div>
                   </div>
                 </div>;
               })}
