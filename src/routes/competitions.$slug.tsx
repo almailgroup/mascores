@@ -153,7 +153,7 @@ function CompetitionPage() {
          {tabs.map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-3 py-2 font-semibold capitalize sm:px-4 ${tab === item ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{item === "awards" ? tx("Awards") : t(`tab.${item}`)}</button>)}
       </div>
 
-       {tab === "overview" && <CompetitionOverviewTab c={c} season={season} teams={teams.data ?? []} titleHolder={titleHolder ?? null} titles={compTitles.data ?? []} divisions={divisions.data ?? []} matches={matches.data ?? []} media={media.data ?? []} />}
+       {tab === "overview" && <CompetitionOverviewTab c={c} season={season} teams={teams.data ?? []} titleHolder={friendly ? null : (titleHolder ?? null)} titles={friendly ? [] : (compTitles.data ?? [])} divisions={friendly ? [] : (divisions.data ?? [])} matches={matches.data ?? []} media={media.data ?? []} friendly={friendly} />}
 
       {tab === "matches" && <><SectionHeader title={t("tab.matches")} />
       {matches.data && matches.data.length > 0 ? (
@@ -242,7 +242,7 @@ function CompetitionPage() {
   );
 }
 
-function CompetitionOverviewTab({ c, season, teams, titleHolder, titles, divisions, matches, media }: {
+function CompetitionOverviewTab({ c, season, teams, titleHolder, titles, divisions, matches, media, friendly = false }: {
   c: Competition;
   season: string | null;
   teams: Team[];
@@ -251,8 +251,9 @@ function CompetitionOverviewTab({ c, season, teams, titleHolder, titles, divisio
   divisions: { id: string; name: string; slug: string }[];
   matches: MatchWithTeams[];
   media: { id: string; url: string; source: string; title: string | null }[];
+  friendly?: boolean;
 }) {
-  return <CompetitionOverviewInner c={c} season={season} teams={teams} titleHolder={titleHolder} titles={titles} divisions={divisions} matches={matches} media={media} />;
+  return <CompetitionOverviewInner c={c} season={season} teams={teams} titleHolder={titleHolder} titles={titles} divisions={divisions} matches={matches} media={media} friendly={friendly} />;
 }
 
 /** Sofascore-style rounds: one card per round, compact rows inside. */
@@ -280,7 +281,7 @@ function CompetitionMatches({ data }: { data: MatchWithTeams[] }) {
   );
 }
 
-function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divisions, matches, media }: {
+function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divisions, matches, media, friendly = false }: {
   c: Competition;
   season: string | null;
   teams: Team[];
@@ -289,6 +290,7 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
   divisions: { id: string; name: string; slug: string }[];
   matches: MatchWithTeams[];
   media: { id: string; url: string; source: string; title: string | null }[];
+  friendly?: boolean;
 }) {
   const tx = useTx();
   const num = useNum();
@@ -299,7 +301,11 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
   const lower = divisions.find((d) => d.id === c.lower_division_id);
   const featured = matches.find((match) => ["live", "ht"].includes(match.status)) ?? matches.find((match) => match.status === "scheduled") ?? matches.at(-1);
   const played = matches.filter((m) => ["ft", "aet", "pen", "awarded"].includes(m.status)).length;
-  const cells: [string, string][] = [
+  const cells: [string, string][] = friendly ? [
+    ["Season", season ?? c.season ?? "—"],
+    ["Matches", `${played}/${matches.length}`],
+    ["Format", "Friendly"],
+  ] : [
     ["Season", season ?? c.season ?? "—"],
     ["Teams", String(teams.length)],
     ["Matches", `${played}/${matches.length}`],
@@ -310,7 +316,7 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
   return (
     <div className="space-y-4">
       {/* Key numbers strip */}
-      <section className="grid grid-cols-3 gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-6">
+      <section className={`grid grid-cols-3 gap-px overflow-hidden rounded-xl border border-border bg-border ${friendly ? "" : "sm:grid-cols-6"}`}>
         {cells.map(([label, value]) => (
           <div key={label} className="bg-card px-2.5 py-3 text-center">
             <div className="text-[0.6rem] font-bold uppercase tracking-wide text-muted-foreground">{tx(label)}</div>
@@ -332,10 +338,10 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
         </section>
       )}
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      {!friendly && <div className="grid gap-3 sm:grid-cols-2">
         <TeamCell label={tx("Title holder")} team={titleHolder} />
         <TeamCell label={tx("Most titles")} team={bestTeam ?? null} note={best ? String(best.titles) : null} />
-      </div>
+      </div>}
 
       {media.length > 0 && (
         <section className="overflow-hidden rounded-xl border border-border bg-card">
@@ -355,7 +361,7 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
         </section>
       )}
 
-      {winners.length > 0 && (
+      {!friendly && winners.length > 0 && (
         <section className="overflow-hidden rounded-xl border border-border bg-card">
           <div className="border-b border-border bg-muted/40 px-3 py-2 text-[0.7rem] font-bold uppercase tracking-wide text-muted-foreground">{tx("Title winners")}</div>
           <div className="divide-y divide-border">
