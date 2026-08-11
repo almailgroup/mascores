@@ -10,7 +10,7 @@ import { createFixtureDraftsWithAlmail } from "@/lib/almail-ai.functions";
 import { readAiImages } from "@/lib/image-files";
 import { TeamCrest } from "@/components/team-crest";
 
-export function MatchesPanel({ competitionId }: { competitionId: string }) {
+export function MatchesPanel({ competitionId, season = null }: { competitionId: string; season?: string | null }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<Partial<Match>>({ status: "scheduled" });
@@ -29,9 +29,11 @@ export function MatchesPanel({ competitionId }: { competitionId: string }) {
   });
 
   const matchesQ = useQuery({
-    queryKey: ["admin", "matches", competitionId],
+    queryKey: ["admin", "matches", competitionId, season],
     queryFn: async () => {
-      const { data } = await supabase.from("matches").select("*").eq("competition_id", competitionId).order("kickoff_at", { nullsFirst: true });
+      let query = supabase.from("matches").select("*").eq("competition_id", competitionId);
+      if (season) query = query.or(`season.eq.${season},season.is.null`);
+      const { data } = await query.order("kickoff_at", { nullsFirst: true });
       return (data ?? []) as Match[];
     },
   });
@@ -55,6 +57,7 @@ export function MatchesPanel({ competitionId }: { competitionId: string }) {
     if (!form.home_team_id || !form.away_team_id) { alert("Pick both teams first."); return; }
     await supabase.from("matches").insert({
       competition_id: competitionId,
+      season,
       home_team_id: form.home_team_id,
       away_team_id: form.away_team_id,
       kickoff_at: form.kickoff_at ?? null,
