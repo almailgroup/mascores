@@ -139,7 +139,7 @@ function CompetitionPage() {
              {(c.seasons?.length ?? 0) > 0 && <select aria-label="Season" className="rounded-full border border-border bg-background px-2 py-0.5 text-[0.7rem] font-semibold text-foreground" value={season ?? c.season ?? c.seasons[0]} onChange={(e) => setSeason(e.target.value)}>{c.seasons.map((item) => <option key={item} value={item}>{num(item)}</option>)}</select>}
           </div>
         </div>
-        {c.description && <p className="col-span-2 -mt-1 line-clamp-3 max-w-2xl text-xs text-muted-foreground sm:text-sm">{tx(c.description)}</p>}
+        <div className="col-span-2"><DurationBar startsOn={c.starts_on} endsOn={c.ends_on} /></div>
       </div>
 
       <div className="mb-5 flex max-w-full gap-1 overflow-x-auto border-b border-border pb-2 text-xs sm:text-sm">
