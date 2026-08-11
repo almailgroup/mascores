@@ -367,7 +367,7 @@ function TeamCell({ label, team, note }: { label: string; team: Team | null; not
 }
 
 /** Tournament duration as a live progress bar between the start and end dates. */
-function SeasonProgress({ startsOn, endsOn }: { startsOn: string | null; endsOn: string | null }) {
+function DurationBar({ startsOn, endsOn }: { startsOn: string | null; endsOn: string | null }) {
   const tx = useTx();
   const dates = useDates();
   const num = useNum();
@@ -377,18 +377,15 @@ function SeasonProgress({ startsOn, endsOn }: { startsOn: string | null; endsOn:
   if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return null;
   const pct = Math.max(0, Math.min(100, Math.round(((Date.now() - start) / (end - start)) * 100)));
   return (
-    <section className="rounded-lg border border-border bg-card p-4">
-      <div className="flex items-center justify-between text-[0.65rem] font-bold uppercase tracking-wide text-muted-foreground">
-        <span>{tx("Duration")}</span>
-        <span className="tabular-nums">{num(pct)}%</span>
+    <div>
+      <div className="flex items-center justify-between text-[0.65rem] font-semibold tabular-nums text-muted-foreground">
+        <span>{num(dates.dob(startsOn))}</span>
+        <span className="uppercase tracking-wide">{tx("Duration")} · {num(pct)}%</span>
+        <span>{num(dates.dob(endsOn))}</span>
       </div>
-      <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
+      <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
         <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
       </div>
-      <div className="mt-2 flex items-center justify-between text-[0.7rem] text-muted-foreground">
-        <span className="tabular-nums">{num(dates.dob(startsOn))}</span>
-        <span className="tabular-nums">{num(dates.dob(endsOn))}</span>
-      </div>
-    </section>
+    </div>
   );
 }
