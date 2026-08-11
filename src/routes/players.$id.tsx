@@ -10,7 +10,7 @@ import { useI18n } from "@/lib/i18n";
 import { PlayerAvatar } from "@/components/player-avatar";
 import { LinkedNews } from "@/components/linked-news";
 import { formatMoney, useCurrency } from "@/lib/currency";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, CalendarDays } from "lucide-react";
 import { useTx } from "@/lib/auto-translate";
 import { useDates, useNum } from "@/lib/auto-translate";
 
@@ -64,6 +64,16 @@ function PlayerPage() {
       .in("id", ids).order("kickoff_at", { ascending: false });
     return (data ?? []) as unknown as (Match & { home: Team | null; away: Team | null })[];
   }});
+  const transferClubs = useQuery({
+    enabled: (transfers.data?.length ?? 0) > 0,
+    queryKey: ["player-transfer-clubs", id, transfers.data?.length ?? 0],
+    queryFn: async () => {
+      const names = [...new Set((transfers.data ?? []).flatMap((row) => [row.from_club, row.to_club]).filter((name): name is string => Boolean(name)))];
+      if (names.length === 0) return [];
+      const { data } = await supabase.from("teams").select("id,name,logo_url,is_temporary").in("name", names);
+      return (data ?? []) as Pick<Team, "id" | "name" | "logo_url" | "is_temporary">[];
+    },
+  });
 
   if (q.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;
   if (!q.data) return <AppShell><EmptyState title={tx("Player not found")} /></AppShell>;
@@ -73,11 +83,11 @@ function PlayerPage() {
   return (
     <AppShell>
       <BackButton />
-      <div className="mb-4 overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/15 via-card to-card p-6">
-        <div className="flex items-center gap-5">
-          <PlayerAvatar src={p.photo_url} name={p.name} size="lg" className="border-2 border-primary/30" />
+       <div className="mb-4 overflow-hidden rounded-lg border border-border bg-card p-4 sm:p-5">
+         <div className="flex items-center gap-4">
+           <PlayerAvatar src={p.photo_url} name={p.name} size="lg" className="border-2 border-border" />
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-3xl font-black tracking-tight">{tx(p.name)}</h1>
+             <h1 className="truncate text-xl font-bold sm:text-2xl">{tx(p.name)}</h1>
             {p.team && (
               <Link to="/teams/$id" params={{ id: p.team.id }} className="mt-1 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary">
                 <TeamCrest name={p.team.name} logo={p.team.logo_url} className="h-5 w-5" />
@@ -111,16 +121,22 @@ function PlayerPage() {
 
            <h2 className="mb-3 mt-8 text-sm font-bold uppercase text-muted-foreground">{tx("Transfer history")}</h2>
           {transfers.data && transfers.data.length > 0 ? (
-            <div className="grid gap-2">
-              {transfers.data.map((r) => (
-                <div key={r.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 text-sm">
-                  <span className="flex-1 truncate">{tx(r.from_club) ?? "—"}</span>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                  <span className="flex-1 truncate font-medium">{tx(r.to_club) ?? "—"}</span>
-                  <span className="shrink-0 text-xs text-muted-foreground">{r.fee ?? r.transfer_type ?? ""}</span>
-                  <span className="shrink-0 text-xs text-muted-foreground">{r.moved_on ? num(dates.date(r.moved_on)) : ""}</span>
-                </div>
-              ))}
+            <div className="overflow-hidden rounded-lg border border-border bg-card">
+              {transfers.data.map((r) => {
+                const from = transferClubs.data?.find((team) => team.name === r.from_club);
+                const to = transferClubs.data?.find((team) => team.name === r.to_club);
+                return <div key={r.id} className="grid grid-cols-[2.5rem_minmax(0,1fr)_auto] items-center gap-3 border-b border-border p-3 last:border-b-0 sm:grid-cols-[3rem_minmax(0,1fr)_auto]">
+                  <TeamCrest name={to?.name ?? r.to_club ?? r.from_club} logo={to?.logo_url ?? from?.logo_url ?? null} className="h-10 w-10" />
+                  <div className="min-w-0">
+                    <div className="flex min-w-0 items-center gap-1.5 text-sm font-semibold"><span className="truncate">{tx(r.from_club) ?? tx("Free agent")}</span><ArrowRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" /><span className="truncate">{tx(r.to_club) ?? tx("Free agent")}</span></div>
+                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground"><span>{tx(r.transfer_type)}</span>{r.season && <span>{num(r.season)}</span>}</div>
+                  </div>
+                  <div className="text-end">
+                    <div className="text-sm font-bold">{r.fee ? tx(r.fee) : tx("Free")}</div>
+                    {r.moved_on && <div className="mt-1 flex items-center gap-1 text-[0.65rem] text-muted-foreground"><CalendarDays className="h-3 w-3" />{num(dates.date(r.moved_on))}</div>}
+                  </div>
+                </div>;
+              })}
             </div>
           ) : <EmptyState title={tx("No transfers recorded")} />}
         </>
