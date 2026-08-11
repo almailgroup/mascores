@@ -17,7 +17,7 @@ const NAV: NavItem[] = [
   { to: "/settings", labelKey: "nav.settings", icon: Settings },
 ];
 
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({ children, bare = false }: { children: ReactNode; bare?: boolean }) {
   const { user, loading } = useAuth();
   const { t } = useI18n();
   const location = useLocation();
@@ -37,7 +37,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="relative min-h-screen bg-background text-foreground">
       <div className="pointer-events-none fixed inset-0 opacity-40 [background:radial-gradient(circle_at_10%_-10%,color-mix(in_oklab,var(--primary)_25%,transparent),transparent_55%),radial-gradient(circle_at_100%_100%,color-mix(in_oklab,var(--primary)_15%,transparent),transparent_60%)]" />
 
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
+      {!bare && <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <Link to="/" className="inline-flex shrink-0 items-center gap-2">
             <BrandLogo className="h-10" />
@@ -84,11 +84,11 @@ export function AppShell({ children }: { children: ReactNode }) {
             )}
           </div>
         </div>
-      </header>
+      </header>}
 
       <main className="relative z-10 mx-auto max-w-7xl px-4 pb-28 pt-6 sm:px-6">{children}</main>
 
-      <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/60 bg-background/95 backdrop-blur-xl md:hidden">
+      {!bare && <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/60 bg-background/95 backdrop-blur-xl md:hidden">
         <div className="mx-auto flex max-w-7xl items-center justify-around px-2 py-2">
           {NAV.map((item) => {
             const active = item.exact ? location.pathname === item.to : location.pathname.startsWith(item.to);
@@ -106,7 +106,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             );
           })}
         </div>
-      </nav>
+      </nav>}
     </div>
   );
 }
