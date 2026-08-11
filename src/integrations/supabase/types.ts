@@ -1122,11 +1122,13 @@ export type Database = {
           currency: string
           display_name: string | null
           favorite_competition_ids: string[]
+          favorite_match_ids: string[]
           favorite_player_ids: string[]
           favorite_team_ids: string[]
           height_unit: string
           id: string
           language: string
+          match_notification_ids: string[]
           notification_preferences: Json
           theme: string
           updated_at: string
@@ -1137,11 +1139,13 @@ export type Database = {
           currency?: string
           display_name?: string | null
           favorite_competition_ids?: string[]
+          favorite_match_ids?: string[]
           favorite_player_ids?: string[]
           favorite_team_ids?: string[]
           height_unit?: string
           id: string
           language?: string
+          match_notification_ids?: string[]
           notification_preferences?: Json
           theme?: string
           updated_at?: string
@@ -1152,11 +1156,13 @@ export type Database = {
           currency?: string
           display_name?: string | null
           favorite_competition_ids?: string[]
+          favorite_match_ids?: string[]
           favorite_player_ids?: string[]
           favorite_team_ids?: string[]
           height_unit?: string
           id?: string
           language?: string
+          match_notification_ids?: string[]
           notification_preferences?: Json
           theme?: string
           updated_at?: string
