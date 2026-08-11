@@ -139,7 +139,7 @@ function CompetitionPage() {
              {(c.seasons?.length ?? 0) > 0 && <select aria-label="Season" className="rounded-full border border-border bg-background px-2 py-0.5 text-[0.7rem] font-semibold text-foreground" value={season ?? c.season ?? c.seasons[0]} onChange={(e) => setSeason(e.target.value)}>{c.seasons.map((item) => <option key={item} value={item}>{num(item)}</option>)}</select>}
           </div>
         </div>
-        {c.description && <p className="col-span-2 -mt-1 line-clamp-3 max-w-2xl text-xs text-muted-foreground sm:text-sm">{tx(c.description)}</p>}
+        <div className="col-span-2"><DurationBar startsOn={c.starts_on} endsOn={c.ends_on} /></div>
       </div>
 
       <div className="mb-5 flex max-w-full gap-1 overflow-x-auto border-b border-border pb-2 text-xs sm:text-sm">
@@ -291,61 +291,97 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
   const higher = divisions.find((d) => d.id === c.higher_division_id);
   const lower = divisions.find((d) => d.id === c.lower_division_id);
   const featured = matches.find((match) => ["live", "ht"].includes(match.status)) ?? matches.find((match) => match.status === "scheduled") ?? matches.at(-1);
+  const played = matches.filter((m) => ["ft", "aet", "pen", "awarded"].includes(m.status)).length;
   const cells: [string, string][] = [
-    ["Sport", c.sport], ["Format", c.format], ["Teams", String(teams.length)],
     ["Season", season ?? c.season ?? "—"],
+    ["Teams", String(teams.length)],
+    ["Matches", `${played}/${matches.length}`],
+    ["Format", c.format],
+    ["Sport", c.sport],
     ["Country", c.country ?? "—"],
   ];
   return (
-    <div className="space-y-5">
-      <section className="flex items-center gap-3 rounded-lg border border-border bg-card p-4">
-        {c.logo_url ? <img src={c.logo_url} alt="" className="h-14 w-14 shrink-0 object-contain sm:h-16 sm:w-16" /> : <Trophy className="h-12 w-12 shrink-0 text-primary" />}
-        <div className="min-w-0">
-          <div className="truncate text-sm font-bold sm:text-base">{tx(c.name)}</div>
-          <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[0.7rem] text-muted-foreground">
-            <FlagIcon value={c.country_code ?? c.country} />
-            <span className="truncate">{[tx(c.country), tx(c.format)].filter(Boolean).join(" · ")}</span>
+    <div className="space-y-4">
+      {/* Key numbers strip */}
+      <section className="grid grid-cols-3 gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-6">
+        {cells.map(([label, value]) => (
+          <div key={label} className="bg-card px-2.5 py-3 text-center">
+            <div className="text-[0.6rem] font-bold uppercase tracking-wide text-muted-foreground">{tx(label)}</div>
+            <div className="mt-1 truncate text-xs font-bold tabular-nums sm:text-sm">{tx(value)}</div>
           </div>
-        </div>
+        ))}
       </section>
-      <SeasonProgress startsOn={c.starts_on} endsOn={c.ends_on} />
+
       {featured && (
-        <section className="overflow-hidden rounded-lg border border-border bg-card">
-          <div className="flex items-center justify-between border-b border-border px-4 py-3"><div><div className="text-[0.65rem] font-bold uppercase text-primary">{tx(featured.status === "scheduled" ? "Featured match" : "Latest match")}</div><div className="mt-0.5 text-xs text-muted-foreground">{featured.round_number ? `${tx("Round")} ${num(featured.round_number)}` : tx(featured.round)}</div></div><CalendarDays className="h-4 w-4 text-muted-foreground" /></div>
+        <section className="overflow-hidden rounded-xl border border-border bg-card">
+          <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/40 px-3 py-2">
+            <div className="min-w-0">
+              <div className="text-[0.6rem] font-bold uppercase tracking-wide text-primary">{tx(featured.status === "scheduled" ? "Featured match" : "Latest match")}</div>
+              <div className="truncate text-[0.7rem] text-muted-foreground">{featured.round_number ? `${tx("Round")} ${num(featured.round_number)}` : tx(featured.round)}</div>
+            </div>
+            <CalendarDays className="h-4 w-4 shrink-0 text-muted-foreground" />
+          </div>
           <MatchRow m={featured} />
         </section>
       )}
-      {media.length > 0 && <section><SectionHeader title={tx("Highlights and media")} /><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{media.slice(0, 3).map((item) => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="group flex min-h-28 items-end overflow-hidden rounded-lg border border-border bg-primary/10 p-4 hover:border-primary"><div className="flex min-w-0 items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground"><Play className="h-4 w-4" /></span><div className="min-w-0"><div className="truncate font-bold">{tx(item.title) ?? tx("Competition media")}</div><div className="text-xs uppercase text-muted-foreground">{tx(item.source)}</div></div></div></a>)}</div></section>}
+
       <div className="grid gap-3 sm:grid-cols-2">
         <TeamCell label={tx("Title holder")} team={titleHolder} />
         <TeamCell label={tx("Most titles")} team={bestTeam ?? null} note={best ? String(best.titles) : null} />
       </div>
-      <div className="grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
-        {cells.map(([label, value]) => (
-          <div key={label} className="bg-card p-4">
-             <div className="text-[0.65rem] font-bold uppercase text-muted-foreground">{tx(label)}</div>
-             <div className="mt-1 font-semibold">{tx(value)}</div>
+
+      {media.length > 0 && (
+        <section className="overflow-hidden rounded-xl border border-border bg-card">
+          <div className="border-b border-border bg-muted/40 px-3 py-2 text-[0.7rem] font-bold uppercase tracking-wide text-muted-foreground">{tx("Highlights and media")}</div>
+          <div className="divide-y divide-border">
+            {media.slice(0, 4).map((item) => (
+              <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="flex items-center gap-3 px-3 py-2.5 hover:bg-accent">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary"><Play className="h-3.5 w-3.5" /></span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-xs font-semibold sm:text-sm">{tx(item.title) ?? tx("Competition media")}</span>
+                  <span className="block text-[0.65rem] uppercase text-muted-foreground">{tx(item.source)}</span>
+                </span>
+                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+              </a>
+            ))}
           </div>
-        ))}
-      </div>
-      {(higher || lower) && <div className="grid gap-3 sm:grid-cols-2">{[higher, lower].filter((division): division is { id: string; name: string; slug: string } => Boolean(division)).map((division) => <Link key={division.id} to="/competitions/$slug" params={{ slug: division.slug }} className="flex items-center gap-3 rounded-lg border border-border bg-card p-4 hover:border-primary"><Trophy className="h-7 w-7 text-primary" /><div className="min-w-0 flex-1"><div className="text-[0.65rem] font-bold uppercase text-muted-foreground">{division.id === c.higher_division_id ? tx("Higher division") : tx("Lower division")}</div><div className="truncate font-semibold">{tx(division.name)}</div></div><ChevronRight className="h-4 w-4 text-muted-foreground" /></Link>)}</div>}
+        </section>
+      )}
+
       {winners.length > 0 && (
-        <div className="mt-6 overflow-hidden rounded-2xl border border-border bg-card">
-          <div className="border-b border-border px-4 py-3 text-sm font-bold">{tx("Title winners")}</div>
+        <section className="overflow-hidden rounded-xl border border-border bg-card">
+          <div className="border-b border-border bg-muted/40 px-3 py-2 text-[0.7rem] font-bold uppercase tracking-wide text-muted-foreground">{tx("Title winners")}</div>
           <div className="divide-y divide-border">
             {winners.map((r) => {
               const team = teams.find((tm) => tm.id === r.team_id);
               return (
-                <Link key={r.team_id} to="/teams/$id" params={{ id: r.team_id }} className="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-accent">
+                <Link key={r.team_id} to="/teams/$id" params={{ id: r.team_id }} className="flex items-center gap-3 px-3 py-2.5 text-xs hover:bg-accent sm:text-sm">
                   <TeamCrest name={team?.name} logo={team?.logo_url} className="h-5 w-5 shrink-0" />
                   <span className="min-w-0 flex-1 truncate font-medium">{tx(team?.name) ?? "Team"}</span>
-                  <span className="font-black tabular-nums">{r.titles}</span>
+                  <span className="font-black tabular-nums">{num(r.titles)}</span>
                 </Link>
               );
             })}
           </div>
+        </section>
+      )}
+
+      {(higher || lower) && (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {[higher, lower].filter((division): division is { id: string; name: string; slug: string } => Boolean(division)).map((division) => (
+            <Link key={division.id} to="/competitions/$slug" params={{ slug: division.slug }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 hover:border-primary">
+              <Trophy className="h-6 w-6 shrink-0 text-primary" />
+              <div className="min-w-0 flex-1">
+                <div className="text-[0.6rem] font-bold uppercase tracking-wide text-muted-foreground">{division.id === c.higher_division_id ? tx("Higher division") : tx("Lower division")}</div>
+                <div className="truncate text-xs font-semibold sm:text-sm">{tx(division.name)}</div>
+              </div>
+              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+            </Link>
+          ))}
         </div>
       )}
+
+      {c.description && <p className="rounded-xl border border-border bg-card p-3 text-xs leading-relaxed text-muted-foreground sm:text-sm">{tx(c.description)}</p>}
     </div>
   );
 }
@@ -367,7 +403,7 @@ function TeamCell({ label, team, note }: { label: string; team: Team | null; not
 }
 
 /** Tournament duration as a live progress bar between the start and end dates. */
-function SeasonProgress({ startsOn, endsOn }: { startsOn: string | null; endsOn: string | null }) {
+function DurationBar({ startsOn, endsOn }: { startsOn: string | null; endsOn: string | null }) {
   const tx = useTx();
   const dates = useDates();
   const num = useNum();
@@ -377,18 +413,15 @@ function SeasonProgress({ startsOn, endsOn }: { startsOn: string | null; endsOn:
   if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return null;
   const pct = Math.max(0, Math.min(100, Math.round(((Date.now() - start) / (end - start)) * 100)));
   return (
-    <section className="rounded-lg border border-border bg-card p-4">
-      <div className="flex items-center justify-between text-[0.65rem] font-bold uppercase tracking-wide text-muted-foreground">
-        <span>{tx("Duration")}</span>
-        <span className="tabular-nums">{num(pct)}%</span>
+    <div>
+      <div className="flex items-center justify-between text-[0.65rem] font-semibold tabular-nums text-muted-foreground">
+        <span>{num(dates.dob(startsOn))}</span>
+        <span className="uppercase tracking-wide">{tx("Duration")} · {num(pct)}%</span>
+        <span>{num(dates.dob(endsOn))}</span>
       </div>
-      <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
+      <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
         <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
       </div>
-      <div className="mt-2 flex items-center justify-between text-[0.7rem] text-muted-foreground">
-        <span className="tabular-nums">{num(dates.dob(startsOn))}</span>
-        <span className="tabular-nums">{num(dates.dob(endsOn))}</span>
-      </div>
-    </section>
+    </div>
   );
 }
