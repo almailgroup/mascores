@@ -5,8 +5,7 @@ import { useState } from "react";
 import { AppShell, BackButton, EmptyState, LoadingSkeleton } from "@/components/app-shell";
 import { supabase, formatKickoff, STATUS_LABELS, roundLabel, type Match, type Team, type MatchEvent, type Lineup, type Player } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
-import { useAuth } from "@/hooks/use-auth";
-import { MessageCircle, PlayCircle, Radio } from "lucide-react";
+import { PlayCircle, Radio } from "lucide-react";
 import { useTx, useNum, useDates } from "@/lib/auto-translate";
 import { MatchChat } from "@/components/match-chat";
 
@@ -49,9 +48,7 @@ function MatchPage() {
   const num = useNum();
   const dates = useDates();
   const { id } = Route.useParams();
-  const { user } = useAuth();
   const [tab, setTab] = useState<"details" | "lineups" | "stats" | "previous" | "media">("details");
-  const [chatBody, setChatBody] = useState("");
   useRealtime(["matches", "match_events", "match_lineups", "player_ratings", "match_stats", "match_chat_messages", "media_items"]);
   const m = useQuery({
     queryKey: ["match", id],
@@ -84,16 +81,6 @@ function MatchPage() {
   const prediction = useQuery({ queryKey: ["match-prediction", id], queryFn: async () => (await supabase.from("match_predictions").select("*").eq("match_id", id).maybeSingle()).data });
   const broadcasts = useQuery({ queryKey: ["match-broadcasts", id], queryFn: async () => (await supabase.from("match_broadcasts").select("channel:broadcast_channels(id,name,logo_url,country_code)").eq("match_id", id)).data ?? [] });
   const media = useQuery({ queryKey: ["match-media", id], queryFn: async () => (await supabase.from("media_items").select("*").eq("owner_type", "match").eq("owner_id", id).order("sort_order")).data ?? [] });
-  const chat = useQuery({ queryKey: ["match-chat", id], queryFn: async () => (await supabase.from("match_chat_messages").select("*").eq("match_id", id).order("created_at").limit(100)).data ?? [] });
-  const chatAuthors = useQuery({
-    enabled: (chat.data?.length ?? 0) > 0,
-    queryKey: ["match-chat-authors", id, chat.data?.length ?? 0],
-    queryFn: async () => {
-      const ids = [...new Set((chat.data ?? []).map((c) => c.user_id))];
-      const { data } = await supabase.rpc("chat_author_profiles", { _ids: ids });
-      return (data ?? []) as { id: string; display_name: string | null; avatar_url: string | null }[];
-    },
-  });
   const ratings = useQuery({ queryKey: ["match-ratings", id], queryFn: async () => (await supabase.from("player_ratings").select("player_id,rating").eq("match_id", id)).data ?? [] });
 
   if (m.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;
