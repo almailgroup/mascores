@@ -133,7 +133,7 @@ function MatchPage() {
           <div className="border-b border-border bg-muted/40 px-4 py-2.5 text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Timeline")}</div>
           {events.data && events.data.length > 0 ? (
             <ul className="divide-y divide-border">
-              {timelineWithBreaks(events.data, match.status).map((entry) => entry.kind === "divider" ? (
+              {timelineWithBreaks(events.data, match.status, match.home_team_id).map((entry) => entry.kind === "divider" ? (
                 <li key={entry.key} className="flex items-center justify-center gap-2 bg-muted/40 px-4 py-1.5 text-[0.6rem] font-bold uppercase tracking-widest text-muted-foreground">
                   {tx(entry.label)}{entry.score ? <span className="tabular-nums">{num(entry.score)}</span> : null}
                 </li>
@@ -253,7 +253,7 @@ type TimelineEntry =
   | { kind: "event"; event: TimelineEvent; side: "home" | "away" };
 
 /** Insert half-time and full-time dividers into an ordered event list. */
-function timelineWithBreaks(events: TimelineEvent[], status: string): TimelineEntry[] {
+function timelineWithBreaks(events: TimelineEvent[], status: string, homeTeamId: string | null): TimelineEntry[] {
   const out: TimelineEntry[] = [];
   let htAdded = false;
   for (const event of events) {
@@ -261,7 +261,7 @@ function timelineWithBreaks(events: TimelineEvent[], status: string): TimelineEn
       out.push({ kind: "divider", key: "ht", label: "HT" });
       htAdded = true;
     }
-    out.push({ kind: "event", event, side: "home" });
+    out.push({ kind: "event", event, side: event.team_id && event.team_id !== homeTeamId ? "away" : "home" });
   }
   if (!["scheduled", "live", "ht"].includes(status)) out.push({ kind: "divider", key: "ft", label: "FT" });
   return out;
