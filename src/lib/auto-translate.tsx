@@ -94,6 +94,7 @@ export function AutoTranslateProvider({ children }: { children: ReactNode }) {
       batch.forEach((item) => asked.current.delete(item));
     } finally {
       inflight.current -= 1;
+      if (queue.current.size === 0 && inflight.current === 0) setReady(true);
     }
     // Keep several batches in flight so long pages translate in parallel, not one after another.
     if (queue.current.size > 0 && inflight.current < 4) void flush();
@@ -103,6 +104,7 @@ export function AutoTranslateProvider({ children }: { children: ReactNode }) {
     if (lang !== "ar") return;
     const key = value.trim();
     if (!key || key.length > 6000 || asked.current.has(key)) return;
+    setReady(false);
     asked.current.add(key);
     queue.current.add(key);
     if (!timer.current) timer.current = setTimeout(() => { void flush(); }, 20);
