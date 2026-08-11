@@ -81,17 +81,15 @@ function AdminPage() {
     <AppShell>
       {openComp ? (
         <div>
-          <button onClick={() => setOpenComp(null)} className="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="h-4 w-4" /> All competitions
-          </button>
-          <div className="flex items-center gap-3">
-            {openComp.logo_url && <img src={openComp.logo_url} alt="" className="h-12 w-12 rounded-lg object-contain" />}
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">{openComp.name}</h1>
-              <p className="text-xs text-muted-foreground">{[openComp.country, openComp.season, openComp.format].filter(Boolean).join(" · ")}</p>
-            </div>
+          <div className="mb-3 flex min-w-0 items-center gap-2">
+            <button onClick={() => setOpenComp(null)} className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full hover:bg-accent" aria-label="All competitions">
+              <ArrowLeft className="h-4 w-4" />
+            </button>
+            {openComp.logo_url && <img src={openComp.logo_url} alt="" className="h-8 w-8 shrink-0 object-contain" />}
+            <span className="min-w-0 flex-1 truncate text-sm font-bold">{openComp.name}</span>
+            <SeasonPicker competition={openComp} onChange={(c) => setOpenComp(c)} season={adminSeason} onSeason={setAdminSeason} />
           </div>
-          <div className="mt-5 flex max-w-full gap-1 overflow-x-auto border-b border-border pb-2 text-xs">
+          <div className="flex max-w-full gap-1 overflow-x-auto border-b border-border pb-2 text-xs">
             {(["overview", "teams", "matches", "standings", "awards", "media"] as const).map((k) => (
               <button key={k} onClick={() => setCompTab(k)} className={`rounded-full px-4 py-1.5 font-semibold capitalize ${compTab === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>{k}</button>
             ))}
