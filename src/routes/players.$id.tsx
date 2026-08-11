@@ -86,8 +86,8 @@ function PlayerPage() {
        <div className="mb-4 overflow-hidden rounded-lg border border-border bg-card p-4 sm:p-5">
          <div className="flex items-center gap-4">
            <PlayerAvatar src={p.photo_url} name={p.name} size="lg" className="border-2 border-border" />
-          <div className="min-w-0 flex-1">
-             <h1 className="truncate text-xl font-bold sm:text-2xl">{tx(p.name)}</h1>
+           <div className="min-w-0 flex-1">
+             <h1 className="text-sm font-bold leading-snug break-words sm:text-xl">{tx(p.name)}</h1>
             {p.team && (
               <Link to="/teams/$id" params={{ id: p.team.id }} className="mt-1 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary">
                 <TeamCrest name={p.team.name} logo={p.team.logo_url} className="h-5 w-5" />
