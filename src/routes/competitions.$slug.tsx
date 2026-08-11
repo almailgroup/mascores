@@ -127,23 +127,23 @@ function CompetitionPage() {
   return (
     <AppShell>
       <BackButton />
-       <div className="mb-4 flex items-center gap-4 border-b border-border pb-5">
-         <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl text-primary">
-          {c.logo_url && <img src={c.logo_url} alt="" className="h-full w-full object-contain" />}
+       <div className="mb-3 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 border-b border-border pb-3">
+         <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl text-primary sm:h-14 sm:w-14">
+          {c.logo_url ? <img src={c.logo_url} alt="" className="h-full w-full object-contain" /> : <Trophy className="h-7 w-7" />}
         </div>
-        <div>
-          <h1 className="text-2xl font-bold">{tx(c.name)}</h1>
-           <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+        <div className="min-w-0">
+          <h1 className="truncate text-base font-bold leading-tight sm:text-2xl">{tx(c.name)}</h1>
+           <div className="mt-0.5 flex min-w-0 flex-wrap items-center gap-1.5 text-[0.7rem] text-muted-foreground sm:text-xs">
             <FlagIcon value={c.country_code ?? c.country} />
-             <span>{[tx(c.country), tx(c.category)].filter(Boolean).join(" · ")}</span>
-             {(c.seasons?.length ?? 0) > 0 && <select aria-label="Season" className="ml-2 rounded-full border border-border bg-background px-3 py-1 font-semibold text-foreground" value={season ?? c.season ?? c.seasons[0]} onChange={(e) => setSeason(e.target.value)}>{c.seasons.map((item) => <option key={item} value={item}>{num(item)}</option>)}</select>}
+             <span className="truncate">{[tx(c.country), tx(c.category)].filter(Boolean).join(" · ")}</span>
+             {(c.seasons?.length ?? 0) > 0 && <select aria-label="Season" className="rounded-full border border-border bg-background px-2 py-0.5 text-[0.7rem] font-semibold text-foreground" value={season ?? c.season ?? c.seasons[0]} onChange={(e) => setSeason(e.target.value)}>{c.seasons.map((item) => <option key={item} value={item}>{num(item)}</option>)}</select>}
           </div>
-          {c.description && <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{tx(c.description)}</p>}
         </div>
+        {c.description && <p className="col-span-2 -mt-1 line-clamp-3 max-w-2xl text-xs text-muted-foreground sm:text-sm">{tx(c.description)}</p>}
       </div>
 
-      <div className="mb-6 flex max-w-full gap-1 overflow-x-auto border-b border-border pb-2 text-sm">
-         {(["overview", "matches", "standings", "teams", "awards", "media", "news"] as const).map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 py-2 font-semibold capitalize ${tab === item ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{item === "awards" ? tx("Awards") : t(`tab.${item}`)}</button>)}
+      <div className="mb-5 flex max-w-full gap-1 overflow-x-auto border-b border-border pb-2 text-xs sm:text-sm">
+         {(["overview", "matches", "standings", "teams", "awards", "media", "news"] as const).map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-3 py-2 font-semibold capitalize sm:px-4 ${tab === item ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{item === "awards" ? tx("Awards") : t(`tab.${item}`)}</button>)}
       </div>
 
        {tab === "overview" && <CompetitionOverviewTab c={c} season={season} teams={teams.data ?? []} titleHolder={titleHolder ?? null} titles={compTitles.data ?? []} divisions={divisions.data ?? []} matches={matches.data ?? []} media={media.data ?? []} />}
@@ -293,14 +293,22 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
   const featured = matches.find((match) => ["live", "ht"].includes(match.status)) ?? matches.find((match) => match.status === "scheduled") ?? matches.at(-1);
   const cells: [string, string][] = [
     ["Sport", c.sport], ["Format", c.format], ["Teams", String(teams.length)],
-    ["Duration", [c.starts_on, c.ends_on].filter(Boolean).join(" — ") || "—"],
     ["Season", season ?? c.season ?? "—"],
-    ...(higher ? [["Higher division", tx(higher.name) ?? "—"] as [string, string]] : []),
-    ...(lower ? [["Lower division", tx(lower.name) ?? "—"] as [string, string]] : []),
     ["Country", c.country ?? "—"],
   ];
   return (
     <div className="space-y-5">
+      <section className="flex items-center gap-3 rounded-lg border border-border bg-card p-4">
+        {c.logo_url ? <img src={c.logo_url} alt="" className="h-14 w-14 shrink-0 object-contain sm:h-16 sm:w-16" /> : <Trophy className="h-12 w-12 shrink-0 text-primary" />}
+        <div className="min-w-0">
+          <div className="truncate text-sm font-bold sm:text-base">{tx(c.name)}</div>
+          <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[0.7rem] text-muted-foreground">
+            <FlagIcon value={c.country_code ?? c.country} />
+            <span className="truncate">{[tx(c.country), tx(c.format)].filter(Boolean).join(" · ")}</span>
+          </div>
+        </div>
+      </section>
+      <SeasonProgress startsOn={c.starts_on} endsOn={c.ends_on} />
       {featured && (
         <section className="overflow-hidden rounded-lg border border-border bg-card">
           <div className="flex items-center justify-between border-b border-border px-4 py-3"><div><div className="text-[0.65rem] font-bold uppercase text-primary">{tx(featured.status === "scheduled" ? "Featured match" : "Latest match")}</div><div className="mt-0.5 text-xs text-muted-foreground">{featured.round_number ? `${tx("Round")} ${num(featured.round_number)}` : tx(featured.round)}</div></div><CalendarDays className="h-4 w-4 text-muted-foreground" /></div>
@@ -348,12 +356,39 @@ function TeamCell({ label, team, note }: { label: string; team: Team | null; not
     <div className="rounded-lg border border-border bg-card p-4">
       <div className="text-[0.65rem] font-bold uppercase text-muted-foreground">{tx(label)}</div>
       {team ? (
-        <Link to="/teams/$id" params={{ id: team.id }} className="mt-2 flex items-center gap-2 font-semibold hover:text-primary">
+        <Link to="/teams/$id" params={{ id: team.id }} className="mt-2 flex items-center gap-2 text-sm font-semibold hover:text-primary">
           <TeamCrest name={team.name} logo={team.logo_url} className="h-7 w-7 shrink-0" />
           <span className="min-w-0 truncate">{tx(team.name)}</span>
-          {note && <span className="ml-auto font-black tabular-nums">{note}</span>}
+          {note && <span className="ms-auto font-black tabular-nums">{note}</span>}
         </Link>
-      ) : <div className="mt-2 font-semibold">—</div>}
+      ) : <div className="mt-2 text-sm font-semibold">—</div>}
     </div>
+  );
+}
+
+/** Tournament duration as a live progress bar between the start and end dates. */
+function SeasonProgress({ startsOn, endsOn }: { startsOn: string | null; endsOn: string | null }) {
+  const tx = useTx();
+  const dates = useDates();
+  const num = useNum();
+  if (!startsOn || !endsOn) return null;
+  const start = new Date(startsOn).getTime();
+  const end = new Date(endsOn).getTime();
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return null;
+  const pct = Math.max(0, Math.min(100, Math.round(((Date.now() - start) / (end - start)) * 100)));
+  return (
+    <section className="rounded-lg border border-border bg-card p-4">
+      <div className="flex items-center justify-between text-[0.65rem] font-bold uppercase tracking-wide text-muted-foreground">
+        <span>{tx("Duration")}</span>
+        <span className="tabular-nums">{num(pct)}%</span>
+      </div>
+      <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
+        <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
+      </div>
+      <div className="mt-2 flex items-center justify-between text-[0.7rem] text-muted-foreground">
+        <span className="tabular-nums">{num(dates.dob(startsOn))}</span>
+        <span className="tabular-nums">{num(dates.dob(endsOn))}</span>
+      </div>
+    </section>
   );
 }

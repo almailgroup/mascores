@@ -104,13 +104,13 @@ function TeamPage() {
 
   return (
     <AppShell>
-      <div className="mb-4 flex items-center gap-4 rounded-3xl border border-border bg-card p-6">
-        <TeamCrest name={t.name} logo={t.logo_url} className="h-16 w-16 shrink-0" rounded="rounded-2xl" />
+      <div className="mb-4 flex items-center gap-3 rounded-2xl border border-border bg-card p-3 sm:gap-4 sm:p-5">
+        <TeamCrest name={t.name} logo={t.logo_url} className="h-11 w-11 shrink-0 sm:h-14 sm:w-14" rounded="rounded-xl" />
         <div className="min-w-0 flex-1">
-          <h1 className="truncate text-2xl font-bold">{tx(t.name)}</h1>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <h1 className="truncate text-base font-bold leading-tight sm:text-2xl">{tx(t.name)}</h1>
+          <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[0.7rem] text-muted-foreground sm:text-xs">
             <FlagIcon value={t.country_code ?? t.country} />
-            <span className="truncate">{[tx(t.country), tx(t.venue_name)].filter(Boolean).join(" · ")}</span>
+            <span className="truncate">{tx(t.country)}</span>
           </div>
         </div>
         <FavoriteButton kind="team" id={t.id} size="md" />

@@ -10,7 +10,7 @@ import { createFixtureDraftsWithAlmail } from "@/lib/almail-ai.functions";
 import { readAiImages } from "@/lib/image-files";
 import { TeamCrest } from "@/components/team-crest";
 
-export function MatchesPanel({ competitionId }: { competitionId: string }) {
+export function MatchesPanel({ competitionId, season = null }: { competitionId: string; season?: string | null }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<Partial<Match>>({ status: "scheduled" });
@@ -29,9 +29,11 @@ export function MatchesPanel({ competitionId }: { competitionId: string }) {
   });
 
   const matchesQ = useQuery({
-    queryKey: ["admin", "matches", competitionId],
+    queryKey: ["admin", "matches", competitionId, season],
     queryFn: async () => {
-      const { data } = await supabase.from("matches").select("*").eq("competition_id", competitionId).order("kickoff_at", { nullsFirst: true });
+      let query = supabase.from("matches").select("*").eq("competition_id", competitionId);
+      if (season) query = query.or(`season.eq.${season},season.is.null`);
+      const { data } = await query.order("kickoff_at", { nullsFirst: true });
       return (data ?? []) as Match[];
     },
   });
@@ -55,6 +57,7 @@ export function MatchesPanel({ competitionId }: { competitionId: string }) {
     if (!form.home_team_id || !form.away_team_id) { alert("Pick both teams first."); return; }
     await supabase.from("matches").insert({
       competition_id: competitionId,
+      season,
       home_team_id: form.home_team_id,
       away_team_id: form.away_team_id,
       kickoff_at: form.kickoff_at ?? null,
@@ -90,6 +93,7 @@ export function MatchesPanel({ competitionId }: { competitionId: string }) {
         open={aiOpen}
         onClose={() => setAiOpen(false)}
         competitionId={competitionId}
+        season={season}
         teams={teams}
         onImported={() => qc.invalidateQueries({ queryKey: ["admin", "matches", competitionId] })}
       />
@@ -103,24 +107,28 @@ export function MatchesPanel({ competitionId }: { competitionId: string }) {
             </div>
             <div className="grid gap-2">
               {list.map((m) => (
-                <div key={m.id} className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-3">
-                  <div className="w-16 text-[0.65rem] font-semibold uppercase tracking-widest text-muted-foreground">{(STATUS_LABELS[m.status] ?? m.status)}</div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex min-w-0 items-center gap-2 text-sm font-semibold">
-                      <TeamCrest name={teamName(m.home_team_id)} logo={teamLogo(m.home_team_id)} className="h-6 w-6" />
-                      <span className="truncate">{teamName(m.home_team_id)}</span>
-                      <span className="text-muted-foreground">vs</span>
-                      <TeamCrest name={teamName(m.away_team_id)} logo={teamLogo(m.away_team_id)} className="h-6 w-6" />
-                      <span className="truncate">{teamName(m.away_team_id)}</span>
+                <div key={m.id} className="rounded-xl border border-border bg-card p-3">
+                  <div className="flex min-w-0 items-start gap-2">
+                    <div className="w-9 shrink-0 pt-0.5 text-[0.6rem] font-bold uppercase tracking-wide text-muted-foreground">{(STATUS_LABELS[m.status] ?? m.status)}</div>
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <div className="flex min-w-0 items-center gap-2 text-xs font-semibold sm:text-sm">
+                        <TeamCrest name={teamName(m.home_team_id)} logo={teamLogo(m.home_team_id)} className="h-5 w-5 shrink-0" />
+                        <span className="min-w-0 flex-1 truncate">{teamName(m.home_team_id)}</span>
+                        {m.home_score != null && <span className="shrink-0 tabular-nums">{m.home_score}</span>}
+                      </div>
+                      <div className="flex min-w-0 items-center gap-2 text-xs font-semibold sm:text-sm">
+                        <TeamCrest name={teamName(m.away_team_id)} logo={teamLogo(m.away_team_id)} className="h-5 w-5 shrink-0" />
+                        <span className="min-w-0 flex-1 truncate">{teamName(m.away_team_id)}</span>
+                        {m.away_score != null && <span className="shrink-0 tabular-nums">{m.away_score}</span>}
+                      </div>
+                      <div className="truncate text-[0.65rem] text-muted-foreground">{formatKickoff(m.kickoff_at)}{m.venue ? ` · ${m.venue}` : ""}</div>
                     </div>
-                    <div className="truncate text-xs text-muted-foreground">{formatKickoff(m.kickoff_at)}{m.venue ? ` · ${m.venue}` : ""}</div>
                   </div>
-                  {(m.home_score != null || m.away_score != null) && <div className="text-sm font-black tabular-nums">{m.home_score ?? 0}–{m.away_score ?? 0}</div>}
-                  {isPast(m) && noResult(m) && (
-                    <button className={btnPrimary} onClick={() => setResultOf(m)}><Flag className="h-3.5 w-3.5" /> End result</button>
-                  )}
-                  <button className={btnGhost} onClick={() => setEditingMatch(m)}><SlidersHorizontal className="h-3.5 w-3.5" /> Manage</button>
-                  <button className={btnDanger} onClick={() => remove(m.id)}><Trash2 className="h-3.5 w-3.5" /></button>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {isPast(m) && noResult(m) && <button className={btnPrimary} onClick={() => setResultOf(m)}><Flag className="h-3.5 w-3.5" /> End result</button>}
+                    <button className={btnGhost} onClick={() => setEditingMatch(m)}><SlidersHorizontal className="h-3.5 w-3.5" /> Manage</button>
+                    <button className={btnDanger} onClick={() => remove(m.id)}><Trash2 className="h-3.5 w-3.5" /></button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -215,7 +223,7 @@ function ResultModal({ match, teamName, onClose, onSaved }: { match: Match; team
 type FixtureRow = { home: string; away: string; kickoff_at: string | null; round_number: number | null; venue: string | null; city: string | null };
 
 /** Almail AI reads a fixture list (text or screenshots) and stages matches for one-tap import. */
-function AlmailFixtureImporter({ open, onClose, competitionId, teams, onImported }: { open: boolean; onClose: () => void; competitionId: string; teams: Team[]; onImported: () => void }) {
+function AlmailFixtureImporter({ open, onClose, competitionId, season = null, teams, onImported }: { open: boolean; onClose: () => void; competitionId: string; season?: string | null; teams: Team[]; onImported: () => void }) {
   const run = useServerFn(createFixtureDraftsWithAlmail);
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
@@ -245,6 +253,7 @@ function AlmailFixtureImporter({ open, onClose, competitionId, teams, onImported
       .filter((r) => r.home && r.away)
       .map((r) => ({
         competition_id: competitionId,
+        season,
         home_team_id: r.home!.id,
         away_team_id: r.away!.id,
         kickoff_at: r.d.kickoff_at,
