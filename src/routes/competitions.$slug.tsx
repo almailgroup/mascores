@@ -386,25 +386,9 @@ function SeasonProgress({ startsOn, endsOn }: { startsOn: string | null; endsOn:
         <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
       </div>
       <div className="mt-2 flex items-center justify-between text-[0.7rem] text-muted-foreground">
-        <span className="tabular-nums">{num(dates.day(startsOn))}</span>
-        <span className="tabular-nums">{num(dates.day(endsOn))}</span>
+        <span className="tabular-nums">{num(dates.dob(startsOn))}</span>
+        <span className="tabular-nums">{num(dates.dob(endsOn))}</span>
       </div>
     </section>
-  );
-}
-
-function TeamCellUnused({ label, team, note }: { label: string; team: Team | null; note?: string | null }) {
-  const tx = useTx();
-  return (
-    <div className="rounded-lg border border-border bg-card p-4">
-      <div className="text-[0.65rem] font-bold uppercase text-muted-foreground">{tx(label)}</div>
-      {team ? (
-        <Link to="/teams/$id" params={{ id: team.id }} className="mt-2 flex items-center gap-2 font-semibold hover:text-primary">
-          <TeamCrest name={team.name} logo={team.logo_url} className="h-7 w-7 shrink-0" />
-          <span className="min-w-0 truncate">{tx(team.name)}</span>
-          {note && <span className="ml-auto font-black tabular-nums">{note}</span>}
-        </Link>
-      ) : <div className="mt-2 font-semibold">—</div>}
-    </div>
   );
 }
