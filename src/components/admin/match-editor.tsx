@@ -8,6 +8,7 @@ import { Field, Modal, inputCls, btnPrimary, btnGhost, btnDanger } from "./ui";
 import { VenueSelect } from "./venue-select";
 import { Play, Pause, Plus, Trash2, RotateCcw, Check, Info, ListChecks, Radio, BarChart3 } from "lucide-react";
 import { TeamCrest } from "@/components/team-crest";
+import { PlayerAvatar } from "@/components/player-avatar";
 import { MediaManager } from "./media-manager";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -128,6 +129,8 @@ function MainTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
       highlight_url: form.highlight_url ?? null,
       notes: form.notes ?? null,
       status: form.status ?? "scheduled",
+      timer_running: ["live", "ht"].includes(form.status ?? "") ? form.timer_running ?? false : false,
+      timer_started_at: ["live", "ht"].includes(form.status ?? "") ? form.timer_started_at ?? null : null,
     }).eq("id", match.id);
     onSaved();
   };
@@ -168,7 +171,7 @@ function MainTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
       <section className="rounded-lg border border-border bg-background/40 p-4">
         <h3 className="font-bold">Match status</h3>
         <p className="mt-1 text-xs text-muted-foreground">Use the Live tab to run the clock and add events. Choose a final or interrupted state there when play ends.</p>
-        <div className="mt-3 flex flex-wrap gap-2">{["scheduled", "postponed", "cancelled"].map((status) => <button key={status} type="button" onClick={() => setForm({ ...form, status })} className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${form.status === status ? "border-primary bg-primary/10 text-primary" : "border-border"}`}>{STATUS_LABELS[status]}</button>)}</div>
+        <div className="mt-3 flex flex-wrap gap-2">{["scheduled", "postponed", "cancelled", "interrupted", "awarded"].map((status) => <button key={status} type="button" onClick={() => setForm({ ...form, status, timer_running: false })} className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${form.status === status ? "border-primary bg-primary/10 text-primary" : "border-border"}`}>{STATUS_LABELS[status]}</button>)}</div>
       </section>
     </div>
   );
@@ -202,6 +205,7 @@ function formationRows(formation: string | null | undefined): string[][] {
 
 function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSaved: () => void }) {
   const qc = useQueryClient();
+  const [picker, setPicker] = useState<{ teamId: string; slot: string } | null>(null);
   const teamIds = [match.home_team_id, match.away_team_id].filter(Boolean) as string[];
 
   const playersQ = useQuery({
@@ -225,7 +229,11 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
   const teamName = (id: string) => teams.find((t) => t.id === id)?.name ?? "";
 
   const setMode = async (mode: string) => {
-    await supabase.from("matches").update({ lineup_mode: mode }).eq("id", match.id);
+    await supabase.from("matches").update(mode === "formation" ? {
+      lineup_mode: mode,
+      home_formation: match.home_formation ?? "4-2-3-1",
+      away_formation: match.away_formation ?? "4-2-3-1",
+    } : { lineup_mode: mode }).eq("id", match.id);
     onSaved();
   };
   const setFormation = async (side: "home" | "away", v: string) => {
@@ -280,20 +288,19 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
       <div className="grid gap-4 md:grid-cols-2">
         {teamIds.map((tid, i) => {
           const side = i === 0 ? "home" : "away";
-          const formation = side === "home" ? match.home_formation : match.away_formation;
-          const squad = players.filter((p) => p.team_id === tid);
+          const formation = (side === "home" ? match.home_formation : match.away_formation) ?? "4-2-3-1";
+          const squad = players.filter((p) => p.team_id === tid).sort((a, b) => (a.shirt_number ?? 999) - (b.shirt_number ?? 999) || a.name.localeCompare(b.name));
           return (
             <div key={tid} className="rounded-xl border border-border bg-background/40 p-3">
               <div className="mb-2 flex items-center justify-between">
                 <div className="text-xs font-semibold">{teamName(tid)}</div>
                 {match.lineup_mode === "formation" && (
-                  <select className="rounded border border-border bg-background px-2 py-1 text-xs" value={formation ?? ""} onChange={(e) => setFormation(side as "home" | "away", e.target.value)}>
-                    <option value="">Formation</option>
+                  <select className="rounded border border-border bg-background px-2 py-1 text-xs" value={formation} onChange={(e) => setFormation(side as "home" | "away", e.target.value)}>
                     {FORMATIONS.map((f) => <option key={f} value={f}>{f}</option>)}
                   </select>
                 )}
               </div>
-              {match.lineup_mode === "formation" && formation ? (
+              {match.lineup_mode === "formation" ? (
                 <div className="rounded-lg bg-emerald-900/25 p-2">
                   {formationRows(formation).map((row, ri) => (
                     <div key={ri} className="mb-2 flex justify-around gap-1">
@@ -301,12 +308,10 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
                         const assigned = lineups.find((l) => l.team_id === tid && l.position_code === slot);
                         const p = players.find((x) => x.id === assigned?.player_id);
                         return (
-                          <select key={slot} value={assigned?.player_id ?? ""}
-                            onChange={(e) => assignSlot(tid, slot, e.target.value || null)}
-                            className="max-w-[6.5rem] flex-1 truncate rounded-md border border-emerald-400/40 bg-background/90 px-1 py-1 text-[0.6rem] font-semibold">
-                            <option value="">{slot}</option>
-                            {squad.map((s) => <option key={s.id} value={s.id}>{s.shirt_number ? `${s.shirt_number} ` : ""}{s.name}</option>)}
-                          </select>
+                          <button key={slot} type="button" onClick={() => setPicker({ teamId: tid, slot })}
+                            className="flex min-h-16 w-16 flex-col items-center justify-center gap-1 rounded-md border border-emerald-400/40 bg-background/90 p-1 text-center">
+                            {p ? <><PlayerAvatar src={p.photo_url} name={p.name} size="sm" className="h-8 w-8" /><span className="line-clamp-2 text-[0.55rem] font-semibold leading-tight">{p.shirt_number ? `${p.shirt_number} ` : ""}{p.name}</span></> : <span className="text-[0.6rem] font-semibold text-muted-foreground">{slot === "GK" ? "Goalkeeper" : "Add player"}</span>}
+                          </button>
                         );
                       })}
                     </div>
@@ -334,6 +339,17 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
         })}
         {teamIds.length === 0 && <div className="text-xs text-muted-foreground">Pick both teams in Match details first.</div>}
       </div>
+
+      <Modal open={!!picker} onClose={() => setPicker(null)} title="Choose player">
+        <div className="max-h-[70vh] space-y-4 overflow-y-auto">
+          {picker && ["Goalkeeper", "Defender", "Midfielder", "Forward", "Unknown"].map((position) => {
+            const pool = players.filter((player) => player.team_id === picker.teamId && (player.position ?? "Unknown") === position).sort((a, b) => (a.shirt_number ?? 999) - (b.shirt_number ?? 999) || a.name.localeCompare(b.name));
+            if (pool.length === 0) return null;
+            return <section key={position}><h4 className="mb-2 text-xs font-bold uppercase text-muted-foreground">{position}</h4><div className="grid gap-2">{pool.map((player) => <button key={player.id} type="button" onClick={async () => { await assignSlot(picker.teamId, picker.slot, player.id); setPicker(null); }} className="flex items-center gap-3 rounded-lg border border-border bg-background p-2 text-left hover:border-primary"><PlayerAvatar src={player.photo_url} name={player.name} size="sm" /><span className="w-8 text-center text-sm font-bold">{player.shirt_number ?? "—"}</span><span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{player.name}</span><span className="block text-xs text-muted-foreground">{player.position ?? "Unknown"}</span></span></button>)}</div></section>;
+          })}
+          {picker && <button type="button" className={btnDanger} onClick={async () => { await assignSlot(picker.teamId, picker.slot, null); setPicker(null); }}>Clear position</button>}
+        </div>
+      </Modal>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-background/40 p-3">
         <span className="text-xs text-muted-foreground">
@@ -386,6 +402,12 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
   const pause = () => patchMatch({ timer_running: false, timer_elapsed_seconds: matchClockSeconds(match), timer_started_at: null });
   const setMinute = (m: number) => patchMatch({ timer_elapsed_seconds: m * 60, timer_started_at: match.timer_running ? new Date().toISOString() : null, live_minute: m });
 
+  useEffect(() => {
+    if (!match.timer_running || match.status !== "live" || match.live_minute === minute) return;
+    const sync = window.setTimeout(() => patchMatch({ live_minute: minute }), 1000);
+    return () => window.clearTimeout(sync);
+  }, [match.timer_running, match.status, match.live_minute, minute]);
+
   const scores = useMemo(() => {
     let h = 0, a = 0;
     for (const e of eventsQ.data ?? []) {
@@ -400,7 +422,7 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
 
   // Score always mirrors the logged events — no manual sync.
   useEffect(() => {
-    if (eventsQ.isLoading) return;
+    if (eventsQ.isLoading || match.status === "awarded") return;
     if ((match.home_score ?? 0) === scores.h && (match.away_score ?? 0) === scores.a) return;
     supabase.from("matches").update({ home_score: scores.h, away_score: scores.a }).eq("id", match.id).then(onSaved);
   }, [scores.h, scores.a, eventsQ.isLoading, match.id, match.home_score, match.away_score]);
@@ -421,7 +443,7 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
               onKeyDown={(e) => { if (e.key === "Enter") setMinute(Number((e.target as HTMLInputElement).value || 0)); }} />
           </div>
           <div className="mt-3 flex items-center justify-center gap-2">
-            <select className="rounded-lg border border-border bg-background px-2 py-1 text-xs" value={match.status} onChange={(e) => patchMatch({ status: e.target.value })}>
+            <select className="rounded-lg border border-border bg-background px-2 py-1 text-xs" value={match.status} onChange={(e) => { const status = e.target.value; patchMatch({ status, ...(["ft", "aet", "pen", "awarded", "cancelled", "postponed", "interrupted"].includes(status) ? { timer_running: false, timer_started_at: null } : {}) }); }}>
               {Object.entries(STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </select>
             <span className="text-sm font-bold tabular-nums">{match.home_score ?? 0} – {match.away_score ?? 0}</span>

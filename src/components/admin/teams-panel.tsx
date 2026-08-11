@@ -31,10 +31,10 @@ export function TeamsPanel({ competitionId, season = null }: { competitionId: st
     queryFn: async () => {
       if (!competitionId) return ((await supabase.from("teams").select("*").order("name")).data ?? []) as Team[];
       let linkQuery = supabase.from("competition_teams").select("team_id").eq("competition_id", competitionId);
-      if (season) linkQuery = linkQuery.or(`season.eq.${season},season.is.null`);
+      if (season) linkQuery = linkQuery.eq("season", season);
       const { data: links } = await linkQuery;
       const ids = (links ?? []).map((link) => link.team_id);
-      const { data } = ids.length ? await supabase.from("teams").select("*").in("id", ids).order("name") : await supabase.from("teams").select("*").eq("competition_id", competitionId).order("name");
+      const { data } = ids.length ? await supabase.from("teams").select("*").in("id", ids).order("name") : { data: [] };
       return (data ?? []) as Team[];
     },
   });
