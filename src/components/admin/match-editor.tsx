@@ -129,6 +129,8 @@ function MainTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
       highlight_url: form.highlight_url ?? null,
       notes: form.notes ?? null,
       status: form.status ?? "scheduled",
+      timer_running: ["live", "ht"].includes(form.status ?? "") ? form.timer_running ?? false : false,
+      timer_started_at: ["live", "ht"].includes(form.status ?? "") ? form.timer_started_at ?? null : null,
     }).eq("id", match.id);
     onSaved();
   };

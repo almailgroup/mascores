@@ -85,6 +85,12 @@ function MatchPage() {
   const broadcasts = useQuery({ queryKey: ["match-broadcasts", id], queryFn: async () => (await supabase.from("match_broadcasts").select("channel:broadcast_channels(id,name,logo_url,country_code)").eq("match_id", id)).data ?? [] });
   const media = useQuery({ queryKey: ["match-media", id], queryFn: async () => (await supabase.from("media_items").select("*").eq("owner_type", "match").eq("owner_id", id).order("sort_order")).data ?? [] });
   const ratings = useQuery({ queryKey: ["match-ratings", id], queryFn: async () => (await supabase.from("player_ratings").select("player_id,rating").eq("match_id", id)).data ?? [] });
+  const [, tickClock] = useState(0);
+  useEffect(() => {
+    if (!m.data?.timer_running) return;
+    const interval = window.setInterval(() => tickClock((value) => value + 1), 1000);
+    return () => window.clearInterval(interval);
+  }, [m.data?.timer_running]);
 
   if (m.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;
   if (!m.data) return <AppShell><EmptyState title={tx("Match not found")} /></AppShell>;
@@ -93,12 +99,6 @@ function MatchPage() {
   const hasStarted = !["scheduled", "postponed", "cancelled"].includes(match.status);
   const lineupsVisible = match.lineups_published && (lineups.data?.length ?? 0) > 0;
   const tabs: ("details" | "lineups" | "stats" | "previous" | "media")[] = ["details", ...(lineupsVisible ? ["lineups" as const] : []), "stats", "previous", "media"];
-  const [, tickClock] = useState(0);
-  useEffect(() => {
-    if (!match.timer_running) return;
-    const interval = window.setInterval(() => tickClock((value) => value + 1), 1000);
-    return () => window.clearInterval(interval);
-  }, [match.timer_running]);
   const clock = matchClockSeconds(match);
   const liveMinute = Math.max(match.live_minute ?? 0, Math.floor(clock / 60) + (clock % 60 > 0 ? 1 : 0));
 
@@ -208,14 +208,15 @@ function MatchPage() {
         const rows = lineups.data?.filter((item) => item.team_id === team?.id) ?? [];
         const starters = rows.filter((r) => r.is_starting);
         const bench = rows.filter((r) => !r.is_starting);
-        const showPitch = match.lineup_mode === "formation" && !!formation && starters.length > 0;
+        const activeFormation = formation ?? "4-2-3-1";
+        const showPitch = match.lineup_mode === "formation" && starters.length > 0;
         const eventsFor = (playerId: string) => events.data?.filter((e) => e.player?.id === playerId || e.sub_out_player_id === playerId) ?? [];
         return (
           <div key={side} className="rounded-2xl border border-border bg-card p-4">
-            <h3 className="mb-3 flex items-center gap-2 font-bold">{tx(team?.name) ?? "TBD"}{showPitch && <span className="rounded bg-muted px-2 py-0.5 text-[0.65rem] font-semibold">{num(formation ?? "")}</span>}</h3>
+            <h3 className="mb-3 flex items-center gap-2 font-bold">{tx(team?.name) ?? "TBD"}{showPitch && <span className="rounded bg-muted px-2 py-0.5 text-[0.65rem] font-semibold">{num(activeFormation)}</span>}</h3>
             {showPitch && (
               <div className="mb-4 space-y-2 rounded-2xl bg-[linear-gradient(180deg,color-mix(in_oklab,var(--primary)_18%,transparent),transparent)] p-3">
-                {formationRows(formation).map((row, ri) => (
+                {formationRows(activeFormation).map((row, ri) => (
                   <div key={ri} className="flex justify-around gap-1">
                     {row.map((slot) => {
                       const lu = starters.find((s) => s.position_code === slot);

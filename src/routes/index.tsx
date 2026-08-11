@@ -322,7 +322,7 @@ export function MatchTile({ m }: { m: MatchWithTeams }) {
         </span>
         <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 ${isLive ? "bg-primary/15 text-primary" : "bg-muted"}`}>
           {isLive && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />}
-          {m.status === "live" && m.live_minute ? `${m.live_minute}'` : m.status.toUpperCase()}
+          {m.status === "live" ? `${Math.max(m.live_minute ?? 0, Math.floor(matchClockSeconds(m) / 60))}'` : m.status.toUpperCase()}
         </span>
       </div>
       <div className="mt-3 grid items-center gap-2" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
