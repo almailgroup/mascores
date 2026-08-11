@@ -127,23 +127,23 @@ function CompetitionPage() {
   return (
     <AppShell>
       <BackButton />
-       <div className="mb-4 flex items-center gap-4 border-b border-border pb-5">
-         <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl text-primary">
-          {c.logo_url && <img src={c.logo_url} alt="" className="h-full w-full object-contain" />}
+       <div className="mb-3 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 border-b border-border pb-3">
+         <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl text-primary sm:h-14 sm:w-14">
+          {c.logo_url ? <img src={c.logo_url} alt="" className="h-full w-full object-contain" /> : <Trophy className="h-7 w-7" />}
         </div>
-        <div>
-          <h1 className="text-2xl font-bold">{tx(c.name)}</h1>
-           <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+        <div className="min-w-0">
+          <h1 className="truncate text-base font-bold leading-tight sm:text-2xl">{tx(c.name)}</h1>
+           <div className="mt-0.5 flex min-w-0 flex-wrap items-center gap-1.5 text-[0.7rem] text-muted-foreground sm:text-xs">
             <FlagIcon value={c.country_code ?? c.country} />
-             <span>{[tx(c.country), tx(c.category)].filter(Boolean).join(" · ")}</span>
-             {(c.seasons?.length ?? 0) > 0 && <select aria-label="Season" className="ml-2 rounded-full border border-border bg-background px-3 py-1 font-semibold text-foreground" value={season ?? c.season ?? c.seasons[0]} onChange={(e) => setSeason(e.target.value)}>{c.seasons.map((item) => <option key={item} value={item}>{num(item)}</option>)}</select>}
+             <span className="truncate">{[tx(c.country), tx(c.category)].filter(Boolean).join(" · ")}</span>
+             {(c.seasons?.length ?? 0) > 0 && <select aria-label="Season" className="rounded-full border border-border bg-background px-2 py-0.5 text-[0.7rem] font-semibold text-foreground" value={season ?? c.season ?? c.seasons[0]} onChange={(e) => setSeason(e.target.value)}>{c.seasons.map((item) => <option key={item} value={item}>{num(item)}</option>)}</select>}
           </div>
-          {c.description && <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{tx(c.description)}</p>}
         </div>
+        {c.description && <p className="col-span-2 -mt-1 line-clamp-3 max-w-2xl text-xs text-muted-foreground sm:text-sm">{tx(c.description)}</p>}
       </div>
 
-      <div className="mb-6 flex max-w-full gap-1 overflow-x-auto border-b border-border pb-2 text-sm">
-         {(["overview", "matches", "standings", "teams", "awards", "media", "news"] as const).map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 py-2 font-semibold capitalize ${tab === item ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{item === "awards" ? tx("Awards") : t(`tab.${item}`)}</button>)}
+      <div className="mb-5 flex max-w-full gap-1 overflow-x-auto border-b border-border pb-2 text-xs sm:text-sm">
+         {(["overview", "matches", "standings", "teams", "awards", "media", "news"] as const).map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-3 py-2 font-semibold capitalize sm:px-4 ${tab === item ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{item === "awards" ? tx("Awards") : t(`tab.${item}`)}</button>)}
       </div>
 
        {tab === "overview" && <CompetitionOverviewTab c={c} season={season} teams={teams.data ?? []} titleHolder={titleHolder ?? null} titles={compTitles.data ?? []} divisions={divisions.data ?? []} matches={matches.data ?? []} media={media.data ?? []} />}
