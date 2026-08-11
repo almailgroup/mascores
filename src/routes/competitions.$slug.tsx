@@ -47,9 +47,12 @@ function CompetitionPage() {
 
   const teams = useQuery({
     enabled: !!comp.data,
-    queryKey: ["comp-teams", comp.data?.id],
+    queryKey: ["comp-teams", comp.data?.id, season],
     queryFn: async () => {
-      const { data: links } = await supabase.from("competition_teams").select("team_id").eq("competition_id", comp.data!.id);
+      let linkQuery = supabase.from("competition_teams").select("team_id").eq("competition_id", comp.data!.id);
+      const selectedSeason = season ?? comp.data!.season;
+      if (selectedSeason) linkQuery = linkQuery.or(`season.eq.${selectedSeason},season.is.null`);
+      const { data: links } = await linkQuery;
       const ids = (links ?? []).map((link) => link.team_id);
       const { data } = ids.length ? await supabase.from("teams").select("*").in("id", ids).order("name") : await supabase.from("teams").select("*").eq("competition_id", comp.data!.id).order("name");
       return (data ?? []) as Team[];
