@@ -5,6 +5,8 @@ import { FlagIcon } from "@/components/flag";
 import { FavoriteButton, MatchNotificationButton } from "@/hooks/use-favorites";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
 import type { Match, Team } from "@/lib/db";
+import { matchClockSeconds } from "@/lib/db";
+import { useEffect, useState } from "react";
 
 export type MatchWithTeams = Match & {
   home: Team | null;
@@ -63,6 +65,15 @@ export function MatchRow({ m, highlightTeamId }: { m: MatchWithTeams; highlightT
   const dates = useDates();
   const started = ["live", "ht", "ft", "aet", "pen", "awarded"].includes(m.status);
   const isLive = ["live", "ht"].includes(m.status);
+  const [, tick] = useState(0);
+  useEffect(() => {
+    if (!m.timer_running) return;
+    const interval = window.setInterval(() => tick((value) => value + 1), 1000);
+    return () => window.clearInterval(interval);
+  }, [m.timer_running]);
+  const seconds = matchClockSeconds(m);
+  const minute = Math.max(m.live_minute ?? 0, Math.floor(seconds / 60) + (seconds % 60 > 0 ? 1 : 0));
+  const specialStatus = ["postponed", "cancelled", "interrupted"].includes(m.status);
   const line = (team: Team | null | undefined, score: number | null) => (
     <div className="flex min-w-0 items-center gap-2">
       <TeamCrest name={team?.name} logo={team?.logo_url} className="h-5 w-5 shrink-0" />
@@ -74,11 +85,11 @@ export function MatchRow({ m, highlightTeamId }: { m: MatchWithTeams; highlightT
     <Link to="/matches/$id" params={{ id: m.id }} className="flex items-center gap-3 px-4 py-2.5 hover:bg-accent">
       <div className="w-14 shrink-0 text-center text-[0.7rem] leading-tight text-muted-foreground">
         {isLive ? (
-          <span className="font-bold text-destructive">{m.status === "live" && m.live_minute ? `${num(m.live_minute)}'` : "HT"}</span>
+          <span className="font-bold text-destructive">{m.status === "live" ? `${num(minute)}'` : "HT"}</span>
         ) : (
           <>
             <div className="tabular-nums">{num(dates.kickoff(m.kickoff_at))}</div>
-            {started && <div className="font-semibold uppercase">{m.status === "ft" ? "FT" : m.status.toUpperCase()}</div>}
+            {(started || specialStatus) && <div className="font-semibold uppercase">{m.status === "ft" ? "FT" : m.status.toUpperCase()}</div>}
           </>
         )}
       </div>

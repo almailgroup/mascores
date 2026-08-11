@@ -188,7 +188,7 @@ function MatchPage() {
               <div className="flex items-center gap-2 border-b border-border bg-muted/40 px-4 py-2.5 text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground"><Radio className="h-3.5 w-3.5" /> {tx("Where to watch")}</div>
               <div className="flex flex-wrap gap-2 p-4">
                 {broadcasts.data?.length === 0 && <p className="text-sm text-muted-foreground">{tx("No channel yet.")}</p>}
-                {broadcasts.data.map((row, index) => {
+                {broadcasts.data?.map((row, index) => {
                   const channel = Array.isArray(row.channel) ? row.channel[0] : row.channel;
                   return channel ? (
                     <div key={channel.id ?? index} className="flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-2 text-xs font-semibold">

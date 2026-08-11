@@ -203,11 +203,11 @@ export function MatchesPanel({ competitionId, season = null, friendly = false }:
 }
 
 function ResultModal({ match, teamName, onClose, onSaved }: { match: Match; teamName: (id: string | null) => string; onClose: () => void; onSaved: () => void }) {
-  const [hs, setHs] = useState<string>("");
-  const [as, setAs] = useState<string>("");
+  const [hs, setHs] = useState<string>(match.home_score == null ? "" : String(match.home_score));
+  const [as, setAs] = useState<string>(match.away_score == null ? "" : String(match.away_score));
   const [hp, setHp] = useState<string>("");
   const [ap, setAp] = useState<string>("");
-  const [status, setStatus] = useState("ft");
+  const [status, setStatus] = useState(match.status === "awarded" ? "awarded" : "ft");
 
   const save = async () => {
     await supabase.from("matches").update({
