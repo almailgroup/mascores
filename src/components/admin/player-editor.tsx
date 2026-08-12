@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase, POSITIONS, type Player, type Team } from "@/lib/db";
-import { Field, ImageInput, inputCls, btnPrimary, btnGhost, btnDanger } from "./ui";
+import { Field, ImageInput, inputCls, btnPrimary, btnGhost } from "./ui";
 import { uploadMedia } from "./upload";
 import { CountrySelect } from "@/components/country-select";
 import { DateWheel } from "@/components/date-wheel";
@@ -173,26 +173,6 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
           </button>
           <button className={btnGhost} onClick={onClose}><ArrowLeft className="h-3.5 w-3.5" /> Back</button>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function MediaUrls({ urls, onChange }: { urls: string[]; onChange: (v: string[]) => void }) {
-  const [value, setValue] = useState("");
-  return (
-    <div className="grid gap-2">
-      <div className="grid gap-1">
-        {urls.map((u) => (
-          <div key={u} className="flex items-center gap-2 rounded-lg border border-border bg-background p-2 text-xs">
-            <span className="min-w-0 flex-1 truncate">{u}</span>
-            <button type="button" className="text-destructive" onClick={() => onChange(urls.filter((x) => x !== u))}><Trash2 className="h-3 w-3" /></button>
-          </div>
-        ))}
-      </div>
-      <div className="flex gap-2">
-        <input className={inputCls} placeholder="YouTube, Instagram, TikTok, Facebook or image link" value={value} onChange={(e) => setValue(e.target.value)} />
-        <button type="button" className={btnGhost} onClick={() => { if (value.trim()) { onChange([...urls, value.trim()]); setValue(""); } }}><Plus className="h-3.5 w-3.5" /></button>
       </div>
     </div>
   );
