@@ -57,12 +57,20 @@ function PlayerPage() {
   }});
   const matches = useQuery({ enabled: !!q.data, queryKey: ["player-matches", id], queryFn: async () => {
     const { data: lineups } = await supabase.from("match_lineups").select("match_id").eq("player_id", id);
-    const ids = (lineups ?? []).map((l) => l.match_id);
-    if (!ids.length) return [];
-    const { data } = await supabase.from("matches")
-      .select("*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url)")
-      .in("id", ids).order("kickoff_at", { ascending: false });
-    return (data ?? []) as unknown as (Match & { home: Team | null; away: Team | null })[];
+    const ids = [...new Set((lineups ?? []).map((l) => l.match_id))];
+    if (!ids.length) return { rows: [], events: [], ratings: {} as Record<string, number> };
+    const [{ data }, { data: events }, { data: ratings }] = await Promise.all([
+      supabase.from("matches")
+        .select("*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url), competition:competition_id(id,slug,name,logo_url,country,country_code,sport)")
+        .in("id", ids).order("kickoff_at", { ascending: false }),
+      supabase.from("match_events").select("match_id,type,player_id,assist_player_id").in("match_id", ids),
+      supabase.from("player_ratings").select("match_id,rating").eq("player_id", id).in("match_id", ids),
+    ]);
+    return {
+      rows: (data ?? []) as unknown as PlayerMatch[],
+      events: (events ?? []).filter((e) => e.player_id === id || e.assist_player_id === id) as { match_id: string; type: string; player_id: string | null; assist_player_id: string | null }[],
+      ratings: Object.fromEntries((ratings ?? []).filter((r) => r.match_id).map((r) => [r.match_id as string, Number(r.rating)])) as Record<string, number>,
+    };
   }});
   const transferClubs = useQuery({
     enabled: (transfers.data?.length ?? 0) > 0,
@@ -148,16 +156,8 @@ function PlayerPage() {
       )}
 
       {tab === "matches" && (
-        matches.data && matches.data.length > 0 ? (
-          <div className="grid gap-2">
-            {matches.data.map((m) => (
-              <Link key={m.id} to="/matches/$id" params={{ id: m.id }} className="grid items-center gap-2 rounded-2xl border border-border bg-card p-3 hover:border-primary/50" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
-                <div className="truncate text-right text-sm font-semibold">{tx(m.home?.name) ?? "TBD"}</div>
-                <div className="text-center text-sm font-bold tabular-nums">{m.home_score != null ? `${m.home_score} – ${m.away_score}` : num(dates.kickoff(m.kickoff_at))}</div>
-                <div className="truncate text-sm font-semibold">{tx(m.away?.name) ?? "TBD"}</div>
-              </Link>
-            ))}
-          </div>
+        (matches.data?.rows.length ?? 0) > 0 ? (
+          <PlayerMatches data={matches.data!} playerId={id} playerTeamId={p.team_id ?? null} />
         ) : <EmptyState title={tx("No matches yet")} />
       )}
 
