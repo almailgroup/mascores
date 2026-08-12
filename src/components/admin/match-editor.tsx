@@ -603,6 +603,25 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
 
       <Modal open={!!picker} onClose={() => setPicker(null)} title="Choose player">
         <div className="max-h-[70vh] space-y-4 overflow-y-auto">
+          {(() => {
+            if (!picker) return null;
+            const assigned = lineups.find((l) => l.team_id === picker.teamId && l.position_code === picker.slot);
+            const p = players.find((x) => x.id === assigned?.player_id);
+            if (!p) return null;
+            return (
+              <section className="rounded-xl border border-primary/40 bg-primary/5 p-3">
+                <div className="flex items-center gap-3">
+                  <PlayerAvatar src={p.photo_url} name={p.name} size="sm" />
+                  <div className="min-w-0 flex-1"><div className="truncate text-sm font-bold">{p.name}</div><div className="text-[0.65rem] text-muted-foreground">Match rating</div></div>
+                  <input type="number" step="0.1" min={0} max={10} defaultValue={ratingFor(p.id) ?? ""} placeholder="—"
+                    onBlur={(e) => saveRating(p.id, e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
+                    className="h-9 w-20 rounded-lg border border-border bg-background text-center text-sm font-bold" />
+                </div>
+                <p className="mt-2 text-[0.6rem] text-muted-foreground">Type a rating out of 10 — it shows on his card. Pick another player below to replace him.</p>
+              </section>
+            );
+          })()}
           {picker && ["Goalkeeper", "Defender", "Midfielder", "Forward", "Unknown"].map((position) => {
             const pool = players.filter((player) => player.team_id === picker.teamId && (player.position ?? "Unknown") === position).sort((a, b) => (a.shirt_number ?? 999) - (b.shirt_number ?? 999) || a.name.localeCompare(b.name));
             if (pool.length === 0) return null;
@@ -611,6 +630,16 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
           {picker && <button type="button" className={btnDanger} onClick={async () => { await assignSlot(picker.teamId, picker.slot, null); setPicker(null); }}>Clear position</button>}
         </div>
       </Modal>
+
+      <ConfirmDelete
+        open={!!clearTeam}
+        title="Clear the whole lineup?"
+        description={clearTeam ? `This removes every starter and bench player for ${teamName(clearTeam)} in this match.` : undefined}
+        confirmWord="CLEAR"
+        actionLabel="Clear lineup"
+        onCancel={() => setClearTeam(null)}
+        onConfirm={async () => { if (clearTeam) await clearAll(clearTeam); setClearTeam(null); }}
+      />
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-background/40 p-3">
         <span className="text-xs text-muted-foreground">
