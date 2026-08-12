@@ -160,7 +160,7 @@ function MatchPage() {
                     {entry.event.player ? (
                       <Link to="/players/$id" params={{ id: entry.event.player.id }} className="block truncate text-sm font-semibold hover:text-primary">{tx(entry.event.player.name)}</Link>
                     ) : <span className="block truncate text-sm font-semibold">{entry.event.description ?? tx(entry.event.type)}</span>}
-                    <span className="block truncate text-[0.65rem] text-muted-foreground">{tx(EVENT_LABELS[entry.event.type] ?? entry.event.type)}{entry.event.team ? ` · ${tx(entry.event.team.name)}` : ""}</span>
+                    <span className="block truncate text-[0.65rem] text-muted-foreground">{tx(eventLabel(entry.event.type))}{entry.event.team ? ` · ${tx(entry.event.team.name)}` : ""}</span>
                   </span>
                 </li>
               ))}
@@ -254,14 +254,8 @@ function PreviousMatches({ competitionId, currentId }: { competitionId: string; 
 }
 
 function EventIcon({ type }: { type: string }) {
-  const map: Record<string, string> = { goal: "⚽", own_goal: "⚽", penalty: "⚽", missed_penalty: "❌", yellow: "🟨", red: "🟥", second_yellow: "🟨🟥", sub: "🔁" };
-  return <span className="shrink-0 text-base leading-none">{map[type] ?? "•"}</span>;
+  return <span className="shrink-0 text-base leading-none">{eventIcon(type)}</span>;
 }
-
-const EVENT_LABELS: Record<string, string> = {
-  goal: "Goal", own_goal: "Own goal", penalty: "Penalty goal", missed_penalty: "Missed penalty",
-  yellow: "Yellow card", red: "Red card", second_yellow: "Second yellow", sub: "Substitution",
-};
 
 type TimelineEvent = MatchEvent & { player: Player | null; team: Team | null };
 type TimelineEntry =
