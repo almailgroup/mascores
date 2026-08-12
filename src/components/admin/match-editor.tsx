@@ -438,6 +438,17 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
     onSaved();
   };
 
+  const clearAll = async (teamId: string) => {
+    await supabase.from("match_lineups").delete().eq("match_id", match.id).eq("team_id", teamId);
+    qc.invalidateQueries({ queryKey: ["admin", "lineups", match.id] });
+  };
+
+  const setMatchNumber = async (lineupId: string, value: string) => {
+    const n = value.trim() === "" ? null : Number(value);
+    await supabase.from("match_lineups").update({ shirt_number: Number.isFinite(n as number) ? n : null }).eq("id", lineupId);
+    qc.invalidateQueries({ queryKey: ["admin", "lineups", match.id] });
+  };
+
   return (
     <div className="space-y-4">
       <div><h3 className="font-bold">Lineups</h3><p className="text-xs text-muted-foreground">Tap a + on the pitch and pick the player — he takes that position straight away. Ratings and event icons appear on his card automatically.</p></div>
@@ -452,9 +463,12 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
             <div key={tid} className="rounded-xl border border-border bg-background/40 p-3">
               <div className="mb-2 flex items-center justify-between gap-2">
                 <div className="min-w-0 truncate text-xs font-semibold">{teamName(tid)}</div>
+                <div className="flex items-center gap-1">
                 <select className="rounded border border-border bg-background px-2 py-1 text-xs" value={formation} onChange={(e) => setFormation(side as "home" | "away", e.target.value)}>
                   {FORMATIONS.map((f) => <option key={f} value={f}>{f}</option>)}
                 </select>
+                <button type="button" onClick={() => clearAll(tid)} className="rounded border border-border px-2 py-1 text-[0.6rem] font-semibold text-destructive hover:bg-accent">Clear all</button>
+                </div>
               </div>
               <div className="rounded-lg bg-emerald-900/25 p-2 pt-4">
                 {formationRows(formation).map((row, ri) => (
@@ -464,15 +478,16 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
                       const p = players.find((x) => x.id === assigned?.player_id);
                       const rating = p ? ratingFor(p.id) : null;
                       const icons = p ? iconsFor(p.id) : [];
+                      const kit = assigned?.shirt_number ?? p?.shirt_number ?? null;
                       return (
                         <button key={slot} type="button" onClick={() => setPicker({ teamId: tid, slot })}
-                          className="flex w-16 flex-col items-center gap-1 text-center">
-                          <span className="relative block">
+                          className="flex w-16 flex-col items-center gap-1 pt-1 text-center">
+                          <span className="relative block overflow-visible">
                             {p ? <PlayerAvatar src={p.photo_url} name={p.name} size="sm" className="h-10 w-10" />
                               : <span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-dashed border-emerald-300/60 bg-background/70"><Plus className="h-4 w-4 text-emerald-200" /></span>}
-                            {p?.shirt_number != null && <span className="absolute -left-1 -top-1 rounded-full bg-primary px-1.5 text-[0.55rem] font-black text-primary-foreground ring-2 ring-background">{p.shirt_number}</span>}
+                            {kit != null && <span className="absolute -left-1 -top-1 rounded-full bg-primary px-1.5 text-[0.55rem] font-black text-primary-foreground ring-2 ring-background">{kit}</span>}
                             {icons.length > 0 && <span className="absolute -right-2 -top-1 flex gap-0.5 rounded-full bg-background px-1 text-[0.6rem] leading-tight ring-2 ring-background">{icons.slice(0, 3).map((ic, k) => <span key={k}>{ic}</span>)}</span>}
-                            {rating != null && <span className={`absolute -bottom-1 left-1/2 -translate-x-1/2 rounded px-1 text-[0.55rem] font-black ring-2 ring-background ${ratingClass(Number(rating))}`}>{rating}</span>}
+                            {rating != null && <span className={`absolute -bottom-1 -right-2 rounded-md px-1 text-[0.55rem] font-black shadow ring-2 ring-background ${ratingClass(Number(rating))}`}>{Number(rating).toFixed(1)}</span>}
                           </span>
                           <span className="line-clamp-2 text-[0.55rem] font-semibold leading-tight text-foreground">{p ? p.name : slot === "GK" ? "Goalkeeper" : "Add player"}</span>
                         </button>
@@ -498,9 +513,9 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
                       <div key={l.id} className="flex flex-col items-center gap-1 text-center">
                         <span className="relative block">
                           <PlayerAvatar src={p?.photo_url} name={p?.name ?? "?"} size="sm" className="h-10 w-10" />
-                          {p?.shirt_number != null && <span className="absolute -left-1 -top-1 rounded-full bg-muted px-1.5 text-[0.55rem] font-black ring-2 ring-background">{p.shirt_number}</span>}
+                          {(l.shirt_number ?? p?.shirt_number) != null && <span className="absolute -left-1 -top-1 rounded-full bg-muted px-1.5 text-[0.55rem] font-black ring-2 ring-background">{l.shirt_number ?? p?.shirt_number}</span>}
                           {icons.length > 0 && <span className="absolute -right-2 -top-1 flex gap-0.5 rounded-full bg-background px-1 text-[0.6rem] leading-tight ring-2 ring-background">{icons.slice(0, 3).map((ic, k) => <span key={k}>{ic}</span>)}</span>}
-                          {rating != null && <span className={`absolute -bottom-1 left-1/2 -translate-x-1/2 rounded px-1 text-[0.55rem] font-black ring-2 ring-background ${ratingClass(Number(rating))}`}>{rating}</span>}
+                          {rating != null && <span className={`absolute -bottom-1 -right-2 rounded-md px-1 text-[0.55rem] font-black shadow ring-2 ring-background ${ratingClass(Number(rating))}`}>{Number(rating).toFixed(1)}</span>}
                         </span>
                         <span className="line-clamp-2 text-[0.55rem] font-semibold leading-tight">{p?.name ?? "—"}</span>
                         <button onClick={() => toggle(l.player_id, tid, false)} className="text-destructive" aria-label="Remove from bench"><Trash2 className="h-3 w-3" /></button>
@@ -510,6 +525,29 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
                 </div>
                 {bench.length === 0 && <p className="text-[0.6rem] text-muted-foreground">No bench yet — tap + to pick from the squad.</p>}
               </div>
+
+              {(() => {
+                const rows = lineups.filter((l) => l.team_id === tid);
+                if (rows.length === 0) return null;
+                return (
+                  <div className="mt-3 rounded-lg border border-border p-2">
+                    <h4 className="mb-2 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">Kit numbers (this match only)</h4>
+                    <div className="space-y-1">
+                      {rows.map((l) => {
+                        const p = players.find((x) => x.id === l.player_id);
+                        return (
+                          <div key={l.id} className="flex items-center gap-2">
+                            <span className="min-w-0 flex-1 truncate text-xs">{p?.name ?? "—"}</span>
+                            <input type="number" min={0} max={99} defaultValue={l.shirt_number ?? ""} placeholder={String(p?.shirt_number ?? "")}
+                              onBlur={(e) => setMatchNumber(l.id, e.target.value)}
+                              className="w-16 rounded border border-border bg-background px-2 py-1 text-xs" />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           );
         })}
