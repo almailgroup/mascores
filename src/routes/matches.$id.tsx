@@ -144,7 +144,7 @@ function MatchPage() {
       </div>
 
       {tab === "details" && <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
-        {hasStarted && <div className="overflow-hidden rounded-2xl border border-border bg-card">
+        {hasStarted && !match.result_only && <div className="overflow-hidden rounded-2xl border border-border bg-card">
           <div className="border-b border-border bg-muted/40 px-4 py-2.5 text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Timeline")}</div>
           {events.data && events.data.length > 0 ? (
             <ul className="divide-y divide-border">
