@@ -354,6 +354,22 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
                   <div className="mt-1 text-center text-[0.6rem] text-muted-foreground">{formation} · tap a slot to pick a player</div>
                   {squad.length === 0 && <div className="text-center text-[0.6rem] text-muted-foreground">Add players to this squad first.</div>}
                 </div>
+              ) : null}
+              {match.lineup_mode === "formation" ? (
+                <div className="mt-3">
+                  <h4 className="mb-1 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">Bench</h4>
+                  <div className="grid gap-1">
+                    {squad.filter((p) => !lineups.some((l) => l.player_id === p.id && l.is_starting)).map((p) => {
+                      const benched = lineups.some((l) => l.player_id === p.id && !l.is_starting);
+                      return (
+                        <div key={p.id} className="flex items-center gap-2 text-xs">
+                          <span className="flex-1 truncate">{p.shirt_number ? `#${p.shirt_number} ` : ""}{p.name}</span>
+                          <button onClick={() => toggle(p.id, tid, false)} className={`rounded px-2 py-0.5 ${benched ? "bg-primary text-primary-foreground" : "bg-muted"}`}>Bench</button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               ) : (
               <div className="grid gap-1">
                 {squad.map((p) => {
@@ -374,6 +390,8 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
         })}
         {teamIds.length === 0 && <div className="text-xs text-muted-foreground">Pick both teams in Match details first.</div>}
       </div>
+
+      <RatingsEditor match={match} lineups={lineups} players={players} />
 
       <Modal open={!!picker} onClose={() => setPicker(null)} title="Choose player">
         <div className="max-h-[70vh] space-y-4 overflow-y-auto">
