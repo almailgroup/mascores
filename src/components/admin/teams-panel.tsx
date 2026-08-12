@@ -197,6 +197,7 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
       <div className="grid gap-5">
         {POSITIONS.map((position) => {
           const players = (q.data ?? []).filter((player) => (player.position ?? "Unknown") === position);
+          if (position === "Unknown" && players.length === 0) return null;
           return (
             <section key={position}>
               <h4 className="mb-2 text-xs font-bold uppercase text-muted-foreground">{position}</h4>

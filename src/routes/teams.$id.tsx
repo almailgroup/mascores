@@ -196,6 +196,7 @@ function TeamPage() {
            <section><h2 className="mb-3 text-sm font-bold uppercase text-muted-foreground">{tx("Coach")}</h2>{coaches.data && coaches.data.length > 0 ? <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{coaches.data.map((coach) => <div key={coach.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3"><PlayerAvatar src={coach.photo_url} name={coach.name} size="sm" /><div><div className="font-medium">{tx(coach.name)}</div><div className="text-xs text-muted-foreground">{tx(coach.nationality) ?? "—"}</div></div></div>)}</div> : <EmptyState title={tx("No coach")} />}</section>
            {(["Goalkeeper", "Defender", "Midfielder", "Forward", "Unknown"] as const).map((position) => {
              const players = (squad.data ?? []).filter((player) => (player.position ?? "Unknown") === position);
+             if (position === "Unknown" && players.length === 0) return null;
              return <section key={position}><h2 className="mb-3 text-sm font-bold uppercase text-muted-foreground">{tx(position)}</h2>{players.length > 0 ? <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{players.map((p) => (
               <Link key={p.id} to="/players/$id" params={{ id: p.id }} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 hover:border-primary/50">
                 <PlayerAvatar src={p.photo_url} name={p.name} size="sm" />
