@@ -116,8 +116,8 @@ function CompetitionPage() {
     queryKey: ["comp-divisions", comp.data?.higher_division_id, comp.data?.lower_division_id],
     queryFn: async () => {
       const ids = [comp.data!.higher_division_id, comp.data!.lower_division_id].filter((v): v is string => !!v);
-      const { data } = await supabase.from("competitions").select("id,name,slug").in("id", ids);
-      return (data ?? []) as { id: string; name: string; slug: string }[];
+      const { data } = await supabase.from("competitions").select("id,name,slug,logo_url").in("id", ids);
+      return (data ?? []) as { id: string; name: string; slug: string; logo_url: string | null }[];
     },
   });
   const tx = useTx();
@@ -250,7 +250,7 @@ function CompetitionOverviewTab({ c, season, teams, titleHolder, titles, divisio
   teams: Team[];
   titleHolder: Team | null;
   titles: { team_id: string; titles: number }[];
-  divisions: { id: string; name: string; slug: string }[];
+  divisions: { id: string; name: string; slug: string; logo_url: string | null }[];
   matches: MatchWithTeams[];
   media: { id: string; url: string; source: string; title: string | null }[];
   friendly?: boolean;
@@ -289,13 +289,16 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
   teams: Team[];
   titleHolder: Team | null;
   titles: { team_id: string; titles: number }[];
-  divisions: { id: string; name: string; slug: string }[];
+  divisions: { id: string; name: string; slug: string; logo_url: string | null }[];
   matches: MatchWithTeams[];
   media: { id: string; url: string; source: string; title: string | null }[];
   friendly?: boolean;
 }) {
   const tx = useTx();
   const num = useNum();
+  // Honours (title holder, most titles, title winners) belong to the live/newest season only.
+  const isCurrentSeason = !season || !c.season || season === c.season;
+  const showHonours = !friendly && isCurrentSeason;
   const winners = titles.filter((r) => r.titles > 0);
   const best = winners[0];
   const bestTeam = best ? teams.find((team) => team.id === best.team_id) : undefined;
@@ -340,7 +343,7 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
         </section>
       )}
 
-      {!friendly && <div className="grid gap-3 sm:grid-cols-2">
+      {showHonours && <div className="grid gap-3 sm:grid-cols-2">
         <TeamCell label={tx("Title holder")} team={titleHolder} />
         <TeamCell label={tx("Most titles")} team={bestTeam ?? null} note={best ? String(best.titles) : null} />
       </div>}
@@ -363,7 +366,7 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
         </section>
       )}
 
-      {!friendly && winners.length > 0 && (
+      {showHonours && winners.length > 0 && (
         <section className="overflow-hidden rounded-xl border border-border bg-card">
           <div className="border-b border-border bg-muted/40 px-3 py-2 text-[0.7rem] font-bold uppercase tracking-wide text-muted-foreground">{tx("Title winners")}</div>
           <div className="divide-y divide-border">
@@ -383,9 +386,11 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
 
       {(higher || lower) && (
         <div className="grid gap-3 sm:grid-cols-2">
-          {[higher, lower].filter((division): division is { id: string; name: string; slug: string } => Boolean(division)).map((division) => (
+          {[higher, lower].filter((division): division is { id: string; name: string; slug: string; logo_url: string | null } => Boolean(division)).map((division) => (
             <Link key={division.id} to="/competitions/$slug" params={{ slug: division.slug }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 hover:border-primary">
-              <Trophy className="h-6 w-6 shrink-0 text-primary" />
+              {division.logo_url
+                ? <img src={division.logo_url} alt="" className="h-8 w-8 shrink-0 object-contain" />
+                : <Trophy className="h-6 w-6 shrink-0 text-primary" />}
               <div className="min-w-0 flex-1">
                 <div className="text-[0.6rem] font-bold uppercase tracking-wide text-muted-foreground">{division.id === c.higher_division_id ? tx("Higher division") : tx("Lower division")}</div>
                 <div className="truncate text-xs font-semibold sm:text-sm">{tx(division.name)}</div>

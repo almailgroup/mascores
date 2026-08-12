@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   supabase, STATUS_LABELS, matchClockSeconds, formatClock,
+  eventIcon, ratingClass,
   type Match, type Team, type Player, type MatchEvent, type Lineup,
 } from "@/lib/db";
 import { Field, Modal, inputCls, btnPrimary, btnGhost, btnDanger } from "./ui";
@@ -173,7 +174,41 @@ function MainTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
         <p className="mt-1 text-xs text-muted-foreground">Use the Live tab to run the clock and add events. Choose a final or interrupted state there when play ends.</p>
         <div className="mt-3 flex flex-wrap gap-2">{["scheduled", "postponed", "cancelled", "interrupted", "awarded"].map((status) => <button key={status} type="button" onClick={() => setForm({ ...form, status, timer_running: false })} className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${form.status === status ? "border-primary bg-primary/10 text-primary" : "border-border"}`}>{STATUS_LABELS[status]}</button>)}</div>
       </section>
+      <ResultOnly match={match} />
     </div>
+  );
+}
+
+/** Score-only entry: set a final result without running the clock or logging events. */
+function ResultOnly({ match }: { match: Match }) {
+  const qc = useQueryClient();
+  const [home, setHome] = useState(String(match.home_score ?? ""));
+  const [away, setAway] = useState(String(match.away_score ?? ""));
+  const [status, setStatus] = useState(match.status === "scheduled" ? "ft" : match.status);
+  useEffect(() => { setHome(String(match.home_score ?? "")); setAway(String(match.away_score ?? "")); }, [match.id]);
+  const save = async () => {
+    await supabase.from("matches").update({
+      home_score: home === "" ? null : Number(home),
+      away_score: away === "" ? null : Number(away),
+      status, timer_running: false, timer_started_at: null,
+    }).eq("id", match.id);
+    qc.invalidateQueries({ queryKey: ["admin", "match", match.id] });
+    qc.invalidateQueries({ queryKey: ["admin", "matches", match.competition_id] });
+  };
+  return (
+    <section className="rounded-lg border border-primary/40 bg-primary/5 p-4">
+      <h3 className="font-bold">Match result only</h3>
+      <p className="mt-1 text-xs text-muted-foreground">Use this for awarded or archived matches — just type the score, no minutes or events needed.</p>
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <input type="number" inputMode="numeric" className="h-11 w-20 rounded-lg border border-border bg-background text-center text-lg font-black" value={home} onChange={(e) => setHome(e.target.value)} />
+        <span className="text-lg font-black">–</span>
+        <input type="number" inputMode="numeric" className="h-11 w-20 rounded-lg border border-border bg-background text-center text-lg font-black" value={away} onChange={(e) => setAway(e.target.value)} />
+        <select className={`${inputCls} w-auto`} value={status} onChange={(e) => setStatus(e.target.value)}>
+          {["ft", "aet", "pen", "awarded"].map((s) => <option key={s} value={s}>{STATUS_LABELS[s]}</option>)}
+        </select>
+        <button className={btnPrimary} onClick={save}>Save result</button>
+      </div>
+    </section>
   );
 }
 
@@ -201,6 +236,46 @@ function formationRows(formation: string | null | undefined): string[][] {
     idx += count;
   }
   return rows.reverse();
+}
+
+/** Per-player match ratings for everyone in the lineup. */
+function RatingsEditor({ match, lineups, players }: { match: Match; lineups: Lineup[]; players: Player[] }) {
+  const qc = useQueryClient();
+  const ratingsQ = useQuery({
+    queryKey: ["admin", "match-ratings", match.id],
+    queryFn: async () => (await supabase.from("player_ratings").select("*").eq("match_id", match.id)).data ?? [],
+  });
+  if (lineups.length === 0) return null;
+  const save = async (playerId: string, value: string) => {
+    const existing = ratingsQ.data?.find((r) => r.player_id === playerId);
+    if (value === "") {
+      if (existing) await supabase.from("player_ratings").delete().eq("id", existing.id);
+    } else if (existing) {
+      await supabase.from("player_ratings").update({ rating: Number(value) }).eq("id", existing.id);
+    } else {
+      await supabase.from("player_ratings").insert({ match_id: match.id, player_id: playerId, competition_id: match.competition_id, rating: Number(value) } as never);
+    }
+    qc.invalidateQueries({ queryKey: ["admin", "match-ratings", match.id] });
+  };
+  return (
+    <section className="rounded-xl border border-border bg-background/40 p-3">
+      <h4 className="mb-2 text-sm font-bold">Player ratings</h4>
+      <div className="grid gap-1 sm:grid-cols-2">
+        {lineups.map((lu) => {
+          const player = players.find((p) => p.id === lu.player_id);
+          const rating = ratingsQ.data?.find((r) => r.player_id === lu.player_id)?.rating;
+          return (
+            <div key={lu.id} className="flex items-center gap-2 text-xs">
+              <span className="min-w-0 flex-1 truncate">{player?.name ?? "—"}</span>
+              {rating != null && <span className={`rounded px-1.5 py-0.5 text-[0.6rem] font-black ${ratingClass(Number(rating))}`}>{rating}</span>}
+              <input type="number" step="0.1" min={0} max={10} defaultValue={rating ?? ""} onBlur={(e) => save(lu.player_id, e.target.value)}
+                className="h-8 w-16 rounded border border-border bg-background text-center" />
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
 }
 
 function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSaved: () => void }) {
@@ -319,6 +394,22 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
                   <div className="mt-1 text-center text-[0.6rem] text-muted-foreground">{formation} · tap a slot to pick a player</div>
                   {squad.length === 0 && <div className="text-center text-[0.6rem] text-muted-foreground">Add players to this squad first.</div>}
                 </div>
+              ) : null}
+              {match.lineup_mode === "formation" ? (
+                <div className="mt-3">
+                  <h4 className="mb-1 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">Bench</h4>
+                  <div className="grid gap-1">
+                    {squad.filter((p) => !lineups.some((l) => l.player_id === p.id && l.is_starting)).map((p) => {
+                      const benched = lineups.some((l) => l.player_id === p.id && !l.is_starting);
+                      return (
+                        <div key={p.id} className="flex items-center gap-2 text-xs">
+                          <span className="flex-1 truncate">{p.shirt_number ? `#${p.shirt_number} ` : ""}{p.name}</span>
+                          <button onClick={() => toggle(p.id, tid, false)} className={`rounded px-2 py-0.5 ${benched ? "bg-primary text-primary-foreground" : "bg-muted"}`}>Bench</button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               ) : (
               <div className="grid gap-1">
                 {squad.map((p) => {
@@ -339,6 +430,8 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
         })}
         {teamIds.length === 0 && <div className="text-xs text-muted-foreground">Pick both teams in Match details first.</div>}
       </div>
+
+      <RatingsEditor match={match} lineups={lineups} players={players} />
 
       <Modal open={!!picker} onClose={() => setPicker(null)} title="Choose player">
         <div className="max-h-[70vh] space-y-4 overflow-y-auto">
@@ -454,7 +547,7 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
         <h3 className="mb-2 mt-5 text-sm font-bold">Add match event</h3>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {EVENT_TYPES.map((t) => (
-            <button key={t.v} className={btnGhost} onClick={() => setComposer({ type: t.v })}>{t.l}</button>
+            <button key={t.v} className={btnGhost} onClick={() => setComposer({ type: t.v })}><span className="text-base leading-none">{eventIcon(t.v)}</span> {t.l}</button>
           ))}
         </div>
 
@@ -481,7 +574,7 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
           {(eventsQ.data ?? []).map((e) => (
             <div key={e.id} className="flex items-center gap-2 rounded-lg border border-border bg-background/60 p-2 text-xs">
               <span className="w-10 font-mono text-muted-foreground">{e.minute ?? "?"}{e.extra ? `+${e.extra}` : ""}′</span>
-              <span className="w-28 shrink-0 text-[0.65rem] font-semibold uppercase tracking-widest">{(EVENT_TYPES.find((t) => t.v === e.type)?.l ?? e.type)}</span>
+              <span className="flex w-28 shrink-0 items-center gap-1 text-[0.65rem] font-semibold uppercase tracking-widest"><span className="text-sm leading-none">{eventIcon(e.type)}</span>{(EVENT_TYPES.find((t) => t.v === e.type)?.l ?? e.type)}</span>
               <span className="flex-1 truncate">{playerName(e.player_id)}{e.assist_player_id ? ` (assist ${playerName(e.assist_player_id)})` : ""} {e.description ? `— ${e.description}` : ""}</span>
               <span className="shrink-0 text-[0.6rem] text-muted-foreground">{teamName(e.team_id)}</span>
               <button onClick={() => setEditing(e)} className="text-primary">Edit</button>

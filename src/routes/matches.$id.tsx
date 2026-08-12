@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { AppShell, BackButton, EmptyState, LoadingSkeleton } from "@/components/app-shell";
-import { supabase, STATUS_LABELS, roundLabel, matchClockSeconds, formatClock, type Match, type Team, type MatchEvent, type Lineup, type Player } from "@/lib/db";
+import { supabase, STATUS_LABELS, roundLabel, matchClockSeconds, formatClock, eventIcon, eventLabel, ratingClass, type Match, type Team, type MatchEvent, type Lineup, type Player, type StandingRow } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 import { PlayCircle, Radio } from "lucide-react";
 import { useTx, useNum, useDates } from "@/lib/auto-translate";
@@ -51,8 +51,8 @@ function MatchPage() {
   const num = useNum();
   const dates = useDates();
   const { id } = Route.useParams();
-  const [tab, setTab] = useState<"details" | "lineups" | "stats" | "previous" | "media">("details");
-  useRealtime(["matches", "match_events", "match_lineups", "player_ratings", "match_stats", "match_chat_messages", "media_items"]);
+  const [tab, setTab] = useState<"details" | "lineups" | "stats" | "standings" | "previous" | "media">("details");
+  useRealtime(["matches", "match_events", "match_lineups", "player_ratings", "match_stats", "match_chat_messages", "media_items", "standings_rows"]);
   const m = useQuery({
     queryKey: ["match", id],
     queryFn: async () => {
@@ -98,9 +98,8 @@ function MatchPage() {
   const isLive = ["live", "ht"].includes(match.status);
   const hasStarted = !["scheduled", "postponed", "cancelled"].includes(match.status);
   const lineupsVisible = match.lineups_published && (lineups.data?.length ?? 0) > 0;
-  const tabs: ("details" | "lineups" | "stats" | "previous" | "media")[] = ["details", ...(lineupsVisible ? ["lineups" as const] : []), "stats", "previous", "media"];
+  const tabs: ("details" | "lineups" | "stats" | "standings" | "previous" | "media")[] = ["details", ...(lineupsVisible ? ["lineups" as const] : []), "stats", "standings", "previous", "media"];
   const clock = matchClockSeconds(match);
-  const liveMinute = Math.max(match.live_minute ?? 0, Math.floor(clock / 60) + (clock % 60 > 0 ? 1 : 0));
 
   return (
     <AppShell>
@@ -132,7 +131,7 @@ function MatchPage() {
             )}
             <div className={`mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs ${isLive ? "bg-primary/15 text-primary" : "bg-muted"}`}>
               {isLive && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />}
-              {match.status === "live" ? `${num(liveMinute)}' · ${num(formatClock(clock))}` : tx(STATUS_LABELS[match.status] ?? match.status)}
+              {match.status === "live" ? num(formatClock(clock)) : tx(STATUS_LABELS[match.status] ?? match.status)}
             </div>
           </div>
           <TeamHeadline team={match.away} align="left" />
@@ -141,7 +140,7 @@ function MatchPage() {
       </div>
 
       <div className="mb-6 flex max-w-full gap-1 overflow-x-auto border-b border-border pb-2 text-sm">
-        {tabs.map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 py-2 font-semibold capitalize ${tab === item ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{tx(item === "media" ? "Media" : item === "previous" ? "Previous matches" : item === "details" ? "Details" : item === "lineups" ? "Lineups" : "Stats")}</button>)}
+        {tabs.map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 py-2 font-semibold capitalize ${tab === item ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{tx(item === "media" ? "Media" : item === "previous" ? "Previous matches" : item === "details" ? "Details" : item === "lineups" ? "Lineups" : item === "standings" ? "Standings" : "Stats")}</button>)}
       </div>
 
       {tab === "details" && <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
@@ -161,7 +160,7 @@ function MatchPage() {
                     {entry.event.player ? (
                       <Link to="/players/$id" params={{ id: entry.event.player.id }} className="block truncate text-sm font-semibold hover:text-primary">{tx(entry.event.player.name)}</Link>
                     ) : <span className="block truncate text-sm font-semibold">{entry.event.description ?? tx(entry.event.type)}</span>}
-                    <span className="block truncate text-[0.65rem] text-muted-foreground">{tx(EVENT_LABELS[entry.event.type] ?? entry.event.type)}{entry.event.team ? ` · ${tx(entry.event.team.name)}` : ""}</span>
+                    <span className="block truncate text-[0.65rem] text-muted-foreground">{tx(eventLabel(entry.event.type))}{entry.event.team ? ` · ${tx(entry.event.team.name)}` : ""}</span>
                   </span>
                 </li>
               ))}
@@ -210,7 +209,15 @@ function MatchPage() {
         const bench = rows.filter((r) => !r.is_starting);
         const activeFormation = formation ?? "4-2-3-1";
         const showPitch = match.lineup_mode === "formation" && starters.length > 0;
-        const eventsFor = (playerId: string) => events.data?.filter((e) => e.player?.id === playerId || e.sub_out_player_id === playerId) ?? [];
+        const marksFor = (playerId: string) => (events.data ?? [])
+          .map((e) => {
+            if (e.assist_player_id === playerId) return eventIcon("assist");
+            if (e.player?.id === playerId || e.player_id === playerId) return eventIcon(e.type);
+            if (e.sub_out_player_id === playerId) return eventIcon("substitution");
+            return "";
+          })
+          .filter((icon) => icon && icon !== "•")
+          .join("");
         return (
           <div key={side} className="rounded-2xl border border-border bg-card p-4">
             <h3 className="mb-3 flex items-center gap-2 font-bold">{tx(team?.name) ?? "TBD"}{showPitch && <span className="rounded bg-muted px-2 py-0.5 text-[0.65rem] font-semibold">{num(activeFormation)}</span>}</h3>
@@ -221,7 +228,7 @@ function MatchPage() {
                     {row.map((slot) => {
                       const lu = starters.find((s) => s.position_code === slot);
                       if (!lu) return <div key={slot} className="h-16 w-14" />;
-                      const marks = eventsFor(lu.player_id).map((e) => ({ goal: "⚽", own_goal: "⚽", penalty: "⚽", yellow: "🟨", red: "🟥", second_yellow: "🟥", sub: "🔁" }[e.type] ?? "")).filter(Boolean).join("");
+                      const marks = marksFor(lu.player_id);
                       return (
                         <Link key={slot} to="/players/$id" params={{ id: lu.player_id }} className="flex w-16 flex-col items-center gap-1 text-center">
                           <span className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border-2 border-primary/40 bg-muted text-xs font-bold">
@@ -236,13 +243,14 @@ function MatchPage() {
                 ))}
               </div>
             )}
-            {(showPitch ? bench : rows).map((lu) => { const rating = ratings.data?.find((item) => item.player_id === lu.player_id)?.rating; const marks = eventsFor(lu.player_id).map((e) => ({ goal: "⚽", own_goal: "⚽", penalty: "⚽", yellow: "🟨", red: "🟥", second_yellow: "🟥", sub: "🔁" }[e.type] ?? "")).filter(Boolean).join(""); return <Link key={lu.id} to="/players/$id" params={{ id: lu.player_id }} className="flex items-center gap-3 border-t border-border py-2 first:border-0"><div className="h-9 w-9 overflow-hidden rounded-full bg-muted">{lu.player?.photo_url && <img src={lu.player.photo_url} alt="" className="h-full w-full object-cover" />}</div><span className="w-6 text-xs text-muted-foreground">{num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}</span><span className="font-semibold">{tx(lu.player?.name)}</span>{marks && <span className="text-xs">{marks}</span>}{rating != null && <span className={`ml-auto rounded px-2 py-1 text-xs font-black ${Number(rating) >= 8 ? "bg-success text-success-foreground" : Number(rating) >= 6.5 ? "bg-primary text-primary-foreground" : "bg-muted"}`}>{num(rating)}</span>}<span className={rating == null ? "ml-auto text-xs text-muted-foreground" : "text-xs text-muted-foreground"}>{lu.is_starting ? tx(lu.position_code ?? "XI") : tx("Bench")}</span></Link>; })}
+            {(showPitch ? bench : rows).map((lu) => { const rating = ratings.data?.find((item) => item.player_id === lu.player_id)?.rating; const marks = marksFor(lu.player_id); return <Link key={lu.id} to="/players/$id" params={{ id: lu.player_id }} className="flex items-center gap-3 border-t border-border py-2 first:border-0"><div className="h-9 w-9 overflow-hidden rounded-full bg-muted">{lu.player?.photo_url && <img src={lu.player.photo_url} alt="" className="h-full w-full object-cover" />}</div><span className="w-6 text-xs text-muted-foreground">{num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}</span><span className="font-semibold">{tx(lu.player?.name)}</span>{marks && <span className="text-xs">{marks}</span>}{rating != null && <span className={`ml-auto rounded px-2 py-1 text-xs font-black ${ratingClass(Number(rating))}`}>{num(rating)}</span>}<span className={rating == null ? "ml-auto text-xs text-muted-foreground" : "text-xs text-muted-foreground"}>{lu.is_starting ? tx(lu.position_code ?? "XI") : tx("Bench")}</span></Link>; })}
             {rows.length === 0 && <p className="text-sm text-muted-foreground">{tx("No lineup posted.")}</p>}
           </div>
         );
       })}</div>}
       {tab === "stats" && <div className="rounded-2xl border border-border bg-card p-4">{stats.data && stats.data.length > 0 ? stats.data.map((item) => <div key={item.id} className="grid grid-cols-[1fr_2fr_1fr] border-t border-border py-3 text-center first:border-0"><strong>{num(item.home_value)}</strong><span className="text-muted-foreground">{tx(item.label)}</span><strong>{num(item.away_value)}</strong></div>) : <p className="text-sm text-muted-foreground">{tx("No statistics published yet.")}</p>}</div>}
       {tab === "previous" && <PreviousMatches competitionId={match.competition_id} currentId={match.id} />}
+      {tab === "standings" && <MatchStandings competitionId={match.competition_id} season={match.season} liveTeamIds={isLive ? [match.home_team_id, match.away_team_id].filter(Boolean) as string[] : []} highlightIds={[match.home_team_id, match.away_team_id].filter(Boolean) as string[]} />}
       {tab === "media" && <div><h3 className="mb-3 font-bold">{tx("Videos & media")}</h3><div className="grid gap-2">{media.data?.map((item) => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="rounded-xl border border-border bg-card p-4 hover:border-primary"><div className="text-xs font-bold uppercase text-primary">{item.source}</div><div className="mt-1 font-semibold">{tx(item.title) || tx("Open media")}</div></a>)}{media.data?.length === 0 && <p className="text-sm text-muted-foreground">{tx("No media posted.")}</p>}</div></div>}
     </AppShell>
   );
@@ -251,18 +259,59 @@ function MatchPage() {
 function PreviousMatches({ competitionId, currentId }: { competitionId: string; currentId: string }) {
   const tx = useTx();
   const q = useQuery({ queryKey: ["previous-matches", competitionId, currentId], queryFn: async () => (await supabase.from("matches").select("*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url)").eq("competition_id", competitionId).neq("id", currentId).in("status", ["ft", "aet", "pen", "awarded"]).order("kickoff_at", { ascending: false }).limit(10)).data ?? [] });
-  return <div className="grid gap-2">{q.data?.map((match) => <Link key={match.id} to="/matches/$id" params={{ id: match.id }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 hover:border-primary"><span className="min-w-0 flex-1 truncate font-semibold">{tx(match.home?.name) ?? "TBD"} vs {tx(match.away?.name) ?? "TBD"}</span><strong>{match.home_score ?? 0}–{match.away_score ?? 0}</strong></Link>)}{q.data?.length === 0 && <p className="text-sm text-muted-foreground">No previous matches yet.</p>}</div>;
+  return <div className="grid gap-2">{q.data?.map((match) => <Link key={match.id} to="/matches/$id" params={{ id: match.id }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 hover:border-primary"><span className="min-w-0 flex-1 truncate font-semibold">{tx(match.home?.name) ?? "TBD"} vs {tx(match.away?.name) ?? "TBD"}</span><strong>{match.home_score ?? 0}–{match.away_score ?? 0}</strong></Link>)}{q.data?.length === 0 && <p className="text-sm text-muted-foreground">{tx("No previous matches yet.")}</p>}</div>;
 }
+
+/** League table for the match's competition, with the two clubs highlighted (live-tinted while playing). */
+function MatchStandings({ competitionId, season, liveTeamIds, highlightIds }: { competitionId: string; season: string | null; liveTeamIds: string[]; highlightIds: string[] }) {
+  const tx = useTx();
+  const num = useNum();
+  const q = useQuery({
+    queryKey: ["match-standings", competitionId, season],
+    queryFn: async () => {
+      let query = supabase.from("standings_rows").select("*, team:team_id(id,name,logo_url,short_name)").eq("competition_id", competitionId);
+      if (season) query = query.eq("season", season);
+      const { data } = await query.order("group_label", { ascending: true, nullsFirst: true }).order("sort_order");
+      return (data ?? []) as unknown as (StandingRow & { team: Team | null })[];
+    },
+  });
+  if (!q.data?.length) return <EmptyState title={tx("No standings yet")} />;
+  return (
+    <div className="overflow-hidden rounded-2xl border border-border bg-card">
+      <table className="w-full table-fixed text-sm">
+        <thead className="bg-muted/50 text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground">
+          <tr><th className="w-9 py-2.5 text-center">#</th><th className="py-2.5 text-start">{tx("Team")}</th><th className="w-9 text-center">{tx("P")}</th><th className="w-9 text-center">{tx("GD")}</th><th className="w-10 text-center">{tx("Pts")}</th></tr>
+        </thead>
+        <tbody>
+          {q.data.map((row, i) => {
+            const isLiveRow = row.team_id ? liveTeamIds.includes(row.team_id) : false;
+            const isHighlight = row.team_id ? highlightIds.includes(row.team_id) : false;
+            return (
+              <tr key={row.id} className={`border-t border-border ${isLiveRow ? "bg-primary/15" : isHighlight ? "bg-accent/60" : ""}`}>
+                <td className="py-2.5 text-center text-xs text-muted-foreground">{num(i + 1)}</td>
+                <td className="py-2.5">
+                  <Link to="/teams/$id" params={{ id: row.team_id }} className="flex min-w-0 items-center gap-2 hover:text-primary">
+                    <TeamCrest name={row.team?.name} logo={row.team?.logo_url} className="h-5 w-5 shrink-0" />
+                    <span className="min-w-0 flex-1 truncate font-medium">{tx(row.team?.name) ?? "—"}</span>
+                    {isLiveRow && <span className="shrink-0 rounded-full bg-primary/20 px-1.5 py-0.5 text-[0.55rem] font-bold uppercase text-primary">{tx("Live")}</span>}
+                  </Link>
+                </td>
+                <td className="text-center text-xs tabular-nums">{num(row.played)}</td>
+                <td className="text-center text-xs tabular-nums">{num(row.gf - row.ga)}</td>
+                <td className="text-center text-xs font-black tabular-nums">{num(row.points + row.points_adjust)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 
 function EventIcon({ type }: { type: string }) {
-  const map: Record<string, string> = { goal: "⚽", own_goal: "⚽", penalty: "⚽", missed_penalty: "❌", yellow: "🟨", red: "🟥", second_yellow: "🟨🟥", sub: "🔁" };
-  return <span className="shrink-0 text-base leading-none">{map[type] ?? "•"}</span>;
+  return <span className="shrink-0 text-base leading-none">{eventIcon(type)}</span>;
 }
-
-const EVENT_LABELS: Record<string, string> = {
-  goal: "Goal", own_goal: "Own goal", penalty: "Penalty goal", missed_penalty: "Missed penalty",
-  yellow: "Yellow card", red: "Red card", second_yellow: "Second yellow", sub: "Substitution",
-};
 
 type TimelineEvent = MatchEvent & { player: Player | null; team: Team | null };
 type TimelineEntry =
