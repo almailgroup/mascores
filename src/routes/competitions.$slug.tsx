@@ -250,7 +250,7 @@ function CompetitionOverviewTab({ c, season, teams, titleHolder, titles, divisio
   teams: Team[];
   titleHolder: Team | null;
   titles: { team_id: string; titles: number }[];
-  divisions: { id: string; name: string; slug: string }[];
+  divisions: { id: string; name: string; slug: string; logo_url: string | null }[];
   matches: MatchWithTeams[];
   media: { id: string; url: string; source: string; title: string | null }[];
   friendly?: boolean;
