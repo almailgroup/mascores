@@ -209,7 +209,15 @@ function MatchPage() {
         const bench = rows.filter((r) => !r.is_starting);
         const activeFormation = formation ?? "4-2-3-1";
         const showPitch = match.lineup_mode === "formation" && starters.length > 0;
-        const eventsFor = (playerId: string) => events.data?.filter((e) => e.player?.id === playerId || e.sub_out_player_id === playerId) ?? [];
+        const marksFor = (playerId: string) => (events.data ?? [])
+          .map((e) => {
+            if (e.assist_player_id === playerId) return eventIcon("assist");
+            if (e.player?.id === playerId || e.player_id === playerId) return eventIcon(e.type);
+            if (e.sub_out_player_id === playerId) return eventIcon("substitution");
+            return "";
+          })
+          .filter((icon) => icon && icon !== "•")
+          .join("");
         return (
           <div key={side} className="rounded-2xl border border-border bg-card p-4">
             <h3 className="mb-3 flex items-center gap-2 font-bold">{tx(team?.name) ?? "TBD"}{showPitch && <span className="rounded bg-muted px-2 py-0.5 text-[0.65rem] font-semibold">{num(activeFormation)}</span>}</h3>
@@ -220,7 +228,7 @@ function MatchPage() {
                     {row.map((slot) => {
                       const lu = starters.find((s) => s.position_code === slot);
                       if (!lu) return <div key={slot} className="h-16 w-14" />;
-                      const marks = eventsFor(lu.player_id).map((e) => ({ goal: "⚽", own_goal: "⚽", penalty: "⚽", yellow: "🟨", red: "🟥", second_yellow: "🟥", sub: "🔁" }[e.type] ?? "")).filter(Boolean).join("");
+                      const marks = marksFor(lu.player_id);
                       return (
                         <Link key={slot} to="/players/$id" params={{ id: lu.player_id }} className="flex w-16 flex-col items-center gap-1 text-center">
                           <span className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border-2 border-primary/40 bg-muted text-xs font-bold">
@@ -235,7 +243,7 @@ function MatchPage() {
                 ))}
               </div>
             )}
-            {(showPitch ? bench : rows).map((lu) => { const rating = ratings.data?.find((item) => item.player_id === lu.player_id)?.rating; const marks = eventsFor(lu.player_id).map((e) => ({ goal: "⚽", own_goal: "⚽", penalty: "⚽", yellow: "🟨", red: "🟥", second_yellow: "🟥", sub: "🔁" }[e.type] ?? "")).filter(Boolean).join(""); return <Link key={lu.id} to="/players/$id" params={{ id: lu.player_id }} className="flex items-center gap-3 border-t border-border py-2 first:border-0"><div className="h-9 w-9 overflow-hidden rounded-full bg-muted">{lu.player?.photo_url && <img src={lu.player.photo_url} alt="" className="h-full w-full object-cover" />}</div><span className="w-6 text-xs text-muted-foreground">{num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}</span><span className="font-semibold">{tx(lu.player?.name)}</span>{marks && <span className="text-xs">{marks}</span>}{rating != null && <span className={`ml-auto rounded px-2 py-1 text-xs font-black ${Number(rating) >= 8 ? "bg-success text-success-foreground" : Number(rating) >= 6.5 ? "bg-primary text-primary-foreground" : "bg-muted"}`}>{num(rating)}</span>}<span className={rating == null ? "ml-auto text-xs text-muted-foreground" : "text-xs text-muted-foreground"}>{lu.is_starting ? tx(lu.position_code ?? "XI") : tx("Bench")}</span></Link>; })}
+            {(showPitch ? bench : rows).map((lu) => { const rating = ratings.data?.find((item) => item.player_id === lu.player_id)?.rating; const marks = marksFor(lu.player_id); return <Link key={lu.id} to="/players/$id" params={{ id: lu.player_id }} className="flex items-center gap-3 border-t border-border py-2 first:border-0"><div className="h-9 w-9 overflow-hidden rounded-full bg-muted">{lu.player?.photo_url && <img src={lu.player.photo_url} alt="" className="h-full w-full object-cover" />}</div><span className="w-6 text-xs text-muted-foreground">{num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}</span><span className="font-semibold">{tx(lu.player?.name)}</span>{marks && <span className="text-xs">{marks}</span>}{rating != null && <span className={`ml-auto rounded px-2 py-1 text-xs font-black ${ratingClass(Number(rating))}`}>{num(rating)}</span>}<span className={rating == null ? "ml-auto text-xs text-muted-foreground" : "text-xs text-muted-foreground"}>{lu.is_starting ? tx(lu.position_code ?? "XI") : tx("Bench")}</span></Link>; })}
             {rows.length === 0 && <p className="text-sm text-muted-foreground">{tx("No lineup posted.")}</p>}
           </div>
         );
