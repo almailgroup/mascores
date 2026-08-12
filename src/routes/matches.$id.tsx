@@ -292,6 +292,31 @@ function MatchPage() {
 }
 
 function PreviousMatches({ competitionId, currentId }: { competitionId: string; currentId: string }) {
+  return <PreviousMatchesInner competitionId={competitionId} currentId={currentId} />;
+}
+
+/** Coach block under each lineup. */
+function TeamCoach({ teamId }: { teamId: string | undefined }) {
+  const tx = useTx();
+  const q = useQuery({
+    queryKey: ["lineup-coach", teamId],
+    enabled: !!teamId,
+    queryFn: async () => (await supabase.from("coaches").select("id,name,photo_url,nationality").eq("team_id", teamId!).limit(1).maybeSingle()).data,
+  });
+  if (!q.data) return null;
+  return (
+    <div className="mt-3">
+      <h4 className="mb-1 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Coach")}</h4>
+      <div className="flex items-center gap-3 py-2">
+        <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-muted">{q.data.photo_url && <img src={q.data.photo_url} alt="" className="h-full w-full object-cover" />}</div>
+        <span className="min-w-0 flex-1 truncate font-semibold">{tx(q.data.name)}</span>
+        <span className="shrink-0 text-xs text-muted-foreground">{tx(q.data.nationality) ?? ""}</span>
+      </div>
+    </div>
+  );
+}
+
+function PreviousMatchesInner({ competitionId, currentId }: { competitionId: string; currentId: string }) {
   const tx = useTx();
   const q = useQuery({ queryKey: ["previous-matches", competitionId, currentId], queryFn: async () => (await supabase.from("matches").select("*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url)").eq("competition_id", competitionId).neq("id", currentId).in("status", ["ft", "aet", "pen", "awarded"]).order("kickoff_at", { ascending: false }).limit(10)).data ?? [] });
   return <div className="grid gap-2">{q.data?.map((match) => <Link key={match.id} to="/matches/$id" params={{ id: match.id }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 hover:border-primary"><span className="min-w-0 flex-1 truncate font-semibold">{tx(match.home?.name) ?? "TBD"} vs {tx(match.away?.name) ?? "TBD"}</span><strong>{match.home_score ?? 0}–{match.away_score ?? 0}</strong></Link>)}{q.data?.length === 0 && <p className="text-sm text-muted-foreground">{tx("No previous matches yet.")}</p>}</div>;
