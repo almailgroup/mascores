@@ -204,20 +204,47 @@ function TeamPage() {
       )}
 
       {tab === "info" && (
-        <div className="grid gap-3 sm:grid-cols-2">
-          <InfoCard label={tx("Country")} value={tx(t.country) ?? "—"} icon={<FlagIcon value={t.country_code ?? t.country} size="md" />} />
-          {venue.data ? (
-            <Link to="/venues/$id" params={{ id: venue.data.id }} className="block transition hover:opacity-80">
-              <InfoCard label={tx("Stadium")} value={[tx(t.venue_name), tx(t.venue_city)].filter(Boolean).join(", ") || "—"} icon={<Landmark className="h-4 w-4 text-primary" />} />
-            </Link>
-          ) : (
-            <InfoCard label={tx("Stadium")} value={[tx(t.venue_name), tx(t.venue_city)].filter(Boolean).join(", ") || "—"} />
-          )}
-           <InfoCard label={tx("Chairman")} value={tx(t.chairman) ?? "—"} />
-          <InfoCard label={tx("Short name")} value={t.short_name ?? "—"} />
-          <InfoCard label={tx("Founded")} value={t.founded_on ? num(dates.date(t.founded_on, { dateStyle: "long" })) : "—"} />
-          <InfoCard label={tx("Trophies")} value={String(t.trophies ?? 0)} />
-          {t.description && <div className="rounded-2xl border border-border bg-card p-4 text-sm sm:col-span-2">{tx(t.description)}</div>}
+        <div className="space-y-4">
+          {featured ? (
+            <section className="overflow-hidden rounded-2xl border border-border bg-card">
+              <div className="border-b border-border px-4 py-2.5 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{tx(featured.status === "scheduled" ? "Next match" : "Featured match")}</div>
+              <MatchRow m={featured} highlightTeamId={id} />
+            </section>
+          ) : null}
+
+          <RecentForm matches={matches.data ?? []} teamId={id} />
+
+          <section className="overflow-hidden rounded-2xl border border-border bg-card">
+            <div className="border-b border-border px-4 py-2.5 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Tournaments")}</div>
+            {tournaments.length > 0 ? (
+              <div className="divide-y divide-border">
+                {tournaments.map((c) => (
+                  <Link key={c.slug} to="/competitions/$slug" params={{ slug: c.slug }} className="flex items-center gap-3 px-4 py-3 text-sm font-semibold hover:bg-accent">
+                    {c.logo_url ? <img src={c.logo_url} alt="" className="h-6 w-6 shrink-0 object-contain" /> : null}
+                    <span className="min-w-0 flex-1 truncate">{tx(c.name)}</span>
+                    <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  </Link>
+                ))}
+              </div>
+            ) : <p className="p-4 text-sm text-muted-foreground">{tx("No tournaments yet")}</p>}
+          </section>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <InfoCard label={tx("Chairman")} value={tx(t.chairman) ?? "—"} />
+            <InfoCard label={tx("Coach")} value={tx(coaches.data?.[0]?.name) ?? "—"} />
+            <InfoCard label={tx("Country")} value={tx(t.country) ?? "—"} icon={<FlagIcon value={t.country_code ?? t.country} size="md" />} />
+            <InfoCard label={tx("Short name")} value={t.short_name ?? "—"} />
+            <InfoCard label={tx("Trophies")} value={String(t.trophies ?? 0)} />
+            <InfoCard label={tx("Founded")} value={t.founded_on ? num(dates.date(t.founded_on, { dateStyle: "long" })) : "—"} />
+            {venue.data ? (
+              <Link to="/venues/$id" params={{ id: venue.data.id }} className="block transition hover:opacity-80 sm:col-span-2">
+                <InfoCard label={tx("Stadium")} value={[tx(t.venue_name), tx(t.venue_city)].filter(Boolean).join(", ") || "—"} icon={<Landmark className="h-4 w-4 text-primary" />} />
+              </Link>
+            ) : (
+              <div className="sm:col-span-2"><InfoCard label={tx("Stadium")} value={[tx(t.venue_name), tx(t.venue_city)].filter(Boolean).join(", ") || "—"} /></div>
+            )}
+            {t.description && <div className="rounded-2xl border border-border bg-card p-4 text-sm sm:col-span-2">{tx(t.description)}</div>}
+          </div>
         </div>
       )}
 
@@ -261,6 +288,55 @@ function TeamPage() {
 }
 
 function InfoCard({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) {
+  return (
+    <div className="rounded-2xl border border-border bg-card p-4">
+      <div className="text-[0.6rem] font-semibold uppercase tracking-widest text-muted-foreground">{label}</div>
+      <div className="mt-1 flex items-center gap-2 truncate text-sm font-semibold">{icon}{value}</div>
+    </div>
+  );
+}
+
+/** SofaScore-style form chart: opponent crests over win/draw/loss bars. */
+function RecentForm({ matches, teamId }: { matches: MatchWithTeams[]; teamId: string }) {
+  const tx = useTx();
+  const played = matches
+    .filter((m) => ["ft", "aet", "pen", "awarded"].includes(m.status))
+    .slice(0, 10)
+    .reverse();
+  if (played.length === 0) return null;
+  return (
+    <section className="rounded-2xl border border-border bg-card p-4">
+      <h2 className="text-center text-sm font-bold">{tx("Recent form")}</h2>
+      <div className="mt-3 overflow-x-auto rounded-2xl bg-muted/50 p-3">
+        <div className="flex min-w-max items-stretch gap-2">
+          {played.map((m) => {
+            const home = m.home_team_id === teamId;
+            const own = (home ? m.home_score : m.away_score) ?? 0;
+            const other = (home ? m.away_score : m.home_score) ?? 0;
+            const opp = home ? m.away : m.home;
+            const result = own > other ? "w" : own === other ? "d" : "l";
+            return (
+              <Link key={m.id} to="/matches/$id" params={{ id: m.id }} className="flex w-12 flex-col items-center gap-2">
+                <TeamCrest name={opp?.name} logo={opp?.logo_url} className="h-8 w-8" />
+                <span className="flex h-28 w-full flex-col justify-center">
+                  <span className="flex h-1/2 items-end justify-center">
+                    {result === "w" && <span className="h-full w-8 rounded-t-sm bg-success" />}
+                  </span>
+                  <span className="flex h-1/2 items-start justify-center">
+                    {result === "l" && <span className="h-full w-8 rounded-b-sm bg-destructive" />}
+                    {result === "d" && <span className="h-1.5 w-8 rounded-sm bg-muted-foreground/50" />}
+                  </span>
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function InfoCardLegacy({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) {
   return (
     <div className="rounded-2xl border border-border bg-card p-4">
       <div className="text-[0.6rem] font-semibold uppercase tracking-widest text-muted-foreground">{label}</div>
