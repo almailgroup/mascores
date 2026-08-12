@@ -131,7 +131,7 @@ function MatchPage() {
             )}
             <div className={`mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs ${isLive ? "bg-primary/15 text-primary" : "bg-muted"}`}>
               {isLive && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />}
-              {match.status === "live" ? `${num(liveMinute)}' · ${num(formatClock(clock))}` : tx(STATUS_LABELS[match.status] ?? match.status)}
+              {match.status === "live" ? num(formatClock(clock)) : tx(STATUS_LABELS[match.status] ?? match.status)}
             </div>
           </div>
           <TeamHeadline team={match.away} align="left" />
@@ -140,7 +140,7 @@ function MatchPage() {
       </div>
 
       <div className="mb-6 flex max-w-full gap-1 overflow-x-auto border-b border-border pb-2 text-sm">
-        {tabs.map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 py-2 font-semibold capitalize ${tab === item ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{tx(item === "media" ? "Media" : item === "previous" ? "Previous matches" : item === "details" ? "Details" : item === "lineups" ? "Lineups" : "Stats")}</button>)}
+        {tabs.map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 py-2 font-semibold capitalize ${tab === item ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{tx(item === "media" ? "Media" : item === "previous" ? "Previous matches" : item === "details" ? "Details" : item === "lineups" ? "Lineups" : item === "standings" ? "Standings" : "Stats")}</button>)}
       </div>
 
       {tab === "details" && <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
