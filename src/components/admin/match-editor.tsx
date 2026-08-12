@@ -710,12 +710,15 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
     return { h, a };
   }, [eventsQ.data, match.home_team_id]);
 
+  const notStarted = ["scheduled", "postponed", "cancelled"].includes(match.status);
+
   // Score always mirrors the logged events — no manual sync.
   useEffect(() => {
     if (eventsQ.isLoading || match.status === "awarded" || match.result_only) return;
+    if (notStarted && (eventsQ.data ?? []).length === 0) return;
     if ((match.home_score ?? 0) === scores.h && (match.away_score ?? 0) === scores.a) return;
     supabase.from("matches").update({ home_score: scores.h, away_score: scores.a }).eq("id", match.id).then(onSaved);
-  }, [scores.h, scores.a, eventsQ.isLoading, match.id, match.home_score, match.away_score, match.result_only]);
+  }, [scores.h, scores.a, eventsQ.isLoading, match.id, match.home_score, match.away_score, match.result_only, notStarted]);
 
   const resultOnlyToggle = (
     <section className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-background/40 p-3">
@@ -764,7 +767,7 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
             <select className="rounded-lg border border-border bg-background px-2 py-1 text-xs" value={match.status} onChange={(e) => { const status = e.target.value; patchMatch({ status, ...(["ft", "aet", "pen", "awarded", "cancelled", "postponed", "interrupted"].includes(status) ? { timer_running: false, timer_started_at: null } : {}) }); }}>
               {Object.entries(STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </select>
-            <span className="text-sm font-bold tabular-nums">{match.home_score ?? 0} – {match.away_score ?? 0}</span>
+            <span className="text-sm font-bold tabular-nums">{notStarted && match.home_score == null && match.away_score == null ? "– : –" : `${match.home_score ?? 0} – ${match.away_score ?? 0}`}</span>
           </div>
         </div>
 
@@ -809,7 +812,6 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
           {eventsQ.data && eventsQ.data.length === 0 && <div className="rounded border border-dashed border-border p-3 text-center text-[0.65rem] text-muted-foreground">No events yet.</div>}
         </div>
 
-        <div className="mt-5"><ResultOnly match={match} /></div>
         <MatchStatsEditor match={match} teams={teams} />
 
         {editing && (
