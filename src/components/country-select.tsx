@@ -65,7 +65,7 @@ export function CountrySelect({
             <button key={c.code} type="button"
               className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm hover:bg-accent"
               onMouseDown={(e) => { e.preventDefault(); justPicked.current = true; onChange(c.name, c); setOpen(false); setQuery(""); inputRef.current?.blur(); }}
-              onClick={(e) => { e.preventDefault(); }}>
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
               <FlagIcon value={c.code} size="md" />
               <span className="flex-1 truncate">{c.name}</span>
               <span className="text-[0.6rem] text-muted-foreground">{c.code}</span>
