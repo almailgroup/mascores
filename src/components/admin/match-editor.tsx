@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   supabase, STATUS_LABELS, matchClockSeconds, formatClock,
+  eventIcon, ratingClass,
   type Match, type Team, type Player, type MatchEvent, type Lineup,
 } from "@/lib/db";
 import { Field, Modal, inputCls, btnPrimary, btnGhost, btnDanger } from "./ui";
@@ -173,7 +174,41 @@ function MainTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
         <p className="mt-1 text-xs text-muted-foreground">Use the Live tab to run the clock and add events. Choose a final or interrupted state there when play ends.</p>
         <div className="mt-3 flex flex-wrap gap-2">{["scheduled", "postponed", "cancelled", "interrupted", "awarded"].map((status) => <button key={status} type="button" onClick={() => setForm({ ...form, status, timer_running: false })} className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${form.status === status ? "border-primary bg-primary/10 text-primary" : "border-border"}`}>{STATUS_LABELS[status]}</button>)}</div>
       </section>
+      <ResultOnly match={match} />
     </div>
+  );
+}
+
+/** Score-only entry: set a final result without running the clock or logging events. */
+function ResultOnly({ match }: { match: Match }) {
+  const qc = useQueryClient();
+  const [home, setHome] = useState(String(match.home_score ?? ""));
+  const [away, setAway] = useState(String(match.away_score ?? ""));
+  const [status, setStatus] = useState(match.status === "scheduled" ? "ft" : match.status);
+  useEffect(() => { setHome(String(match.home_score ?? "")); setAway(String(match.away_score ?? "")); }, [match.id]);
+  const save = async () => {
+    await supabase.from("matches").update({
+      home_score: home === "" ? null : Number(home),
+      away_score: away === "" ? null : Number(away),
+      status, timer_running: false, timer_started_at: null,
+    }).eq("id", match.id);
+    qc.invalidateQueries({ queryKey: ["admin", "match", match.id] });
+    qc.invalidateQueries({ queryKey: ["admin", "matches", match.competition_id] });
+  };
+  return (
+    <section className="rounded-lg border border-primary/40 bg-primary/5 p-4">
+      <h3 className="font-bold">Match result only</h3>
+      <p className="mt-1 text-xs text-muted-foreground">Use this for awarded or archived matches — just type the score, no minutes or events needed.</p>
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <input type="number" inputMode="numeric" className="h-11 w-20 rounded-lg border border-border bg-background text-center text-lg font-black" value={home} onChange={(e) => setHome(e.target.value)} />
+        <span className="text-lg font-black">–</span>
+        <input type="number" inputMode="numeric" className="h-11 w-20 rounded-lg border border-border bg-background text-center text-lg font-black" value={away} onChange={(e) => setAway(e.target.value)} />
+        <select className={`${inputCls} w-auto`} value={status} onChange={(e) => setStatus(e.target.value)}>
+          {["ft", "aet", "pen", "awarded"].map((s) => <option key={s} value={s}>{STATUS_LABELS[s]}</option>)}
+        </select>
+        <button className={btnPrimary} onClick={save}>Save result</button>
+      </div>
+    </section>
   );
 }
 
