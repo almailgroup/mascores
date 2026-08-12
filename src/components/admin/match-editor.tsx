@@ -691,6 +691,9 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
           {eventsQ.data && eventsQ.data.length === 0 && <div className="rounded border border-dashed border-border p-3 text-center text-[0.65rem] text-muted-foreground">No events yet.</div>}
         </div>
 
+        <div className="mt-5"><ResultOnly match={match} /></div>
+        <MatchStatsEditor match={match} teams={teams} />
+
         {editing && (
           <div className="mt-3">
             <EventForm
