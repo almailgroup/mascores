@@ -234,11 +234,13 @@ function MatchPage() {
                       const lu = starters.find((s) => s.position_code === slot);
                       if (!lu) return <div key={slot} className="h-16 w-14" />;
                       const marks = marksFor(lu.player_id);
+                      const pitchRating = ratings.data?.find((item) => item.player_id === lu.player_id)?.rating;
                       return (
                         <Link key={slot} to="/players/$id" params={{ id: lu.player_id }} className="flex w-16 flex-col items-center gap-1 text-center">
                           <span className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border-2 border-white/70 bg-muted text-xs font-bold">
                             {lu.player?.photo_url ? <img src={lu.player.photo_url} alt="" className="h-full w-full object-cover" /> : num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}
                             {marks && <span className="absolute -right-1 -top-1 text-[0.6rem]">{marks}</span>}
+                            {pitchRating != null && <span className={`absolute -bottom-1 -left-1 rounded px-1 text-[0.55rem] font-black ${ratingClass(Number(pitchRating))}`}>{num(pitchRating)}</span>}
                           </span>
                           <span className="line-clamp-2 text-[0.6rem] font-semibold leading-tight text-white drop-shadow">{tx(lu.player?.name)}</span>
                         </Link>
@@ -269,13 +271,13 @@ function MatchPage() {
               return (
                 <>
                   {startersList.length > 0 && <div>{startersList.map(row)}</div>}
+                  <TeamCoach teamId={team?.id} />
                   {benchList.length > 0 && (
                     <div className="mt-3">
                       <h4 className="mb-1 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Bench")}</h4>
                       {benchList.map(row)}
                     </div>
                   )}
-                  <TeamCoach teamId={team?.id} />
                 </>
               );
             })()}
