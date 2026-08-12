@@ -353,6 +353,7 @@ function RatingsEditor({ match, lineups, players }: { match: Match; lineups: Lin
 function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSaved: () => void }) {
   const qc = useQueryClient();
   const [picker, setPicker] = useState<{ teamId: string; slot: string } | null>(null);
+  const [benchPicker, setBenchPicker] = useState<string | null>(null);
   const teamIds = [match.home_team_id, match.away_team_id].filter(Boolean) as string[];
 
   const playersQ = useQuery({
@@ -469,17 +470,21 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
               ) : null}
               {match.lineup_mode === "formation" ? (
                 <div className="mt-3">
-                  <h4 className="mb-1 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">Bench</h4>
+                  <div className="mb-1 flex items-center justify-between">
+                    <h4 className="text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">Bench</h4>
+                    <button type="button" onClick={() => setBenchPicker(tid)} className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-border hover:bg-accent" aria-label="Pick bench players"><Plus className="h-3.5 w-3.5" /></button>
+                  </div>
                   <div className="grid gap-1">
-                    {squad.filter((p) => !lineups.some((l) => l.player_id === p.id && l.is_starting)).map((p) => {
-                      const benched = lineups.some((l) => l.player_id === p.id && !l.is_starting);
+                    {lineups.filter((l) => l.team_id === tid && !l.is_starting).map((l) => {
+                      const p = players.find((x) => x.id === l.player_id);
                       return (
-                        <div key={p.id} className="flex items-center gap-2 text-xs">
-                          <span className="flex-1 truncate">{p.shirt_number ? `#${p.shirt_number} ` : ""}{p.name}</span>
-                          <button onClick={() => toggle(p.id, tid, false)} className={`rounded px-2 py-0.5 ${benched ? "bg-primary text-primary-foreground" : "bg-muted"}`}>Bench</button>
+                        <div key={l.id} className="flex items-center gap-2 text-xs">
+                          <span className="flex-1 truncate">{p?.shirt_number ? `#${p.shirt_number} ` : ""}{p?.name ?? "—"}</span>
+                          <button onClick={() => toggle(l.player_id, tid, false)} className="text-destructive"><Trash2 className="h-3.5 w-3.5" /></button>
                         </div>
                       );
                     })}
+                    {lineups.filter((l) => l.team_id === tid && !l.is_starting).length === 0 && <p className="text-[0.6rem] text-muted-foreground">No bench yet — tap + to pick from the squad.</p>}
                   </div>
                 </div>
               ) : (
@@ -504,6 +509,36 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
       </div>
 
       <RatingsEditor match={match} lineups={lineups} players={players} />
+
+      <Modal open={!!benchPicker} onClose={() => setBenchPicker(null)} title="Pick bench players">
+        <div className="max-h-[70vh] space-y-4 overflow-y-auto">
+          {benchPicker && ["Goalkeeper", "Defender", "Midfielder", "Forward", "Unknown"].map((position) => {
+            const pool = players.filter((p) => p.team_id === benchPicker && (p.position ?? "Unknown") === position && !lineups.some((l) => l.player_id === p.id && l.is_starting))
+              .sort((a, b) => (a.shirt_number ?? 999) - (b.shirt_number ?? 999) || a.name.localeCompare(b.name));
+            if (pool.length === 0) return null;
+            return (
+              <section key={position}>
+                <h4 className="mb-2 text-xs font-bold uppercase text-muted-foreground">{position}</h4>
+                <div className="grid gap-2">
+                  {pool.map((player) => {
+                    const benched = lineups.some((l) => l.player_id === player.id && !l.is_starting);
+                    return (
+                      <button key={player.id} type="button" onClick={() => toggle(player.id, benchPicker, false)}
+                        className={`flex items-center gap-3 rounded-lg border p-2 text-left ${benched ? "border-primary bg-primary/10" : "border-border bg-background"}`}>
+                        <PlayerAvatar src={player.photo_url} name={player.name} size="sm" />
+                        <span className="w-8 text-center text-sm font-bold">{player.shirt_number ?? "—"}</span>
+                        <span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{player.name}</span><span className="block text-xs text-muted-foreground">{player.position ?? "Unknown"}</span></span>
+                        {benched && <Check className="h-4 w-4 text-primary" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+            );
+          })}
+          <button type="button" className={`${btnPrimary} w-full`} onClick={() => setBenchPicker(null)}><Check className="h-3.5 w-3.5" /> Done</button>
+        </div>
+      </Modal>
 
       <Modal open={!!picker} onClose={() => setPicker(null)} title="Choose player">
         <div className="max-h-[70vh] space-y-4 overflow-y-auto">
