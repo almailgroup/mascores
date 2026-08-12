@@ -249,8 +249,9 @@ function ScoreBoard({ liveCount }: { liveCount: number }) {
 }
 
 function FavoriteMatches() {
-  const { t } = useI18n();
+  const tx = useTx();
   const { favorites, ready } = useFavorites();
+  const [view, setView] = useState<"matches" | "all">("matches");
   const ids = favorites.match;
   const teamIds = favorites.team;
   const q = useQuery({
@@ -272,8 +273,40 @@ function FavoriteMatches() {
       return [...new Map(out.map((m) => [m.id, m])).values()];
     },
   });
+  const others = useQuery({
+    enabled: ready && view === "all",
+    queryKey: ["fav-others", favorites.team.join(","), favorites.player.join(","), favorites.competition.join(",")],
+    queryFn: async () => {
+      const [teams, players, competitions] = await Promise.all([
+        favorites.team.length ? supabase.from("teams").select("id,name,logo_url").in("id", favorites.team) : Promise.resolve({ data: [] }),
+        favorites.player.length ? supabase.from("players").select("id,name,photo_url").in("id", favorites.player) : Promise.resolve({ data: [] }),
+        favorites.competition.length ? supabase.from("competitions").select("id,name,slug,logo_url").in("id", favorites.competition) : Promise.resolve({ data: [] }),
+      ]);
+      return {
+        teams: (teams.data ?? []) as { id: string; name: string; logo_url: string | null }[],
+        players: (players.data ?? []) as { id: string; name: string; photo_url: string | null }[],
+        competitions: (competitions.data ?? []) as { id: string; name: string; slug: string; logo_url: string | null }[],
+      };
+    },
+  });
+
   if (!ready) return null;
-  return <section className="mt-8"><SectionHeader title={t("home.favMatches")} action={<Link to="/favorites" className="text-sm font-semibold text-primary">View all</Link>} />{q.data?.length ? <MatchGroups data={q.data} /> : <EmptyState title="No favorite matches yet" />}</section>;
+  return <section className="mt-8">
+    <SectionHeader title={tx("Favorites")} action={
+      <div className="flex items-center gap-1 rounded-full border border-border p-0.5 text-xs font-semibold">
+        {(["matches", "all"] as const).map((key) => (
+          <button key={key} onClick={() => setView(key)} className={`rounded-full px-3 py-1 ${view === key ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>{tx(key === "matches" ? "Matches" : "All")}</button>
+        ))}
+      </div>
+    } />
+    {q.data?.length ? <MatchGroups data={q.data} /> : <EmptyState title={tx("No favorite matches yet")} />}
+    {view === "all" && <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+      {others.data?.competitions.map((c) => <Link key={c.id} to="/competitions/$slug" params={{ slug: c.slug }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 hover:border-primary">{c.logo_url ? <img src={c.logo_url} alt="" className="h-8 w-8 object-contain" /> : <Trophy className="h-6 w-6 text-primary" />}<span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(c.name)}</span></Link>)}
+      {others.data?.teams.map((team) => <Link key={team.id} to="/teams/$id" params={{ id: team.id }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 hover:border-primary"><TeamCrest name={team.name} logo={team.logo_url} className="h-8 w-8" /><span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(team.name)}</span></Link>)}
+      {others.data?.players.map((player) => <Link key={player.id} to="/players/$id" params={{ id: player.id }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 hover:border-primary"><span className="h-8 w-8 overflow-hidden rounded-full bg-muted">{player.photo_url && <img src={player.photo_url} alt="" className="h-full w-full object-cover" />}</span><span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(player.name)}</span></Link>)}
+      <Link to="/favorites" className="flex items-center justify-center rounded-xl border border-dashed border-border p-3 text-sm font-semibold text-primary">{tx("Open favorites")}</Link>
+    </div>}
+  </section>;
 }
 
 function CompLogo({ logo }: { logo: string | null }) {
