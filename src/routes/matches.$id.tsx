@@ -308,11 +308,6 @@ function MatchStandings({ competitionId, season, liveTeamIds, highlightIds }: { 
   );
 }
 
-function UnusedPreviousMatches({ competitionId, currentId }: { competitionId: string; currentId: string }) {
-  const tx = useTx();
-  const q = useQuery({ queryKey: ["previous-matches", competitionId, currentId], queryFn: async () => (await supabase.from("matches").select("*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url)").eq("competition_id", competitionId).neq("id", currentId).in("status", ["ft", "aet", "pen", "awarded"]).order("kickoff_at", { ascending: false }).limit(10)).data ?? [] });
-  return <div className="grid gap-2">{q.data?.map((match) => <Link key={match.id} to="/matches/$id" params={{ id: match.id }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 hover:border-primary"><span className="min-w-0 flex-1 truncate font-semibold">{tx(match.home?.name) ?? "TBD"} vs {tx(match.away?.name) ?? "TBD"}</span><strong>{match.home_score ?? 0}–{match.away_score ?? 0}</strong></Link>)}{q.data?.length === 0 && <p className="text-sm text-muted-foreground">No previous matches yet.</p>}</div>;
-}
 
 function EventIcon({ type }: { type: string }) {
   return <span className="shrink-0 text-base leading-none">{eventIcon(type)}</span>;
