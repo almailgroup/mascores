@@ -94,22 +94,86 @@ function TeamSummary({ team, away = false }: { team: Team | undefined; away?: bo
 
 function ExtrasTab({ match, teams }: { match: Match; teams: Team[] }) {
   const qc = useQueryClient();
-  const [stat, setStat] = useState({ label: "", home_value: "", away_value: "" });
-  const [prediction, setPrediction] = useState({ home_percent: 33, draw_percent: 34, away_percent: 33 });
-  const statsQ = useQuery({ queryKey: ["admin", "match-stats", match.id], queryFn: async () => (await supabase.from("match_stats").select("*").eq("match_id", match.id).order("sort_order")).data as MatchStat[] ?? [] });
   const channelsQ = useQuery({ queryKey: ["admin", "channels"], queryFn: async () => (await supabase.from("broadcast_channels").select("*").order("name")).data as Channel[] ?? [] });
   const selectedQ = useQuery({ queryKey: ["admin", "match-channels", match.id], queryFn: async () => (await supabase.from("match_broadcasts").select("channel_id").eq("match_id", match.id)).data ?? [] });
-  const predictionQ = useQuery({ queryKey: ["admin", "match-prediction", match.id], queryFn: async () => (await supabase.from("match_predictions").select("*").eq("match_id", match.id).maybeSingle()).data });
-  useEffect(() => { if (predictionQ.data) setPrediction(predictionQ.data); }, [predictionQ.data]);
   const selected = new Set((selectedQ.data ?? []).map((item) => item.channel_id));
-  const home = teams.find((team) => team.id === match.home_team_id)?.name ?? "Home";
-  const away = teams.find((team) => team.id === match.away_team_id)?.name ?? "Away";
+  void teams;
   return <div className="space-y-8">
-    <section><h4 className="mb-3 font-bold">Match statistics</h4><div className="grid gap-2">{statsQ.data?.map((item) => <div key={item.id} className="grid grid-cols-[1fr_2fr_1fr_auto] items-center gap-2 rounded-lg border border-border p-2 text-sm"><span className="text-center font-bold">{item.home_value}</span><span className="text-center text-muted-foreground">{item.label}</span><span className="text-center font-bold">{item.away_value}</span><button className="text-destructive" onClick={async () => { await supabase.from("match_stats").delete().eq("id", item.id); qc.invalidateQueries({ queryKey: ["admin", "match-stats", match.id] }); }}><Trash2 className="h-4 w-4" /></button></div>)}</div><div className="mt-2 grid gap-2 sm:grid-cols-4"><input className={inputCls} placeholder="Statistic, e.g. Possession" value={stat.label} onChange={(e) => setStat({ ...stat, label: e.target.value })} /><input className={inputCls} placeholder={home} value={stat.home_value} onChange={(e) => setStat({ ...stat, home_value: e.target.value })} /><input className={inputCls} placeholder={away} value={stat.away_value} onChange={(e) => setStat({ ...stat, away_value: e.target.value })} /><button className={btnPrimary} onClick={async () => { if (!stat.label) return; await supabase.from("match_stats").insert({ ...stat, match_id: match.id, sort_order: statsQ.data?.length ?? 0 } as never); setStat({ label: "", home_value: "", away_value: "" }); qc.invalidateQueries({ queryKey: ["admin", "match-stats", match.id] }); }}><Plus className="h-4 w-4" /> Add stat</button></div></section>
-    <section><h4 className="mb-3 font-bold">Win prediction</h4><div className="grid gap-3 sm:grid-cols-3"><Field label={home}><input type="number" className={inputCls} value={prediction.home_percent} onChange={(e) => setPrediction({ ...prediction, home_percent: Number(e.target.value) })} /></Field><Field label="Draw"><input type="number" className={inputCls} value={prediction.draw_percent} onChange={(e) => setPrediction({ ...prediction, draw_percent: Number(e.target.value) })} /></Field><Field label={away}><input type="number" className={inputCls} value={prediction.away_percent} onChange={(e) => setPrediction({ ...prediction, away_percent: Number(e.target.value) })} /></Field></div><button className={`${btnPrimary} mt-2`} onClick={async () => { if (prediction.home_percent + prediction.draw_percent + prediction.away_percent !== 100) return alert("Prediction must total 100%."); await supabase.from("match_predictions").upsert({ match_id: match.id, ...prediction } as never); qc.invalidateQueries({ queryKey: ["admin", "match-prediction", match.id] }); }}>Save prediction</button></section>
     <section><h4 className="mb-3 font-bold">Where to watch</h4><div className="flex flex-wrap gap-2">{channelsQ.data?.map((channel) => <button key={channel.id} onClick={async () => { if (selected.has(channel.id)) await supabase.from("match_broadcasts").delete().eq("match_id", match.id).eq("channel_id", channel.id); else await supabase.from("match_broadcasts").insert({ match_id: match.id, channel_id: channel.id } as never); qc.invalidateQueries({ queryKey: ["admin", "match-channels", match.id] }); }} className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold ${selected.has(channel.id) ? "border-primary bg-primary/10 text-primary" : "border-border"}`}>{channel.logo_url && <img src={channel.logo_url} alt="" className="h-5 w-5 object-contain" />}{channel.name}</button>)}</div>{channelsQ.data?.length === 0 && <p className="text-xs text-muted-foreground">Create channels from the main Admin → Channels section first.</p>}</section>
     <section><h4 className="mb-3 font-bold">Videos and media</h4><MediaManager ownerType="match" ownerId={match.id} /></section>
   </div>;
+}
+
+/* ---------------- Match statistics (pick, don't type) ---------------- */
+
+const STAT_PRESETS: { label: string; max: number; suffix?: string; step?: number }[] = [
+  { label: "Ball possession", max: 100, suffix: "%" },
+  { label: "Total shots", max: 40 },
+  { label: "Shots on target", max: 30 },
+  { label: "Corner kicks", max: 25 },
+  { label: "Offsides", max: 15 },
+  { label: "Fouls", max: 40 },
+  { label: "Yellow cards", max: 10 },
+  { label: "Red cards", max: 5 },
+  { label: "Saves", max: 20 },
+  { label: "Passes", max: 900, step: 5 },
+  { label: "Pass accuracy", max: 100, suffix: "%" },
+  { label: "Tackles", max: 50 },
+];
+
+function NumberPicker({ value, onChange, max, step = 1, suffix }: { value: string; onChange: (v: string) => void; max: number; step?: number; suffix?: string }) {
+  const options: number[] = [];
+  for (let n = 0; n <= max; n += step) options.push(n);
+  return (
+    <select className={inputCls} value={value} onChange={(e) => onChange(e.target.value)}>
+      <option value="">—</option>
+      {options.map((n) => <option key={n} value={suffix ? `${n}${suffix}` : String(n)}>{n}{suffix ?? ""}</option>)}
+    </select>
+  );
+}
+
+function MatchStatsEditor({ match, teams }: { match: Match; teams: Team[] }) {
+  const qc = useQueryClient();
+  const [label, setLabel] = useState(STAT_PRESETS[0].label);
+  const [home, setHome] = useState("");
+  const [away, setAway] = useState("");
+  const preset = STAT_PRESETS.find((p) => p.label === label) ?? STAT_PRESETS[0];
+  const statsQ = useQuery({ queryKey: ["admin", "match-stats", match.id], queryFn: async () => (await supabase.from("match_stats").select("*").eq("match_id", match.id).order("sort_order")).data as MatchStat[] ?? [] });
+  const homeName = teams.find((team) => team.id === match.home_team_id)?.name ?? "Home";
+  const awayName = teams.find((team) => team.id === match.away_team_id)?.name ?? "Away";
+  const add = async () => {
+    if (!label || (home === "" && away === "")) return;
+    const existing = statsQ.data?.find((s) => s.label === label);
+    if (existing) await supabase.from("match_stats").update({ home_value: home, away_value: away }).eq("id", existing.id);
+    else await supabase.from("match_stats").insert({ label, home_value: home, away_value: away, match_id: match.id, sort_order: statsQ.data?.length ?? 0 } as never);
+    setHome(""); setAway("");
+    qc.invalidateQueries({ queryKey: ["admin", "match-stats", match.id] });
+  };
+  return (
+    <section className="mt-5 rounded-lg border border-border bg-background/40 p-3">
+      <h4 className="mb-3 text-sm font-bold">Match statistics</h4>
+      <div className="grid gap-2">
+        {statsQ.data?.map((item) => (
+          <div key={item.id} className="grid grid-cols-[1fr_2fr_1fr_auto] items-center gap-2 rounded-lg border border-border p-2 text-sm">
+            <span className="text-center font-bold">{item.home_value}</span>
+            <span className="text-center text-muted-foreground">{item.label}</span>
+            <span className="text-center font-bold">{item.away_value}</span>
+            <button className="text-destructive" onClick={async () => { await supabase.from("match_stats").delete().eq("id", item.id); qc.invalidateQueries({ queryKey: ["admin", "match-stats", match.id] }); }}><Trash2 className="h-4 w-4" /></button>
+          </div>
+        ))}
+      </div>
+      <div className="mt-2 grid gap-2 sm:grid-cols-4">
+        <Field label="Statistic">
+          <select className={inputCls} value={label} onChange={(e) => { setLabel(e.target.value); setHome(""); setAway(""); }}>
+            {STAT_PRESETS.map((p) => <option key={p.label} value={p.label}>{p.label}</option>)}
+          </select>
+        </Field>
+        <Field label={homeName}><NumberPicker value={home} onChange={setHome} max={preset.max} step={preset.step} suffix={preset.suffix} /></Field>
+        <Field label={awayName}><NumberPicker value={away} onChange={setAway} max={preset.max} step={preset.step} suffix={preset.suffix} /></Field>
+        <div className="flex items-end"><button className={btnPrimary} onClick={add}><Plus className="h-4 w-4" /> Save stat</button></div>
+      </div>
+    </section>
+  );
 }
 
 /* ---------------- Main ---------------- */
@@ -175,7 +239,6 @@ function MainTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
         <p className="mt-1 text-xs text-muted-foreground">Use the Live tab to run the clock and add events. Choose a final or interrupted state there when play ends.</p>
         <div className="mt-3 flex flex-wrap gap-2">{["scheduled", "postponed", "cancelled", "interrupted", "awarded"].map((status) => <button key={status} type="button" onClick={() => setForm({ ...form, status, timer_running: false })} className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${form.status === status ? "border-primary bg-primary/10 text-primary" : "border-border"}`}>{STATUS_LABELS[status]}</button>)}</div>
       </section>
-      <ResultOnly match={match} />
     </div>
   );
 }
@@ -239,14 +302,17 @@ function formationRows(formation: string | null | undefined): string[][] {
   return rows.reverse();
 }
 
-/** Per-player match ratings for everyone in the lineup. */
+/** Per-player match ratings for the starting eleven and any substitute who came on. */
 function RatingsEditor({ match, lineups, players }: { match: Match; lineups: Lineup[]; players: Player[] }) {
   const qc = useQueryClient();
   const ratingsQ = useQuery({
     queryKey: ["admin", "match-ratings", match.id],
     queryFn: async () => (await supabase.from("player_ratings").select("*").eq("match_id", match.id)).data ?? [],
   });
-  if (lineups.length === 0) return null;
+  const eventsQ = useQuery({
+    queryKey: ["admin", "events", match.id],
+    queryFn: async () => (await supabase.from("match_events").select("*").eq("match_id", match.id)).data as MatchEvent[] ?? [],
+  });
   const save = async (playerId: string, value: string) => {
     const existing = ratingsQ.data?.find((r) => r.player_id === playerId);
     if (value === "") {
@@ -258,26 +324,21 @@ function RatingsEditor({ match, lineups, players }: { match: Match; lineups: Lin
     }
     qc.invalidateQueries({ queryKey: ["admin", "match-ratings", match.id] });
   };
-  const addEvent = async (lu: Lineup, type: string) => {
-    const { error } = await supabase.from("match_events").insert({ match_id: match.id, team_id: lu.team_id, player_id: lu.player_id, type } as never);
-    if (error) toast.error(error.message);
-    else toast.success("Added");
-    qc.invalidateQueries({ queryKey: ["admin", "events", match.id] });
-  };
+  if (lineups.length === 0) return null;
+  const cameOn = new Set((eventsQ.data ?? []).filter((e) => e.type === "substitution" && e.player_id).map((e) => e.player_id as string));
+  const rated = lineups.filter((lu) => lu.is_starting || cameOn.has(lu.player_id));
+  if (rated.length === 0) return null;
   return (
     <section className="rounded-xl border border-border bg-background/40 p-3">
-      <h4 className="mb-2 text-sm font-bold">Player ratings & quick events</h4>
+      <h4 className="mb-2 text-sm font-bold">Player ratings</h4>
+      <p className="mb-2 text-[0.65rem] text-muted-foreground">Starting eleven and substitutes who came on.</p>
       <div className="grid gap-1.5 sm:grid-cols-2">
-        {lineups.map((lu) => {
+        {rated.map((lu) => {
           const player = players.find((p) => p.id === lu.player_id);
           const rating = ratingsQ.data?.find((r) => r.player_id === lu.player_id)?.rating;
           return (
             <div key={lu.id} className="flex items-center gap-2 text-xs">
               <span className="min-w-0 flex-1 truncate">{player?.name ?? "—"}</span>
-              {(["goal", "assist", "yellow", "red"] as const).map((type) => (
-                <button key={type} type="button" title={type} onClick={() => addEvent(lu, type)}
-                  className="h-7 w-7 shrink-0 rounded border border-border text-sm hover:bg-accent">{eventIcon(type)}</button>
-              ))}
               {rating != null && <span className={`rounded px-1.5 py-0.5 text-[0.6rem] font-black ${ratingClass(Number(rating))}`}>{rating}</span>}
               <input type="number" step="0.1" min={0} max={10} defaultValue={rating ?? ""} onChange={(e) => save(lu.player_id, e.target.value)} onBlur={(e) => save(lu.player_id, e.target.value)}
                 className="h-8 w-16 rounded border border-border bg-background text-center" />
@@ -292,6 +353,7 @@ function RatingsEditor({ match, lineups, players }: { match: Match; lineups: Lin
 function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSaved: () => void }) {
   const qc = useQueryClient();
   const [picker, setPicker] = useState<{ teamId: string; slot: string } | null>(null);
+  const [benchPicker, setBenchPicker] = useState<string | null>(null);
   const teamIds = [match.home_team_id, match.away_team_id].filter(Boolean) as string[];
 
   const playersQ = useQuery({
@@ -408,17 +470,21 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
               ) : null}
               {match.lineup_mode === "formation" ? (
                 <div className="mt-3">
-                  <h4 className="mb-1 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">Bench</h4>
+                  <div className="mb-1 flex items-center justify-between">
+                    <h4 className="text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">Bench</h4>
+                    <button type="button" onClick={() => setBenchPicker(tid)} className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-border hover:bg-accent" aria-label="Pick bench players"><Plus className="h-3.5 w-3.5" /></button>
+                  </div>
                   <div className="grid gap-1">
-                    {squad.filter((p) => !lineups.some((l) => l.player_id === p.id && l.is_starting)).map((p) => {
-                      const benched = lineups.some((l) => l.player_id === p.id && !l.is_starting);
+                    {lineups.filter((l) => l.team_id === tid && !l.is_starting).map((l) => {
+                      const p = players.find((x) => x.id === l.player_id);
                       return (
-                        <div key={p.id} className="flex items-center gap-2 text-xs">
-                          <span className="flex-1 truncate">{p.shirt_number ? `#${p.shirt_number} ` : ""}{p.name}</span>
-                          <button onClick={() => toggle(p.id, tid, false)} className={`rounded px-2 py-0.5 ${benched ? "bg-primary text-primary-foreground" : "bg-muted"}`}>Bench</button>
+                        <div key={l.id} className="flex items-center gap-2 text-xs">
+                          <span className="flex-1 truncate">{p?.shirt_number ? `#${p.shirt_number} ` : ""}{p?.name ?? "—"}</span>
+                          <button onClick={() => toggle(l.player_id, tid, false)} className="text-destructive"><Trash2 className="h-3.5 w-3.5" /></button>
                         </div>
                       );
                     })}
+                    {lineups.filter((l) => l.team_id === tid && !l.is_starting).length === 0 && <p className="text-[0.6rem] text-muted-foreground">No bench yet — tap + to pick from the squad.</p>}
                   </div>
                 </div>
               ) : (
@@ -443,6 +509,36 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
       </div>
 
       <RatingsEditor match={match} lineups={lineups} players={players} />
+
+      <Modal open={!!benchPicker} onClose={() => setBenchPicker(null)} title="Pick bench players">
+        <div className="max-h-[70vh] space-y-4 overflow-y-auto">
+          {benchPicker && ["Goalkeeper", "Defender", "Midfielder", "Forward", "Unknown"].map((position) => {
+            const pool = players.filter((p) => p.team_id === benchPicker && (p.position ?? "Unknown") === position && !lineups.some((l) => l.player_id === p.id && l.is_starting))
+              .sort((a, b) => (a.shirt_number ?? 999) - (b.shirt_number ?? 999) || a.name.localeCompare(b.name));
+            if (pool.length === 0) return null;
+            return (
+              <section key={position}>
+                <h4 className="mb-2 text-xs font-bold uppercase text-muted-foreground">{position}</h4>
+                <div className="grid gap-2">
+                  {pool.map((player) => {
+                    const benched = lineups.some((l) => l.player_id === player.id && !l.is_starting);
+                    return (
+                      <button key={player.id} type="button" onClick={() => toggle(player.id, benchPicker, false)}
+                        className={`flex items-center gap-3 rounded-lg border p-2 text-left ${benched ? "border-primary bg-primary/10" : "border-border bg-background"}`}>
+                        <PlayerAvatar src={player.photo_url} name={player.name} size="sm" />
+                        <span className="w-8 text-center text-sm font-bold">{player.shirt_number ?? "—"}</span>
+                        <span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{player.name}</span><span className="block text-xs text-muted-foreground">{player.position ?? "Unknown"}</span></span>
+                        {benched && <Check className="h-4 w-4 text-primary" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+            );
+          })}
+          <button type="button" className={`${btnPrimary} w-full`} onClick={() => setBenchPicker(null)}><Check className="h-3.5 w-3.5" /> Done</button>
+        </div>
+      </Modal>
 
       <Modal open={!!picker} onClose={() => setPicker(null)} title="Choose player">
         <div className="max-h-[70vh] space-y-4 overflow-y-auto">
@@ -594,6 +690,9 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
           ))}
           {eventsQ.data && eventsQ.data.length === 0 && <div className="rounded border border-dashed border-border p-3 text-center text-[0.65rem] text-muted-foreground">No events yet.</div>}
         </div>
+
+        <div className="mt-5"><ResultOnly match={match} /></div>
+        <MatchStatsEditor match={match} teams={teams} />
 
         {editing && (
           <div className="mt-3">
