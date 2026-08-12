@@ -11,6 +11,7 @@ import { deleteMyAccount } from "@/lib/account.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { Save, LogOut, Loader2, LogIn, Camera, Trash2 } from "lucide-react";
 import { ImageCropper } from "@/components/image-cropper";
+import { ConfirmDelete } from "@/components/confirm-delete";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({ meta: [{ title: "Settings — MansourAlmailScores" }, { name: "robots", content: "noindex" }] }),
@@ -25,6 +26,7 @@ function SettingsPage() {
   const { currency, setCurrency } = useCurrency();
   const removeAccount = useServerFn(deleteMyAccount);
   const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [heightUnit, setHeightUnit] = useState<"cm" | "ft">("cm");
