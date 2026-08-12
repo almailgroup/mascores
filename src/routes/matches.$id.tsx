@@ -212,7 +212,7 @@ function MatchPage() {
         const marksFor = (playerId: string) => (events.data ?? [])
           .map((e) => {
             if (e.assist_player_id === playerId) return eventIcon("assist");
-            if (e.player?.id === playerId || e.player_id === playerId) return eventIcon(e.type);
+            if (e.player_id === playerId || e.player?.id === playerId) return eventIcon(e.type);
             if (e.sub_out_player_id === playerId) return eventIcon("substitution");
             return "";
           })
@@ -237,12 +237,14 @@ function MatchPage() {
                       const pitchRating = ratings.data?.find((item) => item.player_id === lu.player_id)?.rating;
                       return (
                         <Link key={slot} to="/players/$id" params={{ id: lu.player_id }} className="relative z-10 flex w-16 flex-col items-center gap-0.5 pt-3 text-center">
-                          <span className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border-2 border-white/70 bg-muted text-xs font-bold">
-                            {lu.player?.photo_url ? <img src={lu.player.photo_url} alt="" className="h-full w-full object-cover" /> : num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}
+                          <span className="relative block h-11 w-11 overflow-visible">
+                            <span className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border-2 border-white/70 bg-muted text-xs font-bold">
+                              {lu.player?.photo_url ? <img src={lu.player.photo_url} alt="" className="h-full w-full object-cover" /> : num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}
+                            </span>
                             {(lu.shirt_number ?? lu.player?.shirt_number) != null && (
-                              <span className="absolute -left-1 -top-1 rounded-full bg-background px-1 text-[0.55rem] font-black leading-tight text-foreground shadow">{num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}</span>
+                              <span className="absolute -left-1 -top-1 z-30 flex h-4 min-w-4 items-center justify-center rounded-full bg-background px-1 text-[0.6rem] font-black leading-none text-foreground shadow ring-1 ring-border">{num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}</span>
                             )}
-                            {marks && <span className="absolute -right-2 -top-2 z-20 flex min-w-[1.1rem] items-center justify-center gap-px rounded-full bg-background px-1 py-px text-[0.6rem] leading-none shadow ring-1 ring-border">{marks}</span>}
+                            {marks && <span className="absolute -right-2 -top-2 z-30 flex min-h-5 min-w-5 items-center justify-center gap-px rounded-full bg-background px-1 text-[0.68rem] leading-none shadow ring-2 ring-background">{marks}</span>}
                           </span>
                           <span className="line-clamp-2 text-[0.6rem] font-semibold leading-tight text-white drop-shadow">{tx(lu.player?.name)}</span>
                           {pitchRating != null && <span className={`rounded px-1.5 text-[0.6rem] font-black leading-4 ${ratingClass(Number(pitchRating))}`}>{num(pitchRating)}</span>}
