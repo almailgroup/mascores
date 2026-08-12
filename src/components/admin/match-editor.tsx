@@ -94,22 +94,86 @@ function TeamSummary({ team, away = false }: { team: Team | undefined; away?: bo
 
 function ExtrasTab({ match, teams }: { match: Match; teams: Team[] }) {
   const qc = useQueryClient();
-  const [stat, setStat] = useState({ label: "", home_value: "", away_value: "" });
-  const [prediction, setPrediction] = useState({ home_percent: 33, draw_percent: 34, away_percent: 33 });
-  const statsQ = useQuery({ queryKey: ["admin", "match-stats", match.id], queryFn: async () => (await supabase.from("match_stats").select("*").eq("match_id", match.id).order("sort_order")).data as MatchStat[] ?? [] });
   const channelsQ = useQuery({ queryKey: ["admin", "channels"], queryFn: async () => (await supabase.from("broadcast_channels").select("*").order("name")).data as Channel[] ?? [] });
   const selectedQ = useQuery({ queryKey: ["admin", "match-channels", match.id], queryFn: async () => (await supabase.from("match_broadcasts").select("channel_id").eq("match_id", match.id)).data ?? [] });
-  const predictionQ = useQuery({ queryKey: ["admin", "match-prediction", match.id], queryFn: async () => (await supabase.from("match_predictions").select("*").eq("match_id", match.id).maybeSingle()).data });
-  useEffect(() => { if (predictionQ.data) setPrediction(predictionQ.data); }, [predictionQ.data]);
   const selected = new Set((selectedQ.data ?? []).map((item) => item.channel_id));
-  const home = teams.find((team) => team.id === match.home_team_id)?.name ?? "Home";
-  const away = teams.find((team) => team.id === match.away_team_id)?.name ?? "Away";
+  void teams;
   return <div className="space-y-8">
-    <section><h4 className="mb-3 font-bold">Match statistics</h4><div className="grid gap-2">{statsQ.data?.map((item) => <div key={item.id} className="grid grid-cols-[1fr_2fr_1fr_auto] items-center gap-2 rounded-lg border border-border p-2 text-sm"><span className="text-center font-bold">{item.home_value}</span><span className="text-center text-muted-foreground">{item.label}</span><span className="text-center font-bold">{item.away_value}</span><button className="text-destructive" onClick={async () => { await supabase.from("match_stats").delete().eq("id", item.id); qc.invalidateQueries({ queryKey: ["admin", "match-stats", match.id] }); }}><Trash2 className="h-4 w-4" /></button></div>)}</div><div className="mt-2 grid gap-2 sm:grid-cols-4"><input className={inputCls} placeholder="Statistic, e.g. Possession" value={stat.label} onChange={(e) => setStat({ ...stat, label: e.target.value })} /><input className={inputCls} placeholder={home} value={stat.home_value} onChange={(e) => setStat({ ...stat, home_value: e.target.value })} /><input className={inputCls} placeholder={away} value={stat.away_value} onChange={(e) => setStat({ ...stat, away_value: e.target.value })} /><button className={btnPrimary} onClick={async () => { if (!stat.label) return; await supabase.from("match_stats").insert({ ...stat, match_id: match.id, sort_order: statsQ.data?.length ?? 0 } as never); setStat({ label: "", home_value: "", away_value: "" }); qc.invalidateQueries({ queryKey: ["admin", "match-stats", match.id] }); }}><Plus className="h-4 w-4" /> Add stat</button></div></section>
-    <section><h4 className="mb-3 font-bold">Win prediction</h4><div className="grid gap-3 sm:grid-cols-3"><Field label={home}><input type="number" className={inputCls} value={prediction.home_percent} onChange={(e) => setPrediction({ ...prediction, home_percent: Number(e.target.value) })} /></Field><Field label="Draw"><input type="number" className={inputCls} value={prediction.draw_percent} onChange={(e) => setPrediction({ ...prediction, draw_percent: Number(e.target.value) })} /></Field><Field label={away}><input type="number" className={inputCls} value={prediction.away_percent} onChange={(e) => setPrediction({ ...prediction, away_percent: Number(e.target.value) })} /></Field></div><button className={`${btnPrimary} mt-2`} onClick={async () => { if (prediction.home_percent + prediction.draw_percent + prediction.away_percent !== 100) return alert("Prediction must total 100%."); await supabase.from("match_predictions").upsert({ match_id: match.id, ...prediction } as never); qc.invalidateQueries({ queryKey: ["admin", "match-prediction", match.id] }); }}>Save prediction</button></section>
     <section><h4 className="mb-3 font-bold">Where to watch</h4><div className="flex flex-wrap gap-2">{channelsQ.data?.map((channel) => <button key={channel.id} onClick={async () => { if (selected.has(channel.id)) await supabase.from("match_broadcasts").delete().eq("match_id", match.id).eq("channel_id", channel.id); else await supabase.from("match_broadcasts").insert({ match_id: match.id, channel_id: channel.id } as never); qc.invalidateQueries({ queryKey: ["admin", "match-channels", match.id] }); }} className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold ${selected.has(channel.id) ? "border-primary bg-primary/10 text-primary" : "border-border"}`}>{channel.logo_url && <img src={channel.logo_url} alt="" className="h-5 w-5 object-contain" />}{channel.name}</button>)}</div>{channelsQ.data?.length === 0 && <p className="text-xs text-muted-foreground">Create channels from the main Admin → Channels section first.</p>}</section>
     <section><h4 className="mb-3 font-bold">Videos and media</h4><MediaManager ownerType="match" ownerId={match.id} /></section>
   </div>;
+}
+
+/* ---------------- Match statistics (pick, don't type) ---------------- */
+
+const STAT_PRESETS: { label: string; max: number; suffix?: string; step?: number }[] = [
+  { label: "Ball possession", max: 100, suffix: "%" },
+  { label: "Total shots", max: 40 },
+  { label: "Shots on target", max: 30 },
+  { label: "Corner kicks", max: 25 },
+  { label: "Offsides", max: 15 },
+  { label: "Fouls", max: 40 },
+  { label: "Yellow cards", max: 10 },
+  { label: "Red cards", max: 5 },
+  { label: "Saves", max: 20 },
+  { label: "Passes", max: 900, step: 5 },
+  { label: "Pass accuracy", max: 100, suffix: "%" },
+  { label: "Tackles", max: 50 },
+];
+
+function NumberPicker({ value, onChange, max, step = 1, suffix }: { value: string; onChange: (v: string) => void; max: number; step?: number; suffix?: string }) {
+  const options: number[] = [];
+  for (let n = 0; n <= max; n += step) options.push(n);
+  return (
+    <select className={inputCls} value={value} onChange={(e) => onChange(e.target.value)}>
+      <option value="">—</option>
+      {options.map((n) => <option key={n} value={suffix ? `${n}${suffix}` : String(n)}>{n}{suffix ?? ""}</option>)}
+    </select>
+  );
+}
+
+function MatchStatsEditor({ match, teams }: { match: Match; teams: Team[] }) {
+  const qc = useQueryClient();
+  const [label, setLabel] = useState(STAT_PRESETS[0].label);
+  const [home, setHome] = useState("");
+  const [away, setAway] = useState("");
+  const preset = STAT_PRESETS.find((p) => p.label === label) ?? STAT_PRESETS[0];
+  const statsQ = useQuery({ queryKey: ["admin", "match-stats", match.id], queryFn: async () => (await supabase.from("match_stats").select("*").eq("match_id", match.id).order("sort_order")).data as MatchStat[] ?? [] });
+  const homeName = teams.find((team) => team.id === match.home_team_id)?.name ?? "Home";
+  const awayName = teams.find((team) => team.id === match.away_team_id)?.name ?? "Away";
+  const add = async () => {
+    if (!label || (home === "" && away === "")) return;
+    const existing = statsQ.data?.find((s) => s.label === label);
+    if (existing) await supabase.from("match_stats").update({ home_value: home, away_value: away }).eq("id", existing.id);
+    else await supabase.from("match_stats").insert({ label, home_value: home, away_value: away, match_id: match.id, sort_order: statsQ.data?.length ?? 0 } as never);
+    setHome(""); setAway("");
+    qc.invalidateQueries({ queryKey: ["admin", "match-stats", match.id] });
+  };
+  return (
+    <section className="mt-5 rounded-lg border border-border bg-background/40 p-3">
+      <h4 className="mb-3 text-sm font-bold">Match statistics</h4>
+      <div className="grid gap-2">
+        {statsQ.data?.map((item) => (
+          <div key={item.id} className="grid grid-cols-[1fr_2fr_1fr_auto] items-center gap-2 rounded-lg border border-border p-2 text-sm">
+            <span className="text-center font-bold">{item.home_value}</span>
+            <span className="text-center text-muted-foreground">{item.label}</span>
+            <span className="text-center font-bold">{item.away_value}</span>
+            <button className="text-destructive" onClick={async () => { await supabase.from("match_stats").delete().eq("id", item.id); qc.invalidateQueries({ queryKey: ["admin", "match-stats", match.id] }); }}><Trash2 className="h-4 w-4" /></button>
+          </div>
+        ))}
+      </div>
+      <div className="mt-2 grid gap-2 sm:grid-cols-4">
+        <Field label="Statistic">
+          <select className={inputCls} value={label} onChange={(e) => { setLabel(e.target.value); setHome(""); setAway(""); }}>
+            {STAT_PRESETS.map((p) => <option key={p.label} value={p.label}>{p.label}</option>)}
+          </select>
+        </Field>
+        <Field label={homeName}><NumberPicker value={home} onChange={setHome} max={preset.max} step={preset.step} suffix={preset.suffix} /></Field>
+        <Field label={awayName}><NumberPicker value={away} onChange={setAway} max={preset.max} step={preset.step} suffix={preset.suffix} /></Field>
+        <div className="flex items-end"><button className={btnPrimary} onClick={add}><Plus className="h-4 w-4" /> Save stat</button></div>
+      </div>
+    </section>
+  );
 }
 
 /* ---------------- Main ---------------- */
