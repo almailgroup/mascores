@@ -489,7 +489,7 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
         <h3 className="mb-2 mt-5 text-sm font-bold">Add match event</h3>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {EVENT_TYPES.map((t) => (
-            <button key={t.v} className={btnGhost} onClick={() => setComposer({ type: t.v })}>{t.l}</button>
+            <button key={t.v} className={btnGhost} onClick={() => setComposer({ type: t.v })}><span className="text-base leading-none">{eventIcon(t.v)}</span> {t.l}</button>
           ))}
         </div>
 
@@ -516,7 +516,7 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
           {(eventsQ.data ?? []).map((e) => (
             <div key={e.id} className="flex items-center gap-2 rounded-lg border border-border bg-background/60 p-2 text-xs">
               <span className="w-10 font-mono text-muted-foreground">{e.minute ?? "?"}{e.extra ? `+${e.extra}` : ""}′</span>
-              <span className="w-28 shrink-0 text-[0.65rem] font-semibold uppercase tracking-widest">{(EVENT_TYPES.find((t) => t.v === e.type)?.l ?? e.type)}</span>
+              <span className="flex w-28 shrink-0 items-center gap-1 text-[0.65rem] font-semibold uppercase tracking-widest"><span className="text-sm leading-none">{eventIcon(e.type)}</span>{(EVENT_TYPES.find((t) => t.v === e.type)?.l ?? e.type)}</span>
               <span className="flex-1 truncate">{playerName(e.player_id)}{e.assist_player_id ? ` (assist ${playerName(e.assist_player_id)})` : ""} {e.description ? `— ${e.description}` : ""}</span>
               <span className="shrink-0 text-[0.6rem] text-muted-foreground">{teamName(e.team_id)}</span>
               <button onClick={() => setEditing(e)} className="text-primary">Edit</button>
