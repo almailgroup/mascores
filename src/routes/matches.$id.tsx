@@ -250,6 +250,7 @@ function MatchPage() {
       })}</div>}
       {tab === "stats" && <div className="rounded-2xl border border-border bg-card p-4">{stats.data && stats.data.length > 0 ? stats.data.map((item) => <div key={item.id} className="grid grid-cols-[1fr_2fr_1fr] border-t border-border py-3 text-center first:border-0"><strong>{num(item.home_value)}</strong><span className="text-muted-foreground">{tx(item.label)}</span><strong>{num(item.away_value)}</strong></div>) : <p className="text-sm text-muted-foreground">{tx("No statistics published yet.")}</p>}</div>}
       {tab === "previous" && <PreviousMatches competitionId={match.competition_id} currentId={match.id} />}
+      {tab === "standings" && <MatchStandings competitionId={match.competition_id} season={match.season} liveTeamIds={isLive ? [match.home_team_id, match.away_team_id].filter(Boolean) as string[] : []} highlightIds={[match.home_team_id, match.away_team_id].filter(Boolean) as string[]} />}
       {tab === "media" && <div><h3 className="mb-3 font-bold">{tx("Videos & media")}</h3><div className="grid gap-2">{media.data?.map((item) => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="rounded-xl border border-border bg-card p-4 hover:border-primary"><div className="text-xs font-bold uppercase text-primary">{item.source}</div><div className="mt-1 font-semibold">{tx(item.title) || tx("Open media")}</div></a>)}{media.data?.length === 0 && <p className="text-sm text-muted-foreground">{tx("No media posted.")}</p>}</div></div>}
     </AppShell>
   );
