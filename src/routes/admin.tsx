@@ -17,6 +17,7 @@ import { NewsPanel } from "@/components/admin/news-panel";
 import { AlmailAiPanel, ChannelsPanel, TransfersAdminPanel, VenuesPanel } from "@/components/admin/content-panels";
 import { CompetitionAwardsManager, MediaManager } from "@/components/admin/media-manager";
 import { ChatReportsPanel } from "@/components/admin/chat-reports-panel";
+import { ConfirmDelete } from "@/components/confirm-delete";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — MansourAlmailScores" }, { name: "robots", content: "noindex" }] }),
