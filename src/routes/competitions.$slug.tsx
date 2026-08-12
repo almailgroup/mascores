@@ -116,8 +116,8 @@ function CompetitionPage() {
     queryKey: ["comp-divisions", comp.data?.higher_division_id, comp.data?.lower_division_id],
     queryFn: async () => {
       const ids = [comp.data!.higher_division_id, comp.data!.lower_division_id].filter((v): v is string => !!v);
-      const { data } = await supabase.from("competitions").select("id,name,slug").in("id", ids);
-      return (data ?? []) as { id: string; name: string; slug: string }[];
+      const { data } = await supabase.from("competitions").select("id,name,slug,logo_url").in("id", ids);
+      return (data ?? []) as { id: string; name: string; slug: string; logo_url: string | null }[];
     },
   });
   const tx = useTx();
