@@ -282,7 +282,7 @@ const FORMATIONS = ["4-4-2", "4-3-3", "4-2-3-1", "3-5-2", "3-4-3", "5-3-2", "4-1
 
 /** Slot keys for a formation, goalkeeper first then each outfield line. */
 function formationSlots(formation: string | null | undefined): string[] {
-  const lines = (formation ?? "4-4-2").split("-").map((n) => Number(n)).filter((n) => n > 0);
+  const lines = (formation ?? "4-3-3").split("-").map((n) => Number(n)).filter((n) => n > 0);
   const slots = ["GK"];
   lines.forEach((count, li) => {
     for (let i = 0; i < count; i++) slots.push(`L${li + 1}-${i + 1}`);
@@ -292,7 +292,7 @@ function formationSlots(formation: string | null | undefined): string[] {
 
 function formationRows(formation: string | null | undefined): string[][] {
   const slots = formationSlots(formation);
-  const lines = (formation ?? "4-4-2").split("-").map((n) => Number(n)).filter((n) => n > 0);
+  const lines = (formation ?? "4-3-3").split("-").map((n) => Number(n)).filter((n) => n > 0);
   const rows: string[][] = [["GK"]];
   let idx = 1;
   for (const count of lines) {
@@ -371,19 +371,37 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
       return (data ?? []) as Lineup[];
     },
   });
+  const eventsQ = useQuery({
+    queryKey: ["admin", "events", match.id],
+    queryFn: async () => (await supabase.from("match_events").select("*").eq("match_id", match.id)).data as MatchEvent[] ?? [],
+  });
+  const ratingsQ = useQuery({
+    queryKey: ["admin", "match-ratings", match.id],
+    queryFn: async () => (await supabase.from("player_ratings").select("*").eq("match_id", match.id)).data ?? [],
+  });
 
   const players = playersQ.data ?? [];
   const lineups = lineupsQ.data ?? [];
   const teamName = (id: string) => teams.find((t) => t.id === id)?.name ?? "";
 
-  const setMode = async (mode: string) => {
-    await supabase.from("matches").update(mode === "formation" ? {
-      lineup_mode: mode,
-      home_formation: match.home_formation ?? "4-2-3-1",
-      away_formation: match.away_formation ?? "4-2-3-1",
-    } : { lineup_mode: mode }).eq("id", match.id);
-    onSaved();
-  };
+  /** Icons a player earned in this match: goals, cards, and a swap arrow when subbed off/on. */
+  const iconsFor = (playerId: string) => (eventsQ.data ?? []).flatMap((e) => {
+    if (e.sub_out_player_id === playerId) return [eventIcon("substitution")];
+    if (e.player_id !== playerId) return [];
+    return [eventIcon(e.type)];
+  });
+  const ratingFor = (playerId: string) => (ratingsQ.data ?? []).find((r) => r.player_id === playerId)?.rating ?? null;
+
+  // Formation pitch is the only lineup layout; 4-3-3 is the starting shape.
+  useEffect(() => {
+    if (match.lineup_mode === "formation" && match.home_formation && match.away_formation) return;
+    supabase.from("matches").update({
+      lineup_mode: "formation",
+      home_formation: match.home_formation ?? "4-3-3",
+      away_formation: match.away_formation ?? "4-3-3",
+    }).eq("id", match.id).then(onSaved);
+  }, [match.id, match.lineup_mode, match.home_formation, match.away_formation]);
+
   const setFormation = async (side: "home" | "away", v: string) => {
     await supabase.from("matches").update(side === "home" ? { home_formation: v } : { away_formation: v }).eq("id", match.id);
     onSaved();
@@ -422,86 +440,76 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
 
   return (
     <div className="space-y-4">
-      <div><h3 className="font-bold">Lineup setup</h3><p className="text-xs text-muted-foreground">Choose a simple list or place the starting eleven on a formation pitch.</p></div>
-      <div className="mb-4 flex flex-wrap items-center gap-3">
-        <span className="text-[0.65rem] font-semibold uppercase tracking-widest text-muted-foreground">Display as</span>
-        {(["list", "formation"] as const).map((m) => (
-          <button key={m} onClick={() => setMode(m)}
-            className={`rounded-full border px-3 py-1 text-xs font-semibold capitalize ${match.lineup_mode === m ? "border-primary bg-primary/10 text-primary" : "border-border"}`}>
-            {m === "list" ? "Names & numbers" : "Formation pitch"}
-          </button>
-        ))}
-      </div>
+      <div><h3 className="font-bold">Lineups</h3><p className="text-xs text-muted-foreground">Tap a + on the pitch and pick the player — he takes that position straight away. Ratings and event icons appear on his card automatically.</p></div>
 
       <div className="grid gap-4 md:grid-cols-2">
         {teamIds.map((tid, i) => {
           const side = i === 0 ? "home" : "away";
-          const formation = (side === "home" ? match.home_formation : match.away_formation) ?? "4-2-3-1";
+          const formation = (side === "home" ? match.home_formation : match.away_formation) ?? "4-3-3";
           const squad = players.filter((p) => p.team_id === tid).sort((a, b) => (a.shirt_number ?? 999) - (b.shirt_number ?? 999) || a.name.localeCompare(b.name));
+          const bench = lineups.filter((l) => l.team_id === tid && !l.is_starting);
           return (
             <div key={tid} className="rounded-xl border border-border bg-background/40 p-3">
-              <div className="mb-2 flex items-center justify-between">
-                <div className="text-xs font-semibold">{teamName(tid)}</div>
-                {match.lineup_mode === "formation" && (
-                  <select className="rounded border border-border bg-background px-2 py-1 text-xs" value={formation} onChange={(e) => setFormation(side as "home" | "away", e.target.value)}>
-                    {FORMATIONS.map((f) => <option key={f} value={f}>{f}</option>)}
-                  </select>
-                )}
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <div className="min-w-0 truncate text-xs font-semibold">{teamName(tid)}</div>
+                <select className="rounded border border-border bg-background px-2 py-1 text-xs" value={formation} onChange={(e) => setFormation(side as "home" | "away", e.target.value)}>
+                  {FORMATIONS.map((f) => <option key={f} value={f}>{f}</option>)}
+                </select>
               </div>
-              {match.lineup_mode === "formation" ? (
-                <div className="rounded-lg bg-emerald-900/25 p-2">
-                  {formationRows(formation).map((row, ri) => (
-                    <div key={ri} className="mb-2 flex justify-around gap-1">
-                      {row.map((slot) => {
-                        const assigned = lineups.find((l) => l.team_id === tid && l.position_code === slot);
-                        const p = players.find((x) => x.id === assigned?.player_id);
-                        return (
-                          <button key={slot} type="button" onClick={() => setPicker({ teamId: tid, slot })}
-                            className="flex min-h-16 w-16 flex-col items-center justify-center gap-1 rounded-md border border-emerald-400/40 bg-background/90 p-1 text-center">
-                            {p ? <><PlayerAvatar src={p.photo_url} name={p.name} size="sm" className="h-8 w-8" /><span className="line-clamp-2 text-[0.55rem] font-semibold leading-tight">{p.shirt_number ? `${p.shirt_number} ` : ""}{p.name}</span></> : <span className="text-[0.6rem] font-semibold text-muted-foreground">{slot === "GK" ? "Goalkeeper" : "Add player"}</span>}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  ))}
-                  <div className="mt-1 text-center text-[0.6rem] text-muted-foreground">{formation} · tap a slot to pick a player</div>
-                  {squad.length === 0 && <div className="text-center text-[0.6rem] text-muted-foreground">Add players to this squad first.</div>}
-                </div>
-              ) : null}
-              {match.lineup_mode === "formation" ? (
-                <div className="mt-3">
-                  <div className="mb-1 flex items-center justify-between">
-                    <h4 className="text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">Bench</h4>
-                    <button type="button" onClick={() => setBenchPicker(tid)} className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-border hover:bg-accent" aria-label="Pick bench players"><Plus className="h-3.5 w-3.5" /></button>
-                  </div>
-                  <div className="grid gap-1">
-                    {lineups.filter((l) => l.team_id === tid && !l.is_starting).map((l) => {
-                      const p = players.find((x) => x.id === l.player_id);
+              <div className="rounded-lg bg-emerald-900/25 p-2 pt-4">
+                {formationRows(formation).map((row, ri) => (
+                  <div key={ri} className="mb-3 flex justify-around gap-1">
+                    {row.map((slot) => {
+                      const assigned = lineups.find((l) => l.team_id === tid && l.position_code === slot);
+                      const p = players.find((x) => x.id === assigned?.player_id);
+                      const rating = p ? ratingFor(p.id) : null;
+                      const icons = p ? iconsFor(p.id) : [];
                       return (
-                        <div key={l.id} className="flex items-center gap-2 text-xs">
-                          <span className="flex-1 truncate">{p?.shirt_number ? `#${p.shirt_number} ` : ""}{p?.name ?? "—"}</span>
-                          <button onClick={() => toggle(l.player_id, tid, false)} className="text-destructive"><Trash2 className="h-3.5 w-3.5" /></button>
-                        </div>
+                        <button key={slot} type="button" onClick={() => setPicker({ teamId: tid, slot })}
+                          className="flex w-16 flex-col items-center gap-1 text-center">
+                          <span className="relative block">
+                            {p ? <PlayerAvatar src={p.photo_url} name={p.name} size="sm" className="h-10 w-10" />
+                              : <span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-dashed border-emerald-300/60 bg-background/70"><Plus className="h-4 w-4 text-emerald-200" /></span>}
+                            {p?.shirt_number != null && <span className="absolute -left-1 -top-1 rounded-full bg-primary px-1.5 text-[0.55rem] font-black text-primary-foreground ring-2 ring-background">{p.shirt_number}</span>}
+                            {icons.length > 0 && <span className="absolute -right-2 -top-1 flex gap-0.5 rounded-full bg-background px-1 text-[0.6rem] leading-tight ring-2 ring-background">{icons.slice(0, 3).map((ic, k) => <span key={k}>{ic}</span>)}</span>}
+                            {rating != null && <span className={`absolute -bottom-1 left-1/2 -translate-x-1/2 rounded px-1 text-[0.55rem] font-black ring-2 ring-background ${ratingClass(Number(rating))}`}>{rating}</span>}
+                          </span>
+                          <span className="line-clamp-2 text-[0.55rem] font-semibold leading-tight text-foreground">{p ? p.name : slot === "GK" ? "Goalkeeper" : "Add player"}</span>
+                        </button>
                       );
                     })}
-                    {lineups.filter((l) => l.team_id === tid && !l.is_starting).length === 0 && <p className="text-[0.6rem] text-muted-foreground">No bench yet — tap + to pick from the squad.</p>}
                   </div>
-                </div>
-              ) : (
-              <div className="grid gap-1">
-                {squad.map((p) => {
-                  const st = lineups.find((l) => l.player_id === p.id)?.is_starting;
-                  return (
-                    <div key={p.id} className="flex items-center gap-2 text-xs">
-                      <span className="flex-1 truncate">{p.shirt_number ? `#${p.shirt_number} ` : ""}{p.name}</span>
-                      <button onClick={() => toggle(p.id, tid, true)} className={`rounded px-2 py-0.5 ${st === true ? "bg-primary text-primary-foreground" : "bg-muted"}`}>XI</button>
-                      <button onClick={() => toggle(p.id, tid, false)} className={`rounded px-2 py-0.5 ${st === false ? "bg-primary text-primary-foreground" : "bg-muted"}`}>Bench</button>
-                    </div>
-                  );
-                })}
-                {squad.length === 0 && <div className="text-[0.65rem] text-muted-foreground">Add players to this squad first.</div>}
+                ))}
+                <div className="mt-1 text-center text-[0.6rem] text-muted-foreground">{formation}</div>
+                {squad.length === 0 && <div className="text-center text-[0.6rem] text-muted-foreground">Add players to this squad first.</div>}
               </div>
-              )}
+
+              <div className="mt-3">
+                <div className="mb-2 flex items-center justify-between">
+                  <h4 className="text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">Bench</h4>
+                  <button type="button" onClick={() => setBenchPicker(tid)} className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-border hover:bg-accent" aria-label="Pick bench players"><Plus className="h-3.5 w-3.5" /></button>
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                  {bench.map((l) => {
+                    const p = players.find((x) => x.id === l.player_id);
+                    const icons = p ? iconsFor(p.id) : [];
+                    const rating = p ? ratingFor(p.id) : null;
+                    return (
+                      <div key={l.id} className="flex flex-col items-center gap-1 text-center">
+                        <span className="relative block">
+                          <PlayerAvatar src={p?.photo_url} name={p?.name ?? "?"} size="sm" className="h-10 w-10" />
+                          {p?.shirt_number != null && <span className="absolute -left-1 -top-1 rounded-full bg-muted px-1.5 text-[0.55rem] font-black ring-2 ring-background">{p.shirt_number}</span>}
+                          {icons.length > 0 && <span className="absolute -right-2 -top-1 flex gap-0.5 rounded-full bg-background px-1 text-[0.6rem] leading-tight ring-2 ring-background">{icons.slice(0, 3).map((ic, k) => <span key={k}>{ic}</span>)}</span>}
+                          {rating != null && <span className={`absolute -bottom-1 left-1/2 -translate-x-1/2 rounded px-1 text-[0.55rem] font-black ring-2 ring-background ${ratingClass(Number(rating))}`}>{rating}</span>}
+                        </span>
+                        <span className="line-clamp-2 text-[0.55rem] font-semibold leading-tight">{p?.name ?? "—"}</span>
+                        <button onClick={() => toggle(l.player_id, tid, false)} className="text-destructive" aria-label="Remove from bench"><Trash2 className="h-3 w-3" /></button>
+                      </div>
+                    );
+                  })}
+                </div>
+                {bench.length === 0 && <p className="text-[0.6rem] text-muted-foreground">No bench yet — tap + to pick from the squad.</p>}
+              </div>
             </div>
           );
         })}

@@ -11,6 +11,7 @@ import { createPlayerDraftWithAlmail } from "@/lib/almail-ai.functions";
 import { readAiImages, type AiImageInput } from "@/lib/image-files";
 import { releasePlayerToFreeAgent, transferPlayerToClub, deletePlayerForever } from "@/lib/player-moves";
 import { ConfirmDelete } from "@/components/confirm-delete";
+import { MediaUrls } from "./media-urls";
 import { ArrowLeft, ImagePlus, Loader2, Plus, Save, Sparkles, Trash2, UserMinus, X } from "lucide-react";
 
 /** Full-page player editor: details, Almail AI assist, transfer history and squad moves. */
@@ -123,7 +124,7 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
             <ImageInput value={form.photo_url ?? null} onChange={(v) => setForm({ ...form, photo_url: v })} onFile={async (f) => { const url = await uploadMedia("player-photos", f); if (url) setForm({ ...form, photo_url: url }); }} />
           </Field></div>
           <div className="sm:col-span-2 lg:col-span-3"><Field label="Media gallery">
-            <MediaUrls urls={form.media_urls ?? []} onChange={(v) => setForm({ ...form, media_urls: v })} />
+            <MediaUrls urls={form.media_urls ?? []} onChange={(v) => setForm({ ...form, media_urls: v })} bucket="player-photos" />
           </Field></div>
         </div>
 
@@ -172,26 +173,6 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
           </button>
           <button className={btnGhost} onClick={onClose}><ArrowLeft className="h-3.5 w-3.5" /> Back</button>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function MediaUrls({ urls, onChange }: { urls: string[]; onChange: (v: string[]) => void }) {
-  const [value, setValue] = useState("");
-  return (
-    <div className="grid gap-2">
-      <div className="grid gap-1">
-        {urls.map((u) => (
-          <div key={u} className="flex items-center gap-2 rounded-lg border border-border bg-background p-2 text-xs">
-            <span className="min-w-0 flex-1 truncate">{u}</span>
-            <button type="button" className="text-destructive" onClick={() => onChange(urls.filter((x) => x !== u))}><Trash2 className="h-3 w-3" /></button>
-          </div>
-        ))}
-      </div>
-      <div className="flex gap-2">
-        <input className={inputCls} placeholder="YouTube, Instagram, TikTok, Facebook or image link" value={value} onChange={(e) => setValue(e.target.value)} />
-        <button type="button" className={btnGhost} onClick={() => { if (value.trim()) { onChange([...urls, value.trim()]); setValue(""); } }}><Plus className="h-3.5 w-3.5" /></button>
       </div>
     </div>
   );

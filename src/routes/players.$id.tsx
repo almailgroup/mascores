@@ -2,6 +2,7 @@ import { TeamCrest } from "@/components/team-crest";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { MediaGallery } from "@/components/media-gallery";
 import { AppShell, BackButton, EmptyState, LoadingSkeleton } from "@/components/app-shell";
 import { supabase, formatKickoff, formatHeight, formatDob, type Player, type Team, type Match, type Transfer } from "@/lib/db";
 import { FavoriteButton } from "@/hooks/use-favorites";
@@ -167,9 +168,7 @@ function PlayerPage() {
 
       {tab === "media" && (
         (p.media_urls?.length ?? 0) > 0 ? (
-          <div className="grid gap-3 sm:grid-cols-3">
-            {p.media_urls.map((u) => <img key={u} src={u} alt="" className="h-48 w-full rounded-2xl border border-border object-cover" />)}
-          </div>
+          <MediaGallery urls={p.media_urls} />
         ) : <EmptyState title={tx("No media yet")} />
       )}
 

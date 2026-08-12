@@ -14,7 +14,7 @@ import { FlagIcon } from "@/components/flag";
 
 /** Same slot keys the admin pitch board writes, so the public pitch mirrors it. */
 function formationRows(formation: string | null | undefined): string[][] {
-  const lines = (formation ?? "4-4-2").split("-").map((n) => Number(n)).filter((n) => n > 0);
+  const lines = (formation ?? "4-3-3").split("-").map((n) => Number(n)).filter((n) => n > 0);
   const rows: string[][] = [["GK"]];
   let idx = 1;
   for (const [li, count] of lines.entries()) {
@@ -207,7 +207,7 @@ function MatchPage() {
         const rows = lineups.data?.filter((item) => item.team_id === team?.id) ?? [];
         const starters = rows.filter((r) => r.is_starting);
         const bench = rows.filter((r) => !r.is_starting);
-        const activeFormation = formation ?? "4-2-3-1";
+        const activeFormation = formation ?? "4-3-3";
         const showPitch = match.lineup_mode === "formation" && starters.length > 0;
         const marksFor = (playerId: string) => (events.data ?? [])
           .map((e) => {
