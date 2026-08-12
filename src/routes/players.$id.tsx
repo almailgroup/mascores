@@ -30,6 +30,10 @@ export const Route = createFileRoute("/players/$id")({
 
 type Tab = "details" | "matches" | "media" | "news";
 
+type Comp = { id: string; slug: string; name: string; logo_url: string | null; country: string | null; country_code: string | null; sport: string | null };
+type PlayerMatch = Match & { home: Team | null; away: Team | null; competition: Comp | null };
+type PlayerMatchData = { rows: PlayerMatch[]; events: { match_id: string; type: string; player_id: string | null; assist_player_id: string | null }[]; ratings: Record<string, number> };
+
 function age(dob: string | null | undefined) {
   if (!dob) return null;
   const d = new Date(dob);
@@ -179,6 +183,97 @@ function Stat({ label, value, icon }: { label: string; value: string; icon?: Rea
     <div className="rounded-2xl border border-border bg-card p-4">
       <div className="text-[0.6rem] font-semibold uppercase tracking-widest text-muted-foreground">{label}</div>
       <div className="mt-1 flex items-center gap-2 truncate text-sm font-bold">{icon}{value}</div>
+    </div>
+  );
+}
+
+const STATUS_SHORT: Record<string, string> = { finished: "FT", live: "LIVE", scheduled: "", postponed: "PST", cancelled: "CAN", awarded: "AWD", interrupted: "INT" };
+
+function PlayerMatches({ data, playerId, playerTeamId }: { data: PlayerMatchData; playerId: string; playerTeamId: string | null }) {
+  const tx = useTx();
+  const num = useNum();
+  const dates = useDates();
+  const [comp, setComp] = useState<string>("all");
+
+  const comps = [...new Map(data.rows.filter((m) => m.competition).map((m) => [m.competition!.id, m.competition!])).values()];
+  const rows = comp === "all" ? data.rows : data.rows.filter((m) => m.competition?.id === comp);
+
+  // consecutive groups by competition, preserving date order
+  const groups: { comp: Comp | null; matches: PlayerMatch[] }[] = [];
+  for (const m of rows) {
+    const last = groups[groups.length - 1];
+    if (last && last.comp?.id === (m.competition?.id ?? null)) last.matches.push(m);
+    else groups.push({ comp: m.competition ?? null, matches: [m] });
+  }
+
+  return (
+    <div className="space-y-3">
+      <select value={comp} onChange={(e) => setComp(e.target.value)} className="rounded-xl border border-border bg-card px-3 py-2 text-xs font-semibold">
+        <option value="all">{tx("All competitions")}</option>
+        {comps.map((c) => <option key={c.id} value={c.id}>{tx(c.name)}</option>)}
+      </select>
+
+      {groups.map((g, gi) => (
+        <section key={`${g.comp?.id ?? "none"}-${gi}`} className="overflow-hidden rounded-2xl border border-border bg-card">
+          <div className="flex items-center gap-3 px-3 py-3">
+            <TeamCrest name={g.comp?.name} logo={g.comp?.logo_url} className="h-8 w-8" rounded="rounded-full" />
+            <div className="min-w-0">
+              <div className="truncate text-sm font-bold">{tx(g.comp?.name) ?? tx("Matches")}</div>
+              <div className="flex items-center gap-1.5 text-[0.7rem] text-muted-foreground">
+                <FlagIcon value={g.comp?.country_code ?? g.comp?.country} size="sm" />
+                <span className="truncate">{tx(g.comp?.country) ?? ""}</span>
+              </div>
+            </div>
+          </div>
+          <div className="divide-y divide-border">
+            {g.matches.map((m) => {
+              const evs = data.events.filter((e) => e.match_id === m.id);
+              const goals = evs.filter((e) => e.player_id === playerId && (e.type === "goal" || e.type === "penalty_goal")).length;
+              const assists = evs.filter((e) => e.assist_player_id === playerId).length;
+              const yellow = evs.some((e) => e.player_id === playerId && e.type === "yellow_card");
+              const red = evs.some((e) => e.player_id === playerId && (e.type === "red_card" || e.type === "second_yellow"));
+              const rating = data.ratings[m.id];
+              const isHome = playerTeamId && m.home_team_id === playerTeamId;
+              const isAway = playerTeamId && m.away_team_id === playerTeamId;
+              return (
+                <Link key={m.id} to="/matches/$id" params={{ id: m.id }} className="flex items-center gap-2 px-3 py-2.5 hover:bg-accent">
+                  <div className="w-14 shrink-0 text-[0.65rem] leading-tight text-muted-foreground">
+                    <div>{m.kickoff_at ? num(dates.date(m.kickoff_at)) : "—"}</div>
+                    <div className="font-semibold">{tx(STATUS_SHORT[m.status] ?? "")}</div>
+                  </div>
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <TeamLine team={m.home} dim={!!isAway} />
+                    <TeamLine team={m.away} dim={!!isHome} />
+                  </div>
+                  <div className="flex w-12 shrink-0 items-center justify-end gap-0.5 text-[0.7rem]">
+                    {goals > 0 && <span title={tx("Goal") ?? "Goal"}>⚽{goals > 1 ? num(String(goals)) : ""}</span>}
+                    {assists > 0 && <span title={tx("Assist") ?? "Assist"}>👟</span>}
+                    {yellow && <span className="h-3 w-2 rounded-sm bg-yellow-400" />}
+                    {red && <span className="h-3 w-2 rounded-sm bg-red-600" />}
+                  </div>
+                  <div className="w-6 shrink-0 text-right text-sm font-bold leading-tight tabular-nums">
+                    <div className={isAway ? "text-muted-foreground" : ""}>{m.home_score != null ? num(String(m.home_score)) : ""}</div>
+                    <div className={isHome ? "text-muted-foreground" : ""}>{m.away_score != null ? num(String(m.away_score)) : ""}</div>
+                  </div>
+                  <div className="w-9 shrink-0 text-right text-[0.7rem] font-semibold text-muted-foreground">
+                    {rating != null ? num(rating.toFixed(1)) : tx("N/A")}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      ))}
+    </div>
+  );
+}
+
+function TeamLine({ team, dim }: { team: Team | null; dim: boolean }) {
+  const tx = useTx();
+  return (
+    <div className={`flex min-w-0 items-center gap-1.5 text-[0.8rem] font-semibold ${dim ? "text-muted-foreground" : ""}`}>
+      <TeamCrest name={team?.name} logo={team?.logo_url} className="h-4 w-4 shrink-0" rounded="rounded-full" />
+      <span className="truncate">{tx(team?.name) ?? "TBD"}</span>
     </div>
   );
 }
