@@ -11,6 +11,7 @@ import { createPlayerDraftWithAlmail } from "@/lib/almail-ai.functions";
 import { readAiImages, type AiImageInput } from "@/lib/image-files";
 import { releasePlayerToFreeAgent, transferPlayerToClub, deletePlayerForever } from "@/lib/player-moves";
 import { ConfirmDelete } from "@/components/confirm-delete";
+import { MediaUrls } from "./media-urls";
 import { ArrowLeft, ImagePlus, Loader2, Plus, Save, Sparkles, Trash2, UserMinus, X } from "lucide-react";
 
 /** Full-page player editor: details, Almail AI assist, transfer history and squad moves. */
@@ -123,7 +124,7 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
             <ImageInput value={form.photo_url ?? null} onChange={(v) => setForm({ ...form, photo_url: v })} onFile={async (f) => { const url = await uploadMedia("player-photos", f); if (url) setForm({ ...form, photo_url: url }); }} />
           </Field></div>
           <div className="sm:col-span-2 lg:col-span-3"><Field label="Media gallery">
-            <MediaUrls urls={form.media_urls ?? []} onChange={(v) => setForm({ ...form, media_urls: v })} />
+            <MediaUrls urls={form.media_urls ?? []} onChange={(v) => setForm({ ...form, media_urls: v })} bucket="player-photos" />
           </Field></div>
         </div>
 
