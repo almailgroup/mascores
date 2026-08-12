@@ -712,12 +712,40 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
 
   // Score always mirrors the logged events — no manual sync.
   useEffect(() => {
-    if (eventsQ.isLoading || match.status === "awarded") return;
+    if (eventsQ.isLoading || match.status === "awarded" || match.result_only) return;
     if ((match.home_score ?? 0) === scores.h && (match.away_score ?? 0) === scores.a) return;
     supabase.from("matches").update({ home_score: scores.h, away_score: scores.a }).eq("id", match.id).then(onSaved);
-  }, [scores.h, scores.a, eventsQ.isLoading, match.id, match.home_score, match.away_score]);
+  }, [scores.h, scores.a, eventsQ.isLoading, match.id, match.home_score, match.away_score, match.result_only]);
+
+  const resultOnlyToggle = (
+    <section className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-background/40 p-3">
+      <div>
+        <h3 className="text-sm font-bold">Result only mode</h3>
+        <p className="text-[0.7rem] text-muted-foreground">
+          {match.result_only
+            ? "On — only the final score is recorded, and visitors see no timeline."
+            : "Off — full live controls: clock, goals, cards and timeline."}
+        </p>
+      </div>
+      <button type="button" onClick={() => patchMatch({ result_only: !match.result_only })}
+        className={`inline-flex h-9 items-center rounded-full px-4 text-xs font-bold ${match.result_only ? "bg-primary text-primary-foreground" : "border border-border"}`}>
+        {match.result_only ? "Turn off" : "Turn on"}
+      </button>
+    </section>
+  );
+
+  if (match.result_only) {
+    return (
+      <div>
+        {resultOnlyToggle}
+        <ResultOnly match={match} />
+      </div>
+    );
+  }
 
   return (
+    <>
+    {resultOnlyToggle}
     <div className="grid gap-5 lg:grid-cols-2">
       <div>
         {/* Clock */}
@@ -803,6 +831,7 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
         )}
       </div>
     </div>
+    </>
   );
 }
 
