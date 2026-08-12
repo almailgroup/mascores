@@ -66,19 +66,14 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto overscroll-contain bg-background">
-      <div className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
-          <button className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground" onClick={onClose}>
-            <ArrowLeft className="h-4 w-4" /> Back
-          </button>
-          <div className="min-w-0 flex-1 truncate text-center text-sm font-bold">{form.name || "New player"}{clubName ? ` · ${clubName}` : " · Free agent"}</div>
+      <div className="mx-auto max-w-6xl space-y-5 px-4 py-5 lg:px-8">
+        <div className="flex flex-wrap items-center gap-3">
+          <button className={btnGhost} onClick={onClose}><ArrowLeft className="h-3.5 w-3.5" /> Back</button>
           <button className={btnPrimary} disabled={busy || !form.name?.trim()} onClick={save}>
             {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />} {form.id ? "Save" : "Create"}
           </button>
+          <div className="min-w-0 flex-1 truncate text-sm font-bold">{form.name || "New player"}{clubName ? ` · ${clubName}` : " · Free agent"}</div>
         </div>
-      </div>
-
-      <div className="mx-auto max-w-6xl space-y-5 px-4 py-5 lg:px-8">
         <div className="rounded-2xl border border-primary/30 bg-primary/5 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2 text-sm font-bold"><Sparkles className="h-4 w-4 text-primary" /> Almail AI player assistant</div>
