@@ -238,6 +238,46 @@ function formationRows(formation: string | null | undefined): string[][] {
   return rows.reverse();
 }
 
+/** Per-player match ratings for everyone in the lineup. */
+function RatingsEditor({ match, lineups, players }: { match: Match; lineups: Lineup[]; players: Player[] }) {
+  const qc = useQueryClient();
+  const ratingsQ = useQuery({
+    queryKey: ["admin", "match-ratings", match.id],
+    queryFn: async () => (await supabase.from("player_ratings").select("*").eq("match_id", match.id)).data ?? [],
+  });
+  if (lineups.length === 0) return null;
+  const save = async (playerId: string, value: string) => {
+    const existing = ratingsQ.data?.find((r) => r.player_id === playerId);
+    if (value === "") {
+      if (existing) await supabase.from("player_ratings").delete().eq("id", existing.id);
+    } else if (existing) {
+      await supabase.from("player_ratings").update({ rating: Number(value) }).eq("id", existing.id);
+    } else {
+      await supabase.from("player_ratings").insert({ match_id: match.id, player_id: playerId, competition_id: match.competition_id, rating: Number(value) } as never);
+    }
+    qc.invalidateQueries({ queryKey: ["admin", "match-ratings", match.id] });
+  };
+  return (
+    <section className="rounded-xl border border-border bg-background/40 p-3">
+      <h4 className="mb-2 text-sm font-bold">Player ratings</h4>
+      <div className="grid gap-1 sm:grid-cols-2">
+        {lineups.map((lu) => {
+          const player = players.find((p) => p.id === lu.player_id);
+          const rating = ratingsQ.data?.find((r) => r.player_id === lu.player_id)?.rating;
+          return (
+            <div key={lu.id} className="flex items-center gap-2 text-xs">
+              <span className="min-w-0 flex-1 truncate">{player?.name ?? "—"}</span>
+              {rating != null && <span className={`rounded px-1.5 py-0.5 text-[0.6rem] font-black ${ratingClass(Number(rating))}`}>{rating}</span>}
+              <input type="number" step="0.1" min={0} max={10} defaultValue={rating ?? ""} onBlur={(e) => save(lu.player_id, e.target.value)}
+                className="h-8 w-16 rounded border border-border bg-background text-center" />
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSaved: () => void }) {
   const qc = useQueryClient();
   const [picker, setPicker] = useState<{ teamId: string; slot: string } | null>(null);
