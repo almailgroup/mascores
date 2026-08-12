@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { MediaGallery } from "@/components/media-gallery";
 import { AppShell, BackButton, EmptyState, LoadingSkeleton } from "@/components/app-shell";
 import { supabase, formatKickoff, type Team, type Player, type Match, type StandingRow, type Coach, type Transfer } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
@@ -285,9 +286,7 @@ function TeamPage() {
 
       {tab === "media" && (
         (t.media_urls?.length ?? 0) > 0 ? (
-          <div className="grid gap-3 sm:grid-cols-3">
-            {t.media_urls.map((u) => <img key={u} src={u} alt="" className="h-40 w-full rounded-2xl border border-border object-cover" />)}
-          </div>
+          <MediaGallery urls={t.media_urls} />
         ) : <EmptyState title={tx("No media yet")} />
       )}
 

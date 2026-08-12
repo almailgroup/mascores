@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase, POSITIONS, type Player, type Team } from "@/lib/db";
-import { Field, ImageInput, inputCls, btnPrimary, btnGhost } from "./ui";
+import { Field, ImageInput, inputCls, btnPrimary, btnGhost, btnDanger } from "./ui";
 import { uploadMedia } from "./upload";
 import { CountrySelect } from "@/components/country-select";
 import { DateWheel } from "@/components/date-wheel";
