@@ -12,6 +12,7 @@ import { releasePlayerToFreeAgent, transferPlayerToClub, deletePlayerForever } f
 import { TeamCrest } from "@/components/team-crest";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import { VenueSelect } from "./venue-select";
+import { MediaUrls } from "./media-urls";
 import { Plus, Pencil, Trash2, Users, UserCog, UserMinus, ImagePlus, Library } from "lucide-react";
 
 type TeamForm = Partial<Team>;
@@ -118,6 +119,9 @@ export function TeamsPanel({ competitionId, season = null }: { competitionId: st
            <Field label="Chairman"><input className={inputCls} value={form.chairman ?? ""} onChange={(e) => setForm({ ...form, chairman: e.target.value || null })} /></Field>
           <div className="sm:col-span-2"><Field label="Team logo">
             <ImageInput value={form.logo_url ?? null} onChange={(v) => setForm({ ...form, logo_url: v })} onFile={async (f) => { const url = await uploadMedia("team-logos", f); if (url) setForm({ ...form, logo_url: url }); }} />
+          </Field></div>
+          <div className="sm:col-span-2"><Field label="Media gallery">
+            <MediaUrls urls={form.media_urls ?? []} onChange={(v) => setForm({ ...form, media_urls: v })} bucket="team-logos" />
           </Field></div>
         </div>
         <label className="mt-3 flex items-start gap-2 rounded-xl border border-border bg-background/50 p-3 text-xs">
