@@ -702,6 +702,7 @@ export type Database = {
           live_minute: number | null
           notes: string | null
           referee: string | null
+          result_only: boolean
           round: string | null
           round_number: number | null
           season: string | null
@@ -733,6 +734,7 @@ export type Database = {
           live_minute?: number | null
           notes?: string | null
           referee?: string | null
+          result_only?: boolean
           round?: string | null
           round_number?: number | null
           season?: string | null
@@ -764,6 +766,7 @@ export type Database = {
           live_minute?: number | null
           notes?: string | null
           referee?: string | null
+          result_only?: boolean
           round?: string | null
           round_number?: number | null
           season?: string | null

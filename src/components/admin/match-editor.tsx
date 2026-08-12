@@ -11,6 +11,7 @@ import { Play, Pause, Plus, Trash2, RotateCcw, Check, Info, ListChecks, Radio, B
 import { TeamCrest } from "@/components/team-crest";
 import { PlayerAvatar } from "@/components/player-avatar";
 import { MediaManager } from "./media-manager";
+import { ConfirmDelete } from "@/components/confirm-delete";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -354,6 +355,7 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
   const qc = useQueryClient();
   const [picker, setPicker] = useState<{ teamId: string; slot: string } | null>(null);
   const [benchPicker, setBenchPicker] = useState<string | null>(null);
+  const [clearTeam, setClearTeam] = useState<string | null>(null);
   const teamIds = [match.home_team_id, match.away_team_id].filter(Boolean) as string[];
 
   const playersQ = useQuery({
@@ -449,6 +451,19 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
     qc.invalidateQueries({ queryKey: ["admin", "lineups", match.id] });
   };
 
+  /** Save (or clear) a player's rating for this match — used by the card tap editor. */
+  const saveRating = async (playerId: string, value: string) => {
+    const existing = (ratingsQ.data ?? []).find((r) => r.player_id === playerId);
+    if (value.trim() === "") {
+      if (existing) await supabase.from("player_ratings").delete().eq("id", existing.id);
+    } else if (existing) {
+      await supabase.from("player_ratings").update({ rating: Number(value) }).eq("id", existing.id);
+    } else {
+      await supabase.from("player_ratings").insert({ match_id: match.id, player_id: playerId, competition_id: match.competition_id, rating: Number(value) } as never);
+    }
+    qc.invalidateQueries({ queryKey: ["admin", "match-ratings", match.id] });
+  };
+
   return (
     <div className="space-y-4">
       <div><h3 className="font-bold">Lineups</h3><p className="text-xs text-muted-foreground">Tap a + on the pitch and pick the player — he takes that position straight away. Ratings and event icons appear on his card automatically.</p></div>
@@ -467,7 +482,7 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
                 <select className="rounded border border-border bg-background px-2 py-1 text-xs" value={formation} onChange={(e) => setFormation(side as "home" | "away", e.target.value)}>
                   {FORMATIONS.map((f) => <option key={f} value={f}>{f}</option>)}
                 </select>
-                <button type="button" onClick={() => clearAll(tid)} className="rounded border border-border px-2 py-1 text-[0.6rem] font-semibold text-destructive hover:bg-accent">Clear all</button>
+                <button type="button" onClick={() => setClearTeam(tid)} className="rounded border border-border px-2 py-1 text-[0.6rem] font-semibold text-destructive hover:bg-accent">Clear all</button>
                 </div>
               </div>
               <div className="rounded-lg bg-emerald-900/25 p-2 pt-4">
@@ -588,6 +603,25 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
 
       <Modal open={!!picker} onClose={() => setPicker(null)} title="Choose player">
         <div className="max-h-[70vh] space-y-4 overflow-y-auto">
+          {(() => {
+            if (!picker) return null;
+            const assigned = lineups.find((l) => l.team_id === picker.teamId && l.position_code === picker.slot);
+            const p = players.find((x) => x.id === assigned?.player_id);
+            if (!p) return null;
+            return (
+              <section className="rounded-xl border border-primary/40 bg-primary/5 p-3">
+                <div className="flex items-center gap-3">
+                  <PlayerAvatar src={p.photo_url} name={p.name} size="sm" />
+                  <div className="min-w-0 flex-1"><div className="truncate text-sm font-bold">{p.name}</div><div className="text-[0.65rem] text-muted-foreground">Match rating</div></div>
+                  <input type="number" step="0.1" min={0} max={10} defaultValue={ratingFor(p.id) ?? ""} placeholder="—"
+                    onBlur={(e) => saveRating(p.id, e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
+                    className="h-9 w-20 rounded-lg border border-border bg-background text-center text-sm font-bold" />
+                </div>
+                <p className="mt-2 text-[0.6rem] text-muted-foreground">Type a rating out of 10 — it shows on his card. Pick another player below to replace him.</p>
+              </section>
+            );
+          })()}
           {picker && ["Goalkeeper", "Defender", "Midfielder", "Forward", "Unknown"].map((position) => {
             const pool = players.filter((player) => player.team_id === picker.teamId && (player.position ?? "Unknown") === position).sort((a, b) => (a.shirt_number ?? 999) - (b.shirt_number ?? 999) || a.name.localeCompare(b.name));
             if (pool.length === 0) return null;
@@ -596,6 +630,16 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
           {picker && <button type="button" className={btnDanger} onClick={async () => { await assignSlot(picker.teamId, picker.slot, null); setPicker(null); }}>Clear position</button>}
         </div>
       </Modal>
+
+      <ConfirmDelete
+        open={!!clearTeam}
+        title="Clear the whole lineup?"
+        description={clearTeam ? `This removes every starter and bench player for ${teamName(clearTeam)} in this match.` : undefined}
+        confirmWord="CLEAR"
+        actionLabel="Clear lineup"
+        onCancel={() => setClearTeam(null)}
+        onConfirm={async () => { if (clearTeam) await clearAll(clearTeam); setClearTeam(null); }}
+      />
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-background/40 p-3">
         <span className="text-xs text-muted-foreground">
@@ -668,12 +712,40 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
 
   // Score always mirrors the logged events — no manual sync.
   useEffect(() => {
-    if (eventsQ.isLoading || match.status === "awarded") return;
+    if (eventsQ.isLoading || match.status === "awarded" || match.result_only) return;
     if ((match.home_score ?? 0) === scores.h && (match.away_score ?? 0) === scores.a) return;
     supabase.from("matches").update({ home_score: scores.h, away_score: scores.a }).eq("id", match.id).then(onSaved);
-  }, [scores.h, scores.a, eventsQ.isLoading, match.id, match.home_score, match.away_score]);
+  }, [scores.h, scores.a, eventsQ.isLoading, match.id, match.home_score, match.away_score, match.result_only]);
+
+  const resultOnlyToggle = (
+    <section className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-background/40 p-3">
+      <div>
+        <h3 className="text-sm font-bold">Result only mode</h3>
+        <p className="text-[0.7rem] text-muted-foreground">
+          {match.result_only
+            ? "On — only the final score is recorded, and visitors see no timeline."
+            : "Off — full live controls: clock, goals, cards and timeline."}
+        </p>
+      </div>
+      <button type="button" onClick={() => patchMatch({ result_only: !match.result_only })}
+        className={`inline-flex h-9 items-center rounded-full px-4 text-xs font-bold ${match.result_only ? "bg-primary text-primary-foreground" : "border border-border"}`}>
+        {match.result_only ? "Turn off" : "Turn on"}
+      </button>
+    </section>
+  );
+
+  if (match.result_only) {
+    return (
+      <div>
+        {resultOnlyToggle}
+        <ResultOnly match={match} />
+      </div>
+    );
+  }
 
   return (
+    <>
+    {resultOnlyToggle}
     <div className="grid gap-5 lg:grid-cols-2">
       <div>
         {/* Clock */}
@@ -759,6 +831,7 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
         )}
       </div>
     </div>
+    </>
   );
 }
 
