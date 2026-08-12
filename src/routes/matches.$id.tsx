@@ -229,20 +229,20 @@ function MatchPage() {
                 <span className="pointer-events-none absolute left-1/2 top-2 h-12 w-32 -translate-x-1/2 border-2 border-t-0 border-white/35" />
                 <span className="pointer-events-none absolute bottom-2 left-1/2 h-12 w-32 -translate-x-1/2 border-2 border-b-0 border-white/35" />
                 {formationRows(activeFormation).map((row, ri) => (
-                  <div key={ri} className="relative flex justify-around gap-1">
+                <div key={ri} className="relative flex justify-around gap-1 pt-1">
                     {row.map((slot) => {
                       const lu = starters.find((s) => s.position_code === slot);
                       if (!lu) return <div key={slot} className="h-16 w-14" />;
                       const marks = marksFor(lu.player_id);
                       const pitchRating = ratings.data?.find((item) => item.player_id === lu.player_id)?.rating;
                       return (
-                        <Link key={slot} to="/players/$id" params={{ id: lu.player_id }} className="flex w-16 flex-col items-center gap-0.5 pt-2 text-center">
+                        <Link key={slot} to="/players/$id" params={{ id: lu.player_id }} className="relative z-10 flex w-16 flex-col items-center gap-0.5 pt-3 text-center">
                           <span className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border-2 border-white/70 bg-muted text-xs font-bold">
                             {lu.player?.photo_url ? <img src={lu.player.photo_url} alt="" className="h-full w-full object-cover" /> : num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}
                             {(lu.shirt_number ?? lu.player?.shirt_number) != null && (
                               <span className="absolute -left-1 -top-1 rounded-full bg-background px-1 text-[0.55rem] font-black leading-tight text-foreground shadow">{num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}</span>
                             )}
-                            {marks && <span className="absolute -right-1.5 -top-1.5 rounded-full bg-background px-1 text-[0.6rem] leading-tight shadow">{marks}</span>}
+                            {marks && <span className="absolute -right-2 -top-2 z-20 flex min-w-[1.1rem] items-center justify-center gap-px rounded-full bg-background px-1 py-px text-[0.6rem] leading-none shadow ring-1 ring-border">{marks}</span>}
                           </span>
                           <span className="line-clamp-2 text-[0.6rem] font-semibold leading-tight text-white drop-shadow">{tx(lu.player?.name)}</span>
                           {pitchRating != null && <span className={`rounded px-1.5 text-[0.6rem] font-black leading-4 ${ratingClass(Number(pitchRating))}`}>{num(pitchRating)}</span>}
