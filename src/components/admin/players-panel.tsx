@@ -19,6 +19,7 @@ export function PlayersPanel() {
   const [scope, setScope] = useState<"all" | "free">("all");
   const [editing, setEditing] = useState<Partial<Player> | null>(null);
   const [openCountry, setOpenCountry] = useState<string | null>(null);
+  const [confirmPlayer, setConfirmPlayer] = useState<Row | null>(null);
   const [openComp, setOpenComp] = useState<string | null>(null);
   const [teamFilter, setTeamFilter] = useState<{ id: string; name: string } | null>(null);
   const [compFilter, setCompFilter] = useState<{ id: string; name: string } | null>(null);
@@ -173,6 +174,15 @@ export function PlayersPanel() {
       </div>
 
       {editing && <PlayerEditor player={editing} teamId={editing.team_id ?? null} onClose={() => { setEditing(null); invalidate(); }} />}
+      <ConfirmDelete
+        open={!!confirmPlayer}
+        title={`Delete ${confirmPlayer?.name ?? ""}`}
+        description="This permanently removes the player from the database, including squad entries and history. This cannot be undone."
+        confirmWord="DELETE"
+        actionLabel="Delete player"
+        onCancel={() => setConfirmPlayer(null)}
+        onConfirm={async () => { await deletePlayerForever(confirmPlayer!.id); setConfirmPlayer(null); invalidate(); }}
+      />
     </div>
   );
 }
