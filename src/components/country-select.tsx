@@ -25,6 +25,8 @@ export function CountrySelect({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const boxRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const justPicked = useRef(false);
 
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
@@ -44,10 +46,11 @@ export function CountrySelect({
       >
         {selected && <FlagIcon value={selected.code} size="md" />}
         <input
+          ref={inputRef}
           className="w-full bg-transparent outline-none"
           value={open ? query : (selected?.name ?? value ?? "")}
           placeholder={placeholder}
-          onFocus={() => { setOpen(true); setQuery(""); }}
+          onFocus={() => { if (justPicked.current) { justPicked.current = false; return; } setOpen(true); setQuery(""); }}
           onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
         />
         {(selected || value) && (
@@ -61,7 +64,8 @@ export function CountrySelect({
           {results.map((c) => (
             <button key={c.code} type="button"
               className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm hover:bg-accent"
-              onClick={() => { onChange(c.name, c); setOpen(false); setQuery(""); }}>
+              onMouseDown={(e) => { e.preventDefault(); justPicked.current = true; onChange(c.name, c); setOpen(false); setQuery(""); inputRef.current?.blur(); }}
+              onClick={(e) => { e.preventDefault(); }}>
               <FlagIcon value={c.code} size="md" />
               <span className="flex-1 truncate">{c.name}</span>
               <span className="text-[0.6rem] text-muted-foreground">{c.code}</span>
