@@ -222,20 +222,25 @@ function MatchPage() {
           <div key={side} className="rounded-2xl border border-border bg-card p-4">
             <h3 className="mb-3 flex items-center gap-2 font-bold">{tx(team?.name) ?? "TBD"}{showPitch && <span className="rounded bg-muted px-2 py-0.5 text-[0.65rem] font-semibold">{num(activeFormation)}</span>}</h3>
             {showPitch && (
-              <div className="mb-4 space-y-2 rounded-2xl bg-[linear-gradient(180deg,color-mix(in_oklab,var(--primary)_18%,transparent),transparent)] p-3">
+              <div className="relative mb-4 space-y-2 overflow-hidden rounded-2xl p-3" style={{ background: "repeating-linear-gradient(180deg,#1b7a3f 0 28px,#17703a 28px 56px)" }}>
+                <span className="pointer-events-none absolute inset-2 rounded-lg border-2 border-white/35" />
+                <span className="pointer-events-none absolute left-2 right-2 top-1/2 border-t-2 border-white/35" />
+                <span className="pointer-events-none absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/35" />
+                <span className="pointer-events-none absolute left-1/2 top-2 h-12 w-32 -translate-x-1/2 border-2 border-t-0 border-white/35" />
+                <span className="pointer-events-none absolute bottom-2 left-1/2 h-12 w-32 -translate-x-1/2 border-2 border-b-0 border-white/35" />
                 {formationRows(activeFormation).map((row, ri) => (
-                  <div key={ri} className="flex justify-around gap-1">
+                  <div key={ri} className="relative flex justify-around gap-1">
                     {row.map((slot) => {
                       const lu = starters.find((s) => s.position_code === slot);
                       if (!lu) return <div key={slot} className="h-16 w-14" />;
                       const marks = marksFor(lu.player_id);
                       return (
                         <Link key={slot} to="/players/$id" params={{ id: lu.player_id }} className="flex w-16 flex-col items-center gap-1 text-center">
-                          <span className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border-2 border-primary/40 bg-muted text-xs font-bold">
+                          <span className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border-2 border-white/70 bg-muted text-xs font-bold">
                             {lu.player?.photo_url ? <img src={lu.player.photo_url} alt="" className="h-full w-full object-cover" /> : num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}
                             {marks && <span className="absolute -right-1 -top-1 text-[0.6rem]">{marks}</span>}
                           </span>
-                          <span className="line-clamp-2 text-[0.6rem] font-semibold leading-tight">{tx(lu.player?.name)}</span>
+                          <span className="line-clamp-2 text-[0.6rem] font-semibold leading-tight text-white drop-shadow">{tx(lu.player?.name)}</span>
                         </Link>
                       );
                     })}
@@ -243,7 +248,37 @@ function MatchPage() {
                 ))}
               </div>
             )}
-            {(showPitch ? bench : rows).map((lu) => { const rating = ratings.data?.find((item) => item.player_id === lu.player_id)?.rating; const marks = marksFor(lu.player_id); return <Link key={lu.id} to="/players/$id" params={{ id: lu.player_id }} className="flex items-center gap-3 border-t border-border py-2 first:border-0"><div className="h-9 w-9 overflow-hidden rounded-full bg-muted">{lu.player?.photo_url && <img src={lu.player.photo_url} alt="" className="h-full w-full object-cover" />}</div><span className="w-6 text-xs text-muted-foreground">{num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}</span><span className="font-semibold">{tx(lu.player?.name)}</span>{marks && <span className="text-xs">{marks}</span>}{rating != null && <span className={`ml-auto rounded px-2 py-1 text-xs font-black ${ratingClass(Number(rating))}`}>{num(rating)}</span>}<span className={rating == null ? "ml-auto text-xs text-muted-foreground" : "text-xs text-muted-foreground"}>{lu.is_starting ? tx(lu.position_code ?? "XI") : tx("Bench")}</span></Link>; })}
+            {(() => {
+              const list = showPitch ? bench : rows;
+              const startersList = showPitch ? [] : list.filter((r) => r.is_starting);
+              const benchList = showPitch ? bench : list.filter((r) => !r.is_starting);
+              const row = (lu: (typeof rows)[number]) => {
+                const rating = ratings.data?.find((item) => item.player_id === lu.player_id)?.rating;
+                const marks = marksFor(lu.player_id);
+                return (
+                  <Link key={lu.id} to="/players/$id" params={{ id: lu.player_id }} className="flex items-center gap-3 border-t border-border py-2 first:border-0">
+                    <span className="w-6 shrink-0 text-center text-xs font-bold tabular-nums text-muted-foreground">{num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}</span>
+                    <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-muted">{lu.player?.photo_url && <img src={lu.player.photo_url} alt="" className="h-full w-full object-cover" />}</div>
+                    <span className="min-w-0 flex-1 truncate font-semibold">{tx(lu.player?.name)}</span>
+                    {marks && <span className="shrink-0 text-xs">{marks}</span>}
+                    {rating != null && <span className={`shrink-0 rounded px-2 py-1 text-xs font-black ${ratingClass(Number(rating))}`}>{num(rating)}</span>}
+                    {lu.is_starting && <span className="shrink-0 text-xs text-muted-foreground">{tx(lu.position_code ?? "XI")}</span>}
+                  </Link>
+                );
+              };
+              return (
+                <>
+                  {startersList.length > 0 && <div>{startersList.map(row)}</div>}
+                  {benchList.length > 0 && (
+                    <div className="mt-3">
+                      <h4 className="mb-1 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Bench")}</h4>
+                      {benchList.map(row)}
+                    </div>
+                  )}
+                  <TeamCoach teamId={team?.id} />
+                </>
+              );
+            })()}
             {rows.length === 0 && <p className="text-sm text-muted-foreground">{tx("No lineup posted.")}</p>}
           </div>
         );
@@ -257,6 +292,31 @@ function MatchPage() {
 }
 
 function PreviousMatches({ competitionId, currentId }: { competitionId: string; currentId: string }) {
+  return <PreviousMatchesInner competitionId={competitionId} currentId={currentId} />;
+}
+
+/** Coach block under each lineup. */
+function TeamCoach({ teamId }: { teamId: string | undefined }) {
+  const tx = useTx();
+  const q = useQuery({
+    queryKey: ["lineup-coach", teamId],
+    enabled: !!teamId,
+    queryFn: async () => (await supabase.from("coaches").select("id,name,photo_url,nationality").eq("team_id", teamId!).limit(1).maybeSingle()).data,
+  });
+  if (!q.data) return null;
+  return (
+    <div className="mt-3">
+      <h4 className="mb-1 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Coach")}</h4>
+      <div className="flex items-center gap-3 py-2">
+        <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-muted">{q.data.photo_url && <img src={q.data.photo_url} alt="" className="h-full w-full object-cover" />}</div>
+        <span className="min-w-0 flex-1 truncate font-semibold">{tx(q.data.name)}</span>
+        <span className="shrink-0 text-xs text-muted-foreground">{tx(q.data.nationality) ?? ""}</span>
+      </div>
+    </div>
+  );
+}
+
+function PreviousMatchesInner({ competitionId, currentId }: { competitionId: string; currentId: string }) {
   const tx = useTx();
   const q = useQuery({ queryKey: ["previous-matches", competitionId, currentId], queryFn: async () => (await supabase.from("matches").select("*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url)").eq("competition_id", competitionId).neq("id", currentId).in("status", ["ft", "aet", "pen", "awarded"]).order("kickoff_at", { ascending: false }).limit(10)).data ?? [] });
   return <div className="grid gap-2">{q.data?.map((match) => <Link key={match.id} to="/matches/$id" params={{ id: match.id }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 hover:border-primary"><span className="min-w-0 flex-1 truncate font-semibold">{tx(match.home?.name) ?? "TBD"} vs {tx(match.away?.name) ?? "TBD"}</span><strong>{match.home_score ?? 0}–{match.away_score ?? 0}</strong></Link>)}{q.data?.length === 0 && <p className="text-sm text-muted-foreground">{tx("No previous matches yet.")}</p>}</div>;
