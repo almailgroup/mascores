@@ -7,6 +7,7 @@ import { releasePlayerToFreeAgent, deletePlayerForever } from "@/lib/player-move
 import { PlayerAvatar } from "@/components/player-avatar";
 import { FlagIcon } from "@/components/flag";
 import { TeamCrest } from "@/components/team-crest";
+import { ConfirmDelete } from "@/components/confirm-delete";
 import { Plus, Pencil, Trash2, UserMinus, Users, ChevronRight, ChevronDown, X } from "lucide-react";
 
 type Row = Player & { team: Pick<Team, "id" | "name"> | null };
@@ -18,6 +19,7 @@ export function PlayersPanel() {
   const [scope, setScope] = useState<"all" | "free">("all");
   const [editing, setEditing] = useState<Partial<Player> | null>(null);
   const [openCountry, setOpenCountry] = useState<string | null>(null);
+  const [confirmPlayer, setConfirmPlayer] = useState<Row | null>(null);
   const [openComp, setOpenComp] = useState<string | null>(null);
   const [teamFilter, setTeamFilter] = useState<{ id: string; name: string } | null>(null);
   const [compFilter, setCompFilter] = useState<{ id: string; name: string } | null>(null);
@@ -164,7 +166,7 @@ export function PlayersPanel() {
             </div>
             <button className={btnGhost} onClick={() => setEditing(p)}><Pencil className="h-3.5 w-3.5" /> Edit</button>
             {p.team_id && <button className={btnGhost} onClick={async () => { await releasePlayerToFreeAgent(p, p.team?.name ?? null); invalidate(); }}><UserMinus className="h-3.5 w-3.5" /> Release</button>}
-            <button className={btnDanger} onClick={async () => { if (!confirm(`Delete ${p.name} from the database permanently?`)) return; await deletePlayerForever(p.id); invalidate(); }}><Trash2 className="h-3.5 w-3.5" /></button>
+            <button className={btnDanger} onClick={() => setConfirmPlayer(p)}><Trash2 className="h-3.5 w-3.5" /></button>
           </div>
         ))}
         {q.data && q.data.length === 0 && <div className="rounded-xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">No players found.</div>}
@@ -172,6 +174,15 @@ export function PlayersPanel() {
       </div>
 
       {editing && <PlayerEditor player={editing} teamId={editing.team_id ?? null} onClose={() => { setEditing(null); invalidate(); }} />}
+      <ConfirmDelete
+        open={!!confirmPlayer}
+        title={`Delete ${confirmPlayer?.name ?? ""}`}
+        description="This permanently removes the player from the database, including squad entries and history. This cannot be undone."
+        confirmWord="DELETE"
+        actionLabel="Delete player"
+        onCancel={() => setConfirmPlayer(null)}
+        onConfirm={async () => { await deletePlayerForever(confirmPlayer!.id); setConfirmPlayer(null); invalidate(); }}
+      />
     </div>
   );
 }

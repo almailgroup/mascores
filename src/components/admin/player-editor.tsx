@@ -10,6 +10,7 @@ import { TransfersEditor } from "./transfers-editor";
 import { createPlayerDraftWithAlmail } from "@/lib/almail-ai.functions";
 import { readAiImages, type AiImageInput } from "@/lib/image-files";
 import { releasePlayerToFreeAgent, transferPlayerToClub, deletePlayerForever } from "@/lib/player-moves";
+import { ConfirmDelete } from "@/components/confirm-delete";
 import { ArrowLeft, ImagePlus, Loader2, Plus, Save, Sparkles, Trash2, UserMinus, X } from "lucide-react";
 
 /** Full-page player editor: details, Almail AI assist, transfer history and squad moves. */
@@ -18,6 +19,7 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
   const [form, setForm] = useState<Partial<Player>>(player);
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
   const [aiNotes, setAiNotes] = useState("");
   const [aiImages, setAiImages] = useState<AiImageInput[]>([]);
@@ -147,10 +149,16 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
                   await releasePlayerToFreeAgent({ id: form.id! }, clubName);
                   setForm({ ...form, team_id: null }); invalidate();
                 }}><UserMinus className="h-3.5 w-3.5" /> Release to free agents</button>}
-                <button className={btnDanger} onClick={async () => {
-                  if (!confirm("Delete this player from the database permanently?")) return;
-                  await deletePlayerForever(form.id!); invalidate(); onClose();
-                }}><Trash2 className="h-3.5 w-3.5" /> Delete from database</button>
+                <button className={btnDanger} onClick={() => setConfirmDelete(true)}><Trash2 className="h-3.5 w-3.5" /> Delete from database</button>
+                <ConfirmDelete
+                  open={confirmDelete}
+                  title={`Delete ${form.name || "this player"}`}
+                  description="This permanently removes the player from the database, including squad entries and history. This cannot be undone."
+                  confirmWord="DELETE"
+                  actionLabel="Delete player"
+                  onCancel={() => setConfirmDelete(false)}
+                  onConfirm={async () => { await deletePlayerForever(form.id!); setConfirmDelete(false); invalidate(); onClose(); }}
+                />
               </div>
             </div>
           </div>

@@ -10,6 +10,7 @@ import { PlayerEditor } from "./player-editor";
 import { PlayerAvatar } from "@/components/player-avatar";
 import { releasePlayerToFreeAgent, transferPlayerToClub, deletePlayerForever } from "@/lib/player-moves";
 import { TeamCrest } from "@/components/team-crest";
+import { ConfirmDelete } from "@/components/confirm-delete";
 import { VenueSelect } from "./venue-select";
 import { Plus, Pencil, Trash2, Users, UserCog, UserMinus, ImagePlus, Library } from "lucide-react";
 
@@ -146,6 +147,8 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
   const [editing, setEditing] = useState<Partial<Player> | null>(null);
   const [addExisting, setAddExisting] = useState(false);
   const [pick, setPick] = useState("");
+  const [poolSearch, setPoolSearch] = useState("");
+  const [confirmPlayer, setConfirmPlayer] = useState<Player | null>(null);
 
   const key = ["admin", "players", team.id];
   const q = useQuery({
@@ -176,19 +179,34 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
 
       {addExisting && (
         <div className="mb-4 rounded-2xl border border-border bg-background/50 p-3">
-          <Field label="Free agents and players at other clubs">
-            <select className={inputCls} value={pick} onChange={(e) => setPick(e.target.value)}>
-              <option value="">Choose a player</option>
-              {(pool.data ?? []).map((p) => <option key={p.id} value={p.id}>{p.name}{p.team ? ` · ${p.team.name}` : " · Free agent"}</option>)}
-            </select>
+          <Field label="Search free agents and players at other clubs">
+            <input autoFocus className={inputCls} placeholder="Type a player name" value={poolSearch} onChange={(e) => { setPoolSearch(e.target.value); setPick(""); }} />
           </Field>
+          <div className="mt-2 max-h-64 space-y-1 overflow-y-auto">
+            {(pool.data ?? [])
+              .filter((p) => p.name.toLowerCase().includes(poolSearch.trim().toLowerCase()))
+              .slice(0, 60)
+              .map((p) => (
+                <button key={p.id} type="button" onClick={() => setPick(p.id)}
+                  className={`flex w-full items-center gap-2 rounded-lg border p-2 text-start ${pick === p.id ? "border-primary bg-primary/10" : "border-border bg-background hover:bg-accent"}`}>
+                  <PlayerAvatar src={p.photo_url} name={p.name} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium">{p.name}</span>
+                    <span className="block truncate text-[0.65rem] text-muted-foreground">{[p.team ? p.team.name : "Free agent", p.position, p.nationality].filter(Boolean).join(" · ")}</span>
+                  </span>
+                </button>
+              ))}
+            {(pool.data ?? []).filter((p) => p.name.toLowerCase().includes(poolSearch.trim().toLowerCase())).length === 0 && (
+              <div className="rounded-lg border border-dashed border-border p-3 text-center text-xs text-muted-foreground">{pool.isLoading ? "Loading players…" : "No player matches that name"}</div>
+            )}
+          </div>
           <div className="mt-3 flex justify-end gap-2">
-            <button className={btnGhost} onClick={() => { setAddExisting(false); setPick(""); }}>Cancel</button>
+            <button className={btnGhost} onClick={() => { setAddExisting(false); setPick(""); setPoolSearch(""); }}>Cancel</button>
             <button className={btnPrimary} disabled={!pick} onClick={async () => {
               const player = (pool.data ?? []).find((p) => p.id === pick);
               if (!player) return;
               await transferPlayerToClub({ id: player.id }, player.team?.name ?? null, team.id, team.name);
-              setPick(""); setAddExisting(false); invalidate();
+              setPick(""); setPoolSearch(""); setAddExisting(false); invalidate();
             }}>Sign player</button>
           </div>
         </div>
@@ -211,7 +229,7 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
                     </div>
                     <button className={btnGhost} onClick={() => setEditing(p)}><Pencil className="h-3 w-3" /> Edit</button>
                     <button className={btnGhost} onClick={async () => { if (!confirm(`Release ${p.name} to free agents?`)) return; await releasePlayerToFreeAgent(p, team.name); invalidate(); }}><UserMinus className="h-3 w-3" /> Release</button>
-                    <button className={btnDanger} onClick={async () => { if (!confirm(`Delete ${p.name} from the database permanently?`)) return; await deletePlayerForever(p.id); invalidate(); }}><Trash2 className="h-3 w-3" /></button>
+                    <button className={btnDanger} onClick={() => setConfirmPlayer(p)}><Trash2 className="h-3 w-3" /></button>
                   </div>
                 ))}
                 {players.length === 0 && <div className="rounded border border-dashed border-border p-3 text-center text-xs text-muted-foreground">No {position.toLowerCase()}s</div>}
@@ -222,6 +240,15 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
       </div>
 
       {editing && <PlayerEditor player={editing} teamId={team.id} teamName={team.name} onClose={() => { setEditing(null); invalidate(); }} />}
+      <ConfirmDelete
+        open={!!confirmPlayer}
+        title={`Delete ${confirmPlayer?.name ?? ""}`}
+        description="This permanently removes the player from the database, including their squad entry and history. This cannot be undone."
+        confirmWord="DELETE"
+        actionLabel="Delete player"
+        onCancel={() => setConfirmPlayer(null)}
+        onConfirm={async () => { await deletePlayerForever(confirmPlayer!.id); setConfirmPlayer(null); invalidate(); }}
+      />
     </Modal>
   );
 }

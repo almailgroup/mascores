@@ -11,6 +11,7 @@ import { deleteMyAccount } from "@/lib/account.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { Save, LogOut, Loader2, LogIn, Camera, Trash2 } from "lucide-react";
 import { ImageCropper } from "@/components/image-cropper";
+import { ConfirmDelete } from "@/components/confirm-delete";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({ meta: [{ title: "Settings — MansourAlmailScores" }, { name: "robots", content: "noindex" }] }),
@@ -25,6 +26,7 @@ function SettingsPage() {
   const { currency, setCurrency } = useCurrency();
   const removeAccount = useServerFn(deleteMyAccount);
   const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [heightUnit, setHeightUnit] = useState<"cm" | "ft">("cm");
@@ -165,22 +167,33 @@ function SettingsPage() {
         </div>
       )}
 
-      {user && <section className="mt-10 rounded-3xl border border-destructive/40 bg-destructive/5 p-6">
-        <div className="flex items-center gap-2 text-sm font-semibold text-destructive"><Trash2 className="h-4 w-4" /> {t("settings.deleteAccount")}</div>
-        <p className="mt-1 text-xs text-muted-foreground">{t("settings.deleteAccountHint")}</p>
-        <button disabled={deleting}
-          onClick={async () => {
-            if (!confirm(t("settings.deleteAccountConfirm"))) return;
+      {user && <section className="mt-10 rounded-2xl border border-destructive/30 bg-destructive/5 px-4 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="min-w-0">
+            <div className="text-xs font-semibold text-destructive">{t("settings.deleteAccount")}</div>
+            <p className="text-[0.65rem] text-muted-foreground">{t("settings.deleteAccountHint")}</p>
+          </div>
+          <button disabled={deleting} onClick={() => setConfirmDelete(true)}
+            className="inline-flex h-7 items-center gap-1.5 rounded-full border border-destructive/50 bg-destructive/10 px-3 text-[0.7rem] font-semibold text-destructive disabled:opacity-60">
+            {deleting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />} {t("settings.deleteAccount")}
+          </button>
+        </div>
+        <ConfirmDelete
+          open={confirmDelete}
+          title={t("settings.deleteAccount")}
+          description={t("settings.deleteAccountConfirm")}
+          confirmWord="DELETE"
+          actionLabel={t("settings.deleteAccount")}
+          onCancel={() => setConfirmDelete(false)}
+          onConfirm={async () => {
             setDeleting(true);
             try {
               await removeAccount({});
               await supabase.auth.signOut();
               navigate({ to: "/" });
-            } finally { setDeleting(false); }
+            } finally { setDeleting(false); setConfirmDelete(false); }
           }}
-          className="mt-3 inline-flex h-9 items-center gap-2 rounded-full border border-destructive/50 bg-destructive/10 px-4 text-sm font-semibold text-destructive disabled:opacity-60">
-          {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />} {t("settings.deleteAccount")}
-        </button>
+        />
       </section>}
     </AppShell>
   );
