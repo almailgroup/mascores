@@ -259,6 +259,58 @@ function MatchPage() {
 function PreviousMatches({ competitionId, currentId }: { competitionId: string; currentId: string }) {
   const tx = useTx();
   const q = useQuery({ queryKey: ["previous-matches", competitionId, currentId], queryFn: async () => (await supabase.from("matches").select("*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url)").eq("competition_id", competitionId).neq("id", currentId).in("status", ["ft", "aet", "pen", "awarded"]).order("kickoff_at", { ascending: false }).limit(10)).data ?? [] });
+  return <div className="grid gap-2">{q.data?.map((match) => <Link key={match.id} to="/matches/$id" params={{ id: match.id }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 hover:border-primary"><span className="min-w-0 flex-1 truncate font-semibold">{tx(match.home?.name) ?? "TBD"} vs {tx(match.away?.name) ?? "TBD"}</span><strong>{match.home_score ?? 0}–{match.away_score ?? 0}</strong></Link>)}{q.data?.length === 0 && <p className="text-sm text-muted-foreground">{tx("No previous matches yet.")}</p>}</div>;
+}
+
+/** League table for the match's competition, with the two clubs highlighted (live-tinted while playing). */
+function MatchStandings({ competitionId, season, liveTeamIds, highlightIds }: { competitionId: string; season: string | null; liveTeamIds: string[]; highlightIds: string[] }) {
+  const tx = useTx();
+  const num = useNum();
+  const q = useQuery({
+    queryKey: ["match-standings", competitionId, season],
+    queryFn: async () => {
+      let query = supabase.from("standings_rows").select("*, team:team_id(id,name,logo_url,short_name)").eq("competition_id", competitionId);
+      if (season) query = query.eq("season", season);
+      const { data } = await query.order("group_label", { ascending: true, nullsFirst: true }).order("sort_order");
+      return (data ?? []) as unknown as (StandingRow & { team: Team | null })[];
+    },
+  });
+  if (!q.data?.length) return <EmptyState title={tx("No standings yet")} />;
+  return (
+    <div className="overflow-hidden rounded-2xl border border-border bg-card">
+      <table className="w-full table-fixed text-sm">
+        <thead className="bg-muted/50 text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground">
+          <tr><th className="w-9 py-2.5 text-center">#</th><th className="py-2.5 text-start">{tx("Team")}</th><th className="w-9 text-center">{tx("P")}</th><th className="w-9 text-center">{tx("GD")}</th><th className="w-10 text-center">{tx("Pts")}</th></tr>
+        </thead>
+        <tbody>
+          {q.data.map((row, i) => {
+            const isLiveRow = row.team_id ? liveTeamIds.includes(row.team_id) : false;
+            const isHighlight = row.team_id ? highlightIds.includes(row.team_id) : false;
+            return (
+              <tr key={row.id} className={`border-t border-border ${isLiveRow ? "bg-primary/15" : isHighlight ? "bg-accent/60" : ""}`}>
+                <td className="py-2.5 text-center text-xs text-muted-foreground">{num(i + 1)}</td>
+                <td className="py-2.5">
+                  <Link to="/teams/$id" params={{ id: row.team_id }} className="flex min-w-0 items-center gap-2 hover:text-primary">
+                    <TeamCrest name={row.team?.name} logo={row.team?.logo_url} className="h-5 w-5 shrink-0" />
+                    <span className="min-w-0 flex-1 truncate font-medium">{tx(row.team?.name) ?? "—"}</span>
+                    {isLiveRow && <span className="shrink-0 rounded-full bg-primary/20 px-1.5 py-0.5 text-[0.55rem] font-bold uppercase text-primary">{tx("Live")}</span>}
+                  </Link>
+                </td>
+                <td className="text-center text-xs tabular-nums">{num(row.played)}</td>
+                <td className="text-center text-xs tabular-nums">{num(row.gf - row.ga)}</td>
+                <td className="text-center text-xs font-black tabular-nums">{num(row.points + row.points_adjust)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function UnusedPreviousMatches({ competitionId, currentId }: { competitionId: string; currentId: string }) {
+  const tx = useTx();
+  const q = useQuery({ queryKey: ["previous-matches", competitionId, currentId], queryFn: async () => (await supabase.from("matches").select("*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url)").eq("competition_id", competitionId).neq("id", currentId).in("status", ["ft", "aet", "pen", "awarded"]).order("kickoff_at", { ascending: false }).limit(10)).data ?? [] });
   return <div className="grid gap-2">{q.data?.map((match) => <Link key={match.id} to="/matches/$id" params={{ id: match.id }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 hover:border-primary"><span className="min-w-0 flex-1 truncate font-semibold">{tx(match.home?.name) ?? "TBD"} vs {tx(match.away?.name) ?? "TBD"}</span><strong>{match.home_score ?? 0}–{match.away_score ?? 0}</strong></Link>)}{q.data?.length === 0 && <p className="text-sm text-muted-foreground">No previous matches yet.</p>}</div>;
 }
 
