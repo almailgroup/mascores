@@ -159,6 +159,7 @@ function SeasonPicker({ competition, onChange, season, onSeason }: { competition
   const [creating, setCreating] = useState(false);
   const [value, setValue] = useState("");
   const [busy, setBusy] = useState(false);
+  const [deleteSeason, setDeleteSeason] = useState<string | null>(null);
   const seasons = competition.seasons?.length ? competition.seasons : (competition.season ? [competition.season] : []);
   const current = season ?? competition.season ?? seasons[0] ?? "";
 
@@ -176,18 +177,44 @@ function SeasonPicker({ competition, onChange, season, onSeason }: { competition
     setCreating(false);
   };
 
+  const removeSeason = async (target: string) => {
+    const list = seasons.filter((item) => item !== target);
+    await supabase.from("matches").delete().eq("competition_id", competition.id).eq("season", target);
+    await supabase.from("standings_rows").delete().eq("competition_id", competition.id).eq("season", target);
+    await supabase.from("competition_teams").delete().eq("competition_id", competition.id).eq("season", target);
+    const payload = { seasons: list, season: competition.season === target ? (list[0] ?? null) : competition.season };
+    await supabase.from("competitions").update(payload as never).eq("id", competition.id);
+    onChange({ ...competition, ...payload } as Competition);
+    onSeason(list[0] ?? "");
+    setDeleteSeason(null);
+  };
+
   return (
     <div className="relative shrink-0">
       <select
         aria-label="Season"
         className="rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold"
         value={creating ? "__new" : current}
-        onChange={(e) => { if (e.target.value === "__new") setCreating(true); else onSeason(e.target.value); }}
+        onChange={(e) => {
+          if (e.target.value === "__new") setCreating(true);
+          else if (e.target.value === "__delete") { if (current) setDeleteSeason(current); }
+          else onSeason(e.target.value);
+        }}
       >
         {seasons.length === 0 && <option value="">No season</option>}
         {seasons.map((item) => <option key={item} value={item}>{item}</option>)}
         <option value="__new">Create season…</option>
+        {current && <option value="__delete">Delete {current}…</option>}
       </select>
+      <ConfirmDelete
+        open={!!deleteSeason}
+        title={`Delete season ${deleteSeason ?? ""}`}
+        description={`This permanently deletes every match, standings row and team link saved to ${deleteSeason} in ${competition.name}. Other seasons are not affected. This cannot be undone.`}
+        confirmWord={deleteSeason ?? "DELETE"}
+        actionLabel="Delete season"
+        onCancel={() => setDeleteSeason(null)}
+        onConfirm={() => removeSeason(deleteSeason!)}
+      />
       {creating && (
         <div className="absolute end-0 z-40 mt-2 w-64 rounded-2xl border border-border bg-card p-3 shadow-xl">
           <div className="text-xs font-semibold">New or past season</div>
