@@ -236,13 +236,16 @@ function MatchPage() {
                       const marks = marksFor(lu.player_id);
                       const pitchRating = ratings.data?.find((item) => item.player_id === lu.player_id)?.rating;
                       return (
-                        <Link key={slot} to="/players/$id" params={{ id: lu.player_id }} className="flex w-16 flex-col items-center gap-1 text-center">
+                        <Link key={slot} to="/players/$id" params={{ id: lu.player_id }} className="flex w-16 flex-col items-center gap-0.5 pt-2 text-center">
                           <span className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border-2 border-white/70 bg-muted text-xs font-bold">
                             {lu.player?.photo_url ? <img src={lu.player.photo_url} alt="" className="h-full w-full object-cover" /> : num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}
-                            {marks && <span className="absolute -right-1 -top-1 text-[0.6rem]">{marks}</span>}
-                            {pitchRating != null && <span className={`absolute -bottom-1 -left-1 rounded px-1 text-[0.55rem] font-black ${ratingClass(Number(pitchRating))}`}>{num(pitchRating)}</span>}
+                            {(lu.shirt_number ?? lu.player?.shirt_number) != null && (
+                              <span className="absolute -left-1 -top-1 rounded-full bg-background px-1 text-[0.55rem] font-black leading-tight text-foreground shadow">{num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}</span>
+                            )}
+                            {marks && <span className="absolute -right-1.5 -top-1.5 rounded-full bg-background px-1 text-[0.6rem] leading-tight shadow">{marks}</span>}
                           </span>
                           <span className="line-clamp-2 text-[0.6rem] font-semibold leading-tight text-white drop-shadow">{tx(lu.player?.name)}</span>
+                          {pitchRating != null && <span className={`rounded px-1.5 text-[0.6rem] font-black leading-4 ${ratingClass(Number(pitchRating))}`}>{num(pitchRating)}</span>}
                         </Link>
                       );
                     })}
