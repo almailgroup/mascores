@@ -10,7 +10,7 @@ import { TeamCrest } from "@/components/team-crest";
 import { useI18n } from "@/lib/i18n";
 import { PlayerAvatar } from "@/components/player-avatar";
 import { LinkedNews } from "@/components/linked-news";
-import { ArrowRight, Landmark } from "lucide-react";
+import { ArrowRight, Landmark, CalendarClock, Crown, Trophy, Users } from "lucide-react";
 import { MatchRow, type MatchWithTeams } from "@/components/match-list";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
 
@@ -28,8 +28,8 @@ export const Route = createFileRoute("/teams/$id")({
   component: TeamPage,
 });
 
-type Tab = "matches" | "standings" | "squad" | "info" | "stats" | "media" | "transfers" | "news";
-const TABS: Tab[] = ["matches", "standings", "squad", "info", "stats", "media", "transfers", "news"];
+type Tab = "info" | "matches" | "standings" | "squad" | "stats" | "media" | "transfers" | "news";
+const TABS: Tab[] = ["info", "matches", "standings", "squad", "stats", "media", "transfers", "news"];
 
 function TeamPage() {
   const tx = useTx();
@@ -37,7 +37,7 @@ function TeamPage() {
   const dates = useDates();
   const { id } = Route.useParams();
   const { t: tr } = useI18n();
-  const [tab, setTab] = useState<Tab>("matches");
+  const [tab, setTab] = useState<Tab>("info");
   useRealtime(["teams", "players", "matches", "standings_rows", "transfers"]);
 
   const team = useQuery({ queryKey: ["team", id], queryFn: async () => {
@@ -75,8 +75,8 @@ function TeamPage() {
     return (data ?? []) as Transfer[];
   }});
   const venue = useQuery({ queryKey: ["team-venue", team.data?.venue_name], enabled: !!team.data?.venue_name, queryFn: async () => {
-    const { data } = await supabase.from("venues").select("id,name").eq("name", team.data!.venue_name!).maybeSingle();
-    return (data ?? null) as { id: string; name: string } | null;
+    const { data } = await supabase.from("venues").select("id,name,city,capacity").eq("name", team.data!.venue_name!).maybeSingle();
+    return (data ?? null) as { id: string; name: string; city: string | null; capacity: number | null } | null;
   }});
 
   if (team.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;
@@ -232,22 +232,42 @@ function TeamPage() {
             ) : <p className="p-4 text-sm text-muted-foreground">{tx("No tournaments yet")}</p>}
           </section>
 
-          <div className="grid gap-3 sm:grid-cols-2">
-            <InfoCard label={tx("Chairman")} value={tx(t.chairman) ?? "—"} />
-            <InfoCard label={tx("Coach")} value={tx(coaches.data?.[0]?.name) ?? "—"} />
-            <InfoCard label={tx("Country")} value={tx(t.country) ?? "—"} icon={<FlagIcon value={t.country_code ?? t.country} size="md" />} />
-            <InfoCard label={tx("Short name")} value={t.short_name ?? "—"} />
-            <InfoCard label={tx("Trophies")} value={String(t.trophies ?? 0)} />
-            <InfoCard label={tx("Founded")} value={t.founded_on ? num(dates.date(t.founded_on, { dateStyle: "long" })) : "—"} />
-            {venue.data ? (
-              <Link to="/venues/$id" params={{ id: venue.data.id }} className="block transition hover:opacity-80 sm:col-span-2">
-                <InfoCard label={tx("Stadium")} value={[tx(t.venue_name), tx(t.venue_city)].filter(Boolean).join(", ") || "—"} icon={<Landmark className="h-4 w-4 text-primary" />} />
-              </Link>
-            ) : (
-              <div className="sm:col-span-2"><InfoCard label={tx("Stadium")} value={[tx(t.venue_name), tx(t.venue_city)].filter(Boolean).join(", ") || "—"} /></div>
-            )}
-            {t.description && <div className="rounded-2xl border border-border bg-card p-4 text-sm sm:col-span-2">{tx(t.description)}</div>}
-          </div>
+          <section className="overflow-hidden rounded-2xl border border-border bg-card">
+            <div className="divide-y divide-border">
+              {coaches.data?.[0] ? (
+                <DetailRow icon={<PlayerAvatar src={coaches.data[0].photo_url} name={coaches.data[0].name} size="xs" />} label={tx("Coach")} value={tx(coaches.data[0].name)} />
+              ) : null}
+              {t.chairman ? <DetailRow icon={<Crown className="h-5 w-5 text-muted-foreground" />} label={tx("Chairman")} value={tx(t.chairman)} /> : null}
+              {t.country ? <DetailRow icon={<FlagIcon value={t.country_code ?? t.country} size="md" />} label={tx("Country")} value={tx(t.country)} /> : null}
+              {t.short_name ? <DetailRow icon={<Users className="h-5 w-5 text-muted-foreground" />} label={tx("Short name")} value={t.short_name} /> : null}
+              {t.trophies ? <DetailRow icon={<Trophy className="h-5 w-5 text-muted-foreground" />} label={tx("Trophies")} value={num(String(t.trophies))} /> : null}
+              {t.founded_on ? <DetailRow icon={<CalendarClock className="h-5 w-5 text-muted-foreground" />} label={tx("Founded")} value={num(dates.date(t.founded_on, { dateStyle: "long" }))} /> : null}
+              {t.venue_name ? (
+                venue.data ? (
+                  <Link to="/venues/$id" params={{ id: venue.data.id }} className="block hover:bg-accent">
+                    <DetailRow icon={<Landmark className="h-5 w-5 text-muted-foreground" />} label={tx("Venue")} value={tx(t.venue_name)} chevron />
+                  </Link>
+                ) : <DetailRow icon={<Landmark className="h-5 w-5 text-muted-foreground" />} label={tx("Venue")} value={tx(t.venue_name)} />
+              ) : null}
+              {(venue.data?.capacity || t.venue_city || venue.data?.city) ? (
+                <div className="flex divide-x divide-border">
+                  {venue.data?.capacity ? (
+                    <div className="flex-1 px-4 py-3 text-center">
+                      <div className="text-[0.65rem] font-semibold uppercase tracking-widest text-muted-foreground">{tx("Capacity")}</div>
+                      <div className="mt-0.5 text-sm font-bold">{num(venue.data.capacity.toLocaleString())}</div>
+                    </div>
+                  ) : null}
+                  {(t.venue_city ?? venue.data?.city) ? (
+                    <div className="flex-1 px-4 py-3 text-center">
+                      <div className="text-[0.65rem] font-semibold uppercase tracking-widest text-muted-foreground">{tx("City")}</div>
+                      <div className="mt-0.5 text-sm font-bold">{tx(t.venue_city ?? venue.data?.city)}</div>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          </section>
+          {t.description ? <div className="rounded-2xl border border-border bg-card p-4 text-sm">{tx(t.description)}</div> : null}
         </div>
       )}
 
