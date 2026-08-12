@@ -11,6 +11,7 @@ import { Play, Pause, Plus, Trash2, RotateCcw, Check, Info, ListChecks, Radio, B
 import { TeamCrest } from "@/components/team-crest";
 import { PlayerAvatar } from "@/components/player-avatar";
 import { MediaManager } from "./media-manager";
+import { ConfirmDelete } from "@/components/confirm-delete";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
 
