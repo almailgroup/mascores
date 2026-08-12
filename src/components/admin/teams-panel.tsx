@@ -10,6 +10,7 @@ import { PlayerEditor } from "./player-editor";
 import { PlayerAvatar } from "@/components/player-avatar";
 import { releasePlayerToFreeAgent, transferPlayerToClub, deletePlayerForever } from "@/lib/player-moves";
 import { TeamCrest } from "@/components/team-crest";
+import { ConfirmDelete } from "@/components/confirm-delete";
 import { VenueSelect } from "./venue-select";
 import { Plus, Pencil, Trash2, Users, UserCog, UserMinus, ImagePlus, Library } from "lucide-react";
 
@@ -239,6 +240,15 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
       </div>
 
       {editing && <PlayerEditor player={editing} teamId={team.id} teamName={team.name} onClose={() => { setEditing(null); invalidate(); }} />}
+      <ConfirmDelete
+        open={!!confirmPlayer}
+        title={`Delete ${confirmPlayer?.name ?? ""}`}
+        description="This permanently removes the player from the database, including their squad entry and history. This cannot be undone."
+        confirmWord="DELETE"
+        actionLabel="Delete player"
+        onCancel={() => setConfirmPlayer(null)}
+        onConfirm={async () => { await deletePlayerForever(confirmPlayer!.id); setConfirmPlayer(null); invalidate(); }}
+      />
     </Modal>
   );
 }
