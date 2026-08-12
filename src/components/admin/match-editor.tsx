@@ -302,14 +302,17 @@ function formationRows(formation: string | null | undefined): string[][] {
   return rows.reverse();
 }
 
-/** Per-player match ratings for everyone in the lineup. */
+/** Per-player match ratings for the starting eleven and any substitute who came on. */
 function RatingsEditor({ match, lineups, players }: { match: Match; lineups: Lineup[]; players: Player[] }) {
   const qc = useQueryClient();
   const ratingsQ = useQuery({
     queryKey: ["admin", "match-ratings", match.id],
     queryFn: async () => (await supabase.from("player_ratings").select("*").eq("match_id", match.id)).data ?? [],
   });
-  if (lineups.length === 0) return null;
+  const eventsQ = useQuery({
+    queryKey: ["admin", "events", match.id],
+    queryFn: async () => (await supabase.from("match_events").select("*").eq("match_id", match.id)).data as MatchEvent[] ?? [],
+  });
   const save = async (playerId: string, value: string) => {
     const existing = ratingsQ.data?.find((r) => r.player_id === playerId);
     if (value === "") {
@@ -321,26 +324,21 @@ function RatingsEditor({ match, lineups, players }: { match: Match; lineups: Lin
     }
     qc.invalidateQueries({ queryKey: ["admin", "match-ratings", match.id] });
   };
-  const addEvent = async (lu: Lineup, type: string) => {
-    const { error } = await supabase.from("match_events").insert({ match_id: match.id, team_id: lu.team_id, player_id: lu.player_id, type } as never);
-    if (error) toast.error(error.message);
-    else toast.success("Added");
-    qc.invalidateQueries({ queryKey: ["admin", "events", match.id] });
-  };
+  if (lineups.length === 0) return null;
+  const cameOn = new Set((eventsQ.data ?? []).filter((e) => e.type === "substitution" && e.player_id).map((e) => e.player_id as string));
+  const rated = lineups.filter((lu) => lu.is_starting || cameOn.has(lu.player_id));
+  if (rated.length === 0) return null;
   return (
     <section className="rounded-xl border border-border bg-background/40 p-3">
-      <h4 className="mb-2 text-sm font-bold">Player ratings & quick events</h4>
+      <h4 className="mb-2 text-sm font-bold">Player ratings</h4>
+      <p className="mb-2 text-[0.65rem] text-muted-foreground">Starting eleven and substitutes who came on.</p>
       <div className="grid gap-1.5 sm:grid-cols-2">
-        {lineups.map((lu) => {
+        {rated.map((lu) => {
           const player = players.find((p) => p.id === lu.player_id);
           const rating = ratingsQ.data?.find((r) => r.player_id === lu.player_id)?.rating;
           return (
             <div key={lu.id} className="flex items-center gap-2 text-xs">
               <span className="min-w-0 flex-1 truncate">{player?.name ?? "—"}</span>
-              {(["goal", "assist", "yellow", "red"] as const).map((type) => (
-                <button key={type} type="button" title={type} onClick={() => addEvent(lu, type)}
-                  className="h-7 w-7 shrink-0 rounded border border-border text-sm hover:bg-accent">{eventIcon(type)}</button>
-              ))}
               {rating != null && <span className={`rounded px-1.5 py-0.5 text-[0.6rem] font-black ${ratingClass(Number(rating))}`}>{rating}</span>}
               <input type="number" step="0.1" min={0} max={10} defaultValue={rating ?? ""} onChange={(e) => save(lu.player_id, e.target.value)} onBlur={(e) => save(lu.player_id, e.target.value)}
                 className="h-8 w-16 rounded border border-border bg-background text-center" />
