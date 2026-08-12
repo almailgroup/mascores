@@ -235,7 +235,7 @@ function TeamPage() {
           <section className="overflow-hidden rounded-2xl border border-border bg-card">
             <div className="divide-y divide-border">
               {coaches.data?.[0] ? (
-                <DetailRow icon={<PlayerAvatar src={coaches.data[0].photo_url} name={coaches.data[0].name} size="xs" />} label={tx("Coach")} value={tx(coaches.data[0].name)} />
+                <DetailRow icon={<PlayerAvatar src={coaches.data[0].photo_url} name={coaches.data[0].name} size="sm" />} label={tx("Coach")} value={tx(coaches.data[0].name)} />
               ) : null}
               {t.chairman ? <DetailRow icon={<Crown className="h-5 w-5 text-muted-foreground" />} label={tx("Chairman")} value={tx(t.chairman)} /> : null}
               {t.country ? <DetailRow icon={<FlagIcon value={t.country_code ?? t.country} size="md" />} label={tx("Country")} value={tx(t.country)} /> : null}
