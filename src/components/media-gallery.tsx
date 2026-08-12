@@ -14,6 +14,14 @@ function host(url: string): string {
   try { return new URL(url).hostname.replace(/^www\./, ""); } catch { return url; }
 }
 
+/** Best available preview image for a media link (photo itself or video thumbnail). */
+export function mediaThumb(url: string): string | null {
+  if (isImageUrl(url)) return url;
+  const yt = youtubeId(url);
+  if (yt) return `https://img.youtube.com/vi/${yt}/hqdefault.jpg`;
+  return null;
+}
+
 /** Renders a mixed list of links: photos inline, YouTube embedded, everything else as a link card. */
 export function MediaGallery({ urls, className = "" }: { urls: string[]; className?: string }) {
   return (

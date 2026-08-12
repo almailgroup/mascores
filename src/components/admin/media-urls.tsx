@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ImagePlus, Loader2, Plus, Trash2 } from "lucide-react";
 import { inputCls, btnGhost } from "./ui";
 import { uploadMedia } from "./upload";
-import { isImageUrl, youtubeId } from "@/components/media-gallery";
+import { mediaThumb, youtubeId } from "@/components/media-gallery";
 
 /** Shared media gallery editor: photo uploads plus video/social links. */
 export function MediaUrls({ urls, onChange, bucket = "player-photos" }: { urls: string[]; onChange: (v: string[]) => void; bucket?: string }) {
@@ -15,11 +15,13 @@ export function MediaUrls({ urls, onChange, bucket = "player-photos" }: { urls: 
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {urls.map((u) => {
             const yt = youtubeId(u);
+            const thumb = mediaThumb(u);
             return (
               <div key={u} className="relative overflow-hidden rounded-lg border border-border bg-background">
-                {isImageUrl(u)
-                  ? <img src={u} alt="" className="h-20 w-full object-cover" />
-                  : <div className="flex h-20 flex-col items-center justify-center px-2 text-center text-[0.6rem] font-semibold text-muted-foreground">{yt ? "YouTube video" : "Link"}<span className="w-full truncate">{u}</span></div>}
+                {thumb
+                  ? <img src={thumb} alt="" className="h-20 w-full object-cover" />
+                  : <div className="flex h-20 flex-col items-center justify-center px-2 text-center text-[0.6rem] font-semibold text-muted-foreground">Link<span className="w-full truncate">{u}</span></div>}
+                {yt && <span className="absolute bottom-1 left-1 rounded bg-background/85 px-1 text-[0.55rem] font-bold">Video</span>}
                 <button type="button" aria-label="Remove media" onClick={() => onChange(urls.filter((x) => x !== u))}
                   className="absolute right-1 top-1 rounded-full bg-background/90 p-1 text-destructive"><Trash2 className="h-3 w-3" /></button>
               </div>
