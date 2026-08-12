@@ -1,4 +1,5 @@
-import { ExternalLink } from "lucide-react";
+import { useState } from "react";
+import { ExternalLink, Play } from "lucide-react";
 
 /** YouTube video id from any common share/watch/shorts link. */
 export function youtubeId(url: string): string | null {
@@ -24,14 +25,26 @@ export function mediaThumb(url: string): string | null {
 
 /** Renders a mixed list of links: photos inline, YouTube embedded, everything else as a link card. */
 export function MediaGallery({ urls, className = "" }: { urls: string[]; className?: string }) {
+  const [playing, setPlaying] = useState<string | null>(null);
   return (
     <div className={`grid gap-3 sm:grid-cols-2 lg:grid-cols-3 ${className}`}>
       {urls.map((url) => {
         const yt = youtubeId(url);
         if (yt) {
+          if (playing !== url) {
+            return (
+              <button key={url} type="button" onClick={() => setPlaying(url)}
+                className="group relative overflow-hidden rounded-2xl border border-border bg-black">
+                <img src={`https://img.youtube.com/vi/${yt}/hqdefault.jpg`} alt="" loading="lazy" className="aspect-video w-full object-cover transition group-hover:opacity-80" />
+                <span className="absolute inset-0 flex items-center justify-center">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-background/90 text-foreground"><Play className="h-5 w-5" /></span>
+                </span>
+              </button>
+            );
+          }
           return (
             <div key={url} className="overflow-hidden rounded-2xl border border-border bg-black">
-              <iframe className="aspect-video w-full" src={`https://www.youtube.com/embed/${yt}`} title="Video" loading="lazy"
+              <iframe className="aspect-video w-full" src={`https://www.youtube.com/embed/${yt}?autoplay=1`} title="Video" loading="lazy"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture" allowFullScreen />
             </div>
           );

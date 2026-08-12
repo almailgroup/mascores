@@ -603,6 +603,9 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
 
       <Modal open={!!picker} onClose={() => setPicker(null)} title="Choose player">
         <div className="max-h-[70vh] space-y-4 overflow-y-auto">
+          {picker && lineups.some((l) => l.team_id === picker.teamId && l.position_code === picker.slot) && (
+            <button type="button" className={`${btnDanger} w-full`} onClick={async () => { await assignSlot(picker.teamId, picker.slot, null); setPicker(null); }}>Clear position</button>
+          )}
           {(() => {
             if (!picker) return null;
             const assigned = lineups.find((l) => l.team_id === picker.teamId && l.position_code === picker.slot);
@@ -627,7 +630,6 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
             if (pool.length === 0) return null;
             return <section key={position}><h4 className="mb-2 text-xs font-bold uppercase text-muted-foreground">{position}</h4><div className="grid gap-2">{pool.map((player) => <button key={player.id} type="button" onClick={async () => { await assignSlot(picker.teamId, picker.slot, player.id); setPicker(null); }} className="flex items-center gap-3 rounded-lg border border-border bg-background p-2 text-left hover:border-primary"><PlayerAvatar src={player.photo_url} name={player.name} size="sm" /><span className="w-8 text-center text-sm font-bold">{player.shirt_number ?? "—"}</span><span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{player.name}</span><span className="block text-xs text-muted-foreground">{player.position ?? "Unknown"}</span></span></button>)}</div></section>;
           })}
-          {picker && <button type="button" className={btnDanger} onClick={async () => { await assignSlot(picker.teamId, picker.slot, null); setPicker(null); }}>Clear position</button>}
         </div>
       </Modal>
 
