@@ -355,6 +355,7 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
   const qc = useQueryClient();
   const [picker, setPicker] = useState<{ teamId: string; slot: string } | null>(null);
   const [benchPicker, setBenchPicker] = useState<string | null>(null);
+  const [clearTeam, setClearTeam] = useState<string | null>(null);
   const teamIds = [match.home_team_id, match.away_team_id].filter(Boolean) as string[];
 
   const playersQ = useQuery({
@@ -450,6 +451,19 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
     qc.invalidateQueries({ queryKey: ["admin", "lineups", match.id] });
   };
 
+  /** Save (or clear) a player's rating for this match — used by the card tap editor. */
+  const saveRating = async (playerId: string, value: string) => {
+    const existing = (ratingsQ.data ?? []).find((r) => r.player_id === playerId);
+    if (value.trim() === "") {
+      if (existing) await supabase.from("player_ratings").delete().eq("id", existing.id);
+    } else if (existing) {
+      await supabase.from("player_ratings").update({ rating: Number(value) }).eq("id", existing.id);
+    } else {
+      await supabase.from("player_ratings").insert({ match_id: match.id, player_id: playerId, competition_id: match.competition_id, rating: Number(value) } as never);
+    }
+    qc.invalidateQueries({ queryKey: ["admin", "match-ratings", match.id] });
+  };
+
   return (
     <div className="space-y-4">
       <div><h3 className="font-bold">Lineups</h3><p className="text-xs text-muted-foreground">Tap a + on the pitch and pick the player — he takes that position straight away. Ratings and event icons appear on his card automatically.</p></div>
@@ -468,7 +482,7 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
                 <select className="rounded border border-border bg-background px-2 py-1 text-xs" value={formation} onChange={(e) => setFormation(side as "home" | "away", e.target.value)}>
                   {FORMATIONS.map((f) => <option key={f} value={f}>{f}</option>)}
                 </select>
-                <button type="button" onClick={() => clearAll(tid)} className="rounded border border-border px-2 py-1 text-[0.6rem] font-semibold text-destructive hover:bg-accent">Clear all</button>
+                <button type="button" onClick={() => setClearTeam(tid)} className="rounded border border-border px-2 py-1 text-[0.6rem] font-semibold text-destructive hover:bg-accent">Clear all</button>
                 </div>
               </div>
               <div className="rounded-lg bg-emerald-900/25 p-2 pt-4">
