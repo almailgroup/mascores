@@ -311,6 +311,23 @@ function TeamPage() {
 }
 
 function InfoCard({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) {
+  return InfoCardInner({ label, value, icon });
+}
+
+function DetailRow({ icon, label, value, chevron }: { icon: React.ReactNode; label: string; value?: string | null; chevron?: boolean }) {
+  return (
+    <div className="flex items-center gap-3 px-4 py-3">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center">{icon}</span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-[0.65rem] font-semibold uppercase tracking-widest text-muted-foreground">{label}</span>
+        <span className="block truncate text-sm font-bold">{value ?? "—"}</span>
+      </span>
+      {chevron ? <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" /> : null}
+    </div>
+  );
+}
+
+function InfoCardInner({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) {
   return (
     <div className="rounded-2xl border border-border bg-card p-4">
       <div className="text-[0.6rem] font-semibold uppercase tracking-widest text-muted-foreground">{label}</div>
