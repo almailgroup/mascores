@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { AppShell, BackButton, EmptyState, LoadingSkeleton } from "@/components/app-shell";
-import { supabase, STATUS_LABELS, roundLabel, matchClockSeconds, formatClock, type Match, type Team, type MatchEvent, type Lineup, type Player } from "@/lib/db";
+import { supabase, STATUS_LABELS, roundLabel, matchClockSeconds, formatClock, eventIcon, eventLabel, ratingClass, type Match, type Team, type MatchEvent, type Lineup, type Player, type StandingRow } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 import { PlayCircle, Radio } from "lucide-react";
 import { useTx, useNum, useDates } from "@/lib/auto-translate";
@@ -51,8 +51,8 @@ function MatchPage() {
   const num = useNum();
   const dates = useDates();
   const { id } = Route.useParams();
-  const [tab, setTab] = useState<"details" | "lineups" | "stats" | "previous" | "media">("details");
-  useRealtime(["matches", "match_events", "match_lineups", "player_ratings", "match_stats", "match_chat_messages", "media_items"]);
+  const [tab, setTab] = useState<"details" | "lineups" | "stats" | "standings" | "previous" | "media">("details");
+  useRealtime(["matches", "match_events", "match_lineups", "player_ratings", "match_stats", "match_chat_messages", "media_items", "standings_rows"]);
   const m = useQuery({
     queryKey: ["match", id],
     queryFn: async () => {
@@ -98,9 +98,8 @@ function MatchPage() {
   const isLive = ["live", "ht"].includes(match.status);
   const hasStarted = !["scheduled", "postponed", "cancelled"].includes(match.status);
   const lineupsVisible = match.lineups_published && (lineups.data?.length ?? 0) > 0;
-  const tabs: ("details" | "lineups" | "stats" | "previous" | "media")[] = ["details", ...(lineupsVisible ? ["lineups" as const] : []), "stats", "previous", "media"];
+  const tabs: ("details" | "lineups" | "stats" | "standings" | "previous" | "media")[] = ["details", ...(lineupsVisible ? ["lineups" as const] : []), "stats", "standings", "previous", "media"];
   const clock = matchClockSeconds(match);
-  const liveMinute = Math.max(match.live_minute ?? 0, Math.floor(clock / 60) + (clock % 60 > 0 ? 1 : 0));
 
   return (
     <AppShell>
