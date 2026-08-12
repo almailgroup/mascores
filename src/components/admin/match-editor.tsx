@@ -282,7 +282,7 @@ const FORMATIONS = ["4-4-2", "4-3-3", "4-2-3-1", "3-5-2", "3-4-3", "5-3-2", "4-1
 
 /** Slot keys for a formation, goalkeeper first then each outfield line. */
 function formationSlots(formation: string | null | undefined): string[] {
-  const lines = (formation ?? "4-4-2").split("-").map((n) => Number(n)).filter((n) => n > 0);
+  const lines = (formation ?? "4-3-3").split("-").map((n) => Number(n)).filter((n) => n > 0);
   const slots = ["GK"];
   lines.forEach((count, li) => {
     for (let i = 0; i < count; i++) slots.push(`L${li + 1}-${i + 1}`);
@@ -292,7 +292,7 @@ function formationSlots(formation: string | null | undefined): string[] {
 
 function formationRows(formation: string | null | undefined): string[][] {
   const slots = formationSlots(formation);
-  const lines = (formation ?? "4-4-2").split("-").map((n) => Number(n)).filter((n) => n > 0);
+  const lines = (formation ?? "4-3-3").split("-").map((n) => Number(n)).filter((n) => n > 0);
   const rows: string[][] = [["GK"]];
   let idx = 1;
   for (const count of lines) {
