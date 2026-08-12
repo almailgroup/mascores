@@ -60,7 +60,41 @@ export const STATUS_LABELS: Record<string, string> = {
 export function formatKickoff(iso: string | null | undefined, locale?: string): string {
   if (!iso) return locale?.startsWith("ar") ? "لم يُحدد" : "TBD";
   const d = new Date(iso);
-  return d.toLocaleString(locale, { weekday: "short", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleString(locale, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit", hour12: true });
+}
+
+/** Shared event presentation so admin and public views always agree. */
+export const EVENT_META: Record<string, { label: string; icon: string }> = {
+  goal: { label: "Goal", icon: "⚽" },
+  penalty_goal: { label: "Penalty goal", icon: "🥅" },
+  penalty: { label: "Penalty goal", icon: "🥅" },
+  penalty_miss: { label: "Penalty missed", icon: "❌" },
+  missed_penalty: { label: "Penalty missed", icon: "❌" },
+  own_goal: { label: "Own goal", icon: "🔴" },
+  yellow: { label: "Yellow card", icon: "🟨" },
+  second_yellow: { label: "Second yellow", icon: "🟨🟥" },
+  red: { label: "Red card", icon: "🟥" },
+  substitution: { label: "Substitution", icon: "🔁" },
+  sub: { label: "Substitution", icon: "🔁" },
+  var: { label: "VAR", icon: "📺" },
+  assist: { label: "Assist", icon: "👟" },
+  note: { label: "Note", icon: "📝" },
+};
+
+export function eventIcon(type: string): string {
+  return EVENT_META[type]?.icon ?? "•";
+}
+
+export function eventLabel(type: string): string {
+  return EVENT_META[type]?.label ?? type;
+}
+
+/** Tailwind classes for a 0–10 player rating chip. */
+export function ratingClass(rating: number): string {
+  if (rating >= 8) return "bg-success text-success-foreground";
+  if (rating >= 7) return "bg-primary text-primary-foreground";
+  if (rating >= 6) return "bg-warning text-warning-foreground";
+  return "bg-destructive text-destructive-foreground";
 }
 
 /** Locale-aware calendar date, used for transfers, news and founding dates. */
