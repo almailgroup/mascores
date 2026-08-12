@@ -257,18 +257,28 @@ function RatingsEditor({ match, lineups, players }: { match: Match; lineups: Lin
     }
     qc.invalidateQueries({ queryKey: ["admin", "match-ratings", match.id] });
   };
+  const addEvent = async (lu: Lineup, type: string) => {
+    const { error } = await supabase.from("match_events").insert({ match_id: match.id, team_id: lu.team_id, player_id: lu.player_id, type } as never);
+    if (error) toast.error(error.message);
+    else toast.success("Added");
+    qc.invalidateQueries({ queryKey: ["admin", "events", match.id] });
+  };
   return (
     <section className="rounded-xl border border-border bg-background/40 p-3">
-      <h4 className="mb-2 text-sm font-bold">Player ratings</h4>
-      <div className="grid gap-1 sm:grid-cols-2">
+      <h4 className="mb-2 text-sm font-bold">Player ratings & quick events</h4>
+      <div className="grid gap-1.5 sm:grid-cols-2">
         {lineups.map((lu) => {
           const player = players.find((p) => p.id === lu.player_id);
           const rating = ratingsQ.data?.find((r) => r.player_id === lu.player_id)?.rating;
           return (
             <div key={lu.id} className="flex items-center gap-2 text-xs">
               <span className="min-w-0 flex-1 truncate">{player?.name ?? "—"}</span>
+              {(["goal", "assist", "yellow", "red"] as const).map((type) => (
+                <button key={type} type="button" title={type} onClick={() => addEvent(lu, type)}
+                  className="h-7 w-7 shrink-0 rounded border border-border text-sm hover:bg-accent">{eventIcon(type)}</button>
+              ))}
               {rating != null && <span className={`rounded px-1.5 py-0.5 text-[0.6rem] font-black ${ratingClass(Number(rating))}`}>{rating}</span>}
-              <input type="number" step="0.1" min={0} max={10} defaultValue={rating ?? ""} onBlur={(e) => save(lu.player_id, e.target.value)}
+              <input type="number" step="0.1" min={0} max={10} defaultValue={rating ?? ""} onChange={(e) => save(lu.player_id, e.target.value)} onBlur={(e) => save(lu.player_id, e.target.value)}
                 className="h-8 w-16 rounded border border-border bg-background text-center" />
             </div>
           );
