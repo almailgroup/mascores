@@ -125,12 +125,20 @@ function SearchPage() {
             ))}</Group>
           )}
           {show("clubs") && (
-            <Group title={tx("Teams")}>{res.data.teams.map((tm) => (
-              <ResultRow key={tm.id} to="/teams/$id" params={{ id: tm.id }}
-                logo={tm.logo_url} fallback={<Shield className="h-4 w-4 text-muted-foreground" />}
-                title={tx(tm.name)} country={tm.country_code ?? tm.country} sub={tx(tm.country) ?? tm.short_name ?? ""}
-                onOpen={() => remember({ key: `team:${tm.id}`, label: tm.name, kind: "clubs", to: "/teams/$id", params: { id: tm.id }, logo: tm.logo_url })} />
-            ))}</Group>
+            <section>
+              <h2 className="mb-2 text-sm font-semibold uppercase text-muted-foreground">{tx("Teams")}</h2>
+              <div className="space-y-3">
+                {res.data.teams.map((tm) => (
+                  <div key={tm.id} className="space-y-2">
+                    <ResultRow to="/teams/$id" params={{ id: tm.id }}
+                      logo={tm.logo_url} fallback={<Shield className="h-4 w-4 text-muted-foreground" />}
+                      title={tx(tm.name)} country={tm.country_code ?? tm.country} sub={tx(tm.country) ?? tm.short_name ?? ""}
+                      onOpen={() => remember({ key: `team:${tm.id}`, label: tm.name, kind: "clubs", to: "/teams/$id", params: { id: tm.id }, logo: tm.logo_url })} />
+                    <TeamSquadResults teamId={tm.id} />
+                  </div>
+                ))}
+              </div>
+            </section>
           )}
           {show("players") && (
             <Group title={tx("Players")}>{res.data.players.map((p) => (
