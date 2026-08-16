@@ -5,6 +5,7 @@ import { PlayerAvatar } from "@/components/player-avatar";
 import { TeamCrest } from "@/components/team-crest";
 import { FlagIcon } from "@/components/flag";
 import { supabase, formatDate, type Coach } from "@/lib/db";
+import { MatchGroups, type MatchWithTeams } from "@/components/match-list";
 import { useTx } from "@/lib/auto-translate";
 import { CalendarDays, Users, MapPin, Trophy, FileSignature, LayoutGrid } from "lucide-react";
 
@@ -35,6 +36,45 @@ function CoachPage() {
   if (q.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;
   if (!q.data) return <AppShell><EmptyState title={tx("Coach not found")} /></AppShell>;
   const coach = q.data;
+  return <CoachDetail coach={coach} />;
+}
+
+const SELECT_MATCH = "*, home:home_team_id(*), away:away_team_id(*), competition:competition_id(slug,name,logo_url,country,country_code)";
+
+function CoachDetail({ coach }: { coach: Coach & { team: { id: string; name: string; logo_url: string | null } | null } }) {
+  const tx = useTx();
+  const teamId = coach.team?.id ?? null;
+
+  const transfers = useQuery({
+    queryKey: ["coach-transfers", coach.id],
+    queryFn: async () => (await supabase.from("transfers").select("*").eq("person_type", "coach").eq("person_id", coach.id)
+      .order("moved_on", { ascending: false })).data ?? [],
+  });
+
+  const matches = useQuery({
+    enabled: !!teamId,
+    queryKey: ["coach-matches", teamId],
+    queryFn: async () => (await supabase.from("matches").select(SELECT_MATCH)
+      .or(`home_team_id.eq.${teamId},away_team_id.eq.${teamId}`)
+      .order("kickoff_at", { ascending: false }).limit(30)).data as unknown as MatchWithTeams[] ?? [],
+  });
+
+  // Formation is read from the lineups actually set for his team — never typed in by hand.
+  const formation = useQuery({
+    enabled: !!teamId,
+    queryKey: ["coach-formation", teamId],
+    queryFn: async () => {
+      const { data } = await supabase.from("matches")
+        .select("home_team_id,away_team_id,home_formation,away_formation,kickoff_at")
+        .or(`home_team_id.eq.${teamId},away_team_id.eq.${teamId}`)
+        .order("kickoff_at", { ascending: false }).limit(30);
+      const shapes = (data ?? []).map((m) => (m.home_team_id === teamId ? m.home_formation : m.away_formation)).filter(Boolean) as string[];
+      if (shapes.length === 0) return null;
+      const counts = new Map<string, number>();
+      for (const s of shapes) counts.set(s, (counts.get(s) ?? 0) + 1);
+      return [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0];
+    },
+  });
 
   return (
     <AppShell>
@@ -81,10 +121,10 @@ function CoachPage() {
               <div><div className="text-[0.65rem] uppercase text-muted-foreground">{tx("Contract until")}</div><div className="font-semibold">{formatDate(coach.contract_until)}</div></div>
             </div>
           )}
-          {coach.preferred_formation && (
+          {formation.data && (
             <div className="flex items-center gap-3 rounded-2xl border border-border p-3">
               <LayoutGrid className="h-5 w-5 text-muted-foreground" />
-              <div><div className="text-[0.65rem] uppercase text-muted-foreground">{tx("Preferred formation")}</div><div className="font-semibold">{coach.preferred_formation}</div></div>
+              <div><div className="text-[0.65rem] uppercase text-muted-foreground">{tx("Preferred formation")}</div><div className="font-semibold">{formation.data}</div></div>
             </div>
           )}
           {coach.trophies ? (
@@ -99,6 +139,29 @@ function CoachPage() {
         </div>
         {coach.bio && <p className="mt-4 rounded-2xl border border-border p-4 text-sm leading-relaxed">{tx(coach.bio)}</p>}
       </div>
+
+      {transfers.data && transfers.data.length > 0 && (
+        <section className="mt-5">
+          <h2 className="mb-2 text-sm font-bold uppercase text-muted-foreground">{tx("Career history")}</h2>
+          <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card">
+            {transfers.data.map((r) => (
+              <div key={r.id} className="flex items-center gap-2 p-3 text-xs">
+                <span className="min-w-0 flex-1 truncate font-semibold">{tx(r.from_club ?? "—")}</span>
+                <span className="text-muted-foreground">→</span>
+                <span className="min-w-0 flex-1 truncate font-semibold">{tx(r.to_club ?? "—")}</span>
+                <span className="shrink-0 text-muted-foreground">{[r.transfer_type, r.moved_on ? formatDate(r.moved_on) : null].filter(Boolean).join(" · ")}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {matches.data && matches.data.length > 0 && (
+        <section className="mt-5">
+          <h2 className="mb-2 text-sm font-bold uppercase text-muted-foreground">{tx("Matches")}</h2>
+          <MatchGroups data={matches.data} />
+        </section>
+      )}
     </AppShell>
   );
 }
