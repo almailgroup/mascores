@@ -576,6 +576,35 @@ export type Database = {
           },
         ]
       }
+      match_momentum: {
+        Row: {
+          match_id: string
+          minute: number
+          updated_at: string
+          value: number
+        }
+        Insert: {
+          match_id: string
+          minute: number
+          updated_at?: string
+          value?: number
+        }
+        Update: {
+          match_id?: string
+          minute?: number
+          updated_at?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_momentum_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       match_prediction_votes: {
         Row: {
           choice: string
@@ -700,6 +729,7 @@ export type Database = {
           lineup_mode: string
           lineups_published: boolean
           live_minute: number | null
+          momentum_minutes: number
           notes: string | null
           referee: string | null
           result_only: boolean
@@ -732,6 +762,7 @@ export type Database = {
           lineup_mode?: string
           lineups_published?: boolean
           live_minute?: number | null
+          momentum_minutes?: number
           notes?: string | null
           referee?: string | null
           result_only?: boolean
@@ -764,6 +795,7 @@ export type Database = {
           lineup_mode?: string
           lineups_published?: boolean
           live_minute?: number | null
+          momentum_minutes?: number
           notes?: string | null
           referee?: string | null
           result_only?: boolean
