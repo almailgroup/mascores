@@ -12,6 +12,7 @@ import { TeamCrest } from "@/components/team-crest";
 import { PlayerAvatar } from "@/components/player-avatar";
 import { MediaManager } from "./media-manager";
 import { MomentumEditor } from "./momentum-editor";
+import { fetchCallUps, applyCallUp } from "@/lib/national";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
