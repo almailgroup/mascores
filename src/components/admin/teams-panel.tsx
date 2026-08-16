@@ -342,9 +342,15 @@ function CoachesModal({ team, onClose }: { team: Team; onClose: () => void }) {
               <CountrySelect value={form.nationality} onChange={(name, c) => setForm({ ...form, nationality: name, nationality_code: c?.code ?? null })} />
             </Field>
             <Field label="Date of birth"><DateWheel value={form.dob} onChange={(v) => setForm({ ...form, dob: v })} /></Field>
+            <Field label="Birth place"><input className={inputCls} value={form.birth_place ?? ""} onChange={(e) => setForm({ ...form, birth_place: e.target.value || null })} /></Field>
+            <Field label="Appointed on"><input type="date" className={inputCls} value={form.appointed_on ?? ""} onChange={(e) => setForm({ ...form, appointed_on: e.target.value || null })} /></Field>
+            <Field label="Contract until"><input type="date" className={inputCls} value={form.contract_until ?? ""} onChange={(e) => setForm({ ...form, contract_until: e.target.value || null })} /></Field>
+            <Field label="Trophies"><input type="number" min={0} className={inputCls} value={form.trophies ?? 0} onChange={(e) => setForm({ ...form, trophies: Math.max(0, Number(e.target.value) || 0) })} /></Field>
+            <Field label="Preferred formation"><input className={inputCls} placeholder="4-3-3" value={form.preferred_formation ?? ""} onChange={(e) => setForm({ ...form, preferred_formation: e.target.value || null })} /></Field>
             <Field label="Photo">
               <ImageInput value={form.photo_url ?? null} onChange={(v) => setForm({ ...form, photo_url: v })} onFile={async (f) => { const url = await uploadMedia("team-logos", f); if (url) setForm({ ...form, photo_url: url }); }} />
             </Field>
+            <div className="sm:col-span-2"><Field label="Biography"><textarea rows={3} className={inputCls} value={form.bio ?? ""} onChange={(e) => setForm({ ...form, bio: e.target.value || null })} /></Field></div>
           </div>
           {form.id && <div className="mt-4"><TransfersEditor personType="coach" personId={form.id} /></div>}
           <div className="mt-4 flex justify-end gap-2">
