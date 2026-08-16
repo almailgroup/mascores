@@ -61,7 +61,14 @@ export function TeamsPanel({ competitionId, season = null }: { competitionId: st
 
   const save = async () => {
     if (!form.name) return;
-    const payload = competitionId ? { ...form, competition_id: competitionId } : { ...form };
+    // A national team *is* its country, so derive the country from the name instead of asking for it.
+    const base = { ...form };
+    if (base.is_national) {
+      const match = COUNTRIES.find((c) => c.name.toLowerCase() === (base.name ?? "").trim().toLowerCase());
+      base.country = match?.name ?? null;
+      base.country_code = match?.code ?? base.country_code ?? null;
+    }
+    const payload = competitionId ? { ...base, competition_id: competitionId } : { ...base };
     if (form.id) await supabase.from("teams").update(payload).eq("id", form.id);
     else {
       const { data } = await supabase.from("teams").insert(payload as never).select("id").single();
