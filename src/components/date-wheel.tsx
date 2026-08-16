@@ -50,8 +50,9 @@ function Column({ values, labels, value, onChange }: { values: number[]; labels:
   );
 }
 
-/** Scroll-wheel date picker. Value/onChange use "YYYY-MM-DD" (or null). */
-export function DateWheel({ value, onChange, minYear = 1930 }: { value: string | null | undefined; onChange: (v: string | null) => void; minYear?: number }) {
+/** Scroll-wheel date picker. Value/onChange use "YYYY-MM-DD" (or null). Optional: stays empty until opened. */
+export function DateWheel({ value, onChange, minYear = 1930, placeholder = "Add date" }: { value: string | null | undefined; onChange: (v: string | null) => void; minYear?: number; placeholder?: string }) {
+  const [open, setOpen] = useState(false);
   const now = new Date();
   const parsed = value ? new Date(`${value}T00:00:00`) : null;
   const y = parsed ? parsed.getFullYear() : 2000;
@@ -74,6 +75,12 @@ export function DateWheel({ value, onChange, minYear = 1930 }: { value: string |
   };
 
   return (
+    !value && !open ? (
+      <button type="button" onClick={() => setOpen(true)}
+        className="flex h-10 w-full items-center rounded-xl border border-border bg-background px-3 text-sm text-muted-foreground hover:border-primary/50">
+        {placeholder}
+      </button>
+    ) : (
     <div className="rounded-xl border border-border bg-background p-2">
       <div className="flex gap-1">
         <Column values={days} labels={days.map(String)} value={d} onChange={(v) => emit(y, m, v)} />
@@ -82,8 +89,9 @@ export function DateWheel({ value, onChange, minYear = 1930 }: { value: string |
       </div>
       <div className="mt-1 flex items-center justify-between px-1">
         <span className="text-[0.65rem] text-muted-foreground">{value ?? "Not set"}</span>
-        <button type="button" className="text-[0.65rem] text-muted-foreground hover:text-destructive" onClick={() => onChange(null)}>Clear</button>
+        <button type="button" className="text-[0.65rem] text-muted-foreground hover:text-destructive" onClick={() => { onChange(null); setOpen(false); }}>Clear</button>
       </div>
     </div>
+    )
   );
 }
