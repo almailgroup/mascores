@@ -12,6 +12,7 @@ import { MatchPrediction } from "@/components/match-prediction";
 import { MatchMomentum } from "@/components/match-momentum";
 import { MapPin, Users } from "lucide-react";
 import { FlagIcon } from "@/components/flag";
+import { nationalOverrideMap, applyCallUp } from "@/lib/national";
 
 /** Same slot keys the admin pitch board writes, so the public pitch mirrors it. */
 function formationRows(formation: string | null | undefined): string[][] {
