@@ -9,6 +9,7 @@ import { PlayCircle, Radio } from "lucide-react";
 import { useTx, useNum, useDates } from "@/lib/auto-translate";
 import { MatchChat } from "@/components/match-chat";
 import { MatchPrediction } from "@/components/match-prediction";
+import { MatchMomentum } from "@/components/match-momentum";
 import { MapPin, Users } from "lucide-react";
 import { FlagIcon } from "@/components/flag";
 
@@ -203,7 +204,7 @@ function MatchPage() {
         </div>
       </div>}
 
-      {tab === "lineups" && lineupsVisible && <div className="grid gap-4 md:grid-cols-2">{([["home", match.home, match.home_formation], ["away", match.away, match.away_formation]] as const).map(([side, team, formation]) => {
+      {tab === "lineups" && lineupsVisible && <div className="space-y-4"><div className="grid gap-4 md:grid-cols-2">{([["home", match.home, match.home_formation], ["away", match.away, match.away_formation]] as const).map(([side, team, formation]) => {
         const rows = lineups.data?.filter((item) => item.team_id === team?.id) ?? [];
         const starters = rows.filter((r) => r.is_starting);
         const bench = rows.filter((r) => !r.is_starting);
@@ -289,7 +290,9 @@ function MatchPage() {
             {rows.length === 0 && <p className="text-sm text-muted-foreground">{tx("No lineup posted.")}</p>}
           </div>
         );
-      })}</div>}
+      })}</div>
+      <MatchMomentum matchId={id} home={match.home} away={match.away} minutes={match.momentum_minutes ?? 90} events={(events.data ?? []).map((e) => ({ minute: e.minute, type: e.type, team_id: e.team_id }))} />
+      </div>}
       {tab === "stats" && <div className="rounded-2xl border border-border bg-card p-4">{stats.data && stats.data.length > 0 ? stats.data.map((item) => <div key={item.id} className="grid grid-cols-[1fr_2fr_1fr] border-t border-border py-3 text-center first:border-0"><strong>{num(item.home_value)}</strong><span className="text-muted-foreground">{tx(item.label)}</span><strong>{num(item.away_value)}</strong></div>) : <p className="text-sm text-muted-foreground">{tx("No statistics published yet.")}</p>}</div>}
       {tab === "previous" && <PreviousMatches competitionId={match.competition_id} currentId={match.id} />}
       {tab === "standings" && <MatchStandings competitionId={match.competition_id} season={match.season} liveTeamIds={isLive ? [match.home_team_id, match.away_team_id].filter(Boolean) as string[] : []} highlightIds={[match.home_team_id, match.away_team_id].filter(Boolean) as string[]} />}
