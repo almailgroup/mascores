@@ -13,6 +13,7 @@ import { PlayerAvatar } from "@/components/player-avatar";
 import { LinkedNews } from "@/components/linked-news";
 import { ArrowRight, Landmark, CalendarClock, Crown, Trophy, Users } from "lucide-react";
 import { MatchRow, type MatchWithTeams } from "@/components/match-list";
+import { fetchNationalSquad } from "@/lib/national";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
 
 export const Route = createFileRoute("/teams/$id")({
@@ -49,6 +50,7 @@ function TeamPage() {
     const { data } = await supabase.from("players").select("*").eq("team_id", id).order("shirt_number");
     return (data ?? []) as Player[];
   }});
+  const nationalSquad = useQuery({ enabled: !!team.data?.is_national, queryKey: ["national-squad", id], queryFn: () => fetchNationalSquad(id) });
   const matches = useQuery({ queryKey: ["team-matches", id], queryFn: async () => {
     const { data } = await supabase.from("matches")
       .select("*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url,country,country_code)")
@@ -196,12 +198,13 @@ function TeamPage() {
          <div className="space-y-7">
            <section><h2 className="mb-3 text-sm font-bold uppercase text-muted-foreground">{tx("Coach")}</h2>{coaches.data && coaches.data.length > 0 ? <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{coaches.data.map((coach) => <Link key={coach.id} to="/coaches/$id" params={{ id: coach.id }} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 hover:border-primary/50"><PlayerAvatar src={coach.photo_url} name={coach.name} size="sm" /><div><div className="font-medium">{tx(coach.name)}</div><div className="text-xs text-muted-foreground">{tx(coach.nationality) ?? "—"}</div></div></Link>)}</div> : <EmptyState title={tx("No coach")} />}</section>
            {(["Goalkeeper", "Defender", "Midfielder", "Forward", "Unknown"] as const).map((position) => {
-             const players = (squad.data ?? []).filter((player) => (player.position ?? "Unknown") === position);
+             const list: Player[] = t.is_national ? (nationalSquad.data ?? []) : (squad.data ?? []);
+             const players = list.filter((player) => (player.position ?? "Unknown") === position);
              if (position === "Unknown" && players.length === 0) return null;
              return <section key={position}><h2 className="mb-3 text-sm font-bold uppercase text-muted-foreground">{tx(position)}</h2>{players.length > 0 ? <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{players.map((p) => (
               <Link key={p.id} to="/players/$id" params={{ id: p.id }} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 hover:border-primary/50">
                 <PlayerAvatar src={p.photo_url} name={p.name} size="sm" />
-                <div className="min-w-0"><div className="truncate font-medium">{tx(p.name)}</div><div className="truncate text-xs text-muted-foreground">{tx(p.position) ?? "—"}</div></div>
+                <div className="min-w-0"><div className="truncate font-medium">{tx(p.name)}</div><div className="truncate text-xs text-muted-foreground">{[p.shirt_number != null ? `#${p.shirt_number}` : null, tx(p.position)].filter(Boolean).join(" · ") || "—"}</div></div>
               </Link>
              ))}</div> : <EmptyState title={tx(`No ${position.toLowerCase()}s`)} />}</section>;
            })}
