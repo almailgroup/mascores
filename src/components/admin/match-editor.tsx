@@ -11,7 +11,6 @@ import { Play, Pause, Plus, Trash2, RotateCcw, Check, Info, ListChecks, Radio, B
 import { TeamCrest } from "@/components/team-crest";
 import { PlayerAvatar } from "@/components/player-avatar";
 import { MediaManager } from "./media-manager";
-import { MomentumEditor } from "./momentum-editor";
 import { fetchCallUps, applyCallUp } from "@/lib/national";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import { toast } from "sonner";
@@ -765,7 +764,6 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
   return (
     <>
     {resultOnlyToggle}
-    <div className="mb-5"><MomentumEditor match={match} teams={teams} /></div>
     <div className="grid gap-5 lg:grid-cols-2">
       <div>
         {/* Clock */}
