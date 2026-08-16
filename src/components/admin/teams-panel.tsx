@@ -13,7 +13,8 @@ import { TeamCrest } from "@/components/team-crest";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import { VenueSelect } from "./venue-select";
 import { MediaUrls } from "./media-urls";
-import { Plus, Pencil, Trash2, Users, UserCog, UserMinus, ImagePlus, Library } from "lucide-react";
+import { NationalSquadModal } from "./national-squad-modal";
+import { Plus, Pencil, Trash2, Users, UserCog, UserMinus, ImagePlus, Library, Flag } from "lucide-react";
 
 type TeamForm = Partial<Team>;
 type PlayerForm = Partial<Player>;
@@ -27,6 +28,8 @@ export function TeamsPanel({ competitionId, season = null }: { competitionId: st
   const [staffOf, setStaffOf] = useState<Team | null>(null);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [libraryTeamId, setLibraryTeamId] = useState("");
+  const [kind, setKind] = useState<"all" | "clubs" | "national">("all");
+  const [search, setSearch] = useState("");
 
   const q = useQuery({
     queryKey: ["admin", "teams", competitionId, season],
@@ -82,12 +85,29 @@ export function TeamsPanel({ competitionId, season = null }: { competitionId: st
         <div className="flex flex-wrap gap-2">{competitionId && <button className={btnGhost} onClick={() => setLibraryOpen(true)}><Library className="h-3.5 w-3.5" /> Add existing</button>}<button className={btnPrimary} onClick={() => { setForm({}); setOpen(true); }}><Plus className="h-3.5 w-3.5" /> New team</button></div>
       </div>
       <div className="grid gap-2">
-        {(q.data ?? []).map((t) => (
+        {!competitionId && (
+          <div className="mb-1 flex flex-wrap items-center gap-2">
+            <div className="flex gap-1 rounded-full border border-border bg-card p-1 text-xs">
+              {(["all", "clubs", "national"] as const).map((k) => (
+                <button key={k} type="button" onClick={() => setKind(k)}
+                  className={`rounded-full px-3 py-1 font-semibold capitalize ${kind === k ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
+                  {k === "national" ? "National teams" : k}
+                </button>
+              ))}
+            </div>
+            <input className={`${inputCls} max-w-48`} placeholder="Search teams" value={search} onChange={(e) => setSearch(e.target.value)} />
+          </div>
+        )}
+        {(q.data ?? [])
+          .filter((t) => (competitionId ? true : kind === "all" || (kind === "national" ? t.is_national : !t.is_national)))
+          .filter((t) => (competitionId || !search.trim() ? true : t.name.toLowerCase().includes(search.trim().toLowerCase())))
+          .slice(0, competitionId ? 500 : 120)
+          .map((t) => (
           <div key={t.id} className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-3 sm:gap-3">
             <TeamCrest name={t.name} logo={t.logo_url} />
             <div className="min-w-0 flex-1 basis-40">
               <div className="truncate font-semibold text-sm">{t.name}</div>
-              <div className="truncate text-xs text-muted-foreground">{[t.is_temporary ? "Temporary club" : null, t.country, t.venue_name, `${t.trophies ?? 0} trophies`].filter(Boolean).join(" · ")}</div>
+              <div className="truncate text-xs text-muted-foreground">{[t.is_national ? "National team" : null, t.is_temporary ? "Temporary club" : null, t.country, t.venue_name, `${t.trophies ?? 0} trophies`].filter(Boolean).join(" · ")}</div>
             </div>
             {competitionId && <label className="flex shrink-0 items-center gap-1 text-[0.65rem] font-semibold uppercase text-muted-foreground">
               Titles
@@ -95,7 +115,7 @@ export function TeamsPanel({ competitionId, season = null }: { competitionId: st
                 value={titlesQ.data?.[t.id] ?? 0}
                 onChange={(e) => setTitles(t.id, Math.max(0, Number(e.target.value) || 0))} />
             </label>}
-            <button className={btnGhost} onClick={() => setSquadOf(t)}><Users className="h-3.5 w-3.5" /> Squad</button>
+            <button className={btnGhost} onClick={() => setSquadOf(t)}>{t.is_national ? <Flag className="h-3.5 w-3.5" /> : <Users className="h-3.5 w-3.5" />} {t.is_national ? "Call-ups" : "Squad"}</button>
             <button className={btnGhost} onClick={() => setStaffOf(t)}><UserCog className="h-3.5 w-3.5" /> Coaches</button>
             <button className={btnGhost} onClick={() => { setForm(t); setOpen(true); }}><Pencil className="h-3.5 w-3.5" /></button>
             <button className={btnDanger} onClick={() => remove(t.id)}><Trash2 className="h-3.5 w-3.5" /></button>
@@ -128,6 +148,10 @@ export function TeamsPanel({ competitionId, season = null }: { competitionId: st
           <input type="checkbox" className="mt-0.5 h-4 w-4" checked={!!form.is_temporary} onChange={(e) => setForm({ ...form, is_temporary: e.target.checked })} />
           <span><strong className="block">Temporary club</strong>A placeholder only: no club information is kept and visitors cannot open its page.</span>
         </label>
+        <label className="mt-2 flex items-start gap-2 rounded-xl border border-border bg-background/50 p-3 text-xs">
+          <input type="checkbox" className="mt-0.5 h-4 w-4" checked={!!form.is_national} onChange={(e) => setForm({ ...form, is_national: e.target.checked })} />
+          <span><strong className="block">National team</strong>Players are called up instead of transferred, so their club never changes.</span>
+        </label>
         <p className="mt-3 text-[0.65rem] text-muted-foreground">Groups are managed from the Standings tab. Coaches are added from the Coaches button.</p>
         <div className="mt-5 flex justify-end gap-2">
           <button className={btnGhost} onClick={() => setOpen(false)}>Cancel</button>
@@ -140,7 +164,9 @@ export function TeamsPanel({ competitionId, season = null }: { competitionId: st
         <div className="mt-4 flex justify-end gap-2"><button className={btnGhost} onClick={() => setLibraryOpen(false)}>Cancel</button><button className={btnPrimary} disabled={!libraryTeamId} onClick={async () => { await supabase.from("competition_teams").insert({ competition_id: competitionId, team_id: libraryTeamId, season } as never); setLibraryTeamId(""); setLibraryOpen(false); qc.invalidateQueries({ queryKey: ["admin", "teams", competitionId] }); qc.invalidateQueries({ queryKey: ["admin", "standings", competitionId] }); }}>Add to competition</button></div>
       </Modal>
 
-      {squadOf && <SquadModal team={squadOf} onClose={() => setSquadOf(null)} />}
+      {squadOf && (squadOf.is_national
+        ? <NationalSquadModal team={squadOf} onClose={() => setSquadOf(null)} />
+        : <SquadModal team={squadOf} onClose={() => setSquadOf(null)} />)}
       {staffOf && <CoachesModal team={staffOf} onClose={() => setStaffOf(null)} />}
     </div>
   );
@@ -316,9 +342,15 @@ function CoachesModal({ team, onClose }: { team: Team; onClose: () => void }) {
               <CountrySelect value={form.nationality} onChange={(name, c) => setForm({ ...form, nationality: name, nationality_code: c?.code ?? null })} />
             </Field>
             <Field label="Date of birth"><DateWheel value={form.dob} onChange={(v) => setForm({ ...form, dob: v })} /></Field>
+            <Field label="Birth place"><input className={inputCls} value={form.birth_place ?? ""} onChange={(e) => setForm({ ...form, birth_place: e.target.value || null })} /></Field>
+            <Field label="Appointed on"><input type="date" className={inputCls} value={form.appointed_on ?? ""} onChange={(e) => setForm({ ...form, appointed_on: e.target.value || null })} /></Field>
+            <Field label="Contract until"><input type="date" className={inputCls} value={form.contract_until ?? ""} onChange={(e) => setForm({ ...form, contract_until: e.target.value || null })} /></Field>
+            <Field label="Trophies"><input type="number" min={0} className={inputCls} value={form.trophies ?? 0} onChange={(e) => setForm({ ...form, trophies: Math.max(0, Number(e.target.value) || 0) })} /></Field>
+            <Field label="Preferred formation"><input className={inputCls} placeholder="4-3-3" value={form.preferred_formation ?? ""} onChange={(e) => setForm({ ...form, preferred_formation: e.target.value || null })} /></Field>
             <Field label="Photo">
               <ImageInput value={form.photo_url ?? null} onChange={(v) => setForm({ ...form, photo_url: v })} onFile={async (f) => { const url = await uploadMedia("team-logos", f); if (url) setForm({ ...form, photo_url: url }); }} />
             </Field>
+            <div className="sm:col-span-2"><Field label="Biography"><textarea rows={3} className={inputCls} value={form.bio ?? ""} onChange={(e) => setForm({ ...form, bio: e.target.value || null })} /></Field></div>
           </div>
           {form.id && <div className="mt-4"><TransfersEditor personType="coach" personId={form.id} /></div>}
           <div className="mt-4 flex justify-end gap-2">

@@ -79,6 +79,10 @@ export type Database = {
       }
       coaches: {
         Row: {
+          appointed_on: string | null
+          bio: string | null
+          birth_place: string | null
+          contract_until: string | null
           created_at: string
           dob: string | null
           id: string
@@ -86,10 +90,16 @@ export type Database = {
           nationality: string | null
           nationality_code: string | null
           photo_url: string | null
+          preferred_formation: string | null
           team_id: string | null
+          trophies: number
           updated_at: string
         }
         Insert: {
+          appointed_on?: string | null
+          bio?: string | null
+          birth_place?: string | null
+          contract_until?: string | null
           created_at?: string
           dob?: string | null
           id?: string
@@ -97,10 +107,16 @@ export type Database = {
           nationality?: string | null
           nationality_code?: string | null
           photo_url?: string | null
+          preferred_formation?: string | null
           team_id?: string | null
+          trophies?: number
           updated_at?: string
         }
         Update: {
+          appointed_on?: string | null
+          bio?: string | null
+          birth_place?: string | null
+          contract_until?: string | null
           created_at?: string
           dob?: string | null
           id?: string
@@ -108,7 +124,9 @@ export type Database = {
           nationality?: string | null
           nationality_code?: string | null
           photo_url?: string | null
+          preferred_formation?: string | null
           team_id?: string | null
+          trophies?: number
           updated_at?: string
         }
         Relationships: [
@@ -226,6 +244,7 @@ export type Database = {
           format: string
           higher_division_id: string | null
           id: string
+          is_national: boolean
           logo_url: string | null
           lower_division_id: string | null
           name: string
@@ -251,6 +270,7 @@ export type Database = {
           format?: string
           higher_division_id?: string | null
           id?: string
+          is_national?: boolean
           logo_url?: string | null
           lower_division_id?: string | null
           name: string
@@ -276,6 +296,7 @@ export type Database = {
           format?: string
           higher_division_id?: string | null
           id?: string
+          is_national?: boolean
           logo_url?: string | null
           lower_division_id?: string | null
           name?: string
@@ -874,6 +895,51 @@ export type Database = {
         }
         Relationships: []
       }
+      national_team_players: {
+        Row: {
+          created_at: string
+          id: string
+          photo_url: string | null
+          player_id: string
+          position: string | null
+          shirt_number: number | null
+          team_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          photo_url?: string | null
+          player_id: string
+          position?: string | null
+          shirt_number?: number | null
+          team_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          photo_url?: string | null
+          player_id?: string
+          position?: string | null
+          shirt_number?: number | null
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "national_team_players_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "national_team_players_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       news_posts: {
         Row: {
           author_display: string | null
@@ -1454,6 +1520,7 @@ export type Database = {
           founded_on: string | null
           group_label: string | null
           id: string
+          is_national: boolean
           is_temporary: boolean
           logo_url: string | null
           media_urls: string[]
@@ -1476,6 +1543,7 @@ export type Database = {
           founded_on?: string | null
           group_label?: string | null
           id?: string
+          is_national?: boolean
           is_temporary?: boolean
           logo_url?: string | null
           media_urls?: string[]
@@ -1498,6 +1566,7 @@ export type Database = {
           founded_on?: string | null
           group_label?: string | null
           id?: string
+          is_national?: boolean
           is_temporary?: boolean
           logo_url?: string | null
           media_urls?: string[]

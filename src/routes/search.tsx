@@ -125,12 +125,20 @@ function SearchPage() {
             ))}</Group>
           )}
           {show("clubs") && (
-            <Group title={tx("Teams")}>{res.data.teams.map((tm) => (
-              <ResultRow key={tm.id} to="/teams/$id" params={{ id: tm.id }}
-                logo={tm.logo_url} fallback={<Shield className="h-4 w-4 text-muted-foreground" />}
-                title={tx(tm.name)} country={tm.country_code ?? tm.country} sub={tx(tm.country) ?? tm.short_name ?? ""}
-                onOpen={() => remember({ key: `team:${tm.id}`, label: tm.name, kind: "clubs", to: "/teams/$id", params: { id: tm.id }, logo: tm.logo_url })} />
-            ))}</Group>
+            <section>
+              <h2 className="mb-2 text-sm font-semibold uppercase text-muted-foreground">{tx("Teams")}</h2>
+              <div className="space-y-3">
+                {res.data.teams.map((tm) => (
+                  <div key={tm.id} className="space-y-2">
+                    <ResultRow to="/teams/$id" params={{ id: tm.id }}
+                      logo={tm.logo_url} fallback={<Shield className="h-4 w-4 text-muted-foreground" />}
+                      title={tx(tm.name)} country={tm.country_code ?? tm.country} sub={tx(tm.country) ?? tm.short_name ?? ""}
+                      onOpen={() => remember({ key: `team:${tm.id}`, label: tm.name, kind: "clubs", to: "/teams/$id", params: { id: tm.id }, logo: tm.logo_url })} />
+                    <TeamSquadResults teamId={tm.id} />
+                  </div>
+                ))}
+              </div>
+            </section>
           )}
           {show("players") && (
             <Group title={tx("Players")}>{res.data.players.map((p) => (
@@ -192,5 +200,43 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
       <h2 className="mb-2 text-sm font-semibold uppercase text-muted-foreground">{tx(title)}</h2>
       <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{children}</div>
     </section>
+  );
+}
+
+/** The squad of a matched team, so searching a club also surfaces its players. */
+function TeamSquadResults({ teamId }: { teamId: string }) {
+  const tx = useTx();
+  const squad = useQuery({
+    queryKey: ["search-squad", teamId],
+    queryFn: async () => {
+      const club = await supabase.from("players").select("id,name,position,shirt_number,photo_url").eq("team_id", teamId).order("shirt_number", { nullsFirst: false }).limit(40);
+      if ((club.data ?? []).length > 0) return club.data ?? [];
+      const calls = await supabase.from("national_team_players").select("player_id,shirt_number,photo_url,position").eq("team_id", teamId).limit(40);
+      const ids = (calls.data ?? []).map((c) => c.player_id);
+      if (ids.length === 0) return [];
+      const { data } = await supabase.from("players").select("id,name,position,shirt_number,photo_url").in("id", ids);
+      return (data ?? []).map((p) => {
+        const call = (calls.data ?? []).find((c) => c.player_id === p.id)!;
+        return { ...p, shirt_number: call.shirt_number ?? p.shirt_number, photo_url: call.photo_url ?? p.photo_url, position: call.position ?? p.position };
+      });
+    },
+  });
+
+  if (!squad.data || squad.data.length === 0) return null;
+  return (
+    <div className="ms-3 grid gap-1.5 border-s border-border ps-3 sm:grid-cols-2 lg:grid-cols-3">
+      {squad.data.map((p) => (
+        <Link key={p.id} to="/players/$id" params={{ id: p.id }}
+          className="flex items-center gap-2 rounded-xl border border-border bg-card/60 px-2.5 py-2 hover:border-primary/50">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-muted/40 text-[0.6rem] font-bold">
+            {p.photo_url ? <img src={p.photo_url} alt="" className="h-full w-full object-cover" /> : (p.shirt_number ?? "")}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-xs font-semibold">{tx(p.name)}</span>
+            <span className="block truncate text-[0.6rem] text-muted-foreground">{[p.shirt_number != null ? `#${p.shirt_number}` : null, tx(p.position)].filter(Boolean).join(" · ")}</span>
+          </span>
+        </Link>
+      ))}
+    </div>
   );
 }

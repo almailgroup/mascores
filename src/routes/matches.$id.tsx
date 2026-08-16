@@ -12,6 +12,7 @@ import { MatchPrediction } from "@/components/match-prediction";
 import { MatchMomentum } from "@/components/match-momentum";
 import { MapPin, Users } from "lucide-react";
 import { FlagIcon } from "@/components/flag";
+import { nationalOverrideMap, applyCallUp } from "@/lib/national";
 
 /** Same slot keys the admin pitch board writes, so the public pitch mirrors it. */
 function formationRows(formation: string | null | undefined): string[][] {
@@ -58,7 +59,7 @@ function MatchPage() {
     queryKey: ["match", id],
     queryFn: async () => {
       const { data } = await supabase.from("matches")
-        .select("*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url), competition:competition_id(id,name,slug,logo_url,sport,country,country_code)")
+        .select("*, home:home_team_id(id,name,logo_url,is_national), away:away_team_id(id,name,logo_url,is_national), competition:competition_id(id,name,slug,logo_url,sport,country,country_code)")
         .eq("id", id).maybeSingle();
       return data as (Match & { home: Team | null; away: Team | null; competition: { id: string; name: string; slug: string; logo_url: string | null; sport: string; country: string | null; country_code: string | null } | null }) | null;
     },
@@ -73,12 +74,20 @@ function MatchPage() {
     },
   });
   const lineups = useQuery({
-    queryKey: ["match-lineups", id],
+    queryKey: ["match-lineups", id, m.data?.home?.is_national, m.data?.away?.is_national],
     queryFn: async () => {
       const { data } = await supabase.from("match_lineups")
         .select("*, player:player_id(id,name,shirt_number,position,photo_url)")
         .eq("match_id", id);
-      return (data ?? []) as unknown as (Lineup & { player: Player | null })[];
+      const rows = (data ?? []) as unknown as (Lineup & { player: Player | null })[];
+      const overrides = await nationalOverrideMap([m.data?.home ?? null, m.data?.away ?? null]);
+      if (overrides.size === 0) return rows;
+      // national squads may use a different photo and shirt number for the same player
+      return rows.map((row) => {
+        const call = overrides.get(row.player_id);
+        if (!call || !row.player) return row;
+        return { ...row, shirt_number: row.shirt_number ?? call.shirt_number, player: applyCallUp(row.player, call) };
+      });
     },
   });
   const stats = useQuery({ queryKey: ["match-stats", id], queryFn: async () => (await supabase.from("match_stats").select("*").eq("match_id", id).order("sort_order")).data ?? [] });

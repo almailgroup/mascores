@@ -5,7 +5,7 @@ import { supabase, currentSeason, type Transfer, type Team } from "@/lib/db";
 import { inputCls, btnPrimary, btnGhost } from "./ui";
 import { createTransferDraftsWithAlmail } from "@/lib/almail-ai.functions";
 import { readAiImages, type AiImageInput } from "@/lib/image-files";
-import { Plus, Trash2, Sparkles, ImagePlus, Loader2 } from "lucide-react";
+import { Plus, Trash2, Sparkles, ImagePlus, Loader2, Pencil, Check, X } from "lucide-react";
 
 const TYPES = ["Transfer", "Loan", "Loan return", "Free agent", "Youth promotion", "Retired", "Appointed", "Left"];
 
@@ -61,6 +61,15 @@ export function TransfersEditor({ personType, personId, personName }: { personTy
     await supabase.from("transfers").delete().eq("id", id);
     qc.invalidateQueries({ queryKey: key });
   };
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editRow, setEditRow] = useState<Partial<Transfer>>({});
+  const saveEdit = async () => {
+    if (!editId) return;
+    const { id: _id, person_id: _p, person_type: _t, created_at: _c, ...fields } = editRow as Transfer & { created_at?: string };
+    await supabase.from("transfers").update(fields).eq("id", editId);
+    setEditId(null); setEditRow({});
+    qc.invalidateQueries({ queryKey: key });
+  };
 
   const importWithAi = async () => {
     if (!aiNotes.trim() && aiImages.length === 0) return;
@@ -102,11 +111,27 @@ export function TransfersEditor({ personType, personId, personName }: { personTy
       )}
 
       <div className="grid gap-1">
-        {(q.data ?? []).map((tr) => (
+        {(q.data ?? []).map((tr) => editId === tr.id ? (
+          <div key={tr.id} className="grid gap-2 rounded-lg border border-primary/40 bg-primary/5 p-2 sm:grid-cols-2">
+            <ClubInput value={editRow.from_club} onChange={(v) => setEditRow({ ...editRow, from_club: v })} placeholder="From club" />
+            <ClubInput value={editRow.to_club} onChange={(v) => setEditRow({ ...editRow, to_club: v })} placeholder="To club" />
+            <input type="date" className={inputCls} value={editRow.moved_on ?? ""} onChange={(e) => setEditRow({ ...editRow, moved_on: e.target.value || null })} />
+            <input className={inputCls} placeholder="Fee (optional)" value={editRow.fee ?? ""} onChange={(e) => setEditRow({ ...editRow, fee: e.target.value })} />
+            <input className={inputCls} placeholder="Season e.g. 26/27" value={editRow.season ?? ""} onChange={(e) => setEditRow({ ...editRow, season: e.target.value })} />
+            <select className={inputCls} value={editRow.transfer_type ?? "Transfer"} onChange={(e) => setEditRow({ ...editRow, transfer_type: e.target.value })}>
+              {TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
+            <div className="flex gap-2 sm:col-span-2">
+              <button className={btnPrimary} onClick={saveEdit}><Check className="h-3.5 w-3.5" /> Save changes</button>
+              <button className={btnGhost} onClick={() => { setEditId(null); setEditRow({}); }}><X className="h-3.5 w-3.5" /> Cancel</button>
+            </div>
+          </div>
+        ) : (
           <div key={tr.id} className="flex items-center gap-2 rounded-lg border border-border bg-background/60 p-2 text-xs">
             <span className="w-24 shrink-0 text-muted-foreground">{tr.moved_on ?? tr.season ?? "—"}</span>
             <span className="flex-1 truncate">{tr.from_club ?? "Free agent"} → {tr.to_club ?? "Free agent"}</span>
             <span className="shrink-0 text-muted-foreground">{[tr.transfer_type, tr.fee].filter(Boolean).join(" · ")}</span>
+            <button onClick={() => { setEditId(tr.id); setEditRow(tr); }} className="text-muted-foreground hover:text-primary"><Pencil className="h-3 w-3" /></button>
             <button onClick={() => remove(tr.id)} className="text-destructive"><Trash2 className="h-3 w-3" /></button>
           </div>
         ))}
