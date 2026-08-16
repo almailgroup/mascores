@@ -751,6 +751,7 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
   return (
     <>
     {resultOnlyToggle}
+    <div className="mb-5"><MomentumEditor match={match} teams={teams} /></div>
     <div className="grid gap-5 lg:grid-cols-2">
       <div>
         {/* Clock */}
