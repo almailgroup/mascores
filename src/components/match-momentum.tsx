@@ -1,24 +1,46 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase, eventIcon, type Team } from "@/lib/db";
+import { eventIcon, type Team } from "@/lib/db";
 import { TeamCrest } from "@/components/team-crest";
 import { useTx } from "@/lib/auto-translate";
 
 export type MomentumEvent = { minute: number | null; type: string; team_id: string | null };
 
+/** How strongly each event type pushes momentum, and how long its influence lasts (minutes). */
+const WEIGHTS: Record<string, number> = {
+  goal: 100, penalty_goal: 100, penalty: 100,
+  penalty_miss: 55, missed_penalty: 55,
+  own_goal: -85, var: 45, assist: 60,
+  yellow: -35, second_yellow: -60, red: -75,
+  substitution: 20, sub: 20,
+};
+const SPREAD = 7;
+
+/** Momentum derived automatically from the match events — no manual drawing needed. */
+function deriveMomentum(events: MomentumEvent[], total: number, homeId?: string, awayId?: string) {
+  const values = new Array(total).fill(0) as number[];
+  for (const e of events) {
+    if (e.minute == null || !e.team_id) continue;
+    const weight = WEIGHTS[e.type];
+    if (!weight) continue;
+    // positive = home pressure (red, on top), negative = away pressure (blue, below)
+    const side = e.team_id === homeId ? 1 : e.team_id === awayId ? -1 : 0;
+    if (!side) continue;
+    const at = Math.min(Math.max(e.minute, 1), total);
+    for (let m = Math.max(1, at - SPREAD); m <= Math.min(total, at + SPREAD); m++) {
+      const falloff = 1 - Math.abs(m - at) / (SPREAD + 1);
+      values[m - 1] += side * weight * falloff;
+    }
+  }
+  return values.map((v, i) => ({ minute: i + 1, value: Math.max(-100, Math.min(100, Math.round(v))) }));
+}
+
 /** SofaScore-style match momentum: red = home (top), blue = away (bottom), black line = half time. */
 export function MatchMomentum({
-  matchId, home, away, minutes = 90, events = [],
+  home, away, minutes = 90, events = [],
 }: { matchId: string; home: Team | null; away: Team | null; minutes?: number; events?: MomentumEvent[] }) {
   const tx = useTx();
-  const q = useQuery({
-    queryKey: ["match-momentum", matchId],
-    queryFn: async () => (await supabase.from("match_momentum").select("minute,value").eq("match_id", matchId).order("minute")).data ?? [],
-  });
-  const rows = q.data ?? [];
-  if (rows.every((r) => r.value === 0)) return null;
-  const total = Math.max(minutes, ...rows.map((r) => r.minute), 90);
-  const byMinute = new Map(rows.map((r) => [r.minute, r.value]));
-  const list = Array.from({ length: total }, (_, i) => ({ minute: i + 1, value: byMinute.get(i + 1) ?? 0 }));
+  const total = Math.max(minutes, 90, ...events.map((e) => e.minute ?? 0));
+  const list = deriveMomentum(events, total, home?.id, away?.id);
+  if (list.every((item) => item.value === 0)) return null;
   const marks = events.filter((e) => e.minute != null && ["goal", "penalty_goal", "own_goal", "yellow", "second_yellow", "red", "substitution", "var"].includes(e.type));
 
   const markRow = (side: "home" | "away") => (
