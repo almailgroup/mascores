@@ -346,7 +346,6 @@ function CoachesModal({ team, onClose }: { team: Team; onClose: () => void }) {
             <Field label="Appointed on"><input type="date" className={inputCls} value={form.appointed_on ?? ""} onChange={(e) => setForm({ ...form, appointed_on: e.target.value || null })} /></Field>
             <Field label="Contract until"><input type="date" className={inputCls} value={form.contract_until ?? ""} onChange={(e) => setForm({ ...form, contract_until: e.target.value || null })} /></Field>
             <Field label="Trophies"><input type="number" min={0} className={inputCls} value={form.trophies ?? 0} onChange={(e) => setForm({ ...form, trophies: Math.max(0, Number(e.target.value) || 0) })} /></Field>
-            <Field label="Preferred formation"><input className={inputCls} placeholder="4-3-3" value={form.preferred_formation ?? ""} onChange={(e) => setForm({ ...form, preferred_formation: e.target.value || null })} /></Field>
             <Field label="Photo">
               <ImageInput value={form.photo_url ?? null} onChange={(v) => setForm({ ...form, photo_url: v })} onFile={async (f) => { const url = await uploadMedia("team-logos", f); if (url) setForm({ ...form, photo_url: url }); }} />
             </Field>
