@@ -14,7 +14,7 @@ import { formatMoney, useCurrency } from "@/lib/currency";
 import { ArrowRight, CalendarDays } from "lucide-react";
 import { useTx } from "@/lib/auto-translate";
 import { useDates, useNum } from "@/lib/auto-translate";
-import { fetchPlayerNationalTeams } from "@/lib/national";
+import { fetchPlayerNationalTeams, findNationalTeamByCountry } from "@/lib/national";
 
 export const Route = createFileRoute("/players/$id")({
   head: () => ({
@@ -62,6 +62,11 @@ function PlayerPage() {
     return (data ?? []) as Transfer[];
   }});
   const national = useQuery({ queryKey: ["player-national", id], queryFn: () => fetchPlayerNationalTeams(id) });
+  const countryTeam = useQuery({
+    enabled: !!q.data?.nationality || !!q.data?.nationality_code,
+    queryKey: ["country-team", q.data?.nationality_code ?? q.data?.nationality],
+    queryFn: () => findNationalTeamByCountry(q.data?.nationality, q.data?.nationality_code),
+  });
   const matches = useQuery({ enabled: !!q.data, queryKey: ["player-matches", id], queryFn: async () => {
     const { data: lineups } = await supabase.from("match_lineups").select("match_id").eq("player_id", id);
     const ids = [...new Set((lineups ?? []).map((l) => l.match_id))];
@@ -138,7 +143,13 @@ function PlayerPage() {
       {tab === "details" && (
         <>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-             <Stat label={tx("Nationality")} value={tx(p.nationality) ?? "—"} icon={<FlagIcon value={nat} size="md" />} />
+             {countryTeam.data ? (
+               <Link to="/teams/$id" params={{ id: countryTeam.data.id }} className="block transition hover:opacity-80">
+                 <Stat label={tx("Nationality")} value={tx(p.nationality) ?? "—"} icon={<FlagIcon value={nat} size="md" />} />
+               </Link>
+             ) : (
+               <Stat label={tx("Nationality")} value={tx(p.nationality) ?? "—"} icon={<FlagIcon value={nat} size="md" />} />
+             )}
              <Stat label={tx("Date of birth")} value={p.dob ? num(`${dates.dob(p.dob)}${age(p.dob) != null ? ` (${age(p.dob)})` : ""}`) : "—"} />
              <Stat label={tx("Height")} value={tx(num(formatHeight(p.height_cm, "cm")))} />
              <Stat label={tx("Position")} value={tx(p.position) ?? "—"} />
