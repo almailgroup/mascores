@@ -14,6 +14,7 @@ import { formatMoney, useCurrency } from "@/lib/currency";
 import { ArrowRight, CalendarDays } from "lucide-react";
 import { useTx } from "@/lib/auto-translate";
 import { useDates, useNum } from "@/lib/auto-translate";
+import { fetchPlayerNationalTeams } from "@/lib/national";
 
 export const Route = createFileRoute("/players/$id")({
   head: () => ({
@@ -60,6 +61,7 @@ function PlayerPage() {
       .order("moved_on", { ascending: false, nullsFirst: false });
     return (data ?? []) as Transfer[];
   }});
+  const national = useQuery({ queryKey: ["player-national", id], queryFn: () => fetchPlayerNationalTeams(id) });
   const matches = useQuery({ enabled: !!q.data, queryKey: ["player-matches", id], queryFn: async () => {
     const { data: lineups } = await supabase.from("match_lineups").select("match_id").eq("player_id", id);
     const ids = [...new Set((lineups ?? []).map((l) => l.match_id))];
@@ -110,6 +112,18 @@ function PlayerPage() {
           </div>
           <FavoriteButton kind="player" id={p.id} size="md" />
         </div>
+        {(national.data?.length ?? 0) > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2 border-t border-border pt-3">
+            {national.data!.map((call) => call.team ? (
+              <Link key={call.id} to="/teams/$id" params={{ id: call.team.id }}
+                className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 text-[0.7rem] font-semibold hover:border-primary sm:text-xs">
+                <FlagIcon value={call.team.country_code ?? call.team.country} size="sm" />
+                <span className="truncate">{tx(call.team.name)}</span>
+                <span className="text-muted-foreground">{tx("National team")}{call.shirt_number != null ? ` · #${call.shirt_number}` : ""}</span>
+              </Link>
+            ) : null)}
+          </div>
+        )}
       </div>
 
       <div className="mb-5 flex gap-1 overflow-x-auto rounded-full border border-border bg-card p-1 text-xs">
