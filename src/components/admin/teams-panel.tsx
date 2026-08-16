@@ -115,7 +115,7 @@ export function TeamsPanel({ competitionId, season = null }: { competitionId: st
             <TeamCrest name={t.name} logo={t.logo_url} />
             <div className="min-w-0 flex-1 basis-40">
               <div className="truncate font-semibold text-sm">{t.name}</div>
-              <div className="truncate text-xs text-muted-foreground">{[t.is_national ? "National team" : null, t.is_temporary ? "Temporary club" : null, t.country, t.venue_name, `${t.trophies ?? 0} trophies`].filter(Boolean).join(" · ")}</div>
+              <div className="truncate text-xs text-muted-foreground">{[t.is_national ? "National team" : null, t.is_temporary ? "Temporary club" : null, t.is_national ? null : t.country, t.venue_name, `${t.trophies ?? 0} trophies`].filter(Boolean).join(" · ")}</div>
             </div>
             {competitionId && <label className="flex shrink-0 items-center gap-1 text-[0.65rem] font-semibold uppercase text-muted-foreground">
               Titles
@@ -136,9 +136,11 @@ export function TeamsPanel({ competitionId, season = null }: { competitionId: st
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Name"><input className={inputCls} value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
           <Field label="Short name"><input className={inputCls} value={form.short_name ?? ""} onChange={(e) => setForm({ ...form, short_name: e.target.value })} /></Field>
-          <Field label="Country">
-            <CountrySelect value={form.country} onChange={(name, c) => setForm({ ...form, country: name, country_code: c?.code ?? null })} />
-          </Field>
+          {!form.is_national && (
+            <Field label="Country">
+              <CountrySelect value={form.country} onChange={(name, c) => setForm({ ...form, country: name, country_code: c?.code ?? null })} />
+            </Field>
+          )}
           <Field label="Home venue">
             <VenueSelect venue={form.venue_name} city={form.venue_city} onChange={(v, city) => setForm({ ...form, venue_name: v, venue_city: city })} />
           </Field>
