@@ -6,6 +6,7 @@ import { supabase } from "@/lib/db";
 import { FlagIcon } from "@/components/flag";
 import { Search as SearchIcon, Trophy, Shield, User, Building2, Clock, X } from "lucide-react";
 import { useReverseTranslate, useTx } from "@/lib/auto-translate";
+import { COUNTRIES } from "@/lib/countries";
 
 export const Route = createFileRoute("/search")({
   head: () => ({ meta: [{ title: "Search — MansourAlmailScores" }, { name: "robots", content: "noindex" }] }),
@@ -50,14 +51,22 @@ function SearchPage() {
   const terms = [q.trim(), ...(/[\u0600-\u06FF]/.test(q) ? reverse(q) : [])].filter((t) => t.length > 1);
   const orFilter = (columns: string[]) =>
     columns.flatMap((col) => terms.map((t) => `${col}.ilike.%${t.replace(/[,()]/g, " ")}%`)).join(",");
+  /** Countries whose English or Arabic name matches the query — used to surface their competitions. */
+  const matchedCountries = COUNTRIES.filter((c) =>
+    terms.some((t) => c.name.toLowerCase().includes(t.toLowerCase()) || c.nameAr.includes(t)),
+  ).slice(0, 4);
+  const compFilter = [
+    orFilter(["name", "country"]),
+    ...matchedCountries.map((c) => `country_code.eq.${c.code}`),
+  ].filter(Boolean).join(",");
   const res = useQuery({
     enabled: q.length > 1,
-    queryKey: ["search", q, terms.join("|")],
+    queryKey: ["search", q, terms.join("|"), matchedCountries.map((c) => c.code).join("|")],
     queryFn: async () => {
       const [teams, players, comps, coaches, venues] = await Promise.all([
         supabase.from("teams").select("id,name,short_name,country,country_code,logo_url").or(orFilter(["name", "short_name"])).limit(20),
         supabase.from("players").select("id,name,position,photo_url,nationality,nationality_code,team:team_id(id,name,logo_url)").or(orFilter(["name"])).limit(20),
-        supabase.from("competitions").select("id,slug,name,country,country_code,logo_url,season").or(orFilter(["name"])).limit(20),
+        supabase.from("competitions").select("id,slug,name,country,country_code,logo_url,season").or(compFilter).limit(30),
         supabase.from("coaches").select("id,name,nationality,nationality_code,photo_url,team:team_id(id,name,logo_url)").or(orFilter(["name"])).limit(20),
         supabase.from("venues").select("id,name,city,country").or(orFilter(["name", "city"])).limit(20),
       ]);
