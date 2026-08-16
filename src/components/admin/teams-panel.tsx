@@ -4,6 +4,7 @@ import { supabase, POSITIONS, type Team, type Player, type Coach } from "@/lib/d
 import { Field, Modal, ImageInput, inputCls, btnPrimary, btnGhost, btnDanger } from "./ui";
 import { uploadMedia } from "./upload";
 import { CountrySelect } from "@/components/country-select";
+import { COUNTRIES } from "@/lib/countries";
 import { DateWheel } from "@/components/date-wheel";
 import { TransfersEditor } from "./transfers-editor";
 import { PlayerEditor } from "./player-editor";
