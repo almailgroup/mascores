@@ -109,6 +109,10 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
             <Field label="Description"><textarea rows={3} className={inputCls} value={form.description ?? ""} onChange={(e) => setForm({ ...form, description: e.target.value })} /></Field>
           </div>
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.featured ?? false} onChange={(e) => setForm({ ...form, featured: e.target.checked })} /> Featured</label>
+          <label className="flex items-start gap-2 rounded-xl border border-border bg-background/50 p-3 text-xs sm:col-span-2">
+            <input type="checkbox" className="mt-0.5 h-4 w-4" checked={form.is_national ?? false} onChange={(e) => setForm({ ...form, is_national: e.target.checked })} />
+            <span><strong className="block">National teams competition</strong>Squads are call-ups: a player keeps his club and can wear a different national photo and shirt number.</span>
+          </label>
         </div>
         <div className="mt-5 flex justify-end gap-2">
           <button className={btnGhost} onClick={() => setOpen(false)}>Cancel</button>
