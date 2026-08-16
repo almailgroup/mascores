@@ -58,7 +58,7 @@ function MatchPage() {
     queryKey: ["match", id],
     queryFn: async () => {
       const { data } = await supabase.from("matches")
-        .select("*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url), competition:competition_id(id,name,slug,logo_url,sport,country,country_code)")
+        .select("*, home:home_team_id(id,name,logo_url,is_national), away:away_team_id(id,name,logo_url,is_national), competition:competition_id(id,name,slug,logo_url,sport,country,country_code)")
         .eq("id", id).maybeSingle();
       return data as (Match & { home: Team | null; away: Team | null; competition: { id: string; name: string; slug: string; logo_url: string | null; sport: string; country: string | null; country_code: string | null } | null }) | null;
     },
