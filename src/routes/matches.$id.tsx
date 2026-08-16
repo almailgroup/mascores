@@ -317,11 +317,11 @@ function TeamCoach({ teamId }: { teamId: string | undefined }) {
   return (
     <div className="mt-3">
       <h4 className="mb-1 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Coach")}</h4>
-      <div className="flex items-center gap-3 py-2">
+      <Link to="/coaches/$id" params={{ id: q.data.id }} className="flex items-center gap-3 py-2 hover:text-primary">
         <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-muted">{q.data.photo_url && <img src={q.data.photo_url} alt="" className="h-full w-full object-cover" />}</div>
         <span className="min-w-0 flex-1 truncate font-semibold">{tx(q.data.name)}</span>
         <span className="shrink-0 text-xs text-muted-foreground">{tx(q.data.nationality) ?? ""}</span>
-      </div>
+      </Link>
     </div>
   );
 }
