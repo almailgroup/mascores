@@ -152,6 +152,18 @@ export function TeamsPanel({ competitionId, season = null }: { competitionId: st
         {q.data && q.data.length === 0 && <div className="rounded-xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">No teams yet.</div>}
       </div>
 
+      <ConfirmDelete
+        open={!!deleteTeam}
+        title={`Delete ${deleteTeam?.name ?? "team"} permanently`}
+        description="This removes the club from the database everywhere, including its squad links, matches and standings rows. To only take it out of one competition, open that competition's Teams tab instead."
+        confirmWord="DELETE"
+        actionLabel="Delete team"
+        onCancel={() => setDeleteTeam(null)}
+        onConfirm={() => deleteForever(deleteTeam!.id)}
+      />
+
+
+
       <Modal open={open} onClose={() => setOpen(false)} title={form.id ? "Edit team" : "New team"} wide>
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Name"><input className={inputCls} value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
