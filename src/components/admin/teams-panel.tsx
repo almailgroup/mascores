@@ -80,11 +80,27 @@ export function TeamsPanel({ competitionId, season = null }: { competitionId: st
     qc.invalidateQueries({ queryKey: ["admin", "team-library"] });
   };
 
-  const remove = async (id: string) => {
-    if (!confirm("Delete this team?")) return;
-    await supabase.from("teams").delete().eq("id", id);
+  /** Inside a competition the bin only unlinks the team; the club stays in the library. */
+  const removeFromCompetition = async (id: string) => {
+    if (!competitionId) return;
+    let link = supabase.from("competition_teams").delete().eq("competition_id", competitionId).eq("team_id", id);
+    if (season) link = link.eq("season", season);
+    await link;
+    let standings = supabase.from("standings_rows").delete().eq("competition_id", competitionId).eq("team_id", id);
+    if (season) standings = standings.eq("season", season);
+    await standings;
     qc.invalidateQueries({ queryKey: ["admin", "teams", competitionId] });
+    qc.invalidateQueries({ queryKey: ["admin", "standings", competitionId] });
   };
+
+  /** Only available in the global Teams library: wipes the club from the database. */
+  const deleteForever = async (id: string) => {
+    await supabase.from("teams").delete().eq("id", id);
+    setDeleteTeam(null);
+    qc.invalidateQueries({ queryKey: ["admin", "teams", competitionId] });
+    qc.invalidateQueries({ queryKey: ["admin", "team-library"] });
+  };
+
 
   return (
     <div>
