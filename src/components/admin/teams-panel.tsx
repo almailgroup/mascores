@@ -31,6 +31,8 @@ export function TeamsPanel({ competitionId, season = null }: { competitionId: st
   const [libraryTeamId, setLibraryTeamId] = useState("");
   const [kind, setKind] = useState<"all" | "clubs" | "national">("all");
   const [search, setSearch] = useState("");
+  const [deleteTeam, setDeleteTeam] = useState<Team | null>(null);
+
 
   const q = useQuery({
     queryKey: ["admin", "teams", competitionId, season],
@@ -80,11 +82,27 @@ export function TeamsPanel({ competitionId, season = null }: { competitionId: st
     qc.invalidateQueries({ queryKey: ["admin", "team-library"] });
   };
 
-  const remove = async (id: string) => {
-    if (!confirm("Delete this team?")) return;
-    await supabase.from("teams").delete().eq("id", id);
+  /** Inside a competition the bin only unlinks the team; the club stays in the library. */
+  const removeFromCompetition = async (id: string) => {
+    if (!competitionId) return;
+    let link = supabase.from("competition_teams").delete().eq("competition_id", competitionId).eq("team_id", id);
+    if (season) link = link.eq("season", season);
+    await link;
+    let standings = supabase.from("standings_rows").delete().eq("competition_id", competitionId).eq("team_id", id);
+    if (season) standings = standings.eq("season", season);
+    await standings;
     qc.invalidateQueries({ queryKey: ["admin", "teams", competitionId] });
+    qc.invalidateQueries({ queryKey: ["admin", "standings", competitionId] });
   };
+
+  /** Only available in the global Teams library: wipes the club from the database. */
+  const deleteForever = async (id: string) => {
+    await supabase.from("teams").delete().eq("id", id);
+    setDeleteTeam(null);
+    qc.invalidateQueries({ queryKey: ["admin", "teams", competitionId] });
+    qc.invalidateQueries({ queryKey: ["admin", "team-library"] });
+  };
+
 
   return (
     <div>
@@ -126,11 +144,25 @@ export function TeamsPanel({ competitionId, season = null }: { competitionId: st
             <button className={btnGhost} onClick={() => setSquadOf(t)}>{t.is_national ? <Flag className="h-3.5 w-3.5" /> : <Users className="h-3.5 w-3.5" />} {t.is_national ? "Call-ups" : "Squad"}</button>
             <button className={btnGhost} onClick={() => setStaffOf(t)}><UserCog className="h-3.5 w-3.5" /> Coaches</button>
             <button className={btnGhost} onClick={() => { setForm(t); setOpen(true); }}><Pencil className="h-3.5 w-3.5" /></button>
-            <button className={btnDanger} onClick={() => remove(t.id)}><Trash2 className="h-3.5 w-3.5" /></button>
+            {competitionId
+              ? <button className={btnDanger} title="Remove from this competition" onClick={() => removeFromCompetition(t.id)}><UserMinus className="h-3.5 w-3.5" /></button>
+              : <button className={btnDanger} title="Delete permanently" onClick={() => setDeleteTeam(t)}><Trash2 className="h-3.5 w-3.5" /></button>}
           </div>
         ))}
         {q.data && q.data.length === 0 && <div className="rounded-xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">No teams yet.</div>}
       </div>
+
+      <ConfirmDelete
+        open={!!deleteTeam}
+        title={`Delete ${deleteTeam?.name ?? "team"} permanently`}
+        description="This removes the club from the database everywhere, including its squad links, matches and standings rows. To only take it out of one competition, open that competition's Teams tab instead."
+        confirmWord="DELETE"
+        actionLabel="Delete team"
+        onCancel={() => setDeleteTeam(null)}
+        onConfirm={() => deleteForever(deleteTeam!.id)}
+      />
+
+
 
       <Modal open={open} onClose={() => setOpen(false)} title={form.id ? "Edit team" : "New team"} wide>
         <div className="grid gap-3 sm:grid-cols-2">

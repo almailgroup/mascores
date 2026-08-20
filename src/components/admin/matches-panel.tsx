@@ -259,8 +259,9 @@ function AlmailFixtureImporter({ open, onClose, competitionId, season = null, te
   const [drafts, setDrafts] = useState<FixtureRow[]>([]);
   const [images, setImages] = useState<{ name: string; dataUrl: string }[]>([]);
 
-  const match = (name: string) => teams.find((t) => t.name.toLowerCase() === name.trim().toLowerCase())
-    ?? teams.find((t) => t.name.toLowerCase().includes(name.trim().toLowerCase()) || name.trim().toLowerCase().includes(t.name.toLowerCase()));
+  const isTbd = (name: string) => /^(tbd|tba|\?+|-+|unknown)$/i.test(name.trim());
+  const match = (name: string) => (isTbd(name) ? undefined : teams.find((t) => t.name.toLowerCase() === name.trim().toLowerCase())
+    ?? teams.find((t) => t.name.toLowerCase().includes(name.trim().toLowerCase()) || name.trim().toLowerCase().includes(t.name.toLowerCase())));
 
   const analyse = async () => {
     setBusy(true); setError(null);
@@ -278,12 +279,13 @@ function AlmailFixtureImporter({ open, onClose, competitionId, season = null, te
   const importAll = async () => {
     const rows = drafts
       .map((d) => ({ d, home: match(d.home), away: match(d.away) }))
-      .filter((r) => r.home && r.away)
+      // A placeholder side stays empty so the match still imports as "TBD".
+      .filter((r) => (r.home || isTbd(r.d.home)) && (r.away || isTbd(r.d.away)))
       .map((r) => ({
         competition_id: competitionId,
         season,
-        home_team_id: r.home!.id,
-        away_team_id: r.away!.id,
+        home_team_id: r.home?.id ?? null,
+        away_team_id: r.away?.id ?? null,
         kickoff_at: r.d.kickoff_at,
         round_number: r.d.round_number,
         round: r.d.round_number != null ? `Round ${r.d.round_number}` : null,
@@ -292,6 +294,7 @@ function AlmailFixtureImporter({ open, onClose, competitionId, season = null, te
         status: "scheduled",
       }));
     if (rows.length === 0) { setError("None of the teams matched this competition’s squad list."); return; }
+
     setBusy(true);
     const { error: insertError } = await supabase.from("matches").insert(rows as never);
     setBusy(false);
@@ -318,7 +321,8 @@ function AlmailFixtureImporter({ open, onClose, competitionId, season = null, te
                 <div key={i} className="rounded-lg border border-border bg-background p-2 text-xs">
                   <div className="font-semibold">{d.home} vs {d.away}</div>
                   <div className="text-muted-foreground">{[d.kickoff_at ? formatKickoff(d.kickoff_at) : "No date", d.round_number != null ? `Round ${d.round_number}` : null, d.venue].filter(Boolean).join(" · ")}</div>
-                  {(!home || !away) && <div className="mt-1 text-destructive">Team not found in this competition — add it first.</div>}
+                  {((!home && !isTbd(d.home)) || (!away && !isTbd(d.away))) && <div className="mt-1 text-destructive">Team not found in this competition — add it first.</div>}
+                  {(isTbd(d.home) || isTbd(d.away)) && <div className="mt-1 text-muted-foreground">Undecided side kept as TBD — set it later from the match editor.</div>}
                 </div>
               );
             })}
