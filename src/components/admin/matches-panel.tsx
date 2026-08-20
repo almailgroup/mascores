@@ -279,12 +279,13 @@ function AlmailFixtureImporter({ open, onClose, competitionId, season = null, te
   const importAll = async () => {
     const rows = drafts
       .map((d) => ({ d, home: match(d.home), away: match(d.away) }))
-      .filter((r) => r.home && r.away)
+      // A placeholder side stays empty so the match still imports as "TBD".
+      .filter((r) => (r.home || isTbd(r.d.home)) && (r.away || isTbd(r.d.away)))
       .map((r) => ({
         competition_id: competitionId,
         season,
-        home_team_id: r.home!.id,
-        away_team_id: r.away!.id,
+        home_team_id: r.home?.id ?? null,
+        away_team_id: r.away?.id ?? null,
         kickoff_at: r.d.kickoff_at,
         round_number: r.d.round_number,
         round: r.d.round_number != null ? `Round ${r.d.round_number}` : null,
@@ -293,6 +294,7 @@ function AlmailFixtureImporter({ open, onClose, competitionId, season = null, te
         status: "scheduled",
       }));
     if (rows.length === 0) { setError("None of the teams matched this competition’s squad list."); return; }
+
     setBusy(true);
     const { error: insertError } = await supabase.from("matches").insert(rows as never);
     setBusy(false);
