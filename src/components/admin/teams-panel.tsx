@@ -31,6 +31,8 @@ export function TeamsPanel({ competitionId, season = null }: { competitionId: st
   const [libraryTeamId, setLibraryTeamId] = useState("");
   const [kind, setKind] = useState<"all" | "clubs" | "national">("all");
   const [search, setSearch] = useState("");
+  const [deleteTeam, setDeleteTeam] = useState<Team | null>(null);
+
 
   const q = useQuery({
     queryKey: ["admin", "teams", competitionId, season],
