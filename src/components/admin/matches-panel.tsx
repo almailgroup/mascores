@@ -259,8 +259,9 @@ function AlmailFixtureImporter({ open, onClose, competitionId, season = null, te
   const [drafts, setDrafts] = useState<FixtureRow[]>([]);
   const [images, setImages] = useState<{ name: string; dataUrl: string }[]>([]);
 
-  const match = (name: string) => teams.find((t) => t.name.toLowerCase() === name.trim().toLowerCase())
-    ?? teams.find((t) => t.name.toLowerCase().includes(name.trim().toLowerCase()) || name.trim().toLowerCase().includes(t.name.toLowerCase()));
+  const isTbd = (name: string) => /^(tbd|tba|\?+|-+|unknown)$/i.test(name.trim());
+  const match = (name: string) => (isTbd(name) ? undefined : teams.find((t) => t.name.toLowerCase() === name.trim().toLowerCase())
+    ?? teams.find((t) => t.name.toLowerCase().includes(name.trim().toLowerCase()) || name.trim().toLowerCase().includes(t.name.toLowerCase())));
 
   const analyse = async () => {
     setBusy(true); setError(null);
