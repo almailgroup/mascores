@@ -23,3 +23,8 @@ export const almailTransferInputSchema = z.object({
   images: z.array(imageSchema).max(6).default([]),
   personName: z.string().trim().max(160).default(""),
 });
+
+export const almailPlayerBatchInputSchema = z.object({
+  notes: z.string().trim().max(10_000),
+  images: z.array(imageSchema).max(20).default([]),
+});

@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { almailInputSchema, almailFixtureInputSchema, almailVenueInputSchema, almailTransferInputSchema } from "./almail-ai.schemas";
+import { almailInputSchema, almailFixtureInputSchema, almailVenueInputSchema, almailTransferInputSchema, almailPlayerBatchInputSchema } from "./almail-ai.schemas";
 
 export const createPlayerDraftWithAlmail = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -49,4 +49,14 @@ export const createTransferDraftsWithAlmail = createServerFn({ method: "POST" })
     if (error || !isAdmin) throw new Error("Administrator access required.");
     const { generateTransferDrafts } = await import("./almail-ai.server");
     return generateTransferDrafts(data.notes, data.images ?? [], data.personName ?? "");
+  });
+
+export const createPlayerDraftsWithAlmail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => almailPlayerBatchInputSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: isAdmin, error } = await context.supabase.rpc("is_admin", { _uid: context.userId });
+    if (error || !isAdmin) throw new Error("Administrator access required.");
+    const { generatePlayerDrafts } = await import("./almail-ai.server");
+    return generatePlayerDrafts(data.notes, data.images);
   });

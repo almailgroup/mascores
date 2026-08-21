@@ -123,6 +123,7 @@ export function MatchesPanel({ competitionId, season = null, friendly = false }:
         competitionId={competitionId}
         season={season}
         teams={teams}
+        existing={allMatches}
         onImported={() => qc.invalidateQueries({ queryKey: ["admin", "matches", competitionId] })}
       />
 
@@ -251,7 +252,7 @@ function ResultModal({ match, teamName, onClose, onSaved }: { match: Match; team
 type FixtureRow = { home: string; away: string; kickoff_at: string | null; round_number: number | null; venue: string | null; city: string | null };
 
 /** Almail AI reads a fixture list (text or screenshots) and stages matches for one-tap import. */
-function AlmailFixtureImporter({ open, onClose, competitionId, season = null, teams, onImported }: { open: boolean; onClose: () => void; competitionId: string; season?: string | null; teams: Team[]; onImported: () => void }) {
+function AlmailFixtureImporter({ open, onClose, competitionId, season = null, teams, existing, onImported }: { open: boolean; onClose: () => void; competitionId: string; season?: string | null; teams: Team[]; existing: Match[]; onImported: () => void }) {
   const run = useServerFn(createFixtureDraftsWithAlmail);
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
@@ -262,6 +263,13 @@ function AlmailFixtureImporter({ open, onClose, competitionId, season = null, te
   const isTbd = (name: string) => /^(tbd|tba|\?+|-+|unknown)$/i.test(name.trim());
   const match = (name: string) => (isTbd(name) ? undefined : teams.find((t) => t.name.toLowerCase() === name.trim().toLowerCase())
     ?? teams.find((t) => t.name.toLowerCase().includes(name.trim().toLowerCase()) || name.trim().toLowerCase().includes(t.name.toLowerCase())));
+
+  /** Same two clubs in the same competition/season = an update, not a new match. */
+  const findExisting = (homeId: string | null, awayId: string | null) => {
+    if (!homeId || !awayId) return undefined;
+    return existing.find((m) => m.home_team_id === homeId && m.away_team_id === awayId)
+      ?? existing.find((m) => m.home_team_id === awayId && m.away_team_id === homeId);
+  };
 
   const analyse = async () => {
     setBusy(true); setError(null);
@@ -280,25 +288,46 @@ function AlmailFixtureImporter({ open, onClose, competitionId, season = null, te
     const rows = drafts
       .map((d) => ({ d, home: match(d.home), away: match(d.away) }))
       // A placeholder side stays empty so the match still imports as "TBD".
-      .filter((r) => (r.home || isTbd(r.d.home)) && (r.away || isTbd(r.d.away)))
-      .map((r) => ({
-        competition_id: competitionId,
-        season,
-        home_team_id: r.home?.id ?? null,
-        away_team_id: r.away?.id ?? null,
+      .filter((r) => (r.home || isTbd(r.d.home)) && (r.away || isTbd(r.d.away)));
+    if (rows.length === 0) { setError("None of the teams matched this competition’s squad list."); return; }
+
+    const inserts: Record<string, unknown>[] = [];
+    const updates: { id: string; patch: Record<string, unknown> }[] = [];
+    for (const r of rows) {
+      const found = findExisting(r.home?.id ?? null, r.away?.id ?? null);
+      const patch: Record<string, unknown> = {
         kickoff_at: r.d.kickoff_at,
         round_number: r.d.round_number,
         round: r.d.round_number != null ? `Round ${r.d.round_number}` : null,
         venue: r.d.venue,
         city: r.d.city,
-        status: "scheduled",
-      }));
-    if (rows.length === 0) { setError("None of the teams matched this competition’s squad list."); return; }
+      };
+      if (found) {
+        // Only overwrite what the new sheet actually states.
+        const clean = Object.fromEntries(Object.entries(patch).filter(([, v]) => v !== null && v !== undefined));
+        if (Object.keys(clean).length > 0) updates.push({ id: found.id, patch: clean });
+      } else {
+        inserts.push({
+          competition_id: competitionId,
+          season,
+          home_team_id: r.home?.id ?? null,
+          away_team_id: r.away?.id ?? null,
+          ...patch,
+          status: "scheduled",
+        });
+      }
+    }
 
     setBusy(true);
-    const { error: insertError } = await supabase.from("matches").insert(rows as never);
+    if (inserts.length > 0) {
+      const { error: insertError } = await supabase.from("matches").insert(inserts as never);
+      if (insertError) { setBusy(false); setError(insertError.message); return; }
+    }
+    for (const u of updates) {
+      const { error: updateError } = await supabase.from("matches").update(u.patch as never).eq("id", u.id);
+      if (updateError) { setBusy(false); setError(updateError.message); return; }
+    }
     setBusy(false);
-    if (insertError) { setError(insertError.message); return; }
     setDrafts([]); setNotes(""); setImages([]); onImported(); onClose();
   };
 
@@ -323,6 +352,7 @@ function AlmailFixtureImporter({ open, onClose, competitionId, season = null, te
                   <div className="text-muted-foreground">{[d.kickoff_at ? formatKickoff(d.kickoff_at) : "No date", d.round_number != null ? `Round ${d.round_number}` : null, d.venue].filter(Boolean).join(" · ")}</div>
                   {((!home && !isTbd(d.home)) || (!away && !isTbd(d.away))) && <div className="mt-1 text-destructive">Team not found in this competition — add it first.</div>}
                   {(isTbd(d.home) || isTbd(d.away)) && <div className="mt-1 text-muted-foreground">Undecided side kept as TBD — set it later from the match editor.</div>}
+                  {findExisting(home?.id ?? null, away?.id ?? null) && <div className="mt-1 font-semibold text-primary">Existing match — its date, round and venue will be updated.</div>}
                 </div>
               );
             })}
@@ -330,7 +360,7 @@ function AlmailFixtureImporter({ open, onClose, competitionId, season = null, te
         )}
         <div className="flex flex-wrap gap-2">
           <button className={btnGhost} disabled={busy} onClick={analyse}><Sparkles className="h-3.5 w-3.5" /> {busy ? "Reading…" : "Analyse with Almail AI"}</button>
-          {drafts.length > 0 && <button className={btnPrimary} disabled={busy} onClick={importAll}><Plus className="h-3.5 w-3.5" /> Import {drafts.length} match(es)</button>}
+          {drafts.length > 0 && <button className={btnPrimary} disabled={busy} onClick={importAll}><Plus className="h-3.5 w-3.5" /> Apply {drafts.length} match(es)</button>}
         </div>
       </div>
     </Modal>

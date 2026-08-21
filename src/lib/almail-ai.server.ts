@@ -186,3 +186,26 @@ export async function generateTransferDrafts(notes: string, images: ImageInput[]
     };
   }).filter((row) => row.from_club || row.to_club);
 }
+
+/** Read many photos at once and return one draft per player found. */
+export async function generatePlayerDrafts(notes: string, images: ImageInput[]): Promise<PlayerDraft[]> {
+  const text = await runAlmail(
+    `You are Almail AI, a careful football data editor. Read every attached photo and the notes, and extract EVERY distinct player you can see (one entry per player, even when several players appear in one photo or across photos). Never invent a fact that is not visible or stated; use null for anything unknown. Merge duplicates of the same player. Return JSON only in the shape {"players":[{"name":string,"position":string|null,"shirt_number":number|null,"height_cm":number|null,"dob":"YYYY-MM-DD"|null,"nationality":string|null,"nationality_code":string|null,"market_value":string|null}]}. Position must be Goalkeeper, Defender, Midfielder, Forward, Unknown, or null. nationality_code must be a two-letter ISO country code or null. Notes: ${notes || "No notes supplied."}`,
+    images,
+  );
+  const parsed = parseJson<{ players?: unknown }>(text);
+  const list = Array.isArray(parsed.players) ? parsed.players : [];
+  return list.slice(0, 80).map((raw) => {
+    const draft = raw as Partial<PlayerDraft>;
+    return {
+      name: String(draft.name ?? "").slice(0, 160),
+      position: ["Goalkeeper", "Defender", "Midfielder", "Forward", "Unknown"].includes(String(draft.position)) ? String(draft.position) : null,
+      shirt_number: Number.isInteger(draft.shirt_number) && Number(draft.shirt_number) >= 0 && Number(draft.shirt_number) <= 999 ? Number(draft.shirt_number) : null,
+      height_cm: Number.isInteger(draft.height_cm) && Number(draft.height_cm) >= 80 && Number(draft.height_cm) <= 260 ? Number(draft.height_cm) : null,
+      dob: /^\d{4}-\d{2}-\d{2}$/.test(String(draft.dob)) ? String(draft.dob) : null,
+      nationality: draft.nationality ? String(draft.nationality).slice(0, 100) : null,
+      nationality_code: /^[A-Za-z]{2}$/.test(String(draft.nationality_code)) ? String(draft.nationality_code).toUpperCase() : null,
+      market_value: draft.market_value ? String(draft.market_value).slice(0, 80) : null,
+    };
+  }).filter((row) => row.name.trim().length > 1);
+}
