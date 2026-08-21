@@ -8,7 +8,8 @@ import { PlayerAvatar } from "@/components/player-avatar";
 import { FlagIcon } from "@/components/flag";
 import { TeamCrest } from "@/components/team-crest";
 import { ConfirmDelete } from "@/components/confirm-delete";
-import { Plus, Pencil, Trash2, UserMinus, Users, ChevronRight, ChevronDown, X } from "lucide-react";
+import { PlayerBatchImport } from "./player-batch-import";
+import { Plus, Sparkles, Pencil, Trash2, UserMinus, Users, ChevronRight, ChevronDown, X } from "lucide-react";
 
 type Row = Player & { team: Pick<Team, "id" | "name"> | null };
 
@@ -25,6 +26,7 @@ export function PlayersPanel() {
   const [compFilter, setCompFilter] = useState<{ id: string; name: string } | null>(null);
   const [countryFilter, setCountryFilter] = useState<string | null>(null);
   const [position, setPosition] = useState<string>("");
+  const [batchOpen, setBatchOpen] = useState(false);
 
   const tree = useQuery({
     queryKey: ["admin", "player-tree"],
@@ -78,6 +80,7 @@ export function PlayersPanel() {
 
   return (
     <div>
+      <PlayerBatchImport open={batchOpen} onClose={() => setBatchOpen(false)} teamId={teamFilter?.id ?? null} onSaved={invalidate} />
       <div className="mb-4 flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary"><Users className="h-5 w-5" /></div>
         <div><h2 className="text-lg font-bold">Player library</h2><p className="text-xs text-muted-foreground">Edit anyone, release players to free agents or remove them from the database.</p></div>
@@ -92,6 +95,7 @@ export function PlayersPanel() {
         <button className={scope === "all" ? btnPrimary : btnGhost} onClick={() => setScope("all")}>All players</button>
         <button className={scope === "free" ? btnPrimary : btnGhost} onClick={() => setScope("free")}>Free agents</button>
         <button className={btnPrimary} onClick={() => setEditing({})}><Plus className="h-3.5 w-3.5" /> New player</button>
+        <button className={btnGhost} onClick={() => setBatchOpen(true)}><Sparkles className="h-3.5 w-3.5" /> AI from photos</button>
       </div>
 
       {(countryFilter || compFilter || teamFilter) && (
