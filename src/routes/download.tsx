@@ -18,15 +18,27 @@ export const Route = createFileRoute("/download")({
 });
 
 const FILE = "/mansouralmailscores-project.tar.gz";
+const UPDATED = "22 August 2026";
 
 const steps: Array<{ label: string; code: string }> = [
-  { label: "Extract the archive", code: "tar -xzf mansouralmailscores-project.tar.gz" },
+  { label: "Extract the archive", code: "tar -xzf mansouralmailscores-project.tar.gz\ncd mansouralmailscores" },
   { label: "Install dependencies", code: "npm install" },
+  { label: "Restore the database", code: "psql \"$DATABASE_URL\" -f database/schema.sql\n# then load database/data/*.csv — see database/README.md" },
   { label: "Push to GitHub", code: "git init\ngit add .\ngit commit -m \"MansourAlmailScores\"\ngit remote add origin https://github.com/YOUR_USERNAME/mansouralmailscores.git\ngit push -u origin main" },
   { label: "Deploy on Vercel", code: "Import the repo on vercel.com, framework preset: Vite,\nbuild command: npm run build, output: dist" },
 ];
 
-const envVars = ["VITE_SUPABASE_URL", "VITE_SUPABASE_PUBLISHABLE_KEY", "VITE_SUPABASE_PROJECT_ID", "SUPABASE_URL", "SUPABASE_PUBLISHABLE_KEY", "SUPABASE_SERVICE_ROLE_KEY", "LOVABLE_API_KEY"];
+const contents = [
+  "Every route, component and hook (app, admin panel, Almail AI, chat, translations)",
+  "supabase/migrations — all 34 migrations: tables, RLS policies, GRANTs, functions, triggers",
+  "database/schema.sql — every migration merged into one restore file",
+  "database/data — CSV export of all 32 public tables (competitions, teams, players, matches, news, transfers, translations…)",
+  "database/README.md — restore order, storage buckets and secrets checklist",
+  ".env.example — every environment variable the app needs (no secret values)",
+];
+
+const envVars = ["VITE_SUPABASE_URL", "VITE_SUPABASE_PUBLISHABLE_KEY", "VITE_SUPABASE_PROJECT_ID", "SUPABASE_URL", "SUPABASE_PUBLISHABLE_KEY", "SUPABASE_SERVICE_ROLE_KEY", "LOVABLE_API_KEY", "ADMIN_UNLOCK_PASSWORD", "ADMIN_UNLOCK_PASSWORD_SECONDARY"];
+
 
 function DownloadPage() {
   return (
