@@ -74,7 +74,7 @@ function DownloadPage() {
 
 
       <section className="mx-auto mt-10 max-w-2xl rounded-3xl border border-border bg-card p-6">
-        <div className="flex items-center gap-2 text-sm font-bold"><Terminal className="h-4 w-4 text-primary" /> Deploy to Vercel</div>
+        <div className="flex items-center gap-2 text-sm font-bold"><Terminal className="h-4 w-4 text-primary" /> Set up and deploy</div>
         <ol className="mt-4 grid gap-4">
           {steps.map((s, i) => (
             <li key={s.label} className="grid gap-2">
