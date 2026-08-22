@@ -49,7 +49,7 @@ function DownloadPage() {
         </div>
         <h1 className="mt-4 text-3xl font-black tracking-tight">Download MansourAlmailScores</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          The complete source code — routes, admin panel, Almail AI, translations and database migrations — ready to deploy.
+          The complete source code plus the full database — schema, migrations and every row of data. Updated {UPDATED}.
         </p>
         <a
           href={FILE}
@@ -62,6 +62,16 @@ function DownloadPage() {
           If the download does not start inside the preview, open <span className="font-mono">{FILE}</span> in a new browser tab.
         </p>
       </div>
+
+      <section className="mx-auto mt-10 max-w-2xl rounded-3xl border border-border bg-card p-6">
+        <div className="flex items-center gap-2 text-sm font-bold"><FileArchive className="h-4 w-4 text-primary" /> What's inside</div>
+        <ul className="mt-3 grid gap-1.5">
+          {contents.map((c) => (
+            <li key={c} className="rounded-xl border border-border bg-background px-3 py-2 text-xs leading-relaxed">{c}</li>
+          ))}
+        </ul>
+      </section>
+
 
       <section className="mx-auto mt-10 max-w-2xl rounded-3xl border border-border bg-card p-6">
         <div className="flex items-center gap-2 text-sm font-bold"><Terminal className="h-4 w-4 text-primary" /> Deploy to Vercel</div>
