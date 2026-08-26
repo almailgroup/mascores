@@ -38,88 +38,76 @@ function AuthPage() {
 
   const handleEmail = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (busy) return;
+
+    setBusy(true);
     setError(null);
     setNotice(null);
-    setBusy(true);
-    try {
-      if (mode === "signup") {
-        // Try Supabase first
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: window.location.origin,
-            data: { display_name: displayName || email.split("@")[0] },
-          },
-        });
-        if (error) {
-          // Fallback to demo auth for testing
-          saveDemoSession(getDemoSession(email));
-          setNotice("Demo account created! You can now sign in.");
-          setEmail("");
-          setPassword("");
-          return;
-        }
-        setNotice("Check your email to confirm your account.");
-      } else if (mode === "signin") {
-        // Try demo auth first (for testing/development)
-        if (validateDemoAccount(email, password)) {
-          console.log("Demo login successful");
-          saveDemoSession(getDemoSession(email));
-          // Small delay to ensure session is saved
-          setTimeout(() => {
-            window.location.href = "/";
-          }, 100);
-          return;
-        }
 
-        // Try Supabase
-        try {
-          const { error, data } = await supabase.auth.signInWithPassword({ email, password });
-          if (error) throw error;
-          if (!remember) {
-            try {
-              const raw = localStorage.getItem("sb-" + import.meta.env.VITE_SUPABASE_PROJECT_ID + "-auth-token");
-              if (raw) sessionStorage.setItem("sb-" + import.meta.env.VITE_SUPABASE_PROJECT_ID + "-auth-token", raw);
-            } catch {
-              /* ignore */
-            }
+    // Use queueMicrotask to avoid blocking UI
+    queueMicrotask(async () => {
+      try {
+        if (mode === "signin") {
+          // Demo auth - instant
+          if (validateDemoAccount(email, password)) {
+            saveDemoSession(getDemoSession(email));
+            window.location.href = "/";
+            return;
           }
+
+          // Supabase auth
+          const { error } = await supabase.auth.signInWithPassword({ email, password });
+          if (error) throw error;
           navigate({ to: "/" });
-        } catch (supabaseError) {
-          // If Supabase fails, suggest demo account
-          console.log("Supabase login failed, Supabase error:", supabaseError);
-          throw new Error("Try demo@mascores.app with password demo123");
+        } else if (mode === "signup") {
+          const { error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              emailRedirectTo: window.location.origin,
+              data: { display_name: displayName || email.split("@")[0] },
+            },
+          });
+          if (error) {
+            saveDemoSession(getDemoSession(email));
+            setNotice("Demo account created!");
+            setEmail("");
+            setPassword("");
+          } else {
+            setNotice("Check your email to confirm.");
+          }
+        } else {
+          const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: window.location.origin + "/reset-password",
+          });
+          if (error) throw error;
+          setNotice("Password reset link sent.");
         }
-      } else {
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: window.location.origin + "/reset-password",
-        });
-        if (error) throw error;
-        setNotice("Password reset link sent. Check your inbox.");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Try demo@mascores.app / demo123");
+        setBusy(false);
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed. Try demo@mascores.app / demo123");
-    } finally {
-      setBusy(false);
-    }
+    });
   };
 
   const handleOAuth = async (provider: "google" | "apple") => {
-    setError(null);
+    if (busy) return;
     setBusy(true);
-    try {
-      const result = await lovable.auth.signInWithOAuth(provider, {
-        redirect_uri: window.location.origin,
-      });
-      if (result.error) throw result.error;
-      if (result.redirected) return;
-      navigate({ to: "/" });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "OAuth sign-in failed");
-    } finally {
-      setBusy(false);
-    }
+    setError(null);
+
+    queueMicrotask(async () => {
+      try {
+        const result = await lovable.auth.signInWithOAuth(provider, {
+          redirect_uri: window.location.origin,
+        });
+        if (result.error) throw result.error;
+        if (result.redirected) return;
+        navigate({ to: "/" });
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Try demo@mascores.app / demo123");
+        setBusy(false);
+      }
+    });
   };
 
   return (
