@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import logoLight from "@/assets/logo-mark-v2.png.asset.json";
 import logoDark from "@/assets/logo-mark-dark.png";
 import { useTheme } from "./theme-provider";
 
@@ -28,7 +27,6 @@ export function IntroSplash() {
 
   if (!visible) return null;
   const isLight = theme === "light";
-  const src = isLight ? logoLight.url : logoDark;
 
   return (
     <div
@@ -45,9 +43,9 @@ export function IntroSplash() {
       <div className="relative flex flex-col items-center gap-6 px-6">
         <div className="animate-mas-logo-in flex flex-col items-center gap-4">
           <img
-            src={src}
+            src={logoDark}
             alt="MansourAlmailScores"
-            className={`h-auto w-[min(220px,50vw)] ${isLight ? "" : "drop-shadow-[0_0_40px_rgba(37,99,235,0.45)]"}`}
+            className={`h-auto w-[min(220px,50vw)] ${isLight ? "brightness-0" : "drop-shadow-[0_0_40px_rgba(37,99,235,0.45)]"}`}
           />
           <div className={`text-2xl font-black tracking-tight ${isLight ? "text-slate-900" : "text-white"}`}>MansourAlmailScores</div>
         </div>
