@@ -9,14 +9,18 @@ export const lovable = {
   auth: {
     signInWithOAuth: async (provider: "google" | "apple" | "microsoft" | "lovable", opts?: SignInOptions) => {
       try {
+        const redirectUri = opts?.redirect_uri || window.location.origin;
+
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider: provider === "lovable" ? "google" : provider,
           options: {
-            redirectTo: opts?.redirect_uri,
+            redirectTo: redirectUri,
+            skipBrowserWarning: true,
           },
         });
 
         if (error) {
+          console.error("OAuth error:", error);
           return { error };
         }
 
@@ -27,6 +31,7 @@ export const lovable = {
 
         return data;
       } catch (e) {
+        console.error("OAuth exception:", e);
         return { error: e instanceof Error ? e : new Error(String(e)) };
       }
     },

@@ -1,4 +1,3 @@
-import logoLight from "@/assets/logo-mark-v2.png.asset.json";
 import logoDark from "@/assets/logo-mark-dark.png";
 import { useI18n } from "@/lib/i18n";
 
@@ -11,10 +10,7 @@ interface BrandLogoProps {
 /** Two artwork variants keep the blue mark blue: navy on light, white on dark. */
 export function LogoMark({ className }: { className?: string }) {
   return (
-    <>
-      <img src={logoLight.url} alt="MansourAlmailScores" className={`${className ?? ""} dark:hidden`} />
-      <img src={logoDark} alt="MansourAlmailScores" className={`hidden ${className ?? ""} dark:block`} />
-    </>
+    <img src={logoDark} alt="MansourAlmailScores" className={className ?? ""} />
   );
 }
 
