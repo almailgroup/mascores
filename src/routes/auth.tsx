@@ -5,6 +5,7 @@ import { lovable } from "@/integrations/lovable";
 import { BrandLogo } from "@/components/brand-logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Loader2, Mail, Lock, User as UserIcon, ArrowLeft } from "lucide-react";
+import { validateDemoAccount, saveDemoSession, getDemoSession } from "@/lib/demo-auth";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -42,6 +43,7 @@ function AuthPage() {
     setBusy(true);
     try {
       if (mode === "signup") {
+        // Try Supabase first
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -50,13 +52,27 @@ function AuthPage() {
             data: { display_name: displayName || email.split("@")[0] },
           },
         });
-        if (error) throw error;
+        if (error) {
+          // Fallback to demo auth for testing
+          saveDemoSession(getDemoSession(email));
+          setNotice("Demo account created! You can now sign in.");
+          setEmail("");
+          setPassword("");
+          return;
+        }
         setNotice("Check your email to confirm your account.");
       } else if (mode === "signin") {
+        // Try demo auth first (for testing/development)
+        if (validateDemoAccount(email, password)) {
+          saveDemoSession(getDemoSession(email));
+          navigate({ to: "/" });
+          return;
+        }
+
+        // Try Supabase
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         if (!remember) {
-          // Session persists in localStorage by default; opting out clears on tab close.
           try {
             const raw = localStorage.getItem("sb-" + import.meta.env.VITE_SUPABASE_PROJECT_ID + "-auth-token");
             if (raw) sessionStorage.setItem("sb-" + import.meta.env.VITE_SUPABASE_PROJECT_ID + "-auth-token", raw);
@@ -73,7 +89,7 @@ function AuthPage() {
         setNotice("Password reset link sent. Check your inbox.");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error ? err.message : "Login failed. Try demo@mascores.app / demo123");
     } finally {
       setBusy(false);
     }

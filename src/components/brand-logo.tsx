@@ -7,10 +7,16 @@ interface BrandLogoProps {
   showWordmark?: boolean;
 }
 
-/** Two artwork variants keep the blue mark blue: navy on light, white on dark. */
+/** Logo that adapts to light and dark modes */
 export function LogoMark({ className }: { className?: string }) {
   return (
-    <img src={logoDark} alt="MansourAlmailScores" className={className ?? ""} />
+    <div className={`${className ?? ""} flex items-center justify-center`}>
+      <img
+        src={logoDark}
+        alt="MansourAlmailScores"
+        className={`w-full h-full object-contain dark:brightness-100 brightness-0`}
+      />
+    </div>
   );
 }
 
