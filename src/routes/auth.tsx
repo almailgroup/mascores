@@ -64,23 +64,33 @@ function AuthPage() {
       } else if (mode === "signin") {
         // Try demo auth first (for testing/development)
         if (validateDemoAccount(email, password)) {
+          console.log("Demo login successful");
           saveDemoSession(getDemoSession(email));
-          navigate({ to: "/" });
+          // Small delay to ensure session is saved
+          setTimeout(() => {
+            window.location.href = "/";
+          }, 100);
           return;
         }
 
         // Try Supabase
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        if (!remember) {
-          try {
-            const raw = localStorage.getItem("sb-" + import.meta.env.VITE_SUPABASE_PROJECT_ID + "-auth-token");
-            if (raw) sessionStorage.setItem("sb-" + import.meta.env.VITE_SUPABASE_PROJECT_ID + "-auth-token", raw);
-          } catch {
-            /* ignore */
+        try {
+          const { error, data } = await supabase.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+          if (!remember) {
+            try {
+              const raw = localStorage.getItem("sb-" + import.meta.env.VITE_SUPABASE_PROJECT_ID + "-auth-token");
+              if (raw) sessionStorage.setItem("sb-" + import.meta.env.VITE_SUPABASE_PROJECT_ID + "-auth-token", raw);
+            } catch {
+              /* ignore */
+            }
           }
+          navigate({ to: "/" });
+        } catch (supabaseError) {
+          // If Supabase fails, suggest demo account
+          console.log("Supabase login failed, Supabase error:", supabaseError);
+          throw new Error("Try demo@mascores.app with password demo123");
         }
-        navigate({ to: "/" });
       } else {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: window.location.origin + "/reset-password",
