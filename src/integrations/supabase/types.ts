@@ -249,6 +249,8 @@ export type Database = {
           lower_division_id: string | null
           name: string
           parent_competition_id: string | null
+          region: string | null
+          scope: string
           season: string | null
           seasons: string[]
           slug: string
@@ -275,6 +277,8 @@ export type Database = {
           lower_division_id?: string | null
           name: string
           parent_competition_id?: string | null
+          region?: string | null
+          scope?: string
           season?: string | null
           seasons?: string[]
           slug: string
@@ -301,6 +305,8 @@ export type Database = {
           lower_division_id?: string | null
           name?: string
           parent_competition_id?: string | null
+          region?: string | null
+          scope?: string
           season?: string | null
           seasons?: string[]
           slug?: string
@@ -336,6 +342,50 @@ export type Database = {
           {
             foreignKeyName: "competitions_title_holder_team_id_fkey"
             columns: ["title_holder_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fifa_rankings: {
+        Row: {
+          created_at: string
+          id: string
+          note: string | null
+          points: number
+          previous_rank: number | null
+          rank: number
+          season: string | null
+          team_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          points?: number
+          previous_rank?: number | null
+          rank: number
+          season?: string | null
+          team_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          points?: number
+          previous_rank?: number | null
+          rank?: number
+          season?: string | null
+          team_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fifa_rankings_team_id_fkey"
+            columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "teams"
             referencedColumns: ["id"]
@@ -894,6 +944,54 @@ export type Database = {
           url?: string
         }
         Relationships: []
+      }
+      national_player_kits: {
+        Row: {
+          created_at: string
+          id: string
+          photo_url: string | null
+          player_id: string
+          position: string | null
+          shirt_number: number | null
+          team_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          photo_url?: string | null
+          player_id: string
+          position?: string | null
+          shirt_number?: number | null
+          team_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          photo_url?: string | null
+          player_id?: string
+          position?: string | null
+          shirt_number?: number | null
+          team_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "national_player_kits_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "national_player_kits_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       national_team_players: {
         Row: {
@@ -1706,6 +1804,14 @@ export type Database = {
           id: string
         }[]
       }
+      fuzzy_search: {
+        Args: { _limit?: number; _q: string }
+        Returns: {
+          id: string
+          kind: string
+          score: number
+        }[]
+      }
       grant_admin: { Args: { _uid: string }; Returns: undefined }
       is_admin: { Args: { _uid: string }; Returns: boolean }
       recompute_standings: { Args: { _comp: string }; Returns: undefined }
@@ -1714,6 +1820,8 @@ export type Database = {
         Returns: undefined
       }
       revoke_admin: { Args: { _uid: string }; Returns: undefined }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
     }
     Enums: {
       [_ in never]: never
