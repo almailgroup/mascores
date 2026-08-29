@@ -1,4 +1,5 @@
-import { eventIcon, type Team } from "@/lib/db";
+import { type Team } from "@/lib/db";
+import { EventIcon } from "@/components/event-icon";
 import { TeamCrest } from "@/components/team-crest";
 import { useTx } from "@/lib/auto-translate";
 
@@ -46,7 +47,7 @@ export function MatchMomentum({
   const markRow = (side: "home" | "away") => (
     <div className="relative h-6">
       {marks.filter((e) => (side === "home" ? e.team_id === home?.id : e.team_id === away?.id)).map((e, i) => (
-        <span key={i} className="absolute -translate-x-1/2 text-sm leading-6" style={{ left: `${((Math.min(e.minute!, total) - 0.5) / total) * 100}%` }}>{eventIcon(e.type)}</span>
+        <span key={i} className="absolute -translate-x-1/2" style={{ left: `${((Math.min(e.minute!, total) - 0.5) / total) * 100}%` }}><EventIcon type={e.type} className="h-4 w-4" /></span>
       ))}
     </div>
   );
