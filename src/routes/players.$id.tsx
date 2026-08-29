@@ -6,6 +6,7 @@ import { MediaGallery } from "@/components/media-gallery";
 import { AppShell, BackButton, EmptyState, LoadingSkeleton } from "@/components/app-shell";
 import { supabase, formatKickoff, formatHeight, formatDob, type Player, type Team, type Match, type Transfer } from "@/lib/db";
 import { FavoriteButton } from "@/hooks/use-favorites";
+import { EventIcon } from "@/components/event-icon";
 import { FlagIcon } from "@/components/flag";
 import { useI18n } from "@/lib/i18n";
 import { PlayerAvatar } from "@/components/player-avatar";
@@ -270,10 +271,10 @@ function PlayerMatches({ data, playerId, playerTeamId }: { data: PlayerMatchData
                     <TeamLine team={m.away} dim={!!isHome} />
                   </div>
                   <div className="flex w-12 shrink-0 items-center justify-end gap-0.5 text-[0.7rem]">
-                    {goals > 0 && <span title={tx("Goal") ?? "Goal"}>⚽{goals > 1 ? num(String(goals)) : ""}</span>}
+                    {goals > 0 && <span className="flex items-center gap-0.5"><EventIcon type="goal" className="h-4 w-4" />{goals > 1 ? num(String(goals)) : ""}</span>}
                     {assists > 0 && <span title={tx("Assist") ?? "Assist"}>👟</span>}
-                    {yellow && <span className="h-3 w-2 rounded-sm bg-yellow-400" />}
-                    {red && <span className="h-3 w-2 rounded-sm bg-red-600" />}
+                    {yellow && <EventIcon type="yellow" className="h-4 w-4" />}
+                    {red && <EventIcon type="red" className="h-4 w-4" />}
                   </div>
                   <div className="w-6 shrink-0 text-right text-sm font-bold leading-tight tabular-nums">
                     <div className={isAway ? "text-muted-foreground" : ""}>{m.home_score != null ? num(String(m.home_score)) : ""}</div>

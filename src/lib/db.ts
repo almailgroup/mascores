@@ -75,6 +75,7 @@ export const EVENT_META: Record<string, { label: string; icon: string }> = {
   second_yellow: { label: "Second yellow", icon: "🟨🟥" },
   red: { label: "Red card", icon: "🟥" },
   substitution: { label: "Substitution", icon: "🔁" },
+  injury_sub: { label: "Injury substitution", icon: "🚑" },
   sub: { label: "Substitution", icon: "🔁" },
   var: { label: "VAR", icon: "📺" },
   assist: { label: "Assist", icon: "👟" },

@@ -2,13 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   supabase, STATUS_LABELS, matchClockSeconds, formatClock,
-  eventIcon, ratingClass,
+  ratingClass,
   type Match, type Team, type Player, type MatchEvent, type Lineup,
 } from "@/lib/db";
 import { Field, Modal, inputCls, btnPrimary, btnGhost, btnDanger } from "./ui";
 import { VenueSelect } from "./venue-select";
 import { Play, Pause, Plus, Trash2, RotateCcw, Check, Info, ListChecks, Radio, BarChart3 } from "lucide-react";
 import { TeamCrest } from "@/components/team-crest";
+import { EventIcon, hasEventArt } from "@/components/event-icon";
 import { PlayerAvatar } from "@/components/player-avatar";
 import { MediaManager } from "./media-manager";
 import { fetchCallUps, applyCallUp } from "@/lib/national";
@@ -28,6 +29,7 @@ export const EVENT_TYPES = [
   { v: "second_yellow", l: "Second yellow" },
   { v: "red", l: "Red card" },
   { v: "substitution", l: "Substitution" },
+  { v: "injury_sub", l: "Injury substitution" },
   { v: "var", l: "VAR" },
   { v: "note", l: "Note" },
 ];
@@ -401,9 +403,9 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
 
   /** Icons a player earned in this match: goals, cards, and a swap arrow when subbed off/on. */
   const iconsFor = (playerId: string) => (eventsQ.data ?? []).flatMap((e) => {
-    if (e.sub_out_player_id === playerId) return [eventIcon("substitution")];
+    if (e.sub_out_player_id === playerId) return ["substitution"];
     if (e.player_id !== playerId) return [];
-    return [eventIcon(e.type)];
+    return hasEventArt(e.type) ? [e.type] : [];
   });
   const ratingFor = (playerId: string) => (ratingsQ.data ?? []).find((r) => r.player_id === playerId)?.rating ?? null;
 
@@ -514,7 +516,7 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
                             {p ? <PlayerAvatar src={p.photo_url} name={p.name} size="sm" className="h-10 w-10" />
                               : <span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-dashed border-emerald-300/60 bg-background/70"><Plus className="h-4 w-4 text-emerald-200" /></span>}
                             {kit != null && <span className="absolute -left-1 -top-1 rounded-full bg-primary px-1.5 text-[0.55rem] font-black text-primary-foreground ring-2 ring-background">{kit}</span>}
-                            {icons.length > 0 && <span className="absolute -right-2 -top-1 flex gap-0.5 rounded-full bg-background px-1 text-[0.6rem] leading-tight ring-2 ring-background">{icons.slice(0, 3).map((ic, k) => <span key={k}>{ic}</span>)}</span>}
+                            {icons.length > 0 && <span className="absolute -right-2 -top-1 z-30 flex items-center gap-px rounded-full bg-background p-0.5 ring-2 ring-background">{icons.slice(0, 3).map((ic, k) => <EventIcon key={k} type={ic} className="h-4 w-4" />)}</span>}
                             {rating != null && <span className={`absolute -bottom-1 -right-2 rounded-md px-1 text-[0.55rem] font-black shadow ring-2 ring-background ${ratingClass(Number(rating))}`}>{Number(rating).toFixed(1)}</span>}
                           </span>
                           <span className="line-clamp-2 text-[0.55rem] font-semibold leading-tight text-foreground">{p ? p.name : slot === "GK" ? "Goalkeeper" : "Add player"}</span>
@@ -542,7 +544,7 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
                         <span className="relative block">
                           <PlayerAvatar src={p?.photo_url} name={p?.name ?? "?"} size="sm" className="h-10 w-10" />
                           {(l.shirt_number ?? p?.shirt_number) != null && <span className="absolute -left-1 -top-1 rounded-full bg-muted px-1.5 text-[0.55rem] font-black ring-2 ring-background">{l.shirt_number ?? p?.shirt_number}</span>}
-                          {icons.length > 0 && <span className="absolute -right-2 -top-1 flex gap-0.5 rounded-full bg-background px-1 text-[0.6rem] leading-tight ring-2 ring-background">{icons.slice(0, 3).map((ic, k) => <span key={k}>{ic}</span>)}</span>}
+                          {icons.length > 0 && <span className="absolute -right-2 -top-1 z-30 flex items-center gap-px rounded-full bg-background p-0.5 ring-2 ring-background">{icons.slice(0, 3).map((ic, k) => <EventIcon key={k} type={ic} className="h-4 w-4" />)}</span>}
                           {rating != null && <span className={`absolute -bottom-1 -right-2 rounded-md px-1 text-[0.55rem] font-black shadow ring-2 ring-background ${ratingClass(Number(rating))}`}>{Number(rating).toFixed(1)}</span>}
                         </span>
                         <span className="line-clamp-2 text-[0.55rem] font-semibold leading-tight">{p?.name ?? "—"}</span>
@@ -790,7 +792,7 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
         <h3 className="mb-2 mt-5 text-sm font-bold">Add match event</h3>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {EVENT_TYPES.map((t) => (
-            <button key={t.v} className={btnGhost} onClick={() => setComposer({ type: t.v })}><span className="text-base leading-none">{eventIcon(t.v)}</span> {t.l}</button>
+            <button key={t.v} className={btnGhost} onClick={() => setComposer({ type: t.v })}><EventIcon type={t.v} className="h-5 w-5" /> {t.l}</button>
           ))}
         </div>
 
@@ -817,7 +819,7 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
           {(eventsQ.data ?? []).map((e) => (
             <div key={e.id} className="flex items-center gap-2 rounded-lg border border-border bg-background/60 p-2 text-xs">
               <span className="w-10 font-mono text-muted-foreground">{e.minute ?? "?"}{e.extra ? `+${e.extra}` : ""}′</span>
-              <span className="flex w-28 shrink-0 items-center gap-1 text-[0.65rem] font-semibold uppercase tracking-widest"><span className="text-sm leading-none">{eventIcon(e.type)}</span>{(EVENT_TYPES.find((t) => t.v === e.type)?.l ?? e.type)}</span>
+              <span className="flex w-28 shrink-0 items-center gap-1 text-[0.65rem] font-semibold uppercase tracking-widest"><EventIcon type={e.type} className="h-4 w-4" />{(EVENT_TYPES.find((t) => t.v === e.type)?.l ?? e.type)}</span>
               <span className="flex-1 truncate">{playerName(e.player_id)}{e.assist_player_id ? ` (assist ${playerName(e.assist_player_id)})` : ""} {e.description ? `— ${e.description}` : ""}</span>
               <span className="shrink-0 text-[0.6rem] text-muted-foreground">{teamName(e.team_id)}</span>
               <button onClick={() => setEditing(e)} className="text-primary">Edit</button>
@@ -865,7 +867,7 @@ function EventForm({
 }) {
   const [ev, setEv] = useState<Partial<MatchEvent>>(initial);
   const isGoal = ev.type === "goal" || ev.type === "penalty_goal" || ev.type === "own_goal";
-  const isSub = ev.type === "substitution";
+  const isSub = ev.type === "substitution" || ev.type === "injury_sub";
   const teamName = (id: string) => teams.find((t) => t.id === id)?.name ?? "";
   const pool = players.filter((p) => !ev.team_id || p.team_id === ev.team_id);
 
