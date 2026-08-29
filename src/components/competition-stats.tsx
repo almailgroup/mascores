@@ -1,3 +1,4 @@
+import { EventIcon } from "@/components/event-icon";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -90,7 +91,7 @@ function PlayerStats({ rows }: { rows: PlayerStat[] }) {
       <Card title="Cards">
         {booked.map((p, i) => (
           <PlayerRow key={p.player_id} p={p} rank={i + 1}
-            value={<span className="text-xs font-semibold tabular-nums">{p.yellow > 0 ? `🟨 ${num(p.yellow)}` : ""} {p.red > 0 ? `🟥 ${num(p.red)}` : ""}</span>} />
+            value={<span className="flex items-center justify-end gap-1 text-xs font-semibold tabular-nums">{p.yellow > 0 && <><EventIcon type="yellow" className="h-4 w-4" />{num(p.yellow)}</>}{p.red > 0 && <><EventIcon type="red" className="h-4 w-4" />{num(p.red)}</>}</span>} />
         ))}
       </Card>
     </div>
@@ -135,7 +136,7 @@ function TeamStats({ rows }: { rows: TeamStat[] }) {
               <td className="py-2.5 text-center tabular-nums">{num(t.goals_against)}</td>
               <td className="py-2.5 text-center tabular-nums">{t.avg_possession == null ? "—" : `${num(Math.round(t.avg_possession))}%`}</td>
               <td className="py-2.5 text-center tabular-nums">{t.avg_shots == null ? "—" : num(t.avg_shots.toFixed(1))}</td>
-              <td className="py-2.5 pe-4 text-center text-xs tabular-nums">🟨 {num(t.yellow)} 🟥 {num(t.red)}</td>
+              <td className="py-2.5 pe-4 text-xs tabular-nums"><span className="flex items-center justify-center gap-1"><EventIcon type="yellow" className="h-4 w-4" />{num(t.yellow)}<EventIcon type="red" className="h-4 w-4" />{num(t.red)}</span></td>
             </tr>
           ))}
         </tbody>
