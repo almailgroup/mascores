@@ -221,13 +221,11 @@ function MatchPage() {
         const showPitch = match.lineup_mode === "formation" && starters.length > 0;
         const marksFor = (playerId: string) => (events.data ?? [])
           .map((e) => {
-            if (e.assist_player_id === playerId) return eventIcon("assist");
-            if (e.player_id === playerId || e.player?.id === playerId) return eventIcon(e.type);
-            if (e.sub_out_player_id === playerId) return eventIcon("substitution");
+            if (e.player_id === playerId || e.player?.id === playerId) return e.type;
+            if (e.sub_out_player_id === playerId) return "substitution";
             return "";
           })
-          .filter((icon) => icon && icon !== "•")
-          .join("");
+          .filter((type) => type && hasEventArt(type));
         return (
           <div key={side} className="rounded-2xl border border-border bg-card p-4">
             <h3 className="mb-3 flex items-center gap-2 font-bold">{tx(team?.name) ?? "TBD"}{showPitch && <span className="rounded bg-muted px-2 py-0.5 text-[0.65rem] font-semibold">{num(activeFormation)}</span>}</h3>
