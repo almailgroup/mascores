@@ -29,6 +29,7 @@ export const EVENT_TYPES = [
   { v: "second_yellow", l: "Second yellow" },
   { v: "red", l: "Red card" },
   { v: "substitution", l: "Substitution" },
+  { v: "injury_sub", l: "Injury substitution" },
   { v: "var", l: "VAR" },
   { v: "note", l: "Note" },
 ];
@@ -866,7 +867,7 @@ function EventForm({
 }) {
   const [ev, setEv] = useState<Partial<MatchEvent>>(initial);
   const isGoal = ev.type === "goal" || ev.type === "penalty_goal" || ev.type === "own_goal";
-  const isSub = ev.type === "substitution";
+  const isSub = ev.type === "substitution" || ev.type === "injury_sub";
   const teamName = (id: string) => teams.find((t) => t.id === id)?.name ?? "";
   const pool = players.filter((p) => !ev.team_id || p.team_id === ev.team_id);
 
