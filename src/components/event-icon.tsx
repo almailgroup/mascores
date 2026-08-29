@@ -24,6 +24,10 @@ const ART: Record<string, string> = {
   sub: substitution.url,
   injury_sub: injurySub.url,
   injury_substitution: injurySub.url,
+  var: varArt.url,
+  VAR: varArt.url,
+  note: noteArt.url,
+  notes: noteArt.url,
 };
 
 export function hasEventArt(type: string) {
