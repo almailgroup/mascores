@@ -6,6 +6,8 @@ import redCard from "@/assets/events/red-card.png.asset.json";
 import substitution from "@/assets/events/substitution.png.asset.json";
 import injurySub from "@/assets/events/injury-substitution.png.asset.json";
 import ownGoal from "@/assets/events/own-goal.png.asset.json";
+import varArt from "@/assets/events/var.png.asset.json";
+import noteArt from "@/assets/events/note.png.asset.json";
 import { eventLabel } from "@/lib/db";
 
 /** Custom branded artwork for each match event type. */
