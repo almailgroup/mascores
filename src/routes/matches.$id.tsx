@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { AppShell, BackButton, EmptyState, LoadingSkeleton } from "@/components/app-shell";
-import { supabase, STATUS_LABELS, roundLabel, matchClockSeconds, formatClock, eventIcon, eventLabel, ratingClass, type Match, type Team, type MatchEvent, type Lineup, type Player, type StandingRow } from "@/lib/db";
+import { supabase, STATUS_LABELS, roundLabel, matchClockSeconds, formatClock, eventLabel, ratingClass, type Match, type Team, type MatchEvent, type Lineup, type Player, type StandingRow } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 import { PlayCircle, Radio } from "lucide-react";
 import { useTx, useNum, useDates } from "@/lib/auto-translate";
@@ -12,6 +12,7 @@ import { MatchPrediction } from "@/components/match-prediction";
 import { MatchMomentum } from "@/components/match-momentum";
 import { MapPin, Users } from "lucide-react";
 import { FlagIcon } from "@/components/flag";
+import { EventIcon as EventArt, hasEventArt } from "@/components/event-icon";
 import { nationalOverrideMap, applyCallUp } from "@/lib/national";
 
 /** Same slot keys the admin pitch board writes, so the public pitch mirrors it. */
@@ -252,7 +253,7 @@ function MatchPage() {
                             {(lu.shirt_number ?? lu.player?.shirt_number) != null && (
                               <span className="absolute -left-1 -top-1 z-30 flex h-4 min-w-4 items-center justify-center rounded-full bg-background px-1 text-[0.6rem] font-black leading-none text-foreground shadow ring-1 ring-border">{num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}</span>
                             )}
-                            {marks && <span className="absolute -right-2 -top-2 z-30 flex min-h-5 min-w-5 items-center justify-center gap-px rounded-full bg-background px-1 text-[0.68rem] leading-none shadow ring-2 ring-background">{marks}</span>}
+                            {marks.length > 0 && <span className="absolute -right-2 -top-2 z-30 flex items-center gap-px rounded-full bg-background p-0.5 shadow ring-2 ring-background">{marks.slice(0, 3).map((t, k) => <EventArt key={k} type={t} className="h-4 w-4" />)}</span>}
                           </span>
                           <span className="line-clamp-2 text-[0.6rem] font-semibold leading-tight text-white drop-shadow">{tx(lu.player?.name)}</span>
                           {pitchRating != null && <span className={`rounded px-1.5 text-[0.6rem] font-black leading-4 ${ratingClass(Number(pitchRating))}`}>{num(pitchRating)}</span>}
@@ -275,7 +276,7 @@ function MatchPage() {
                     <span className="w-6 shrink-0 text-center text-xs font-bold tabular-nums text-muted-foreground">{num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}</span>
                     <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-muted">{lu.player?.photo_url && <img src={lu.player.photo_url} alt="" className="h-full w-full object-cover" />}</div>
                     <span className="min-w-0 flex-1 truncate font-semibold">{tx(lu.player?.name)}</span>
-                    {marks && <span className="shrink-0 text-xs">{marks}</span>}
+                    {marks.length > 0 && <span className="flex shrink-0 items-center gap-1">{marks.slice(0, 4).map((t, k) => <EventArt key={k} type={t} className="h-4 w-4" />)}</span>}
                     {rating != null && <span className={`shrink-0 rounded px-2 py-1 text-xs font-black ${ratingClass(Number(rating))}`}>{num(rating)}</span>}
                     {lu.is_starting && <span className="shrink-0 text-xs text-muted-foreground">{tx(lu.position_code ?? "XI")}</span>}
                   </Link>
@@ -387,7 +388,7 @@ function MatchStandings({ competitionId, season, liveTeamIds, highlightIds }: { 
 
 
 function EventIcon({ type }: { type: string }) {
-  return <span className="shrink-0 text-base leading-none">{eventIcon(type)}</span>;
+  return <EventArt type={type} className="h-5 w-5" />;
 }
 
 type TimelineEvent = MatchEvent & { player: Player | null; team: Team | null };
