@@ -125,8 +125,9 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
         <div className="flex flex-wrap gap-2">{competitionId && <button className={btnGhost} onClick={() => setLibraryOpen(true)}><Library className="h-3.5 w-3.5" /> Add existing</button>}<button className={btnPrimary} onClick={() => { setForm(competition ? { country: competition.country ?? null, country_code: competition.country_code ?? null, is_national: !!competition.is_national } : lockKind ? { is_national: lockKind === "national" } : {}); setOpen(true); }}><Plus className="h-3.5 w-3.5" /> New team</button></div>
       </div>
       <div className="grid gap-2">
-        {!competitionId && (
-          <div className="mb-1 flex flex-wrap items-center gap-2">
+        <div className="mb-1 flex flex-wrap items-center gap-2">
+          {!competitionId && (
+            <>
             {!lockKind && <div className="flex gap-1 rounded-full border border-border bg-card p-1 text-xs">
               {(["all", "clubs", "national"] as const).map((k) => (
                 <button key={k} type="button" onClick={() => setKind(k)}
@@ -135,12 +136,13 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
                 </button>
               ))}
             </div>}
-            <input className={`${inputCls} max-w-48`} placeholder="Search teams" value={search} onChange={(e) => setSearch(e.target.value)} />
-          </div>
-        )}
+            </>
+          )}
+          <input className={`${inputCls} max-w-48`} placeholder="Search teams" value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
         {(q.data ?? [])
           .filter((t) => (competitionId ? true : activeKind === "all" || (activeKind === "national" ? t.is_national : !t.is_national)))
-          .filter((t) => (competitionId || !search.trim() ? true : t.name.toLowerCase().includes(search.trim().toLowerCase())))
+          .filter((t) => (!search.trim() ? true : t.name.toLowerCase().includes(search.trim().toLowerCase())))
           .slice(0, competitionId ? 500 : 120)
           .map((t) => (
           <div key={t.id} className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-3 sm:gap-3">
