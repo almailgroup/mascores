@@ -15,15 +15,19 @@ export function CompetitionIntro({ theme, name, season, logoUrl }: {
   const [phase, setPhase] = useState<"hidden" | "playing" | "closing">("hidden");
 
   useEffect(() => {
-    const key = `comp-intro:${theme.key}:${name}:${season ?? ""}`;
     if (typeof window === "undefined") return;
+    const key = `comp-intro:${theme.key}:${name}:${season ?? ""}`;
     if (window.sessionStorage.getItem(key)) return;
     window.sessionStorage.setItem(key, "1");
     setPhase("playing");
+  }, [theme.key, name, season]);
+
+  useEffect(() => {
+    if (phase !== "playing") return;
     const close = window.setTimeout(() => setPhase("closing"), 2100);
     const done = window.setTimeout(() => setPhase("hidden"), 2700);
     return () => { window.clearTimeout(close); window.clearTimeout(done); };
-  }, [theme.key, name, season]);
+  }, [phase]);
 
   if (phase === "hidden") return null;
 
