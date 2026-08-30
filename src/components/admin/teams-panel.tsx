@@ -219,6 +219,7 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
   const qc = useQueryClient();
   const [editing, setEditing] = useState<Partial<Player> | null>(null);
   const [addExisting, setAddExisting] = useState(false);
+  const [batchOpen, setBatchOpen] = useState(false);
   const [pick, setPick] = useState("");
   const [poolSearch, setPoolSearch] = useState("");
   const [confirmPlayer, setConfirmPlayer] = useState<Player | null>(null);
