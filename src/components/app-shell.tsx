@@ -1,5 +1,5 @@
 import { Link, useLocation, useRouter } from "@tanstack/react-router";
-import { Home, Search, Trophy, Newspaper, ArrowLeftRight, Settings, LogIn, ArrowLeft } from "lucide-react";
+import { Home, Search, Trophy, Newspaper, ArrowLeftRight, Ticket, Settings, LogIn, ArrowLeft } from "lucide-react";
 import { useEffect, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,13 +7,14 @@ import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import { BrandLogo } from "@/components/brand-logo";
 
-type NavItem = { to: "/" | "/search" | "/competitions" | "/news" | "/transfers" | "/settings"; labelKey: string; icon: typeof Home; exact?: boolean };
+type NavItem = { to: "/" | "/search" | "/competitions" | "/news" | "/transfers" | "/tickets" | "/settings"; labelKey: string; icon: typeof Home; exact?: boolean };
 const NAV: NavItem[] = [
   { to: "/", labelKey: "nav.home", icon: Home, exact: true },
   { to: "/search", labelKey: "nav.search", icon: Search },
   { to: "/competitions", labelKey: "nav.competitions", icon: Trophy },
   { to: "/news", labelKey: "nav.news", icon: Newspaper },
   { to: "/transfers", labelKey: "nav.transfers", icon: ArrowLeftRight },
+  { to: "/tickets", labelKey: "nav.tickets", icon: Ticket },
   { to: "/settings", labelKey: "nav.settings", icon: Settings },
 ];
 
