@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { AppShell, BackButton, EmptyState, LoadingSkeleton } from "@/components/app-shell";
-import { supabase, STATUS_LABELS, roundLabel, matchClockSeconds, formatClock, eventLabel, ratingClass, type Match, type Team, type MatchEvent, type Lineup, type Player, type StandingRow } from "@/lib/db";
+import { supabase, STATUS_LABELS, roundLabel, matchClockSeconds, formatClock, eventLabel, ratingClass, formatRating, type Match, type Team, type MatchEvent, type Lineup, type Player, type StandingRow } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 import { PlayCircle, Radio } from "lucide-react";
 import { useTx, useNum, useDates } from "@/lib/auto-translate";
@@ -256,7 +256,7 @@ function MatchPage() {
                             {marks.length > 0 && <span className="absolute -right-2 -top-2 z-30 flex items-center gap-px rounded-full bg-background p-0.5 shadow ring-2 ring-background">{marks.slice(0, 3).map((t, k) => <EventArt key={k} type={t} className="h-4 w-4" />)}</span>}
                           </span>
                           <span className="line-clamp-2 text-[0.6rem] font-semibold leading-tight text-white drop-shadow">{tx(lu.player?.name)}</span>
-                          {pitchRating != null && <span className={`rounded px-1.5 text-[0.6rem] font-black leading-4 ${ratingClass(Number(pitchRating))}`}>{num(pitchRating)}</span>}
+                          {pitchRating != null && <span className={`rounded px-1.5 text-[0.6rem] font-black leading-4 ${ratingClass(Number(pitchRating))}`}>{num(formatRating(pitchRating))}</span>}
                         </Link>
                       );
                     })}
@@ -277,7 +277,7 @@ function MatchPage() {
                     <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-muted">{lu.player?.photo_url && <img src={lu.player.photo_url} alt="" className="h-full w-full object-cover" />}</div>
                     <span className="min-w-0 flex-1 truncate font-semibold">{tx(lu.player?.name)}</span>
                     {marks.length > 0 && <span className="flex shrink-0 items-center gap-1">{marks.slice(0, 4).map((t, k) => <EventArt key={k} type={t} className="h-4 w-4" />)}</span>}
-                    {rating != null && <span className={`shrink-0 rounded px-2 py-1 text-xs font-black ${ratingClass(Number(rating))}`}>{num(rating)}</span>}
+                    {rating != null && <span className={`shrink-0 rounded px-2 py-1 text-xs font-black ${ratingClass(Number(rating))}`}>{num(formatRating(rating))}</span>}
                     {lu.is_starting && <span className="shrink-0 text-xs text-muted-foreground">{tx(lu.position_code ?? "XI")}</span>}
                   </Link>
                 );
