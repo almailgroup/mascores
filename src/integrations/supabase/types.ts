@@ -1557,6 +1557,54 @@ export type Database = {
           },
         ]
       }
+      team_season_players: {
+        Row: {
+          created_at: string
+          id: string
+          player_id: string
+          position: string | null
+          season: string
+          shirt_number: number | null
+          team_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          player_id: string
+          position?: string | null
+          season: string
+          shirt_number?: number | null
+          team_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          player_id?: string
+          position?: string | null
+          season?: string
+          shirt_number?: number | null
+          team_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_season_players_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_season_players_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_titles: {
         Row: {
           competition_id: string | null
