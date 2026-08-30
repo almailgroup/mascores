@@ -105,26 +105,30 @@ export function StandingsPanel({ competitionId, season = null }: { competitionId
 
   const addGroup = async () => {
     const name = window.prompt("Group name (e.g. Group A)");
-    if (!name) return;
-    // Convert an un-grouped table into the first group so rows stay visible.
+    if (!name?.trim()) return;
+    const label = name.trim();
+    // The first group takes over the un-grouped table; later groups start empty and teams are moved into them.
     if (groups.length === 1 && groups[0] === SINGLE && rows.length > 0) {
-      await supabase.from("standings_rows").update({ group_label: name }).eq("competition_id", competitionId).is("group_label", null);
-    } else {
-      qc.setQueryData<StandingRow[]>(["admin", "standings", competitionId, season], (o) => o ?? []);
+      let update = supabase.from("standings_rows").update({ group_label: label }).eq("competition_id", competitionId).is("group_label", null);
+      if (season) update = update.eq("season", season);
+      await update;
     }
+    setPendingGroups((g) => (g.includes(label) ? g : [...g, label]));
     invalidate();
-    setPendingGroups((g) => (g.includes(name) ? g : [...g, name]));
   };
 
   const [pendingGroups, setPendingGroups] = useState<string[]>([]);
   const allGroups = useMemo(() => {
-    const set = new Set(groups.filter((g) => g !== SINGLE || pendingGroups.length === 0));
+    const hasUngrouped = rows.some((r) => !r.group_label);
+    const set = new Set(groups.filter((g) => g !== SINGLE || hasUngrouped || (pendingGroups.length === 0 && rows.length === 0)));
     for (const g of pendingGroups) set.add(g);
-    return [...set];
-  }, [groups, pendingGroups]);
+    return [...set].sort((a, b) => (a === SINGLE ? -1 : b === SINGLE ? 1 : a.localeCompare(b)));
+  }, [groups, pendingGroups, rows]);
 
   const toSingleTable = async () => {
-    await supabase.from("standings_rows").update({ group_label: null }).eq("competition_id", competitionId);
+    let update = supabase.from("standings_rows").update({ group_label: null }).eq("competition_id", competitionId);
+    if (season) update = update.eq("season", season);
+    await update;
     setPendingGroups([]);
     invalidate();
   };

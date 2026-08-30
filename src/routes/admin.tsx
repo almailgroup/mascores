@@ -6,10 +6,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import { unlockAdmin } from "@/lib/admin.functions";
-import { Loader2, ShieldCheck, ArrowLeft, Bot, CalendarDays, Newspaper, Radio, Repeat2, Trophy, Landmark, Shield, Users, LogOut, Flag } from "lucide-react";
+import { Loader2, ShieldCheck, ArrowLeft, Bot, CalendarDays, Newspaper, Radio, Repeat2, Trophy, Landmark, Shield, Users, LogOut, Flag, Globe } from "lucide-react";
 import type { Competition } from "@/lib/db";
 import { CompetitionsPanel } from "@/components/admin/competitions-panel";
 import { TeamsPanel } from "@/components/admin/teams-panel";
+import { FifaRankingsPanel } from "@/components/admin/fifa-rankings-panel";
 import { PlayersPanel } from "@/components/admin/players-panel";
 import { MatchesPanel } from "@/components/admin/matches-panel";
 import { StandingsPanel } from "@/components/admin/standings-panel";
@@ -32,7 +33,7 @@ function AdminPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [tab, setTab] = useState<"competitions" | "teams" | "players" | "news" | "ai" | "venues" | "channels" | "transfers" | "reports">("competitions");
+  const [tab, setTab] = useState<"competitions" | "teams" | "countries" | "players" | "news" | "ai" | "venues" | "channels" | "transfers" | "reports">("competitions");
   const [openComp, setOpenComp] = useState<Competition | null>(null);
   const [adminSeason, setAdminSeason] = useState<string | null>(null);
   const [compTab, setCompTab] = useState<"overview" | "teams" | "matches" | "standings" | "awards" | "media">("overview");
@@ -101,7 +102,7 @@ function AdminPage() {
           </div>
           <div className="mt-6">
             {compTab === "overview" && <CompetitionOverview competition={openComp} />}
-            {compTab === "teams" && <TeamsPanel competitionId={openComp.id} season={adminSeason ?? openComp.season ?? null} />}
+            {compTab === "teams" && <TeamsPanel competitionId={openComp.id} season={adminSeason ?? openComp.season ?? null} competition={openComp} />}
             {compTab === "matches" && <MatchesPanel competitionId={openComp.id} season={adminSeason ?? openComp.season ?? null} friendly={openComp.format === "friendly"} />}
             {compTab === "standings" && openComp.format !== "friendly" && <StandingsPanel competitionId={openComp.id} season={adminSeason ?? openComp.season ?? null} />}
             {compTab === "awards" && openComp.format !== "friendly" && <CompetitionAwardsManager competitionId={openComp.id} />}
@@ -124,7 +125,7 @@ function AdminPage() {
           </div>
           <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
             {([
-              ["competitions", Trophy], ["teams", Shield], ["players", Users], ["news", Newspaper], ["ai", Bot], ["venues", Landmark], ["channels", Radio], ["transfers", Repeat2], ["reports", Flag],
+              ["competitions", Trophy], ["teams", Shield], ["countries", Globe], ["players", Users], ["news", Newspaper], ["ai", Bot], ["venues", Landmark], ["channels", Radio], ["transfers", Repeat2], ["reports", Flag],
             ] as const).map(([k, Icon]) => (
               <button key={k} onClick={() => setTab(k)} className={`flex min-h-20 flex-col items-start justify-between rounded-lg border p-3 text-left font-semibold capitalize ${tab === k ? "border-primary bg-primary/10 text-primary" : "border-border bg-card hover:border-primary/50"}`}><Icon className="h-4 w-4" />{k === "ai" ? "Almail AI" : k}</button>
             ))}
@@ -133,8 +134,17 @@ function AdminPage() {
             {tab === "competitions" && <CompetitionsPanel onOpen={setOpenComp} />}
             {tab === "teams" && (
               <div>
-                <p className="mb-4 text-sm text-muted-foreground">Every saved team in one place — create and edit clubs, squads and coaches without opening a competition.</p>
-                <TeamsPanel competitionId={null} />
+                <p className="mb-4 text-sm text-muted-foreground">Every saved club in one place — create and edit clubs, squads and coaches without opening a competition.</p>
+                <TeamsPanel competitionId={null} lockKind="clubs" />
+              </div>
+            )}
+            {tab === "countries" && (
+              <div className="space-y-10">
+                <div>
+                  <p className="mb-4 text-sm text-muted-foreground">National teams live here, separate from clubs — squads are call-ups, so players keep their club.</p>
+                  <TeamsPanel competitionId={null} lockKind="national" />
+                </div>
+                <FifaRankingsPanel />
               </div>
             )}
             {tab === "players" && <PlayersPanel />}

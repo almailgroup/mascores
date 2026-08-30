@@ -63,19 +63,41 @@ function SearchPage() {
     enabled: q.length > 1,
     queryKey: ["search", q, terms.join("|"), matchedCountries.map((c) => c.code).join("|")],
     queryFn: async () => {
-      const [teams, players, comps, coaches, venues] = await Promise.all([
-        supabase.from("teams").select("id,name,short_name,country,country_code,logo_url").or(orFilter(["name", "short_name"])).limit(20),
-        supabase.from("players").select("id,name,position,photo_url,nationality,nationality_code,team:team_id(id,name,logo_url)").or(orFilter(["name"])).limit(20),
-        supabase.from("competitions").select("id,slug,name,country,country_code,logo_url,season").or(compFilter).limit(30),
-        supabase.from("coaches").select("id,name,nationality,nationality_code,photo_url,team:team_id(id,name,logo_url)").or(orFilter(["name"])).limit(20),
-        supabase.from("venues").select("id,name,city,country").or(orFilter(["name", "city"])).limit(20),
+      // Typo-tolerant matches (trigram similarity) so "sluaibkhat" still finds "Sulaibikhat".
+      const fuzzy = await supabase.rpc("fuzzy_search", { _q: terms[0] ?? q.trim(), _limit: 40 });
+      const idsOf = (kind: string) => (fuzzy.data ?? []).filter((r) => r.kind === kind).map((r) => r.id);
+      const fuzzyIn = <T,>(ids: string[], run: (ids: string[]) => PromiseLike<{ data: T[] | null }>) =>
+        ids.length ? run(ids) : Promise.resolve({ data: [] as T[] });
+      const merge = <T extends { id: string }>(a: T[] | null, b: T[] | null) => {
+        const out = [...(a ?? [])];
+        for (const row of b ?? []) if (!out.some((r) => r.id === row.id)) out.push(row);
+        return out;
+      };
+
+      const teamCols = "id,name,short_name,country,country_code,logo_url";
+      const playerCols = "id,name,position,photo_url,nationality,nationality_code,team:team_id(id,name,logo_url)";
+      const compCols = "id,slug,name,country,country_code,logo_url,season";
+      const coachCols = "id,name,nationality,nationality_code,photo_url,team:team_id(id,name,logo_url)";
+      const venueCols = "id,name,city,country";
+
+      const [teams, players, comps, coaches, venues, fTeams, fPlayers, fComps, fCoaches, fVenues] = await Promise.all([
+        supabase.from("teams").select(teamCols).or(orFilter(["name", "short_name"])).limit(20),
+        supabase.from("players").select(playerCols).or(orFilter(["name"])).limit(20),
+        supabase.from("competitions").select(compCols).or(compFilter).limit(30),
+        supabase.from("coaches").select(coachCols).or(orFilter(["name"])).limit(20),
+        supabase.from("venues").select(venueCols).or(orFilter(["name", "city"])).limit(20),
+        fuzzyIn(idsOf("team"), (ids) => supabase.from("teams").select(teamCols).in("id", ids)),
+        fuzzyIn(idsOf("player"), (ids) => supabase.from("players").select(playerCols).in("id", ids)),
+        fuzzyIn(idsOf("competition"), (ids) => supabase.from("competitions").select(compCols).in("id", ids)),
+        fuzzyIn(idsOf("coach"), (ids) => supabase.from("coaches").select(coachCols).in("id", ids)),
+        fuzzyIn(idsOf("venue"), (ids) => supabase.from("venues").select(venueCols).in("id", ids)),
       ]);
       return {
-        teams: teams.data ?? [],
-        players: (players.data ?? []) as unknown as { id: string; name: string; position: string | null; photo_url: string | null; nationality: string | null; nationality_code: string | null; team: { id: string; name: string; logo_url: string | null } | null }[],
-        comps: comps.data ?? [],
-        coaches: (coaches.data ?? []) as unknown as { id: string; name: string; nationality: string | null; nationality_code: string | null; photo_url: string | null; team: { id: string; name: string; logo_url: string | null } | null }[],
-        venues: venues.data ?? [],
+        teams: merge(teams.data, fTeams.data as typeof teams.data),
+        players: merge(players.data, fPlayers.data as typeof players.data) as unknown as { id: string; name: string; position: string | null; photo_url: string | null; nationality: string | null; nationality_code: string | null; team: { id: string; name: string; logo_url: string | null } | null }[],
+        comps: merge(comps.data, fComps.data as typeof comps.data),
+        coaches: merge(coaches.data, fCoaches.data as typeof coaches.data) as unknown as { id: string; name: string; nationality: string | null; nationality_code: string | null; photo_url: string | null; team: { id: string; name: string; logo_url: string | null } | null }[],
+        venues: merge(venues.data, fVenues.data as typeof venues.data),
       };
     },
   });

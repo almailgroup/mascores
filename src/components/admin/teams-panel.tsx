@@ -22,7 +22,7 @@ type TeamForm = Partial<Team>;
 type PlayerForm = Partial<Player>;
 type CoachForm = Partial<Coach>;
 
-export function TeamsPanel({ competitionId, season = null }: { competitionId: string | null; season?: string | null }) {
+export function TeamsPanel({ competitionId, season = null, competition = null, lockKind }: { competitionId: string | null; season?: string | null; lockKind?: "clubs" | "national"; competition?: Pick<Team, "country" | "country_code"> & { scope?: string | null; is_national?: boolean | null } | null }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<TeamForm>({});
@@ -30,9 +30,22 @@ export function TeamsPanel({ competitionId, season = null }: { competitionId: st
   const [staffOf, setStaffOf] = useState<Team | null>(null);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [libraryTeamId, setLibraryTeamId] = useState("");
-  const [kind, setKind] = useState<"all" | "clubs" | "national">("all");
+  const [libraryAll, setLibraryAll] = useState(false);
+  const [kind, setKind] = useState<"all" | "clubs" | "national">(lockKind ?? "all");
+  const activeKind = lockKind ?? kind;
   const [search, setSearch] = useState("");
   const [deleteTeam, setDeleteTeam] = useState<Team | null>(null);
+
+  /** Inside a competition only teams that belong to it make sense: same country, same kind. */
+  const eligible = (team: Team) => {
+    if (!competition) return true;
+    if (competition.is_national != null && !!team.is_national !== !!competition.is_national) return false;
+    const scope = competition.scope ?? "national";
+    if (scope !== "national") return true;
+    if (!competition.country && !competition.country_code) return true;
+    return competition.country_code ? team.country_code === competition.country_code : team.country === competition.country;
+  };
+
 
 
   const q = useQuery({
@@ -109,24 +122,24 @@ export function TeamsPanel({ competitionId, season = null }: { competitionId: st
     <div>
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-base font-bold">Teams</h3>
-        <div className="flex flex-wrap gap-2">{competitionId && <button className={btnGhost} onClick={() => setLibraryOpen(true)}><Library className="h-3.5 w-3.5" /> Add existing</button>}<button className={btnPrimary} onClick={() => { setForm({}); setOpen(true); }}><Plus className="h-3.5 w-3.5" /> New team</button></div>
+        <div className="flex flex-wrap gap-2">{competitionId && <button className={btnGhost} onClick={() => setLibraryOpen(true)}><Library className="h-3.5 w-3.5" /> Add existing</button>}<button className={btnPrimary} onClick={() => { setForm(competition ? { country: competition.country ?? null, country_code: competition.country_code ?? null, is_national: !!competition.is_national } : lockKind ? { is_national: lockKind === "national" } : {}); setOpen(true); }}><Plus className="h-3.5 w-3.5" /> New team</button></div>
       </div>
       <div className="grid gap-2">
         {!competitionId && (
           <div className="mb-1 flex flex-wrap items-center gap-2">
-            <div className="flex gap-1 rounded-full border border-border bg-card p-1 text-xs">
+            {!lockKind && <div className="flex gap-1 rounded-full border border-border bg-card p-1 text-xs">
               {(["all", "clubs", "national"] as const).map((k) => (
                 <button key={k} type="button" onClick={() => setKind(k)}
                   className={`rounded-full px-3 py-1 font-semibold capitalize ${kind === k ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
                   {k === "national" ? "National teams" : k}
                 </button>
               ))}
-            </div>
+            </div>}
             <input className={`${inputCls} max-w-48`} placeholder="Search teams" value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
         )}
         {(q.data ?? [])
-          .filter((t) => (competitionId ? true : kind === "all" || (kind === "national" ? t.is_national : !t.is_national)))
+          .filter((t) => (competitionId ? true : activeKind === "all" || (activeKind === "national" ? t.is_national : !t.is_national)))
           .filter((t) => (competitionId || !search.trim() ? true : t.name.toLowerCase().includes(search.trim().toLowerCase())))
           .slice(0, competitionId ? 500 : 120)
           .map((t) => (
@@ -203,7 +216,13 @@ export function TeamsPanel({ competitionId, season = null }: { competitionId: st
       </Modal>
 
       <Modal open={libraryOpen} onClose={() => setLibraryOpen(false)} title="Add an existing team">
-        <Field label="Saved team"><select className={inputCls} value={libraryTeamId} onChange={(e) => setLibraryTeamId(e.target.value)}><option value="">Choose a team</option>{(libraryQ.data ?? []).filter((team) => !(q.data ?? []).some((current) => current.id === team.id)).map((team) => <option key={team.id} value={team.id}>{team.name}{team.country ? ` · ${team.country}` : ""}</option>)}</select></Field>
+        <Field label="Saved team"><select className={inputCls} value={libraryTeamId} onChange={(e) => setLibraryTeamId(e.target.value)}><option value="">Choose a team</option>{(libraryQ.data ?? []).filter((team) => !(q.data ?? []).some((current) => current.id === team.id)).filter((team) => libraryAll || eligible(team)).map((team) => <option key={team.id} value={team.id}>{team.name}{team.country ? ` · ${team.country}` : ""}</option>)}</select></Field>
+        {competition && (
+          <label className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+            <input type="checkbox" className="h-4 w-4" checked={libraryAll} onChange={(e) => setLibraryAll(e.target.checked)} />
+            Show every team in the world (off shows only {competition.is_national ? "national teams" : "teams"} from {competition.country ?? "this competition's country"})
+          </label>
+        )}
         <div className="mt-4 flex justify-end gap-2"><button className={btnGhost} onClick={() => setLibraryOpen(false)}>Cancel</button><button className={btnPrimary} disabled={!libraryTeamId} onClick={async () => { await supabase.from("competition_teams").insert({ competition_id: competitionId, team_id: libraryTeamId, season } as never); setLibraryTeamId(""); setLibraryOpen(false); qc.invalidateQueries({ queryKey: ["admin", "teams", competitionId] }); qc.invalidateQueries({ queryKey: ["admin", "standings", competitionId] }); }}>Add to competition</button></div>
       </Modal>
 

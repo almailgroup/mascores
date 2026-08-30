@@ -50,6 +50,7 @@ function TeamPage() {
     const { data } = await supabase.from("players").select("*").eq("team_id", id).order("shirt_number");
     return (data ?? []) as Player[];
   }});
+  const fifaRank = useQuery({ enabled: !!team.data?.is_national, queryKey: ["fifa-rank", id], queryFn: async () => (await supabase.from("fifa_rankings").select("rank,points,previous_rank").eq("team_id", id).order("rank").maybeSingle()).data });
   const nationalSquad = useQuery({ enabled: !!team.data?.is_national, queryKey: ["national-squad", id], queryFn: () => fetchNationalSquad(id) });
   const matches = useQuery({ queryKey: ["team-matches", id], queryFn: async () => {
     const { data } = await supabase.from("matches")
@@ -244,6 +245,7 @@ function TeamPage() {
                   <DetailRow icon={<PlayerAvatar src={coaches.data[0].photo_url} name={coaches.data[0].name} size="sm" />} label={tx("Coach")} value={tx(coaches.data[0].name)} />
                 </Link>
               ) : null}
+              {t.is_national && fifaRank.data ? <DetailRow icon={<Trophy className="h-5 w-5 text-muted-foreground" />} label={tx("FIFA world ranking")} value={`#${num(String(fifaRank.data.rank))} · ${num(String(fifaRank.data.points))} ${tx("pts")}`} /> : null}
               {t.chairman ? <DetailRow icon={<Crown className="h-5 w-5 text-muted-foreground" />} label={tx("Chairman")} value={tx(t.chairman)} /> : null}
               {t.country ? <DetailRow icon={<FlagIcon value={t.country_code ?? t.country} size="md" />} label={tx("Country")} value={tx(t.country)} /> : null}
               {t.short_name ? <DetailRow icon={<Users className="h-5 w-5 text-muted-foreground" />} label={tx("Short name")} value={t.short_name} /> : null}

@@ -9,6 +9,7 @@ import { FlagIcon } from "@/components/flag";
 import { LinkedNews } from "@/components/linked-news";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
 import { MatchRow, type MatchWithTeams } from "@/components/match-list";
+import { CompetitionStats } from "@/components/competition-stats";
 import { useI18n } from "@/lib/i18n";
 import type { Database } from "@/integrations/supabase/types";
 import { CalendarDays, ChevronRight, Play, Trophy } from "lucide-react";
@@ -33,7 +34,7 @@ export const Route = createFileRoute("/competitions/$slug")({
 
 function CompetitionPage() {
   const { slug } = Route.useParams();
-  const [tab, setTab] = useState<"overview" | "matches" | "standings" | "teams" | "awards" | "media" | "news">("overview");
+  const [tab, setTab] = useState<"overview" | "matches" | "standings" | "stats" | "teams" | "awards" | "media" | "news">("overview");
   const [season, setSeason] = useState<string | null>(null);
   useRealtime(["competitions", "teams", "matches", "standings_rows", "competition_awards", "media_items"]);
 
@@ -131,7 +132,7 @@ function CompetitionPage() {
   const friendly = c.format === "friendly";
   const tabs = friendly
     ? (["overview", "matches", "media", "news"] as const)
-    : (["overview", "matches", "standings", "teams", "awards", "media", "news"] as const);
+    : (["overview", "matches", "standings", "stats", "teams", "awards", "media", "news"] as const);
 
   return (
     <AppShell>
@@ -161,6 +162,9 @@ function CompetitionPage() {
       {matches.data && matches.data.length > 0 ? (
         <CompetitionMatches data={matches.data} />
       ) : <EmptyState title={tx("No matches yet")} />}</>}
+
+      {tab === "stats" && !friendly && <><SectionHeader title={t("tab.stats")} />
+        <CompetitionStats competitionId={c.id} season={season ?? c.season ?? null} /></>}
 
       {tab === "standings" && !friendly && <><SectionHeader title={t("tab.standings")} action={<div />} />
       {standings.data && standings.data.length > 0 ? (
