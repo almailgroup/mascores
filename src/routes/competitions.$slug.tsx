@@ -142,7 +142,16 @@ function CompetitionPage() {
   return (
     <AppShell>
       {theme && <CompetitionIntro theme={theme} name={tx(c.name)} season={activeSeason ? num(activeSeason) : null} logoUrl={c.logo_url} />}
-      <div style={theme ? { ...theme.vars, backgroundImage: theme.page } : undefined} className={theme ? "-mx-4 px-4" : undefined}>
+      {theme && (
+        <div aria-hidden className="pointer-events-none fixed inset-0 z-0" style={{ background: theme.backdrop }}>
+          <span className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.9) 55%, rgba(255,255,255,0.97) 100%)" }} />
+        </div>
+      )}
+      <div
+        style={theme ? { ...theme.vars, backgroundImage: theme.page, color: "var(--foreground)" } : undefined}
+        className={theme ? "relative z-10 -mx-4 px-4 pb-8" : undefined}
+      >
+
       <BackButton />
        <div className={`mb-3 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 pb-3 ${theme ? "-mx-4 rounded-b-3xl px-4 pt-4 text-primary-foreground sm:mx-0 sm:rounded-3xl" : "border-b border-border"}`}
          style={theme ? { background: theme.hero } : undefined}>
