@@ -789,6 +789,20 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
           </div>
         </div>
 
+        {/* Goals logged without the clock running: offer to close the match as full-time. */}
+        {match.status === "scheduled" && (eventsQ.data ?? []).length > 0 && (
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-primary/40 bg-primary/10 p-3">
+            <div className="text-xs font-semibold">
+              This match is still scheduled but has events logged ({scores.h} – {scores.a}).
+            </div>
+            <button type="button" className={btnPrimary}
+              onClick={() => patchMatch({ status: "ft", timer_running: false, timer_started_at: null })}>
+              Save result
+            </button>
+          </div>
+        )}
+
+
         {/* Quick event buttons */}
         <h3 className="mb-2 mt-5 text-sm font-bold">Add match event</h3>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
