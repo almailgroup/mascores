@@ -284,7 +284,12 @@ export const COUNTRIES: Country[] = [
   { code: "ZM", name: "Zambia", nameAr: "زامبيا", flag: "🇿🇲" },
   { code: "ZR", name: "Congo - Kinshasa", nameAr: "الكونغو - كينشاسا", flag: "🇿🇷" },
   { code: "ZW", name: "Zimbabwe", nameAr: "زيمبابوي", flag: "🇿🇼" },
-  { code: "ZZ", name: "Unknown Region", nameAr: "منطقة غير معروفة", flag: "🇿🇿" },];
+  { code: "ZZ", name: "Unknown Region", nameAr: "منطقة غير معروفة", flag: "🇿🇿" },
+  // Stateless residents ("Bidoon") — no ISO country, so the flag is drawn in-app.
+  { code: "XB", name: "Bidoon", nameAr: "بدون", flag: "بدون" },];
+
+/** Nationality code for stateless ("Bidoon") people — rendered with a custom flag. */
+export const BIDOON_CODE = "XB";
 
 const byCode = new Map(COUNTRIES.map((c) => [c.code.toUpperCase(), c]));
 const byName = new Map(COUNTRIES.map((c) => [c.name.toLowerCase(), c]));

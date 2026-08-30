@@ -148,6 +148,8 @@ export function StandingsPanel({ competitionId, season = null }: { competitionId
     invalidate();
   };
 
+  const [addTo, setAddTo] = useState<string | null>(null);
+
   const labelFor = (group: string, position: number) =>
     posLabels.find((l) => (l.group_label ?? SINGLE) === group && l.position === position) ?? null;
 
@@ -177,6 +179,7 @@ export function StandingsPanel({ competitionId, season = null }: { competitionId
             onGroupChange={setRowGroup}
             onAdjust={setAdjust}
             onRemove={removeRow}
+            onAdd={group === SINGLE ? undefined : () => setAddTo(group)}
           />
         );
       })}
@@ -191,6 +194,20 @@ export function StandingsPanel({ competitionId, season = null }: { competitionId
         P/W/D/L/GF/GA/Pts are computed from finished matches. Drag a team to move it up or down. Labels stay attached to the
         position (1st place, 2nd place…), not to the team.
       </p>
+
+      {addTo && (
+        <GroupTeamsModal
+          group={addTo}
+          rows={rows}
+          teams={teams}
+          onClose={() => setAddTo(null)}
+          onSave={async (ids) => {
+            await Promise.all(ids.map((id) => supabase.from("standings_rows").update({ group_label: addTo }).eq("id", id)));
+            setAddTo(null);
+            invalidate();
+          }}
+        />
+      )}
 
       <LabelModal
         open={!!labelTarget}
@@ -211,7 +228,7 @@ export function StandingsPanel({ competitionId, season = null }: { competitionId
 }
 
 function GroupTable({
-  title, rows, teams, groups, groupKey, labelFor, onLabelClick, onReorder, onGroupChange, onAdjust, onRemove,
+  title, rows, teams, groups, groupKey, labelFor, onLabelClick, onReorder, onGroupChange, onAdjust, onRemove, onAdd,
 }: {
   title: string;
   rows: StandingRow[];
@@ -224,12 +241,20 @@ function GroupTable({
   onGroupChange: (rowId: string, group: string | null) => void;
   onAdjust: (rowId: string, value: number) => void;
   onRemove: (rowId: string) => void;
+  onAdd?: () => void;
 }) {
   const [dragId, setDragId] = useState<string | null>(null);
 
   return (
     <div>
-      <div className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">{title}</div>
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{title}</div>
+        {onAdd && (
+          <button type="button" onClick={onAdd} className={btnGhost}>
+            <Plus className="h-3.5 w-3.5" /> Add teams
+          </button>
+        )}
+      </div>
       <div className="overflow-x-auto rounded-2xl border border-border bg-card">
         <table className="w-full min-w-[780px] text-xs">
           <thead className="bg-background/50 text-[0.65rem] uppercase tracking-widest text-muted-foreground">
@@ -404,5 +429,56 @@ function LabelModal({
         </div>
       </div>
     </Modal>
+  );
+}
+
+/** Move competition teams into a group — groups start empty, so teams are assigned here. */
+function GroupTeamsModal({ group, rows, teams, onClose, onSave }: {
+  group: string;
+  rows: StandingRow[];
+  teams: Team[];
+  onClose: () => void;
+  onSave: (rowIds: string[]) => void;
+}) {
+  const [picked, setPicked] = useState<string[]>([]);
+  const [q, setQ] = useState("");
+  const available = rows.filter((r) => r.group_label !== group);
+  const term = q.trim().toLowerCase();
+  const list = available.filter((r) => {
+    const name = teams.find((t) => t.id === r.team_id)?.name ?? "";
+    return !term || name.toLowerCase().includes(term);
+  });
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4" onClick={onClose}>
+      <div className="max-h-[85vh] w-full max-w-md overflow-y-auto rounded-t-3xl border border-border bg-card p-4 sm:rounded-3xl" onClick={(e) => e.stopPropagation()}>
+        <h3 className="text-sm font-bold">Add teams to {group}</h3>
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search teams"
+          className="mt-3 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary" />
+        <div className="mt-3 space-y-1">
+          {list.map((r) => {
+            const team = teams.find((t) => t.id === r.team_id);
+            const on = picked.includes(r.id);
+            return (
+              <button key={r.id} type="button"
+                onClick={() => setPicked((p) => (on ? p.filter((x) => x !== r.id) : [...p, r.id]))}
+                className={`flex w-full items-center gap-2 rounded-xl border px-3 py-2 text-left text-xs font-semibold ${on ? "border-primary bg-primary/10 text-primary" : "border-border"}`}>
+                {team?.logo_url && <img src={team.logo_url} alt="" className="h-5 w-5 object-contain" />}
+                <span className="min-w-0 flex-1 truncate">{team?.name ?? "Team"}</span>
+                <span className="text-[0.65rem] text-muted-foreground">{r.group_label ?? "No group"}</span>
+              </button>
+            );
+          })}
+          {list.length === 0 && <p className="text-xs text-muted-foreground">Every team is already in this group.</p>}
+        </div>
+        <div className="mt-4 flex justify-end gap-2">
+          <button type="button" className={btnGhost} onClick={onClose}>Cancel</button>
+          <button type="button" disabled={picked.length === 0} onClick={() => onSave(picked)}
+            className="inline-flex h-9 items-center rounded-full bg-primary px-4 text-xs font-bold text-primary-foreground disabled:opacity-50">
+            Add {picked.length || ""}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

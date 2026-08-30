@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   supabase, STATUS_LABELS, matchClockSeconds, formatClock,
-  ratingClass,
+  ratingClass, formatRating,
   type Match, type Team, type Player, type MatchEvent, type Lineup,
 } from "@/lib/db";
 import { Field, Modal, inputCls, btnPrimary, btnGhost, btnDanger } from "./ui";
@@ -343,7 +343,7 @@ function RatingsEditor({ match, lineups, players }: { match: Match; lineups: Lin
           return (
             <div key={lu.id} className="flex items-center gap-2 text-xs">
               <span className="min-w-0 flex-1 truncate">{player?.name ?? "—"}</span>
-              {rating != null && <span className={`rounded px-1.5 py-0.5 text-[0.6rem] font-black ${ratingClass(Number(rating))}`}>{rating}</span>}
+              {rating != null && <span className={`rounded px-1.5 py-0.5 text-[0.6rem] font-black ${ratingClass(Number(rating))}`}>{formatRating(rating)}</span>}
               <input type="number" step="0.1" min={0} max={10} defaultValue={rating ?? ""} onChange={(e) => save(lu.player_id, e.target.value)} onBlur={(e) => save(lu.player_id, e.target.value)}
                 className="h-8 w-16 rounded border border-border bg-background text-center" />
             </div>
@@ -500,9 +500,10 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
                 <button type="button" onClick={() => setClearTeam(tid)} className="rounded border border-border px-2 py-1 text-[0.6rem] font-semibold text-destructive hover:bg-accent">Clear all</button>
                 </div>
               </div>
-              <div className="rounded-lg bg-emerald-900/25 p-2 pt-4">
+              {/* Fixed aspect keeps the pitch the same size for every formation. */}
+              <div className="flex aspect-[3/4] flex-col justify-between rounded-lg bg-emerald-900/25 p-2">
                 {formationRows(formation).map((row, ri) => (
-                  <div key={ri} className="mb-3 flex justify-around gap-1">
+                  <div key={ri} className="flex flex-1 items-center justify-around gap-1">
                     {row.map((slot) => {
                       const assigned = lineups.find((l) => l.team_id === tid && l.position_code === slot);
                       const p = players.find((x) => x.id === assigned?.player_id);
@@ -517,7 +518,7 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
                               : <span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-dashed border-emerald-300/60 bg-background/70"><Plus className="h-4 w-4 text-emerald-200" /></span>}
                             {kit != null && <span className="absolute -left-1 -top-1 rounded-full bg-primary px-1.5 text-[0.55rem] font-black text-primary-foreground ring-2 ring-background">{kit}</span>}
                             {icons.length > 0 && <span className="absolute -right-2 -top-1 z-30 flex items-center gap-px rounded-full bg-background p-0.5 ring-2 ring-background">{icons.slice(0, 3).map((ic, k) => <EventIcon key={k} type={ic} className="h-4 w-4" />)}</span>}
-                            {rating != null && <span className={`absolute -bottom-1 -right-2 rounded-md px-1 text-[0.55rem] font-black shadow ring-2 ring-background ${ratingClass(Number(rating))}`}>{Number(rating).toFixed(1)}</span>}
+                            {rating != null && <span className={`absolute -bottom-1 -right-2 rounded-md px-1 text-[0.55rem] font-black shadow ring-2 ring-background ${ratingClass(Number(rating))}`}>{formatRating(rating)}</span>}
                           </span>
                           <span className="line-clamp-2 text-[0.55rem] font-semibold leading-tight text-foreground">{p ? p.name : slot === "GK" ? "Goalkeeper" : "Add player"}</span>
                         </button>
@@ -525,9 +526,9 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
                     })}
                   </div>
                 ))}
-                <div className="mt-1 text-center text-[0.6rem] text-muted-foreground">{formation}</div>
-                {squad.length === 0 && <div className="text-center text-[0.6rem] text-muted-foreground">Add players to this squad first.</div>}
               </div>
+              <div className="mt-1 text-center text-[0.6rem] text-muted-foreground">{formation}</div>
+              {squad.length === 0 && <div className="text-center text-[0.6rem] text-muted-foreground">Add players to this squad first.</div>}
 
               <div className="mt-3">
                 <div className="mb-2 flex items-center justify-between">
@@ -545,7 +546,7 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
                           <PlayerAvatar src={p?.photo_url} name={p?.name ?? "?"} size="sm" className="h-10 w-10" />
                           {(l.shirt_number ?? p?.shirt_number) != null && <span className="absolute -left-1 -top-1 rounded-full bg-muted px-1.5 text-[0.55rem] font-black ring-2 ring-background">{l.shirt_number ?? p?.shirt_number}</span>}
                           {icons.length > 0 && <span className="absolute -right-2 -top-1 z-30 flex items-center gap-px rounded-full bg-background p-0.5 ring-2 ring-background">{icons.slice(0, 3).map((ic, k) => <EventIcon key={k} type={ic} className="h-4 w-4" />)}</span>}
-                          {rating != null && <span className={`absolute -bottom-1 -right-2 rounded-md px-1 text-[0.55rem] font-black shadow ring-2 ring-background ${ratingClass(Number(rating))}`}>{Number(rating).toFixed(1)}</span>}
+                          {rating != null && <span className={`absolute -bottom-1 -right-2 rounded-md px-1 text-[0.55rem] font-black shadow ring-2 ring-background ${ratingClass(Number(rating))}`}>{formatRating(rating)}</span>}
                         </span>
                         <span className="line-clamp-2 text-[0.55rem] font-semibold leading-tight">{p?.name ?? "—"}</span>
                         <button onClick={() => toggle(l.player_id, tid, false)} className="text-destructive" aria-label="Remove from bench"><Trash2 className="h-3 w-3" /></button>
@@ -787,6 +788,20 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
             <span className="text-sm font-bold tabular-nums">{notStarted && match.home_score == null && match.away_score == null ? "– : –" : `${match.home_score ?? 0} – ${match.away_score ?? 0}`}</span>
           </div>
         </div>
+
+        {/* Goals logged without the clock running: offer to close the match as full-time. */}
+        {match.status === "scheduled" && (eventsQ.data ?? []).length > 0 && (
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-primary/40 bg-primary/10 p-3">
+            <div className="text-xs font-semibold">
+              This match is still scheduled but has events logged ({scores.h} – {scores.a}).
+            </div>
+            <button type="button" className={btnPrimary}
+              onClick={() => patchMatch({ status: "ft", timer_running: false, timer_started_at: null })}>
+              Save result
+            </button>
+          </div>
+        )}
+
 
         {/* Quick event buttons */}
         <h3 className="mb-2 mt-5 text-sm font-bold">Add match event</h3>

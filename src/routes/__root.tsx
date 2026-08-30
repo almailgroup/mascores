@@ -15,6 +15,7 @@ import { ThemeProvider } from "../components/theme-provider";
 import { IntroSplash } from "../components/intro-splash";
 import { I18nProvider } from "../lib/i18n";
 import { CurrencyProvider } from "../lib/currency";
+import { HeightUnitProvider } from "../lib/units";
 import { AutoTranslateProvider, useTranslationReady } from "../lib/auto-translate";
 import { BrandLogo } from "../components/brand-logo";
 
@@ -140,10 +141,12 @@ function RootComponent() {
       <ThemeProvider>
         <I18nProvider>
           <CurrencyProvider>
-            <AutoTranslateProvider>
-              <IntroSplash />
-              <LanguageReadyGate><Outlet /></LanguageReadyGate>
-            </AutoTranslateProvider>
+            <HeightUnitProvider>
+              <AutoTranslateProvider>
+                <IntroSplash />
+                <LanguageReadyGate><Outlet /></LanguageReadyGate>
+              </AutoTranslateProvider>
+            </HeightUnitProvider>
           </CurrencyProvider>
         </I18nProvider>
       </ThemeProvider>

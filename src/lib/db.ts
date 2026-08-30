@@ -90,12 +90,24 @@ export function eventLabel(type: string): string {
   return EVENT_META[type]?.label ?? type;
 }
 
-/** Tailwind classes for a 0–10 player rating chip. */
+/** Colour band for a 0–10 player rating chip (tokens live in src/styles.css). */
 export function ratingClass(rating: number): string {
-  if (rating >= 8) return "bg-success text-success-foreground";
-  if (rating >= 7) return "bg-primary text-primary-foreground";
-  if (rating >= 6) return "bg-warning text-warning-foreground";
-  return "bg-destructive text-destructive-foreground";
+  const r = Number(rating);
+  if (!Number.isFinite(r)) return "rating-chip";
+  if (r >= 10) return "rating-chip rating-gold";
+  if (r >= 9) return "rating-chip rating-dark-blue";
+  if (r >= 8) return "rating-chip rating-dark-green";
+  if (r >= 7) return "rating-chip rating-light-green";
+  if (r >= 6) return "rating-chip rating-orange";
+  if (r >= 4.1) return "rating-chip rating-red";
+  return "rating-chip rating-purple";
+}
+
+/** Ratings always read with one decimal: 7 -> "7.0". */
+export function formatRating(rating: number | string | null | undefined): string {
+  if (rating == null || rating === "") return "—";
+  const r = Number(rating);
+  return Number.isFinite(r) ? r.toFixed(1) : String(rating);
 }
 
 /** Locale-aware calendar date, used for transfers, news and founding dates. */

@@ -175,3 +175,31 @@
     color: var(--color-foreground);
   }
 }
+
+/* ---- Match rating chips -------------------------------------------------
+ * Rating bands requested by the editorial team:
+ * 0.1–4.0 purple · 4.1–5.9 red · 6.0–6.9 orange · 7.0–7.9 light green
+ * 8.0–8.9 dark green · 9.0–9.9 dark blue · 10.0 shiny gold
+ */
+.rating-chip {
+  --rating-bg: var(--muted);
+  --rating-fg: var(--muted-foreground);
+  background: var(--rating-bg);
+  color: var(--rating-fg);
+}
+.rating-purple { --rating-bg: oklch(0.48 0.2 305); --rating-fg: oklch(0.98 0.01 305); }
+.rating-red { --rating-bg: oklch(0.55 0.22 25); --rating-fg: oklch(0.98 0.01 25); }
+.rating-orange { --rating-bg: oklch(0.7 0.17 62); --rating-fg: oklch(0.22 0.06 62); }
+.rating-light-green { --rating-bg: oklch(0.78 0.17 145); --rating-fg: oklch(0.24 0.07 145); }
+.rating-dark-green { --rating-bg: oklch(0.5 0.15 150); --rating-fg: oklch(0.98 0.01 150); }
+.rating-dark-blue { --rating-bg: oklch(0.42 0.16 262); --rating-fg: oklch(0.98 0.01 262); }
+.rating-gold {
+  --rating-fg: oklch(0.26 0.06 85);
+  color: var(--rating-fg);
+  background: linear-gradient(120deg,
+    oklch(0.86 0.13 92) 0%,
+    oklch(0.97 0.07 100) 38%,
+    oklch(0.8 0.15 85) 62%,
+    oklch(0.95 0.08 100) 100%);
+  box-shadow: 0 0 0 1px oklch(0.72 0.13 85), 0 2px 8px oklch(0.8 0.15 85 / 45%);
+}
