@@ -16,11 +16,18 @@
 - [x] Past-season squads start empty; can pull current or past players
 
 ## C. Branding & content
-- [ ] Zain Premier League themed competition page + entry animation
+- [x] Zain Premier League themed competition page + 5s intro with smooth theme
 
 ## D. New features
-- [ ] Tickets: admin creation (optional row/seat, free tickets), QR per ticket,
+- [x] Tickets: admin creation (optional row/seat, free tickets), QR per ticket,
       single-use scanner in admin, public ticket section, "Pay — coming soon",
       admin code MAMA2026 for a free ticket
-- [ ] Voice chats: create room with title/photo (auto-generated when missing),
+- [x] Voice chats: create room with title/photo (auto-generated when missing),
       public or link-only, follow users + notifications, most-followed feed
+
+## E. Follow-ups (done this pass)
+- [x] Database access grants for tickets, voice rooms and follows
+- [x] Ticket checkout: details → payment (coming soon + skip) → generated QR pass
+- [x] Voice: end room, mic publishing fix, speaker/listener counts, anonymous listening
+- [x] Reporter publishing marked coming soon
+- [x] Club pages show competition stats leaderboards
