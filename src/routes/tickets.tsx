@@ -3,14 +3,13 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Ticket as TicketIcon, Loader2, CheckCircle2, Clock, Lock } from "lucide-react";
-import { AppShell } from "@/components/app-shell";
-import { BackButton } from "@/components/back-button";
+import { AppShell, BackButton } from "@/components/app-shell";
 import { QrCode } from "@/components/qr-code";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { claimTicket } from "@/lib/tickets.functions";
 import { formatKickoff } from "@/lib/db";
-import { useTx } from "@/lib/i18n";
+import { useTx } from "@/lib/auto-translate";
 
 export const Route = createFileRoute("/tickets")({
   head: () => ({
