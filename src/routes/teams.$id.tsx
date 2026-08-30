@@ -371,7 +371,7 @@ function StandingsTabs({ rows, teamId, num, tx }: {
   rows: TeamStandingRow[];
   teamId: string;
   num: (v: string | number) => string;
-  tx: (v: string | null | undefined) => string | undefined;
+  tx: (v: string | null | undefined) => string | null | undefined;
 }) {
   const comps = [...new Map(rows.map((r) => [r.competition_id, r])).values()];
   const [active, setActive] = useState(comps[0]?.competition_id ?? "");
