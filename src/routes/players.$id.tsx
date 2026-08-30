@@ -7,6 +7,7 @@ import { AppShell, BackButton, EmptyState, LoadingSkeleton } from "@/components/
 import { supabase, formatKickoff, formatHeight, formatDob, type Player, type Team, type Match, type Transfer } from "@/lib/db";
 import { FavoriteButton } from "@/hooks/use-favorites";
 import { EventIcon } from "@/components/event-icon";
+import { useHeightUnit } from "@/lib/units";
 import { FlagIcon } from "@/components/flag";
 import { useI18n } from "@/lib/i18n";
 import { PlayerAvatar } from "@/components/player-avatar";
@@ -152,7 +153,7 @@ function PlayerPage() {
                <Stat label={tx("Nationality")} value={tx(p.nationality) ?? "—"} icon={<FlagIcon value={nat} size="md" />} />
              )}
              <Stat label={tx("Date of birth")} value={p.dob ? num(`${dates.dob(p.dob)}${age(p.dob) != null ? ` (${age(p.dob)})` : ""}`) : "—"} />
-             <Stat label={tx("Height")} value={tx(num(formatHeight(p.height_cm, "cm")))} />
+             <Stat label={tx("Height")} value={tx(num(formatHeight(p.height_cm, heightUnit)))} />
              <Stat label={tx("Position")} value={tx(p.position) ?? "—"} />
              <Stat label={tx("Shirt")} value={p.shirt_number != null ? num(`#${p.shirt_number}`) : "—"} />
              <Stat label={tx("Market value")} value={tx(num(formatMoney(p.market_value, currency)))} />

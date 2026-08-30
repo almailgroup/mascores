@@ -115,10 +115,12 @@ function TeamPage() {
         <TeamCrest name={t.name} logo={t.logo_url} className="h-11 w-11 shrink-0 sm:h-14 sm:w-14" rounded="rounded-xl" />
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-base font-bold leading-tight sm:text-2xl">{tx(t.name)}</h1>
-          <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[0.7rem] text-muted-foreground sm:text-xs">
-            <FlagIcon value={t.country_code ?? t.country} />
-            <span className="truncate">{tx(t.country)}</span>
-          </div>
+          {t.is_national ? null : (
+            <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[0.7rem] text-muted-foreground sm:text-xs">
+              <FlagIcon value={t.country_code ?? t.country} />
+              <span className="truncate">{tx(t.country)}</span>
+            </div>
+          )}
         </div>
         <FavoriteButton kind="team" id={t.id} size="md" />
       </div>
@@ -247,7 +249,7 @@ function TeamPage() {
               ) : null}
               {t.is_national && fifaRank.data ? <DetailRow icon={<Trophy className="h-5 w-5 text-muted-foreground" />} label={tx("FIFA world ranking")} value={`#${num(String(fifaRank.data.rank))} · ${num(String(fifaRank.data.points))} ${tx("pts")}`} /> : null}
               {t.chairman ? <DetailRow icon={<Crown className="h-5 w-5 text-muted-foreground" />} label={tx("Chairman")} value={tx(t.chairman)} /> : null}
-              {t.country ? <DetailRow icon={<FlagIcon value={t.country_code ?? t.country} size="md" />} label={tx("Country")} value={tx(t.country)} /> : null}
+              {t.country && !t.is_national ? <DetailRow icon={<FlagIcon value={t.country_code ?? t.country} size="md" />} label={tx("Country")} value={tx(t.country)} /> : null}
               {t.short_name ? <DetailRow icon={<Users className="h-5 w-5 text-muted-foreground" />} label={tx("Short name")} value={t.short_name} /> : null}
               {t.trophies ? <DetailRow icon={<Trophy className="h-5 w-5 text-muted-foreground" />} label={tx("Trophies")} value={num(String(t.trophies))} /> : null}
               {t.founded_on ? <DetailRow icon={<CalendarClock className="h-5 w-5 text-muted-foreground" />} label={tx("Founded")} value={num(dates.date(t.founded_on, { dateStyle: "long" }))} /> : null}
