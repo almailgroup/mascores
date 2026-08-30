@@ -230,7 +230,7 @@
 .rating-red { --rating-bg: oklch(0.55 0.22 25); --rating-fg: oklch(0.98 0.01 25); }
 .rating-orange { --rating-bg: oklch(0.7 0.17 62); --rating-fg: oklch(0.22 0.06 62); }
 .rating-light-green { --rating-bg: oklch(0.78 0.17 145); --rating-fg: oklch(0.24 0.07 145); }
-.rating-dark-green { --rating-bg: oklch(0.5 0.15 150); --rating-fg: oklch(0.98 0.01 150); }
+.rating-dark-green { --rating-bg: oklch(0.62 0.18 155); --rating-fg: oklch(0.18 0.05 155); }
 .rating-dark-blue { --rating-bg: oklch(0.42 0.16 262); --rating-fg: oklch(0.98 0.01 262); }
 .rating-gold {
   --rating-fg: oklch(0.26 0.06 85);
