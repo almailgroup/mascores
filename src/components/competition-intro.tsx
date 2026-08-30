@@ -23,11 +23,14 @@ export function CompetitionIntro({ theme, name, season, logoUrl }: {
   }, [theme.key, name, season]);
 
   useEffect(() => {
-    console.log("[intro] phase", phase);
-    if (phase !== "playing") return;
-    const close = window.setTimeout(() => { console.log("[intro] closing"); setPhase("closing"); }, 2100);
-    const done = window.setTimeout(() => setPhase("hidden"), 2700);
-    return () => { window.clearTimeout(close); window.clearTimeout(done); };
+    if (phase === "playing") {
+      const timer = window.setTimeout(() => setPhase("closing"), 2100);
+      return () => window.clearTimeout(timer);
+    }
+    if (phase === "closing") {
+      const timer = window.setTimeout(() => setPhase("hidden"), 600);
+      return () => window.clearTimeout(timer);
+    }
   }, [phase]);
 
   if (phase === "hidden") return null;
