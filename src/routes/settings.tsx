@@ -29,7 +29,7 @@ function SettingsPage() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [heightUnit, setHeightUnit] = useState<"cm" | "ft">("cm");
+  const { heightUnit, setHeightUnit } = useHeightUnit();
   const [uploading, setUploading] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
