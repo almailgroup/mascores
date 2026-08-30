@@ -157,7 +157,7 @@ function CompetitionPage() {
              {(c.seasons?.length ?? 0) > 0 && <select aria-label="Season" className="rounded-full border border-border bg-background px-2 py-0.5 text-[0.7rem] font-semibold text-foreground" value={season ?? c.season ?? c.seasons[0]} onChange={(e) => setSeason(e.target.value)}>{c.seasons.map((item) => <option key={item} value={item}>{num(item)}</option>)}</select>}
           </div>
         </div>
-        <div className="col-span-2"><DurationBar startsOn={c.starts_on} endsOn={c.ends_on} /></div>
+        <div className="col-span-2"><DurationBar startsOn={c.starts_on} endsOn={c.ends_on} onHero={!!theme} /></div>
       </div>
 
       <div className="mb-5 flex max-w-full gap-1 overflow-x-auto border-b border-border pb-2 text-xs sm:text-sm">
@@ -436,7 +436,7 @@ function TeamCell({ label, team, note }: { label: string; team: Team | null; not
 }
 
 /** Tournament duration as a live progress bar between the start and end dates. */
-function DurationBar({ startsOn, endsOn }: { startsOn: string | null; endsOn: string | null }) {
+function DurationBar({ startsOn, endsOn, onHero }: { startsOn: string | null; endsOn: string | null; onHero?: boolean }) {
   const tx = useTx();
   const dates = useDates();
   const num = useNum();
@@ -447,13 +447,13 @@ function DurationBar({ startsOn, endsOn }: { startsOn: string | null; endsOn: st
   const pct = Math.max(0, Math.min(100, Math.round(((Date.now() - start) / (end - start)) * 100)));
   return (
     <div>
-      <div className="flex items-center justify-between text-[0.65rem] font-semibold tabular-nums text-muted-foreground">
+      <div className={`flex items-center justify-between text-[0.65rem] font-semibold tabular-nums ${onHero ? "text-primary-foreground/85" : "text-muted-foreground"}`}>
         <span>{num(dates.dob(startsOn))}</span>
         <span className="uppercase tracking-wide">{tx("Duration")} · {num(pct)}%</span>
         <span>{num(dates.dob(endsOn))}</span>
       </div>
-      <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-        <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
+      <div className={`mt-1.5 h-1.5 w-full overflow-hidden rounded-full ${onHero ? "bg-primary-foreground/25" : "bg-muted"}`}>
+        <div className={`h-full rounded-full transition-all ${onHero ? "bg-primary-foreground" : "bg-primary"}`} style={{ width: `${pct}%` }} />
       </div>
     </div>
   );
