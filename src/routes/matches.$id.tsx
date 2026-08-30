@@ -227,9 +227,7 @@ function MatchPage() {
             onClick={() => setLineupSide(side)}
             className={`relative z-10 flex min-w-0 items-center justify-center gap-2 rounded-full px-3 py-2 text-xs font-bold transition-colors sm:text-sm ${lineupSide === side ? "text-primary-foreground" : "text-muted-foreground"}`}
           >
-            {team?.logo_url
-              ? <img src={team.logo_url} alt="" className="h-5 w-5 shrink-0 object-contain" />
-              : <TeamCrest name={team?.name ?? "?"} logoUrl={null} className="h-5 w-5 shrink-0" />}
+            <TeamCrest name={team?.name} logo={team?.logo_url} className="h-5 w-5 shrink-0" />
             <span className="truncate">{tx(team?.name) ?? "TBD"}</span>
           </button>
         ))}
