@@ -314,6 +314,7 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
         })}
       </div>
 
+      <PlayerBatchImport open={batchOpen} onClose={() => setBatchOpen(false)} teamId={team.id} onSaved={invalidate} />
       {editing && <PlayerEditor player={editing} teamId={team.id} teamName={team.name} onClose={() => { setEditing(null); invalidate(); }} />}
       <ConfirmDelete
         open={!!confirmPlayer}
