@@ -53,6 +53,22 @@ function OffersView() {
   const [busy, setBusy] = useState(false);
   const [deleteOffer, setDeleteOffer] = useState<Offer | null>(null);
   const [issueOffer, setIssueOffer] = useState<Offer | null>(null);
+  const makePool = useServerFn(generateTicketPool);
+
+  const counts = useQuery({
+    queryKey: ["admin-ticket-counts"],
+    queryFn: async () => {
+      const { data } = await supabase.from("tickets").select("offer_id, status").limit(20000);
+      const map: Record<string, { pool: number; sold: number }> = {};
+      for (const row of data ?? []) {
+        if (!row.offer_id) continue;
+        const entry = (map[row.offer_id] ??= { pool: 0, sold: 0 });
+        if (row.status === "pool") entry.pool += 1; else entry.sold += 1;
+      }
+      return map;
+    },
+  });
+
 
   const matches = useQuery({
     queryKey: ["admin-ticket-matches"],
