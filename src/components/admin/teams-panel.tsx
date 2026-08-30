@@ -249,6 +249,7 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
       <div className="mb-4 flex flex-wrap gap-2">
         <button className={btnPrimary} onClick={() => setEditing({ team_id: team.id })}><Plus className="h-3.5 w-3.5" /> Add player</button>
         <button className={btnGhost} onClick={() => setAddExisting(true)}><Library className="h-3.5 w-3.5" /> Add existing player</button>
+        <button className={btnGhost} onClick={() => setBatchOpen(true)}><Sparkles className="h-3.5 w-3.5" /> Add many with Almail AI</button>
       </div>
 
       {addExisting && (
