@@ -13,6 +13,8 @@ import { CompetitionStats } from "@/components/competition-stats";
 import { useI18n } from "@/lib/i18n";
 import type { Database } from "@/integrations/supabase/types";
 import { CalendarDays, ChevronRight, Play, Trophy } from "lucide-react";
+import { competitionTheme } from "@/lib/competition-theme";
+import { CompetitionIntro } from "@/components/competition-intro";
 
 type PositionLabel = Database["public"]["Tables"]["standings_position_labels"]["Row"];
 type Row = StandingRow & { team: Team | null };
@@ -134,16 +136,22 @@ function CompetitionPage() {
     ? (["overview", "matches", "media", "news"] as const)
     : (["overview", "matches", "standings", "stats", "teams", "awards", "media", "news"] as const);
 
+  const theme = competitionTheme({ slug: c.slug, name: c.name });
+  const activeSeason = season ?? c.season ?? c.seasons?.[0] ?? null;
+
   return (
     <AppShell>
+      {theme && <CompetitionIntro theme={theme} name={tx(c.name)} season={activeSeason ? num(activeSeason) : null} logoUrl={c.logo_url} />}
+      <div style={theme?.vars}>
       <BackButton />
-       <div className="mb-3 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 border-b border-border pb-3">
-         <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl text-primary sm:h-14 sm:w-14">
+       <div className={`mb-3 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 pb-3 ${theme ? "-mx-4 rounded-b-3xl px-4 pt-4 text-primary-foreground sm:mx-0 sm:rounded-3xl" : "border-b border-border"}`}
+         style={theme ? { background: theme.hero } : undefined}>
+         <div className={`flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl text-primary sm:h-14 sm:w-14 ${theme ? "bg-background/95 p-1.5" : ""}`}>
           {c.logo_url ? <img src={c.logo_url} alt="" className="h-full w-full object-contain" /> : <Trophy className="h-7 w-7" />}
         </div>
         <div className="min-w-0">
           <h1 className="truncate text-base font-bold leading-tight sm:text-2xl">{tx(c.name)}</h1>
-           <div className="mt-0.5 flex min-w-0 flex-wrap items-center gap-1.5 text-[0.7rem] text-muted-foreground sm:text-xs">
+           <div className={`mt-0.5 flex min-w-0 flex-wrap items-center gap-1.5 text-[0.7rem] sm:text-xs ${theme ? "text-primary-foreground/85" : "text-muted-foreground"}`}>
             {!friendly && <FlagIcon value={c.country_code ?? c.country} />}
              <span className="truncate">{(friendly ? [tx(c.category)] : [tx(c.country), tx(c.category)]).filter(Boolean).join(" · ")}</span>
              {(c.seasons?.length ?? 0) > 0 && <select aria-label="Season" className="rounded-full border border-border bg-background px-2 py-0.5 text-[0.7rem] font-semibold text-foreground" value={season ?? c.season ?? c.seasons[0]} onChange={(e) => setSeason(e.target.value)}>{c.seasons.map((item) => <option key={item} value={item}>{num(item)}</option>)}</select>}
