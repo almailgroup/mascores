@@ -1352,6 +1352,27 @@ export type Database = {
           },
         ]
       }
+      profile_follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1969,6 +1990,101 @@ export type Database = {
         }
         Relationships: []
       }
+      voice_room_participants: {
+        Row: {
+          created_at: string
+          hand_raised: boolean
+          id: string
+          is_muted: boolean
+          joined_at: string
+          last_seen_at: string
+          left_at: string | null
+          role: string
+          room_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          hand_raised?: boolean
+          id?: string
+          is_muted?: boolean
+          joined_at?: string
+          last_seen_at?: string
+          left_at?: string | null
+          role?: string
+          room_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          hand_raised?: boolean
+          id?: string
+          is_muted?: boolean
+          joined_at?: string
+          last_seen_at?: string
+          left_at?: string | null
+          role?: string
+          room_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voice_room_participants_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "voice_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      voice_rooms: {
+        Row: {
+          created_at: string
+          description: string | null
+          ended_at: string | null
+          host_id: string
+          id: string
+          invite_code: string
+          photo_url: string | null
+          started_at: string
+          status: string
+          title: string
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          ended_at?: string | null
+          host_id: string
+          id?: string
+          invite_code?: string
+          photo_url?: string | null
+          started_at?: string
+          status?: string
+          title: string
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          ended_at?: string | null
+          host_id?: string
+          id?: string
+          invite_code?: string
+          photo_url?: string | null
+          started_at?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -2001,6 +2117,28 @@ export type Database = {
       revoke_admin: { Args: { _uid: string }; Returns: undefined }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      voice_host_profiles: {
+        Args: { _ids: string[] }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          followers: number
+          id: string
+        }[]
+      }
+      voice_room_by_code: {
+        Args: { _code: string }
+        Returns: {
+          description: string
+          host_id: string
+          id: string
+          photo_url: string
+          started_at: string
+          status: string
+          title: string
+          visibility: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
