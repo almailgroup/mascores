@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Loader2, QrCode as QrIcon, Ticket, Camera, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { QrCode } from "@/components/qr-code";
-import { scanTicket } from "@/lib/tickets.functions";
+import { generateTicketPool, scanTicket } from "@/lib/tickets.functions";
 import { formatKickoff } from "@/lib/db";
 import { Field, inputCls, btnPrimary, btnGhost, btnDanger, Modal } from "./ui";
 import { ConfirmDelete } from "@/components/confirm-delete";
@@ -21,8 +21,9 @@ type Offer = {
 
 const emptyOffer = {
   name: "General admission", stand: "", price: "3", currency: "KWD", is_free: false,
-  capacity: "", show_row: true, show_seat: true, notes: "", is_active: true,
+  capacity: "100", show_row: true, show_seat: true, notes: "", is_active: true,
 };
+
 
 /** Admin ticketing: create ticket types per match, issue passes and scan QR codes. */
 export function TicketsPanel() {
@@ -52,6 +53,22 @@ function OffersView() {
   const [busy, setBusy] = useState(false);
   const [deleteOffer, setDeleteOffer] = useState<Offer | null>(null);
   const [issueOffer, setIssueOffer] = useState<Offer | null>(null);
+  const makePool = useServerFn(generateTicketPool);
+
+  const counts = useQuery({
+    queryKey: ["admin-ticket-counts"],
+    queryFn: async () => {
+      const { data } = await supabase.from("tickets").select("offer_id, status").limit(20000);
+      const map: Record<string, { pool: number; sold: number }> = {};
+      for (const row of data ?? []) {
+        if (!row.offer_id) continue;
+        const entry = (map[row.offer_id] ??= { pool: 0, sold: 0 });
+        if (row.status === "pool") entry.pool += 1; else entry.sold += 1;
+      }
+      return map;
+    },
+  });
+
 
   const matches = useQuery({
     queryKey: ["admin-ticket-matches"],
@@ -78,6 +95,8 @@ function OffersView() {
 
   const save = async () => {
     if (!matchId && !editing) return;
+    const capacity = Number(form.capacity);
+    if (!Number.isFinite(capacity) || capacity < 1) return;
     setBusy(true);
     const payload = {
       match_id: editing?.match_id ?? matchId!,
@@ -86,17 +105,27 @@ function OffersView() {
       price: form.is_free ? 0 : Number(form.price || 0),
       currency: form.currency.trim() || "KWD",
       is_free: form.is_free,
-      capacity: form.capacity.trim() ? Number(form.capacity) : null,
+      capacity,
       show_row: form.show_row,
       show_seat: form.show_seat,
       notes: form.notes.trim() || null,
       is_active: form.is_active,
     };
+    let offerId = editing?.id ?? null;
     if (editing) await supabase.from("ticket_offers").update(payload).eq("id", editing.id);
-    else await supabase.from("ticket_offers").insert(payload);
+    else {
+      const { data } = await supabase.from("ticket_offers").insert(payload).select("id").maybeSingle();
+      offerId = data?.id ?? null;
+    }
+    if (offerId) {
+      try { await makePool({ data: { offerId, capacity } }); }
+      catch { /* codes can be topped up again by saving the ticket */ }
+    }
     await qc.invalidateQueries({ queryKey: ["admin-ticket-offers"] });
+    await qc.invalidateQueries({ queryKey: ["admin-ticket-counts"] });
     setForm({ ...emptyOffer });
     setEditing(null);
+
     setBusy(false);
   };
 
@@ -123,7 +152,7 @@ function OffersView() {
           <Field label="Stand / section"><input className={inputCls} value={form.stand} onChange={(e) => setForm({ ...form, stand: e.target.value })} placeholder="West stand" /></Field>
           <Field label="Price"><input className={inputCls} inputMode="decimal" disabled={form.is_free} value={form.is_free ? "0" : form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} /></Field>
           <Field label="Currency"><input className={inputCls} value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })} /></Field>
-          <Field label="Capacity (optional)"><input className={inputCls} inputMode="numeric" value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })} placeholder="Unlimited" /></Field>
+          <Field label="Capacity (required)"><input className={inputCls} inputMode="numeric" value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })} placeholder="100" /></Field>
           <Field label="Note (optional)"><input className={inputCls} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Gate A opens 2h before" /></Field>
         </div>
         <div className="mt-3 flex flex-wrap gap-4 text-xs font-semibold">
@@ -134,12 +163,14 @@ function OffersView() {
             </label>
           ))}
         </div>
+        <p className="mt-3 text-xs text-muted-foreground">Saving generates one unique QR code per capacity slot. Fans receive codes from this pool when they purchase.</p>
         <div className="mt-4 flex gap-2">
-          <button className={btnPrimary} disabled={busy || (!editing && !matchId)} onClick={save}>
-            {busy && <Loader2 className="h-3.5 w-3.5 animate-spin" />} {editing ? "Save ticket" : "Create ticket"}
+          <button className={btnPrimary} disabled={busy || (!editing && !matchId) || !form.capacity.trim()} onClick={save}>
+            {busy && <Loader2 className="h-3.5 w-3.5 animate-spin" />} {editing ? "Save ticket" : "Create ticket & codes"}
           </button>
           {editing && <button className={btnGhost} onClick={() => { setEditing(null); setForm({ ...emptyOffer }); }}>Cancel</button>}
         </div>
+
       </div>
 
       <div className="space-y-2">
@@ -152,8 +183,14 @@ function OffersView() {
                 <div className="truncate text-sm font-bold">{offer.name}{offer.stand ? ` · ${offer.stand}` : ""} <span className="text-muted-foreground">{offer.is_free ? "· Free" : `· ${offer.price} ${offer.currency}`}</span></div>
                 <div className="truncate text-[0.7rem] text-muted-foreground">{m ? label(m) : offer.match_id}</div>
                 <div className="mt-0.5 text-[0.65rem] text-muted-foreground">
-                  {[offer.is_active ? "On sale" : "Hidden", offer.capacity ? `${offer.capacity} available` : "Unlimited", offer.show_row ? "row" : null, offer.show_seat ? "seat" : null].filter(Boolean).join(" · ")}
+                  {[
+                    offer.is_active ? "On sale" : "Hidden",
+                    `${counts.data?.[offer.id]?.pool ?? 0} codes left`,
+                    `${counts.data?.[offer.id]?.sold ?? 0} sold`,
+                    offer.capacity ? `capacity ${offer.capacity}` : null,
+                  ].filter(Boolean).join(" · ")}
                 </div>
+
               </div>
               <button className={btnGhost} onClick={() => setIssueOffer(offer)}><QrIcon className="h-3.5 w-3.5" /> Passes</button>
               <button className={btnGhost} onClick={() => { setEditing(offer); setForm({ name: offer.name, stand: offer.stand ?? "", price: String(offer.price), currency: offer.currency, is_free: offer.is_free, capacity: offer.capacity ? String(offer.capacity) : "", show_row: offer.show_row, show_seat: offer.show_seat, notes: offer.notes ?? "", is_active: offer.is_active }); }}>Edit</button>
@@ -251,49 +288,69 @@ function ScanView() {
   const [result, setResult] = useState<{ result: string; ticket?: { code: string; holder_name: string | null; row_label: string | null; seat_label: string | null } } | null>(null);
   const [camera, setCamera] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const busyRef = useRef(false);
 
   const check = async (value: string) => {
-    if (!value.trim() || busy) return;
+    if (!value.trim() || busyRef.current) return;
+    busyRef.current = true;
     setBusy(true);
     try { setResult(await scan({ data: { code: value.trim() } }) as typeof result); }
     catch { setResult({ result: "error" }); }
-    finally { setBusy(false); }
+    finally { busyRef.current = false; setBusy(false); }
   };
 
+  // Live QR scanning with jsQR, so any phone or laptop camera works.
   useEffect(() => {
     if (!camera) return;
     let stream: MediaStream | null = null;
-    let timer = 0;
+    let frame = 0;
     let stopped = false;
+    const canvas = document.createElement("canvas");
+
     (async () => {
-      const Detector = (window as unknown as { BarcodeDetector?: new (o: { formats: string[] }) => { detect: (v: HTMLVideoElement) => Promise<{ rawValue: string }[]> } }).BarcodeDetector;
-      if (!Detector) { setCamera(false); setResult({ result: "no_camera_support" }); return; }
+      const jsQR = (await import("jsqr")).default;
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
       } catch { setCamera(false); setResult({ result: "no_camera" }); return; }
-      if (videoRef.current) { videoRef.current.srcObject = stream; await videoRef.current.play().catch(() => {}); }
-      const detector = new Detector({ formats: ["qr_code"] });
-      const tick = async () => {
-        if (stopped || !videoRef.current) return;
-        try {
-          const codes = await detector.detect(videoRef.current);
-          if (codes[0]?.rawValue) { setCamera(false); await check(codes[0].rawValue); return; }
-        } catch { /* keep scanning */ }
-        timer = window.setTimeout(tick, 400);
+      const video = videoRef.current;
+      if (!video) return;
+      video.srcObject = stream;
+      await video.play().catch(() => {});
+      const tick = () => {
+        if (stopped) return;
+        const v = videoRef.current;
+        if (v && v.readyState === v.HAVE_ENOUGH_DATA) {
+          canvas.width = v.videoWidth;
+          canvas.height = v.videoHeight;
+          const ctx = canvas.getContext("2d", { willReadFrequently: true });
+          if (ctx && canvas.width && canvas.height) {
+            ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
+            const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const found = jsQR(image.data, image.width, image.height, { inversionAttempts: "dontInvert" });
+            if (found?.data) {
+              stopped = true;
+              setCamera(false);
+              void check(found.data);
+              return;
+            }
+          }
+        }
+        frame = requestAnimationFrame(tick);
       };
-      timer = window.setTimeout(tick, 400);
+      frame = requestAnimationFrame(tick);
     })();
-    return () => { stopped = true; window.clearTimeout(timer); stream?.getTracks().forEach((t) => t.stop()); };
+
+    return () => { stopped = true; cancelAnimationFrame(frame); stream?.getTracks().forEach((t) => t.stop()); };
   }, [camera]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const tone = result?.result === "valid" ? "bg-primary/10 text-primary" : result?.result === "already_used" || result?.result === "void" ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground";
+  const tone = result?.result === "valid" ? "bg-primary/10 text-primary" : result?.result === "already_used" || result?.result === "void" || result?.result === "not_found" ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground";
   const text: Record<string, string> = {
     valid: "Valid ticket — entry allowed. This code is now used.",
     already_used: "Already scanned — this code is no longer valid.",
     void: "This ticket was cancelled.",
+    not_sold: "This code has not been purchased yet.",
     not_found: "Unknown code — no ticket matches this QR.",
-    no_camera: "Camera access was blocked. Type the code instead.",
-    no_camera_support: "This browser can't scan with the camera. Type the code instead.",
+    no_camera: "Camera access was blocked. Allow the camera or type the code instead.",
     error: "Scan failed. Please try again.",
   };
 
@@ -301,13 +358,20 @@ function ScanView() {
     <div className="max-w-xl space-y-4">
       <div className="rounded-2xl border border-border bg-card p-4">
         <h3 className="text-sm font-bold">Scan a ticket</h3>
-        <p className="mt-1 text-xs text-muted-foreground">Each QR code works once. A second scan reports it as already used.</p>
+        <p className="mt-1 text-xs text-muted-foreground">Point the camera at the fan's QR code — it reads automatically. Each code works once.</p>
+        <button className={`${btnPrimary} mt-3`} onClick={() => { setResult(null); setCamera((v) => !v); }}>
+          <Camera className="h-3.5 w-3.5" /> {camera ? "Stop scanner" : "Start QR scanner"}
+        </button>
+        {camera && (
+          <div className="relative mt-3 overflow-hidden rounded-xl bg-foreground/80">
+            <video ref={videoRef} muted playsInline autoPlay className="aspect-[3/4] w-full object-cover sm:aspect-video" />
+            <div className="pointer-events-none absolute inset-8 rounded-2xl border-2 border-primary/80" />
+          </div>
+        )}
         <div className="mt-3 flex gap-2">
-          <input className={inputCls} placeholder="MAS-XXXXXXXX" value={code} onChange={(e) => setCode(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") void check(code); }} />
-          <button className={btnPrimary} disabled={busy} onClick={() => check(code)}>{busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Check"}</button>
+          <input className={inputCls} placeholder="Or type MAS-XXXXXXXX" value={code} onChange={(e) => setCode(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") void check(code); }} />
+          <button className={btnGhost} disabled={busy} onClick={() => check(code)}>{busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Check"}</button>
         </div>
-        <button className={`${btnGhost} mt-3`} onClick={() => { setResult(null); setCamera((v) => !v); }}><Camera className="h-3.5 w-3.5" /> {camera ? "Stop camera" : "Scan with camera"}</button>
-        {camera && <video ref={videoRef} muted playsInline className="mt-3 aspect-video w-full rounded-xl bg-foreground/80 object-cover" />}
       </div>
       {result && (
         <div className={`rounded-2xl p-4 ${tone}`}>
@@ -315,9 +379,9 @@ function ScanView() {
           {result.ticket && (
             <div className="mt-1 text-xs">
               <span className="font-mono">{result.ticket.code}</span>
-              {result.ticket.holder_name ? ` · ${result.ticket.holder_name}` : ""}
-              {result.ticket.row_label ? ` · Row ${result.ticket.row_label}` : ""}
-              {result.ticket.seat_label ? ` · Seat ${result.ticket.seat_label}` : ""}
+              {result.ticket.holder_name ? ` \u00b7 ${result.ticket.holder_name}` : ""}
+              {result.ticket.row_label ? ` \u00b7 Row ${result.ticket.row_label}` : ""}
+              {result.ticket.seat_label ? ` \u00b7 Seat ${result.ticket.seat_label}` : ""}
             </div>
           )}
         </div>
