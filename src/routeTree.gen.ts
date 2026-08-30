@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VoiceRouteImport } from './routes/voice'
 import { Route as TransfersRouteImport } from './routes/transfers'
 import { Route as TicketsRouteImport } from './routes/tickets'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -22,6 +23,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as NewsIndexRouteImport } from './routes/news.index'
 import { Route as CompetitionsIndexRouteImport } from './routes/competitions.index'
+import { Route as VoiceIdRouteImport } from './routes/voice.$id'
 import { Route as VenuesIdRouteImport } from './routes/venues.$id'
 import { Route as TeamsIdRouteImport } from './routes/teams.$id'
 import { Route as PlayersIdRouteImport } from './routes/players.$id'
@@ -30,6 +32,11 @@ import { Route as MatchesIdRouteImport } from './routes/matches.$id'
 import { Route as CompetitionsSlugRouteImport } from './routes/competitions.$slug'
 import { Route as CoachesIdRouteImport } from './routes/coaches.$id'
 
+const VoiceRoute = VoiceRouteImport.update({
+  id: '/voice',
+  path: '/voice',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TransfersRoute = TransfersRouteImport.update({
   id: '/transfers',
   path: '/transfers',
@@ -95,6 +102,11 @@ const CompetitionsIndexRoute = CompetitionsIndexRouteImport.update({
   path: '/competitions/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VoiceIdRoute = VoiceIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => VoiceRoute,
+} as any)
 const VenuesIdRoute = VenuesIdRouteImport.update({
   id: '/venues/$id',
   path: '/venues/$id',
@@ -143,6 +155,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/tickets': typeof TicketsRoute
   '/transfers': typeof TransfersRoute
+  '/voice': typeof VoiceRouteWithChildren
   '/coaches/$id': typeof CoachesIdRoute
   '/competitions/$slug': typeof CompetitionsSlugRoute
   '/matches/$id': typeof MatchesIdRoute
@@ -150,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/players/$id': typeof PlayersIdRoute
   '/teams/$id': typeof TeamsIdRoute
   '/venues/$id': typeof VenuesIdRoute
+  '/voice/$id': typeof VoiceIdRoute
   '/competitions/': typeof CompetitionsIndexRoute
   '/news/': typeof NewsIndexRoute
 }
@@ -165,6 +179,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/tickets': typeof TicketsRoute
   '/transfers': typeof TransfersRoute
+  '/voice': typeof VoiceRouteWithChildren
   '/coaches/$id': typeof CoachesIdRoute
   '/competitions/$slug': typeof CompetitionsSlugRoute
   '/matches/$id': typeof MatchesIdRoute
@@ -172,6 +187,7 @@ export interface FileRoutesByTo {
   '/players/$id': typeof PlayersIdRoute
   '/teams/$id': typeof TeamsIdRoute
   '/venues/$id': typeof VenuesIdRoute
+  '/voice/$id': typeof VoiceIdRoute
   '/competitions': typeof CompetitionsIndexRoute
   '/news': typeof NewsIndexRoute
 }
@@ -188,6 +204,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/tickets': typeof TicketsRoute
   '/transfers': typeof TransfersRoute
+  '/voice': typeof VoiceRouteWithChildren
   '/coaches/$id': typeof CoachesIdRoute
   '/competitions/$slug': typeof CompetitionsSlugRoute
   '/matches/$id': typeof MatchesIdRoute
@@ -195,6 +212,7 @@ export interface FileRoutesById {
   '/players/$id': typeof PlayersIdRoute
   '/teams/$id': typeof TeamsIdRoute
   '/venues/$id': typeof VenuesIdRoute
+  '/voice/$id': typeof VoiceIdRoute
   '/competitions/': typeof CompetitionsIndexRoute
   '/news/': typeof NewsIndexRoute
 }
@@ -212,6 +230,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/tickets'
     | '/transfers'
+    | '/voice'
     | '/coaches/$id'
     | '/competitions/$slug'
     | '/matches/$id'
@@ -219,6 +238,7 @@ export interface FileRouteTypes {
     | '/players/$id'
     | '/teams/$id'
     | '/venues/$id'
+    | '/voice/$id'
     | '/competitions/'
     | '/news/'
   fileRoutesByTo: FileRoutesByTo
@@ -234,6 +254,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/tickets'
     | '/transfers'
+    | '/voice'
     | '/coaches/$id'
     | '/competitions/$slug'
     | '/matches/$id'
@@ -241,6 +262,7 @@ export interface FileRouteTypes {
     | '/players/$id'
     | '/teams/$id'
     | '/venues/$id'
+    | '/voice/$id'
     | '/competitions'
     | '/news'
   id:
@@ -256,6 +278,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/tickets'
     | '/transfers'
+    | '/voice'
     | '/coaches/$id'
     | '/competitions/$slug'
     | '/matches/$id'
@@ -263,6 +286,7 @@ export interface FileRouteTypes {
     | '/players/$id'
     | '/teams/$id'
     | '/venues/$id'
+    | '/voice/$id'
     | '/competitions/'
     | '/news/'
   fileRoutesById: FileRoutesById
@@ -279,6 +303,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   TicketsRoute: typeof TicketsRoute
   TransfersRoute: typeof TransfersRoute
+  VoiceRoute: typeof VoiceRouteWithChildren
   CoachesIdRoute: typeof CoachesIdRoute
   CompetitionsSlugRoute: typeof CompetitionsSlugRoute
   MatchesIdRoute: typeof MatchesIdRoute
@@ -292,6 +317,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/voice': {
+      id: '/voice'
+      path: '/voice'
+      fullPath: '/voice'
+      preLoaderRoute: typeof VoiceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/transfers': {
       id: '/transfers'
       path: '/transfers'
@@ -383,6 +415,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompetitionsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/voice/$id': {
+      id: '/voice/$id'
+      path: '/$id'
+      fullPath: '/voice/$id'
+      preLoaderRoute: typeof VoiceIdRouteImport
+      parentRoute: typeof VoiceRoute
+    }
     '/venues/$id': {
       id: '/venues/$id'
       path: '/venues/$id'
@@ -435,6 +474,16 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface VoiceRouteChildren {
+  VoiceIdRoute: typeof VoiceIdRoute
+}
+
+const VoiceRouteChildren: VoiceRouteChildren = {
+  VoiceIdRoute: VoiceIdRoute,
+}
+
+const VoiceRouteWithChildren = VoiceRoute._addFileChildren(VoiceRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
@@ -447,6 +496,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   TicketsRoute: TicketsRoute,
   TransfersRoute: TransfersRoute,
+  VoiceRoute: VoiceRouteWithChildren,
   CoachesIdRoute: CoachesIdRoute,
   CompetitionsSlugRoute: CompetitionsSlugRoute,
   MatchesIdRoute: MatchesIdRoute,
