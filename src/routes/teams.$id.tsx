@@ -109,6 +109,11 @@ function TeamPage() {
   const upcoming = [...(matches.data ?? [])].filter((m) => m.status === "scheduled" && m.kickoff_at).sort((a, b) => new Date(a.kickoff_at!).getTime() - new Date(b.kickoff_at!).getTime());
   const featured = upcoming[0] ?? matches.data?.[0] ?? null;
   const tournaments = [...new Map((matches.data ?? []).filter((m) => m.competition).map((m) => [m.competition!.slug, m.competition!])).values()];
+  const statComps: TeamComp[] = [...new Map((matches.data ?? [])
+    .filter((m) => m.competition_id && m.competition)
+    .map((m) => [m.competition_id, { id: m.competition_id, name: m.competition!.name, logo_url: m.competition!.logo_url ?? null, season: (m as { season?: string | null }).season ?? null }] as const))
+    .values()];
+
 
   return (
     <AppShell>
