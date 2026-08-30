@@ -37,8 +37,7 @@ export async function translateTexts(texts: string[], locale: string): Promise<T
   const provider = createLovableAiGatewayProvider(apiKey);
   const payload = Object.fromEntries(missing.map((text, index) => [String(index), text]));
   const { text } = await generateText({
-    model: provider("openai/gpt-5.6-sol"),
-    providerOptions: { lovable: { reasoningEffort: "none" } },
+    model: provider("google/gemini-3.1-flash-lite"),
     prompt:
       `Translate the values of this JSON object into ${locale === "ar" ? "Modern Standard Arabic" : locale}. ` +
       "This is football (soccer) editorial content: keep club, competition and player names in their commonly used local form, keep Markdown structure, numbers and scores intact, and never add commentary. " +
