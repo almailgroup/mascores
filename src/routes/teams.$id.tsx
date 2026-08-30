@@ -15,6 +15,7 @@ import { ArrowRight, Landmark, CalendarClock, Crown, Trophy, Users } from "lucid
 import { MatchRow, type MatchWithTeams } from "@/components/match-list";
 import { fetchNationalSquad } from "@/lib/national";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
+import { TeamStats, type TeamComp } from "@/components/team-stats";
 
 export const Route = createFileRoute("/teams/$id")({
   head: () => ({
@@ -258,13 +259,16 @@ function TeamPage() {
       )}
 
       {tab === "stats" && (
-        <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
-          <InfoCard label={tx("Played")} value={String(played.length)} />
-          <InfoCard label={tx("Wins")} value={String(wins)} />
-          <InfoCard label={tx("Draws")} value={String(draws)} />
-          <InfoCard label={tx("Losses")} value={String(losses)} />
-          <InfoCard label={tx("Goals for")} value={String(gf)} />
-          <InfoCard label={tx("Goals against")} value={String(ga)} />
+        <div className="space-y-4">
+          <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
+            <InfoCard label={tx("Played")} value={String(played.length)} />
+            <InfoCard label={tx("Wins")} value={String(wins)} />
+            <InfoCard label={tx("Draws")} value={String(draws)} />
+            <InfoCard label={tx("Losses")} value={String(losses)} />
+            <InfoCard label={tx("Goals for")} value={String(gf)} />
+            <InfoCard label={tx("Goals against")} value={String(ga)} />
+          </div>
+          <TeamStats teamId={id} comps={statComps} />
         </div>
       )}
 
