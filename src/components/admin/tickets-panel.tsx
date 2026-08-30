@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Loader2, QrCode as QrIcon, Ticket, Camera, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { QrCode } from "@/components/qr-code";
-import { scanTicket } from "@/lib/tickets.functions";
+import { generateTicketPool, scanTicket } from "@/lib/tickets.functions";
 import { formatKickoff } from "@/lib/db";
 import { Field, inputCls, btnPrimary, btnGhost, btnDanger, Modal } from "./ui";
 import { ConfirmDelete } from "@/components/confirm-delete";
@@ -21,8 +21,9 @@ type Offer = {
 
 const emptyOffer = {
   name: "General admission", stand: "", price: "3", currency: "KWD", is_free: false,
-  capacity: "", show_row: true, show_seat: true, notes: "", is_active: true,
+  capacity: "100", show_row: true, show_seat: true, notes: "", is_active: true,
 };
+
 
 /** Admin ticketing: create ticket types per match, issue passes and scan QR codes. */
 export function TicketsPanel() {
