@@ -15,7 +15,8 @@ import { ConfirmDelete } from "@/components/confirm-delete";
 import { VenueSelect } from "./venue-select";
 import { MediaUrls } from "./media-urls";
 import { NationalSquadModal } from "./national-squad-modal";
-import { Plus, Pencil, Trash2, Users, UserCog, UserMinus, ImagePlus, Library, Flag } from "lucide-react";
+import { PlayerBatchImport } from "./player-batch-import";
+import { Plus, Pencil, Trash2, Users, UserCog, UserMinus, ImagePlus, Library, Flag, Sparkles } from "lucide-react";
 
 type TeamForm = Partial<Team>;
 type PlayerForm = Partial<Player>;
