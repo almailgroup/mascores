@@ -51,6 +51,12 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
     qc.invalidateQueries({ queryKey: ["admin", "competitions"] });
   };
 
+  const term = search.trim().toLowerCase();
+  const visible = (q.data ?? []).filter((c) =>
+    (scope === "all" || (c.scope ?? "national") === scope) &&
+    (!term || c.name.toLowerCase().includes(term) || (c.country ?? "").toLowerCase().includes(term)),
+  );
+
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
@@ -60,8 +66,18 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
         </button>
       </div>
 
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <input className={`${inputCls} max-w-56`} placeholder="Search competitions" value={search} onChange={(e) => setSearch(e.target.value)} />
+        <div className="flex gap-1 overflow-x-auto rounded-full border border-border bg-card p-1 text-[0.7rem]">
+          {(["all", "national", "continental", "regional", "international"] as const).map((k) => (
+            <button key={k} type="button" onClick={() => setScope(k)}
+              className={`shrink-0 rounded-full px-3 py-1 font-semibold capitalize ${scope === k ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>{k}</button>
+          ))}
+        </div>
+      </div>
+
       <div className="grid gap-2">
-        {(q.data ?? []).map((c) => (
+        {visible.map((c) => (
           <div key={c.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3">
             <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg bg-primary/10">
               {c.logo_url ? <img src={c.logo_url} className="h-full w-full object-contain" alt="" /> : <span className="text-xs">🏆</span>}
