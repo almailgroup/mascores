@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import { BrandLogo } from "@/components/brand-logo";
+import { LiveVoiceAlert } from "@/components/live-voice-alert";
 
 type NavItem = { to: "/" | "/search" | "/competitions" | "/news" | "/transfers" | "/tickets" | "/voice" | "/settings"; labelKey: string; icon: typeof Home; exact?: boolean };
 /** Shown in the mobile tab bar. */
@@ -51,14 +52,14 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
             <BrandLogo className="h-10" />
           </Link>
 
-          <nav className="hidden items-center gap-1 md:flex">
+          <nav className="hidden items-center gap-0.5 md:flex">
             {NAV.map((item) => {
               const active = item.exact ? location.pathname === item.to : location.pathname.startsWith(item.to);
               return (
                 <Link
                   key={item.to}
                   to={item.to}
-                  className={`inline-flex h-9 items-center gap-2 rounded-full px-3 text-sm font-medium transition ${
+                  className={`inline-flex h-9 items-center gap-2 rounded-full px-2.5 text-[0.82rem] font-medium transition ${
                     active ? "bg-primary/15 text-primary" : "text-muted-foreground hover:bg-accent hover:text-foreground"
                   }`}
                 >
@@ -93,6 +94,8 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
           </div>
         </div>
       </header>}
+
+      {!bare && <LiveVoiceAlert />}
 
       <main className="relative z-10 mx-auto max-w-7xl px-4 pb-28 pt-6 sm:px-6">{children}</main>
 
