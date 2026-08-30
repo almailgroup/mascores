@@ -1733,6 +1733,137 @@ export type Database = {
           },
         ]
       }
+      ticket_offers: {
+        Row: {
+          capacity: number | null
+          created_at: string
+          currency: string
+          id: string
+          is_active: boolean
+          is_free: boolean
+          match_id: string
+          name: string
+          notes: string | null
+          price: number
+          show_row: boolean
+          show_seat: boolean
+          sort_order: number
+          stand: string | null
+          updated_at: string
+        }
+        Insert: {
+          capacity?: number | null
+          created_at?: string
+          currency?: string
+          id?: string
+          is_active?: boolean
+          is_free?: boolean
+          match_id: string
+          name?: string
+          notes?: string | null
+          price?: number
+          show_row?: boolean
+          show_seat?: boolean
+          sort_order?: number
+          stand?: string | null
+          updated_at?: string
+        }
+        Update: {
+          capacity?: number | null
+          created_at?: string
+          currency?: string
+          id?: string
+          is_active?: boolean
+          is_free?: boolean
+          match_id?: string
+          name?: string
+          notes?: string | null
+          price?: number
+          show_row?: boolean
+          show_seat?: boolean
+          sort_order?: number
+          stand?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_offers_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tickets: {
+        Row: {
+          code: string
+          created_at: string
+          currency: string
+          holder_name: string | null
+          id: string
+          issued_with_admin_code: boolean
+          match_id: string
+          offer_id: string | null
+          price_paid: number
+          row_label: string | null
+          seat_label: string | null
+          status: string
+          updated_at: string
+          used_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          currency?: string
+          holder_name?: string | null
+          id?: string
+          issued_with_admin_code?: boolean
+          match_id: string
+          offer_id?: string | null
+          price_paid?: number
+          row_label?: string | null
+          seat_label?: string | null
+          status?: string
+          updated_at?: string
+          used_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          currency?: string
+          holder_name?: string | null
+          id?: string
+          issued_with_admin_code?: boolean
+          match_id?: string
+          offer_id?: string | null
+          price_paid?: number
+          row_label?: string | null
+          seat_label?: string | null
+          status?: string
+          updated_at?: string
+          used_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transfers: {
         Row: {
           created_at: string
