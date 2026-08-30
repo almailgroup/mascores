@@ -1,0 +1,327 @@
+import { useEffect, useRef, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { Loader2, QrCode as QrIcon, Ticket, Camera, Search } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { QrCode } from "@/components/qr-code";
+import { scanTicket } from "@/lib/tickets.functions";
+import { formatKickoff } from "@/lib/db";
+import { Field, inputCls, btnPrimary, btnGhost, btnDanger, Modal } from "./ui";
+import { ConfirmDelete } from "@/components/confirm-delete";
+
+type MatchOption = {
+  id: string; kickoff_at: string | null; venue: string | null;
+  home: { name: string } | null; away: { name: string } | null; competition: { name: string } | null;
+};
+
+type Offer = {
+  id: string; match_id: string; name: string; stand: string | null; price: number; currency: string;
+  is_free: boolean; capacity: number | null; show_row: boolean; show_seat: boolean; notes: string | null; is_active: boolean;
+};
+
+const emptyOffer = {
+  name: "General admission", stand: "", price: "3", currency: "KWD", is_free: false,
+  capacity: "", show_row: true, show_seat: true, notes: "", is_active: true,
+};
+
+/** Admin ticketing: create ticket types per match, issue passes and scan QR codes. */
+export function TicketsPanel() {
+  const [view, setView] = useState<"offers" | "scan">("offers");
+  return (
+    <div>
+      <div className="mb-4 flex gap-2">
+        {(["offers", "scan"] as const).map((k) => (
+          <button key={k} onClick={() => setView(k)}
+            className={`inline-flex h-9 items-center gap-1.5 rounded-full px-4 text-xs font-bold ${view === k ? "bg-primary text-primary-foreground" : "border border-border bg-card text-muted-foreground"}`}>
+            {k === "offers" ? <Ticket className="h-3.5 w-3.5" /> : <QrIcon className="h-3.5 w-3.5" />}
+            {k === "offers" ? "Tickets" : "Scan QR code"}
+          </button>
+        ))}
+      </div>
+      {view === "offers" ? <OffersView /> : <ScanView />}
+    </div>
+  );
+}
+
+function OffersView() {
+  const qc = useQueryClient();
+  const [search, setSearch] = useState("");
+  const [matchId, setMatchId] = useState<string | null>(null);
+  const [form, setForm] = useState({ ...emptyOffer });
+  const [editing, setEditing] = useState<Offer | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [deleteOffer, setDeleteOffer] = useState<Offer | null>(null);
+  const [issueOffer, setIssueOffer] = useState<Offer | null>(null);
+
+  const matches = useQuery({
+    queryKey: ["admin-ticket-matches"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("matches")
+        .select("id, kickoff_at, venue, home:home_team_id(name), away:away_team_id(name), competition:competition_id(name)")
+        .order("kickoff_at", { ascending: true })
+        .limit(400);
+      return (data ?? []) as unknown as MatchOption[];
+    },
+  });
+
+  const offers = useQuery({
+    queryKey: ["admin-ticket-offers"],
+    queryFn: async () => {
+      const { data } = await supabase.from("ticket_offers").select("*").order("created_at", { ascending: false });
+      return (data ?? []) as unknown as Offer[];
+    },
+  });
+
+  const label = (m: MatchOption) => `${m.home?.name ?? "TBD"} vs ${m.away?.name ?? "TBD"} — ${m.competition?.name ?? ""} ${formatKickoff(m.kickoff_at)}`;
+  const filtered = (matches.data ?? []).filter((m) => label(m).toLowerCase().includes(search.trim().toLowerCase()));
+
+  const save = async () => {
+    if (!matchId && !editing) return;
+    setBusy(true);
+    const payload = {
+      match_id: editing?.match_id ?? matchId!,
+      name: form.name.trim() || "General admission",
+      stand: form.stand.trim() || null,
+      price: form.is_free ? 0 : Number(form.price || 0),
+      currency: form.currency.trim() || "KWD",
+      is_free: form.is_free,
+      capacity: form.capacity.trim() ? Number(form.capacity) : null,
+      show_row: form.show_row,
+      show_seat: form.show_seat,
+      notes: form.notes.trim() || null,
+      is_active: form.is_active,
+    };
+    if (editing) await supabase.from("ticket_offers").update(payload).eq("id", editing.id);
+    else await supabase.from("ticket_offers").insert(payload);
+    await qc.invalidateQueries({ queryKey: ["admin-ticket-offers"] });
+    setForm({ ...emptyOffer });
+    setEditing(null);
+    setBusy(false);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="rounded-2xl border border-border bg-card p-4">
+        <h3 className="text-sm font-bold">{editing ? "Edit ticket" : "New ticket"}</h3>
+        {!editing && (
+          <div className="mt-3 space-y-2">
+            <div className="relative">
+              <Search className="pointer-events-none absolute start-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              <input className={`${inputCls} ps-8`} placeholder="Search matches…" value={search} onChange={(e) => setSearch(e.target.value)} />
+            </div>
+            <Field label="Match">
+              <select className={inputCls} value={matchId ?? ""} onChange={(e) => setMatchId(e.target.value || null)}>
+                <option value="">Select a match…</option>
+                {filtered.slice(0, 120).map((m) => <option key={m.id} value={m.id}>{label(m)}</option>)}
+              </select>
+            </Field>
+          </div>
+        )}
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <Field label="Ticket name"><input className={inputCls} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
+          <Field label="Stand / section"><input className={inputCls} value={form.stand} onChange={(e) => setForm({ ...form, stand: e.target.value })} placeholder="West stand" /></Field>
+          <Field label="Price"><input className={inputCls} inputMode="decimal" disabled={form.is_free} value={form.is_free ? "0" : form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} /></Field>
+          <Field label="Currency"><input className={inputCls} value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })} /></Field>
+          <Field label="Capacity (optional)"><input className={inputCls} inputMode="numeric" value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })} placeholder="Unlimited" /></Field>
+          <Field label="Note (optional)"><input className={inputCls} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Gate A opens 2h before" /></Field>
+        </div>
+        <div className="mt-3 flex flex-wrap gap-4 text-xs font-semibold">
+          {([["is_free", "Free ticket"], ["show_row", "Print row number"], ["show_seat", "Print seat number"], ["is_active", "On sale"]] as const).map(([key, text]) => (
+            <label key={key} className="inline-flex items-center gap-2">
+              <input type="checkbox" checked={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.checked })} />
+              {text}
+            </label>
+          ))}
+        </div>
+        <div className="mt-4 flex gap-2">
+          <button className={btnPrimary} disabled={busy || (!editing && !matchId)} onClick={save}>
+            {busy && <Loader2 className="h-3.5 w-3.5 animate-spin" />} {editing ? "Save ticket" : "Create ticket"}
+          </button>
+          {editing && <button className={btnGhost} onClick={() => { setEditing(null); setForm({ ...emptyOffer }); }}>Cancel</button>}
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        {offers.isLoading && <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>}
+        {(offers.data ?? []).map((offer) => {
+          const m = (matches.data ?? []).find((item) => item.id === offer.match_id);
+          return (
+            <div key={offer.id} className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-3">
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-bold">{offer.name}{offer.stand ? ` · ${offer.stand}` : ""} <span className="text-muted-foreground">{offer.is_free ? "· Free" : `· ${offer.price} ${offer.currency}`}</span></div>
+                <div className="truncate text-[0.7rem] text-muted-foreground">{m ? label(m) : offer.match_id}</div>
+                <div className="mt-0.5 text-[0.65rem] text-muted-foreground">
+                  {[offer.is_active ? "On sale" : "Hidden", offer.capacity ? `${offer.capacity} available` : "Unlimited", offer.show_row ? "row" : null, offer.show_seat ? "seat" : null].filter(Boolean).join(" · ")}
+                </div>
+              </div>
+              <button className={btnGhost} onClick={() => setIssueOffer(offer)}><QrIcon className="h-3.5 w-3.5" /> Passes</button>
+              <button className={btnGhost} onClick={() => { setEditing(offer); setForm({ name: offer.name, stand: offer.stand ?? "", price: String(offer.price), currency: offer.currency, is_free: offer.is_free, capacity: offer.capacity ? String(offer.capacity) : "", show_row: offer.show_row, show_seat: offer.show_seat, notes: offer.notes ?? "", is_active: offer.is_active }); }}>Edit</button>
+              <button className={btnDanger} onClick={() => setDeleteOffer(offer)}>Delete</button>
+            </div>
+          );
+        })}
+        {!offers.isLoading && (offers.data ?? []).length === 0 && <p className="text-sm text-muted-foreground">No tickets created yet.</p>}
+      </div>
+
+      <ConfirmDelete
+        open={!!deleteOffer}
+        title={`Delete ${deleteOffer?.name ?? "ticket"}`}
+        description="This removes the ticket type. Passes already issued from it stay valid but lose their ticket details."
+        confirmWord="DELETE"
+        actionLabel="Delete ticket"
+        onCancel={() => setDeleteOffer(null)}
+        onConfirm={async () => { await supabase.from("ticket_offers").delete().eq("id", deleteOffer!.id); setDeleteOffer(null); await qc.invalidateQueries({ queryKey: ["admin-ticket-offers"] }); }}
+      />
+      {issueOffer && <PassesModal offer={issueOffer} onClose={() => setIssueOffer(null)} />}
+    </div>
+  );
+}
+
+type TicketRow = {
+  id: string; code: string; status: string; holder_name: string | null; row_label: string | null;
+  seat_label: string | null; used_at: string | null; issued_with_admin_code: boolean; created_at: string;
+};
+
+function PassesModal({ offer, onClose }: { offer: Offer; onClose: () => void }) {
+  const qc = useQueryClient();
+  const [holder, setHolder] = useState("");
+  const [row, setRow] = useState("");
+  const [seat, setSeat] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const tickets = useQuery({
+    queryKey: ["admin-tickets", offer.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("tickets").select("id, code, status, holder_name, row_label, seat_label, used_at, issued_with_admin_code, created_at").eq("offer_id", offer.id).order("created_at", { ascending: false });
+      return (data ?? []) as TicketRow[];
+    },
+  });
+
+  const issue = async () => {
+    setBusy(true);
+    const code = `MAS-${crypto.randomUUID().replace(/-/g, "").slice(0, 16).toUpperCase()}`;
+    await supabase.from("tickets").insert({
+      offer_id: offer.id, match_id: offer.match_id, code,
+      holder_name: holder.trim() || null,
+      row_label: offer.show_row ? (row.trim() || null) : null,
+      seat_label: offer.show_seat ? (seat.trim() || null) : null,
+      price_paid: offer.is_free ? 0 : offer.price, currency: offer.currency,
+      issued_with_admin_code: true,
+    });
+    setHolder(""); setRow(""); setSeat("");
+    await qc.invalidateQueries({ queryKey: ["admin-tickets", offer.id] });
+    setBusy(false);
+  };
+
+  return (
+    <Modal open onClose={onClose} title={`${offer.name} passes`} wide>
+      <div className="grid gap-3 sm:grid-cols-4">
+        <Field label="Holder (optional)"><input className={inputCls} value={holder} onChange={(e) => setHolder(e.target.value)} /></Field>
+        {offer.show_row && <Field label="Row"><input className={inputCls} value={row} onChange={(e) => setRow(e.target.value)} /></Field>}
+        {offer.show_seat && <Field label="Seat"><input className={inputCls} value={seat} onChange={(e) => setSeat(e.target.value)} /></Field>}
+        <div className="flex items-end"><button className={btnPrimary} disabled={busy} onClick={issue}>{busy && <Loader2 className="h-3.5 w-3.5 animate-spin" />} Generate pass</button></div>
+      </div>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        {(tickets.data ?? []).map((ticket) => (
+          <div key={ticket.id} className="flex gap-3 rounded-2xl border border-border p-3">
+            <QrCode value={ticket.code} size={92} className={ticket.status === "used" ? "opacity-40" : ""} />
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-bold">{ticket.holder_name ?? "Open pass"}</div>
+              <div className="text-[0.65rem] text-muted-foreground">{[ticket.row_label ? `Row ${ticket.row_label}` : null, ticket.seat_label ? `Seat ${ticket.seat_label}` : null].filter(Boolean).join(" · ") || "No seat assigned"}</div>
+              <div className="mt-1 font-mono text-[0.65rem] tracking-wider">{ticket.code}</div>
+              <div className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[0.6rem] font-bold ${ticket.status === "used" ? "bg-muted text-muted-foreground" : ticket.status === "void" ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary"}`}>{ticket.status}</div>
+              <div className="mt-2 flex gap-2">
+                {ticket.status !== "valid" && <button className="text-[0.65rem] font-semibold text-primary" onClick={async () => { await supabase.from("tickets").update({ status: "valid", used_at: null }).eq("id", ticket.id); await qc.invalidateQueries({ queryKey: ["admin-tickets", offer.id] }); }}>Reactivate</button>}
+                <button className="text-[0.65rem] font-semibold text-destructive" onClick={async () => { await supabase.from("tickets").delete().eq("id", ticket.id); await qc.invalidateQueries({ queryKey: ["admin-tickets", offer.id] }); }}>Delete</button>
+              </div>
+            </div>
+          </div>
+        ))}
+        {(tickets.data ?? []).length === 0 && <p className="text-sm text-muted-foreground">No passes generated yet.</p>}
+      </div>
+    </Modal>
+  );
+}
+
+function ScanView() {
+  const scan = useServerFn(scanTicket);
+  const [code, setCode] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<{ result: string; ticket?: { code: string; holder_name: string | null; row_label: string | null; seat_label: string | null } } | null>(null);
+  const [camera, setCamera] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  const check = async (value: string) => {
+    if (!value.trim() || busy) return;
+    setBusy(true);
+    try { setResult(await scan({ data: { code: value.trim() } }) as typeof result); }
+    catch { setResult({ result: "error" }); }
+    finally { setBusy(false); }
+  };
+
+  useEffect(() => {
+    if (!camera) return;
+    let stream: MediaStream | null = null;
+    let timer = 0;
+    let stopped = false;
+    (async () => {
+      const Detector = (window as unknown as { BarcodeDetector?: new (o: { formats: string[] }) => { detect: (v: HTMLVideoElement) => Promise<{ rawValue: string }[]> } }).BarcodeDetector;
+      if (!Detector) { setCamera(false); setResult({ result: "no_camera_support" }); return; }
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+      } catch { setCamera(false); setResult({ result: "no_camera" }); return; }
+      if (videoRef.current) { videoRef.current.srcObject = stream; await videoRef.current.play().catch(() => {}); }
+      const detector = new Detector({ formats: ["qr_code"] });
+      const tick = async () => {
+        if (stopped || !videoRef.current) return;
+        try {
+          const codes = await detector.detect(videoRef.current);
+          if (codes[0]?.rawValue) { setCamera(false); await check(codes[0].rawValue); return; }
+        } catch { /* keep scanning */ }
+        timer = window.setTimeout(tick, 400);
+      };
+      timer = window.setTimeout(tick, 400);
+    })();
+    return () => { stopped = true; window.clearTimeout(timer); stream?.getTracks().forEach((t) => t.stop()); };
+  }, [camera]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const tone = result?.result === "valid" ? "bg-primary/10 text-primary" : result?.result === "already_used" || result?.result === "void" ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground";
+  const text: Record<string, string> = {
+    valid: "Valid ticket — entry allowed. This code is now used.",
+    already_used: "Already scanned — this code is no longer valid.",
+    void: "This ticket was cancelled.",
+    not_found: "Unknown code — no ticket matches this QR.",
+    no_camera: "Camera access was blocked. Type the code instead.",
+    no_camera_support: "This browser can't scan with the camera. Type the code instead.",
+    error: "Scan failed. Please try again.",
+  };
+
+  return (
+    <div className="max-w-xl space-y-4">
+      <div className="rounded-2xl border border-border bg-card p-4">
+        <h3 className="text-sm font-bold">Scan a ticket</h3>
+        <p className="mt-1 text-xs text-muted-foreground">Each QR code works once. A second scan reports it as already used.</p>
+        <div className="mt-3 flex gap-2">
+          <input className={inputCls} placeholder="MAS-XXXXXXXX" value={code} onChange={(e) => setCode(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") void check(code); }} />
+          <button className={btnPrimary} disabled={busy} onClick={() => check(code)}>{busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Check"}</button>
+        </div>
+        <button className={`${btnGhost} mt-3`} onClick={() => { setResult(null); setCamera((v) => !v); }}><Camera className="h-3.5 w-3.5" /> {camera ? "Stop camera" : "Scan with camera"}</button>
+        {camera && <video ref={videoRef} muted playsInline className="mt-3 aspect-video w-full rounded-xl bg-foreground/80 object-cover" />}
+      </div>
+      {result && (
+        <div className={`rounded-2xl p-4 ${tone}`}>
+          <div className="text-sm font-bold">{text[result.result] ?? result.result}</div>
+          {result.ticket && (
+            <div className="mt-1 text-xs">
+              <span className="font-mono">{result.ticket.code}</span>
+              {result.ticket.holder_name ? ` · ${result.ticket.holder_name}` : ""}
+              {result.ticket.row_label ? ` · Row ${result.ticket.row_label}` : ""}
+              {result.ticket.seat_label ? ` · Seat ${result.ticket.seat_label}` : ""}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
