@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Modal, Field, inputCls, btnPrimary, btnGhost, btnDanger } from "./ui";
-import { PlayerAvatar } from "./player-avatar";
+import { PlayerAvatar } from "@/components/player-avatar";
 import type { Player, Team } from "@/lib/db";
 
 const POSITIONS = ["Goalkeeper", "Defender", "Midfielder", "Forward", "Unknown"] as const;
