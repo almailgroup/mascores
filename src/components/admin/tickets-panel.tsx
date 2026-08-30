@@ -152,7 +152,7 @@ function OffersView() {
           <Field label="Stand / section"><input className={inputCls} value={form.stand} onChange={(e) => setForm({ ...form, stand: e.target.value })} placeholder="West stand" /></Field>
           <Field label="Price"><input className={inputCls} inputMode="decimal" disabled={form.is_free} value={form.is_free ? "0" : form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} /></Field>
           <Field label="Currency"><input className={inputCls} value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })} /></Field>
-          <Field label="Capacity (optional)"><input className={inputCls} inputMode="numeric" value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })} placeholder="Unlimited" /></Field>
+          <Field label="Capacity (required)"><input className={inputCls} inputMode="numeric" value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })} placeholder="100" /></Field>
           <Field label="Note (optional)"><input className={inputCls} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Gate A opens 2h before" /></Field>
         </div>
         <div className="mt-3 flex flex-wrap gap-4 text-xs font-semibold">
