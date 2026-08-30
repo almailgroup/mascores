@@ -15,7 +15,8 @@ import { ConfirmDelete } from "@/components/confirm-delete";
 import { VenueSelect } from "./venue-select";
 import { MediaUrls } from "./media-urls";
 import { NationalSquadModal } from "./national-squad-modal";
-import { Plus, Pencil, Trash2, Users, UserCog, UserMinus, ImagePlus, Library, Flag } from "lucide-react";
+import { PlayerBatchImport } from "./player-batch-import";
+import { Plus, Pencil, Trash2, Users, UserCog, UserMinus, ImagePlus, Library, Flag, Sparkles } from "lucide-react";
 
 type TeamForm = Partial<Team>;
 type PlayerForm = Partial<Player>;
@@ -218,6 +219,7 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
   const qc = useQueryClient();
   const [editing, setEditing] = useState<Partial<Player> | null>(null);
   const [addExisting, setAddExisting] = useState(false);
+  const [batchOpen, setBatchOpen] = useState(false);
   const [pick, setPick] = useState("");
   const [poolSearch, setPoolSearch] = useState("");
   const [confirmPlayer, setConfirmPlayer] = useState<Player | null>(null);
@@ -247,6 +249,7 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
       <div className="mb-4 flex flex-wrap gap-2">
         <button className={btnPrimary} onClick={() => setEditing({ team_id: team.id })}><Plus className="h-3.5 w-3.5" /> Add player</button>
         <button className={btnGhost} onClick={() => setAddExisting(true)}><Library className="h-3.5 w-3.5" /> Add existing player</button>
+        <button className={btnGhost} onClick={() => setBatchOpen(true)}><Sparkles className="h-3.5 w-3.5" /> Add many with Almail AI</button>
       </div>
 
       {addExisting && (
@@ -311,6 +314,7 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
         })}
       </div>
 
+      <PlayerBatchImport open={batchOpen} onClose={() => setBatchOpen(false)} teamId={team.id} onSaved={invalidate} />
       {editing && <PlayerEditor player={editing} teamId={team.id} teamName={team.name} onClose={() => { setEditing(null); invalidate(); }} />}
       <ConfirmDelete
         open={!!confirmPlayer}
