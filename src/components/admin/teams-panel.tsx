@@ -15,6 +15,7 @@ import { ConfirmDelete } from "@/components/confirm-delete";
 import { VenueSelect } from "./venue-select";
 import { MediaUrls } from "./media-urls";
 import { NationalSquadModal } from "./national-squad-modal";
+import { SeasonSquadModal } from "./season-squad-modal";
 import { PlayerBatchImport } from "./player-batch-import";
 import { Plus, Pencil, Trash2, Users, UserCog, UserMinus, ImagePlus, Library, Flag, Sparkles } from "lucide-react";
 
@@ -22,7 +23,7 @@ type TeamForm = Partial<Team>;
 type PlayerForm = Partial<Player>;
 type CoachForm = Partial<Coach>;
 
-export function TeamsPanel({ competitionId, season = null, competition = null, lockKind }: { competitionId: string | null; season?: string | null; lockKind?: "clubs" | "national"; competition?: Pick<Team, "country" | "country_code"> & { scope?: string | null; is_national?: boolean | null } | null }) {
+export function TeamsPanel({ competitionId, season = null, competition = null, lockKind }: { competitionId: string | null; season?: string | null; lockKind?: "clubs" | "national"; competition?: Pick<Team, "country" | "country_code"> & { scope?: string | null; is_national?: boolean | null; season?: string | null } | null }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<TeamForm>({});
@@ -35,6 +36,8 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
   const activeKind = lockKind ?? kind;
   const [search, setSearch] = useState("");
   const [deleteTeam, setDeleteTeam] = useState<Team | null>(null);
+  /** A past season keeps its own frozen squad instead of the club's live squad. */
+  const pastSeason = !!(season && competition?.season && season !== competition.season) ? season : null;
 
   /** Inside a competition only teams that belong to it make sense: same country, same kind. */
   const eligible = (team: Team) => {
@@ -125,8 +128,9 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
         <div className="flex flex-wrap gap-2">{competitionId && <button className={btnGhost} onClick={() => setLibraryOpen(true)}><Library className="h-3.5 w-3.5" /> Add existing</button>}<button className={btnPrimary} onClick={() => { setForm(competition ? { country: competition.country ?? null, country_code: competition.country_code ?? null, is_national: !!competition.is_national } : lockKind ? { is_national: lockKind === "national" } : {}); setOpen(true); }}><Plus className="h-3.5 w-3.5" /> New team</button></div>
       </div>
       <div className="grid gap-2">
-        {!competitionId && (
-          <div className="mb-1 flex flex-wrap items-center gap-2">
+        <div className="mb-1 flex flex-wrap items-center gap-2">
+          {!competitionId && (
+            <>
             {!lockKind && <div className="flex gap-1 rounded-full border border-border bg-card p-1 text-xs">
               {(["all", "clubs", "national"] as const).map((k) => (
                 <button key={k} type="button" onClick={() => setKind(k)}
@@ -135,12 +139,13 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
                 </button>
               ))}
             </div>}
-            <input className={`${inputCls} max-w-48`} placeholder="Search teams" value={search} onChange={(e) => setSearch(e.target.value)} />
-          </div>
-        )}
+            </>
+          )}
+          <input className={`${inputCls} max-w-48`} placeholder="Search teams" value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
         {(q.data ?? [])
           .filter((t) => (competitionId ? true : activeKind === "all" || (activeKind === "national" ? t.is_national : !t.is_national)))
-          .filter((t) => (competitionId || !search.trim() ? true : t.name.toLowerCase().includes(search.trim().toLowerCase())))
+          .filter((t) => (!search.trim() ? true : t.name.toLowerCase().includes(search.trim().toLowerCase())))
           .slice(0, competitionId ? 500 : 120)
           .map((t) => (
           <div key={t.id} className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-3 sm:gap-3">
@@ -226,9 +231,11 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
         <div className="mt-4 flex justify-end gap-2"><button className={btnGhost} onClick={() => setLibraryOpen(false)}>Cancel</button><button className={btnPrimary} disabled={!libraryTeamId} onClick={async () => { await supabase.from("competition_teams").insert({ competition_id: competitionId, team_id: libraryTeamId, season } as never); setLibraryTeamId(""); setLibraryOpen(false); qc.invalidateQueries({ queryKey: ["admin", "teams", competitionId] }); qc.invalidateQueries({ queryKey: ["admin", "standings", competitionId] }); }}>Add to competition</button></div>
       </Modal>
 
-      {squadOf && (squadOf.is_national
-        ? <NationalSquadModal team={squadOf} onClose={() => setSquadOf(null)} />
-        : <SquadModal team={squadOf} onClose={() => setSquadOf(null)} />)}
+      {squadOf && (pastSeason
+        ? <SeasonSquadModal team={squadOf} season={pastSeason} onClose={() => setSquadOf(null)} />
+        : squadOf.is_national
+          ? <NationalSquadModal team={squadOf} onClose={() => setSquadOf(null)} />
+          : <SquadModal team={squadOf} onClose={() => setSquadOf(null)} />)}
       {staffOf && <CoachesModal team={staffOf} onClose={() => setStaffOf(null)} />}
     </div>
   );

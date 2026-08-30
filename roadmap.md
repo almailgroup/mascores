@@ -10,9 +10,10 @@
 - [x] "Bidoon" nationality with an Arabic wordmark flag
 - [x] "Save result" prompt when goals are logged on a scheduled match
 
-## B. Admin usability
-- [ ] Search + filter bars across every admin list (teams, players, matches)
-- [ ] Past-season squads start empty; can pull current or past players
+## B. Admin usability (done)
+- [x] Search + filter bars across every admin list (teams, players, matches,
+      competitions, venues, channels, transfers, news)
+- [x] Past-season squads start empty; can pull current or past players
 
 ## C. Branding & content
 - [ ] Zain Premier League themed competition page + entry animation
