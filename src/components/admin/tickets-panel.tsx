@@ -183,8 +183,14 @@ function OffersView() {
                 <div className="truncate text-sm font-bold">{offer.name}{offer.stand ? ` · ${offer.stand}` : ""} <span className="text-muted-foreground">{offer.is_free ? "· Free" : `· ${offer.price} ${offer.currency}`}</span></div>
                 <div className="truncate text-[0.7rem] text-muted-foreground">{m ? label(m) : offer.match_id}</div>
                 <div className="mt-0.5 text-[0.65rem] text-muted-foreground">
-                  {[offer.is_active ? "On sale" : "Hidden", offer.capacity ? `${offer.capacity} available` : "Unlimited", offer.show_row ? "row" : null, offer.show_seat ? "seat" : null].filter(Boolean).join(" · ")}
+                  {[
+                    offer.is_active ? "On sale" : "Hidden",
+                    `${counts.data?.[offer.id]?.pool ?? 0} codes left`,
+                    `${counts.data?.[offer.id]?.sold ?? 0} sold`,
+                    offer.capacity ? `capacity ${offer.capacity}` : null,
+                  ].filter(Boolean).join(" · ")}
                 </div>
+
               </div>
               <button className={btnGhost} onClick={() => setIssueOffer(offer)}><QrIcon className="h-3.5 w-3.5" /> Passes</button>
               <button className={btnGhost} onClick={() => { setEditing(offer); setForm({ name: offer.name, stand: offer.stand ?? "", price: String(offer.price), currency: offer.currency, is_free: offer.is_free, capacity: offer.capacity ? String(offer.capacity) : "", show_row: offer.show_row, show_seat: offer.show_seat, notes: offer.notes ?? "", is_active: offer.is_active }); }}>Edit</button>
