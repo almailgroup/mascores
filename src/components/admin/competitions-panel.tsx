@@ -13,6 +13,8 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<Form>(empty);
+  const [search, setSearch] = useState("");
+  const [scope, setScope] = useState<"all" | "national" | "continental" | "regional" | "international">("all");
 
   const q = useQuery({
     queryKey: ["admin", "competitions"],
