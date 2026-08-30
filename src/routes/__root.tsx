@@ -15,6 +15,7 @@ import { ThemeProvider } from "../components/theme-provider";
 import { IntroSplash } from "../components/intro-splash";
 import { I18nProvider } from "../lib/i18n";
 import { CurrencyProvider } from "../lib/currency";
+import { HeightUnitProvider } from "../lib/units";
 import { AutoTranslateProvider, useTranslationReady } from "../lib/auto-translate";
 import { BrandLogo } from "../components/brand-logo";
 
