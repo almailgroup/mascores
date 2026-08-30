@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Mic, MicOff, Loader2, Lock, Globe2, Hand, LogOut, Copy, Check, UserPlus, UserCheck, PhoneOff, Radio, EyeOff } from "lucide-react";
+import { Mic, MicOff, Loader2, Lock, Globe2, Hand, LogOut, Copy, Check, UserPlus, UserCheck, PhoneOff, Radio, EyeOff, Trash2, UserMinus } from "lucide-react";
 import { AppShell, BackButton } from "@/components/app-shell";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -71,6 +71,27 @@ function VoiceRoomPage() {
     },
   });
 
+  const participants = useQuery({
+    enabled: !!room.data && joined,
+    queryKey: ["voice-participants", id],
+    refetchInterval: 3000,
+    queryFn: async () => {
+      const { data } = await supabase.from("voice_room_participants").select("user_id,role,is_muted,hand_raised").eq("room_id", id).is("left_at", null);
+      const ids = (data ?? []).map((row) => row.user_id);
+      const { data: profiles } = ids.length ? await supabase.rpc("chat_author_profiles", { _ids: ids }) : { data: [] };
+      const byId = new Map((profiles ?? []).map((profile) => [profile.id, profile]));
+      return (data ?? []).map((row) => ({
+        userId: row.user_id,
+        name: byId.get(row.user_id)?.display_name ?? "Listener",
+        avatar: byId.get(row.user_id)?.avatar_url ?? null,
+        role: row.role as VoiceRole,
+        muted: row.is_muted,
+        hand: row.hand_raised,
+        speaking: false,
+      }));
+    },
+  });
+
   const following = useQuery({
     enabled: !!user && !!room.data,
     queryKey: ["voice-follow", room.data?.host_id, user?.id],
@@ -102,14 +123,15 @@ function VoiceRoomPage() {
       }
     : null;
 
-  const { roster, remote, muted, toggleMute, hand, setHand, micError, connected, speakerCount, listenerCount } = useVoiceRoom({ roomId: id, me, enabled: !!me && live });
+  const { roster, remote, muted, toggleMute, forceMute, hand, setHand, micError, connected, speakerCount, listenerCount } = useVoiceRoom({ roomId: id, me, enabled: !!me && live, storedPeers: participants.data ?? [] });
 
   // Join the room roster (host joins automatically when the room is created).
   const join = async (anonymous = false) => {
     if (!user) { void navigate({ to: "/auth" }); return; }
     setAnon(anonymous);
+    const existingRole = membership.data?.role;
     await supabase.from("voice_room_participants")
-      .upsert({ room_id: id, user_id: user.id, role: isHost ? "host" : "listener", is_muted: !isHost, left_at: null }, { onConflict: "room_id,user_id" });
+      .upsert({ room_id: id, user_id: user.id, role: isHost ? "host" : (existingRole ?? "listener"), is_muted: true, left_at: null }, { onConflict: "room_id,user_id" });
     await qc.invalidateQueries({ queryKey: ["voice-membership", id] });
     setJoined(true);
   };
@@ -121,14 +143,21 @@ function VoiceRoomPage() {
   };
 
   const endRoom = async () => {
-    await supabase.from("voice_rooms").update({ status: "ended", ended_at: new Date().toISOString() }).eq("id", id);
+    await supabase.rpc("voice_end_room", { _room_id: id });
     setJoined(false);
     void navigate({ to: "/voice" });
   };
 
-  const setRole = async (userId: string, next: VoiceRole) => {
-    await supabase.from("voice_room_participants").update({ role: next, is_muted: next === "listener", hand_raised: false }).eq("room_id", id).eq("user_id", userId);
+  const deleteRoom = async () => {
+    if (!window.confirm(tx("Delete this voice room permanently?"))) return;
+    const { error } = await supabase.rpc("voice_delete_room", { _room_id: id });
+    if (!error) void navigate({ to: "/voice" });
+  };
+
+  const manage = async (userId: string, action: "promote" | "demote" | "mute" | "remove") => {
+    await supabase.rpc("voice_manage_participant", { _room_id: id, _user_id: userId, _action: action });
     await qc.invalidateQueries({ queryKey: ["voice-membership", id] });
+    await qc.invalidateQueries({ queryKey: ["voice-participants", id] });
   };
 
   const toggleFollow = async () => {
@@ -144,6 +173,8 @@ function VoiceRoomPage() {
     if (!user || !joined) return;
     void supabase.from("voice_room_participants").update({ is_muted: muted, hand_raised: hand, last_seen_at: new Date().toISOString() }).eq("room_id", id).eq("user_id", user.id);
   }, [muted, hand, joined, user, id]);
+
+  useEffect(() => { if (membership.data?.is_muted && !muted) forceMute(); }, [membership.data?.is_muted, muted, forceMute]);
 
   useEffect(() => { if (isHost && live && !joined) setJoined(true); }, [isHost, live, joined]);
 
@@ -207,6 +238,11 @@ function VoiceRoomPage() {
               <PhoneOff className="h-3.5 w-3.5" /> {tx("End room")}
             </button>
           )}
+          {isHost && !live && (
+            <button onClick={deleteRoom} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-destructive px-3 text-xs font-bold text-destructive-foreground">
+              <Trash2 className="h-3.5 w-3.5" /> {tx("Delete room")}
+            </button>
+          )}
           {isHost && room.data.invite_code && (
             <button
               onClick={async () => { await navigator.clipboard.writeText(inviteLink(room.data!.invite_code!)); setCopied(true); window.setTimeout(() => setCopied(false), 1500); }}
@@ -244,7 +280,7 @@ function VoiceRoomPage() {
               <h2 className="text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Speakers")} ({speakerCount})</h2>
               <div className="mt-2 grid grid-cols-3 gap-3 sm:grid-cols-5">
                 {speakers.map((peer) => (
-                  <PeerTile key={peer.userId} peer={peer} canManage={isHost && !peer.self} onDemote={() => setRole(peer.userId, "listener")} />
+                  <PeerTile key={peer.userId} peer={peer} canManage={isHost && !peer.self} onDemote={() => manage(peer.userId, "demote")} onMute={() => manage(peer.userId, "mute")} onRemove={() => manage(peer.userId, "remove")} />
                 ))}
                 {speakers.length === 0 && <p className="col-span-full text-xs text-muted-foreground">{tx("No one is speaking yet.")}</p>}
               </div>
@@ -256,7 +292,7 @@ function VoiceRoomPage() {
                     {hands.map((peer) => (
                       <div key={peer.userId} className="flex items-center gap-2">
                         <span className="text-sm font-semibold">{peer.name}</span>
-                        <button onClick={() => setRole(peer.userId, "speaker")} className="ms-auto inline-flex h-8 items-center rounded-full bg-primary px-3 text-xs font-bold text-primary-foreground">{tx("Let them speak")}</button>
+                        <button onClick={() => manage(peer.userId, "promote")} className="ms-auto inline-flex h-8 items-center rounded-full bg-primary px-3 text-xs font-bold text-primary-foreground">{tx("Let them speak")}</button>
                       </div>
                     ))}
                   </div>
@@ -266,7 +302,7 @@ function VoiceRoomPage() {
               <h2 className="mt-5 text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Listeners")} ({listenerCount})</h2>
               <div className="mt-2 grid grid-cols-4 gap-3 sm:grid-cols-6">
                 {listeners.map((peer) => (
-                  <PeerTile key={peer.userId} peer={peer} small canManage={isHost && !peer.self} onPromote={() => setRole(peer.userId, "speaker")} />
+                  <PeerTile key={peer.userId} peer={peer} small canManage={isHost && !peer.self} onPromote={() => manage(peer.userId, "promote")} onRemove={() => manage(peer.userId, "remove")} />
                 ))}
                 {listeners.length === 0 && <p className="col-span-full text-xs text-muted-foreground">{tx("No listeners yet.")}</p>}
               </div>
@@ -303,9 +339,9 @@ function VoiceRoomPage() {
   );
 }
 
-function PeerTile({ peer, small = false, canManage = false, onPromote, onDemote }: {
+function PeerTile({ peer, small = false, canManage = false, onPromote, onDemote, onMute, onRemove }: {
   peer: { userId: string; name: string; avatar: string | null; role: VoiceRole; muted: boolean; speaking: boolean; hand: boolean; self?: boolean };
-  small?: boolean; canManage?: boolean; onPromote?: () => void; onDemote?: () => void;
+  small?: boolean; canManage?: boolean; onPromote?: () => void; onDemote?: () => void; onMute?: () => void; onRemove?: () => void;
 }) {
   const tx = useTx();
   const size = small ? "h-11 w-11" : "h-16 w-16";
@@ -322,8 +358,12 @@ function PeerTile({ peer, small = false, canManage = false, onPromote, onDemote 
       </div>
       <div className="w-full truncate text-[0.65rem] font-semibold">{peer.self ? tx("You") : peer.name}</div>
       {peer.role === "host" && <div className="text-[0.6rem] font-bold uppercase tracking-wider text-primary">{tx("Host")}</div>}
-      {canManage && onPromote && <button onClick={onPromote} className="text-[0.6rem] font-bold text-primary">{tx("Add as speaker")}</button>}
-      {canManage && onDemote && peer.role === "speaker" && <button onClick={onDemote} className="text-[0.6rem] font-bold text-destructive">{tx("Remove")}</button>}
+      {canManage && <div className="flex flex-wrap justify-center gap-1">
+        {onPromote && <button onClick={onPromote} className="text-[0.6rem] font-bold text-primary">{tx("Add as speaker")}</button>}
+        {onMute && peer.role === "speaker" && !peer.muted && <button onClick={onMute} aria-label={tx("Mute speaker")} className="text-muted-foreground"><MicOff className="h-3 w-3" /></button>}
+        {onDemote && peer.role === "speaker" && <button onClick={onDemote} className="text-[0.6rem] font-bold text-destructive">{tx("Listener")}</button>}
+        {onRemove && <button onClick={onRemove} aria-label={tx("Remove from room")} className="text-destructive"><UserMinus className="h-3 w-3" /></button>}
+      </div>}
     </div>
   );
 }

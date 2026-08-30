@@ -57,10 +57,12 @@ export function AutoTranslateProvider({ children }: { children: ReactNode }) {
   const queue = useRef(new Set<string>());
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inflight = useRef(0);
+  const booted = useRef(false);
 
   useEffect(() => {
     asked.current = new Set();
     queue.current = new Set();
+    booted.current = false;
     if (lang !== "ar") { setMap({}); setReady(true); return; }
     setReady(false);
     let alive = true;
@@ -72,7 +74,11 @@ export function AutoTranslateProvider({ children }: { children: ReactNode }) {
     void loadDictionary({ data: { locale: "ar" } })
       .then((dict) => { if (alive && dict && Object.keys(dict).length > 0) setMap((prev) => ({ ...dict, ...prev })); })
       .catch(() => undefined)
-      .finally(() => { if (alive && queue.current.size === 0 && inflight.current === 0) setReady(true); });
+      .finally(() => {
+        if (!alive) return;
+        booted.current = true;
+        setReady(true);
+      });
     return () => { alive = false; };
   }, [lang, loadDictionary]);
 
@@ -94,7 +100,7 @@ export function AutoTranslateProvider({ children }: { children: ReactNode }) {
       batch.forEach((item) => asked.current.delete(item));
     } finally {
       inflight.current -= 1;
-      if (queue.current.size === 0 && inflight.current === 0) setReady(true);
+      if (!booted.current && queue.current.size === 0 && inflight.current === 0) setReady(true);
     }
     // Keep several batches in flight so long pages translate in parallel, not one after another.
     if (queue.current.size > 0 && inflight.current < 4) void flush();
@@ -104,7 +110,7 @@ export function AutoTranslateProvider({ children }: { children: ReactNode }) {
     if (lang !== "ar") return;
     const key = value.trim();
     if (!key || key.length > 6000 || asked.current.has(key)) return;
-    setReady(false);
+    if (!booted.current) setReady(false);
     asked.current.add(key);
     queue.current.add(key);
     if (!timer.current) timer.current = setTimeout(() => { void flush(); }, 20);

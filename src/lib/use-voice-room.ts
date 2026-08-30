@@ -30,7 +30,7 @@ function publishes(role: VoiceRole) {
  * room, broadcast carries WebRTC offers/answers/ICE, and speakers publish a mic
  * track that every other member receives.
  */
-export function useVoiceRoom({ roomId, me, enabled }: { roomId: string; me: Me | null; enabled: boolean }) {
+export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId: string; me: Me | null; enabled: boolean; storedPeers?: VoicePeer[] }) {
   const [peers, setPeers] = useState<VoicePeer[]>([]);
   const [remote, setRemote] = useState<{ userId: string; stream: MediaStream }[]>([]);
   const [muted, setMuted] = useState(true);
@@ -45,9 +45,11 @@ export function useVoiceRoom({ roomId, me, enabled }: { roomId: string; me: Me |
   const meRef = useRef<Me | null>(me);
   const mutedRef = useRef(true);
   const handRef = useRef(false);
+  const peersRef = useRef<VoicePeer[]>([]);
   meRef.current = me;
   mutedRef.current = muted;
   handRef.current = hand;
+  peersRef.current = peers;
 
   const track = useCallback((userId: string, stream: MediaStream) => {
     setRemote((prev) => (prev.some((entry) => entry.userId === userId) ? prev.map((e) => (e.userId === userId ? { userId, stream } : e)) : [...prev, { userId, stream }]));
@@ -133,7 +135,10 @@ export function useVoiceRoom({ roomId, me, enabled }: { roomId: string; me: Me |
         pcsRef.current.forEach((pc) => pc.close());
         pcsRef.current.clear();
         setRemote([]);
-        void sendPresence();
+        await sendPresence();
+        peersRef.current.forEach((peer) => {
+          if (peer.userId !== me.userId) void negotiate(peer.userId, peer.role);
+        });
       } catch {
         if (!cancelled) setMicError("Microphone access is blocked. Allow it in your browser to speak.");
       }
@@ -143,7 +148,7 @@ export function useVoiceRoom({ roomId, me, enabled }: { roomId: string; me: Me |
       localRef.current?.getTracks().forEach((t) => t.stop());
       localRef.current = null;
     };
-  }, [enabled, me?.role, me?.userId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [enabled, me?.role, me?.userId, negotiate, sendPresence]);
 
   // Presence + signalling channel.
   useEffect(() => {
@@ -167,7 +172,7 @@ export function useVoiceRoom({ roomId, me, enabled }: { roomId: string; me: Me |
     channel.on("broadcast", { event: "signal" }, async ({ payload }) => {
       const signal = payload as SignalPayload;
       if (signal.to !== me.userId) return;
-      const otherRole = (peers.find((p) => p.userId === signal.from)?.role ?? "speaker") as VoiceRole;
+      const otherRole = (peersRef.current.find((p) => p.userId === signal.from)?.role ?? "speaker") as VoiceRole;
       const pc = ensurePeer(signal.from, otherRole);
       if (!pc) return;
       try {
@@ -211,6 +216,11 @@ export function useVoiceRoom({ roomId, me, enabled }: { roomId: string; me: Me |
     });
   }, []);
 
+  const forceMute = useCallback(() => {
+    localRef.current?.getAudioTracks().forEach((track) => { track.enabled = false; });
+    setMuted(true);
+  }, []);
+
   // Simple speaking meter for the local mic and every remote stream.
   useEffect(() => {
     if (!enabled) return;
@@ -246,16 +256,21 @@ export function useVoiceRoom({ roomId, me, enabled }: { roomId: string; me: Me |
     return () => { cancelAnimationFrame(raf); void ctx.close(); };
   }, [enabled, remote, me?.userId, muted]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const roster = useMemo(() => peers.map((peer) => ({
+  const roster = useMemo(() => {
+    const liveById = new Map(peers.map((peer) => [peer.userId, peer]));
+    const merged = storedPeers.map((stored) => ({ ...stored, ...(liveById.get(stored.userId) ?? {}) }));
+    peers.forEach((peer) => { if (!merged.some((item) => item.userId === peer.userId)) merged.push(peer); });
+    return merged.map((peer) => ({
     ...peer,
     self: peer.userId === me?.userId,
     speaking: !peer.muted && !!speaking[peer.userId],
   })).sort((a, b) => {
     const rank = (r: VoiceRole) => (r === "host" ? 0 : r === "speaker" ? 1 : 2);
     return rank(a.role) - rank(b.role) || a.name.localeCompare(b.name);
-  }), [peers, speaking, me?.userId]);
+  });
+  }, [peers, storedPeers, speaking, me?.userId]);
 
   const speakerCount = roster.filter((p) => p.role !== "listener").length;
   const listenerCount = roster.length - speakerCount;
-  return { roster, remote, muted, toggleMute, hand, setHand, micError, connected, speakerCount, listenerCount };
+  return { roster, remote, muted, toggleMute, forceMute, hand, setHand, micError, connected, speakerCount, listenerCount };
 }

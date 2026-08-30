@@ -249,22 +249,22 @@ function MatchPage() {
           <div key={side} className="rounded-2xl border border-border bg-card p-4">
             {showPitch && <div className="mb-3 flex items-center justify-end"><span className="rounded bg-muted px-2 py-0.5 text-[0.65rem] font-semibold">{num(activeFormation)}</span></div>}
             {showPitch && (
-              <div className="relative mx-auto mb-4 aspect-[3/4] w-full max-w-md overflow-hidden rounded-2xl p-3" style={{ background: "repeating-linear-gradient(180deg,#1b7a3f 0 28px,#17703a 28px 56px)" }}>
+              <div className="relative mx-auto mb-4 aspect-[3/4] w-full max-w-md overflow-hidden rounded-2xl px-3 py-5" style={{ background: "repeating-linear-gradient(180deg,#1b7a3f 0 28px,#17703a 28px 56px)" }}>
                 <span className="pointer-events-none absolute inset-2 rounded-lg border-2 border-white/35" />
                 <span className="pointer-events-none absolute left-2 right-2 top-1/2 border-t-2 border-white/35" />
                 <span className="pointer-events-none absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/35" />
                 <span className="pointer-events-none absolute left-1/2 top-2 h-12 w-32 -translate-x-1/2 border-2 border-t-0 border-white/35" />
                 <span className="pointer-events-none absolute bottom-2 left-1/2 h-12 w-32 -translate-x-1/2 border-2 border-b-0 border-white/35" />
-                <div className="relative flex h-full flex-col">
+                <div className="relative flex h-full flex-col justify-between overflow-visible">
                 {formationRows(activeFormation).map((row, ri) => (
-                <div key={ri} className="relative flex min-h-0 flex-1 items-center justify-around gap-1">
+                <div key={ri} className="relative flex min-h-0 flex-1 items-center justify-around gap-1 py-1">
                     {row.map((slot) => {
                       const lu = starters.find((s) => s.position_code === slot);
                       if (!lu) return <div key={slot} className="w-14" />;
                       const marks = marksFor(lu.player_id);
                       const pitchRating = ratings.data?.find((item) => item.player_id === lu.player_id)?.rating;
                       return (
-                        <Link key={slot} to="/players/$id" params={{ id: lu.player_id }} className="relative z-10 flex w-16 flex-col items-center gap-0.5 text-center">
+                        <Link key={slot} to="/players/$id" params={{ id: lu.player_id }} className="relative z-10 flex w-16 flex-col items-center gap-0.5 overflow-visible text-center">
                           <span className="relative block h-11 w-11 overflow-visible">
                             <span className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border-2 border-white/70 bg-muted text-xs font-bold">
                               {lu.player?.photo_url ? <img src={lu.player.photo_url} alt="" className="h-full w-full object-cover" /> : num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}
@@ -274,7 +274,7 @@ function MatchPage() {
                             )}
                             {marks.length > 0 && <span className="absolute -right-2 -top-2 z-30 flex items-center gap-px rounded-full bg-background p-0.5 shadow ring-2 ring-background">{marks.slice(0, 3).map((t, k) => <EventArt key={k} type={t} className="h-4 w-4" />)}</span>}
                           </span>
-                          <span className="line-clamp-2 text-[0.6rem] font-semibold leading-tight text-white drop-shadow">{tx(lu.player?.name)}</span>
+                          <span className="line-clamp-1 max-w-full text-[0.6rem] font-semibold leading-tight text-white drop-shadow">{tx(lu.player?.name)}</span>
                           <span className={`h-4 rounded px-1.5 text-[0.6rem] font-black leading-4 ${pitchRating != null ? ratingClass(Number(pitchRating)) : "opacity-0"}`}>{pitchRating != null ? num(formatRating(pitchRating)) : "0.0"}</span>
                         </Link>
                       );

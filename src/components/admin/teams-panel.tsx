@@ -13,6 +13,7 @@ import { releasePlayerToFreeAgent, transferPlayerToClub, deletePlayerForever } f
 import { TeamCrest } from "@/components/team-crest";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import { VenueSelect } from "./venue-select";
+import { ArabicNameField } from "./arabic-name-field";
 import { MediaUrls } from "./media-urls";
 import { NationalSquadModal } from "./national-squad-modal";
 import { SeasonSquadModal } from "./season-squad-modal";
@@ -186,6 +187,7 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
       <Modal open={open} onClose={() => setOpen(false)} title={form.id ? "Edit team" : "New team"} wide>
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Name"><input className={inputCls} value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
+          <ArabicNameField englishName={form.name} />
           <Field label="Short name"><input className={inputCls} value={form.short_name ?? ""} onChange={(e) => setForm({ ...form, short_name: e.target.value })} /></Field>
           {!form.is_national && (
             <Field label="Country">
@@ -410,6 +412,7 @@ function CoachesModal({ team, onClose }: { team: Team; onClose: () => void }) {
         <div className="rounded-2xl border border-border bg-background/40 p-4">
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Name *"><input className={inputCls} value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
+            <ArabicNameField englishName={form.name} />
             <Field label="Nationality">
               <CountrySelect value={form.nationality} onChange={(name, c) => setForm({ ...form, nationality: name, nationality_code: c?.code ?? null })} />
             </Field>

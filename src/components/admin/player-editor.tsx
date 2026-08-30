@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ArabicNameField } from "./arabic-name-field";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase, POSITIONS, type Player, type Team } from "@/lib/db";
@@ -12,6 +13,7 @@ import { readAiImages, type AiImageInput } from "@/lib/image-files";
 import { releasePlayerToFreeAgent, transferPlayerToClub, deletePlayerForever } from "@/lib/player-moves";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import { MediaUrls } from "./media-urls";
+import { TeamSelect } from "@/components/team-select";
 import { ArrowLeft, ImagePlus, Loader2, Plus, Save, Sparkles, Trash2, UserMinus, X } from "lucide-react";
 
 /** Full-page player editor: details, Almail AI assist, transfer history and squad moves. */
@@ -29,7 +31,7 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
   const [moveTo, setMoveTo] = useState("");
   const createAiDraft = useServerFn(createPlayerDraftWithAlmail);
 
-  const teams = useQuery({ queryKey: ["admin", "team-names"], queryFn: async () => ((await supabase.from("teams").select("id,name").order("name")).data ?? []) as Pick<Team, "id" | "name">[] });
+  const teams = useQuery({ queryKey: ["admin", "team-names"], queryFn: async () => ((await supabase.from("teams").select("id,name,logo_url,country").order("name")).data ?? []) as Pick<Team, "id" | "name" | "logo_url" | "country">[] });
   const currentTeam = useQuery({
     enabled: !!form.team_id,
     queryKey: ["admin", "player-team", form.team_id],
@@ -102,16 +104,14 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
 
         <div className="grid gap-3 rounded-2xl border border-border bg-card p-4 sm:grid-cols-2 lg:grid-cols-3">
           <Field label="Name *"><input className={inputCls} value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
+          <ArabicNameField englishName={form.name} />
           <Field label="Position">
             <select className={inputCls} value={form.position ?? "Unknown"} onChange={(e) => setForm({ ...form, position: e.target.value })}>
               {POSITIONS.map((p) => <option key={p} value={p}>{p}</option>)}
             </select>
           </Field>
           <Field label="Club">
-            <select className={inputCls} value={form.team_id ?? ""} onChange={(e) => setForm({ ...form, team_id: e.target.value || null })}>
-              <option value="">Free agent</option>
-              {(teams.data ?? []).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-            </select>
+            <TeamSelect teams={teams.data ?? []} value={form.team_id} onChange={(id) => setForm({ ...form, team_id: id })} />
           </Field>
           <Field label="Shirt #"><input type="number" className={inputCls} value={form.shirt_number ?? ""} onChange={(e) => setForm({ ...form, shirt_number: e.target.value ? Number(e.target.value) : null })} /></Field>
           <Field label="Height (cm)"><input type="number" className={inputCls} value={form.height_cm ?? ""} onChange={(e) => setForm({ ...form, height_cm: e.target.value ? Number(e.target.value) : null })} /></Field>
@@ -136,10 +136,7 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
             <div className="rounded-2xl border border-border bg-card p-4">
               <div className="mb-2 text-sm font-bold">Squad moves</div>
               <div className="grid gap-2 sm:grid-cols-2">
-                <select className={inputCls} value={moveTo} onChange={(e) => setMoveTo(e.target.value)}>
-                  <option value="">Transfer to another club…</option>
-                  {(teams.data ?? []).filter((t) => t.id !== form.team_id).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-                </select>
+                <TeamSelect teams={(teams.data ?? []).filter((t) => t.id !== form.team_id)} value={moveTo} onChange={(id) => setMoveTo(id ?? "")} placeholder="Transfer to another club…" allowFreeAgent={false} />
                 <button className={btnPrimary} disabled={!moveTo} onClick={async () => {
                   const target = (teams.data ?? []).find((t) => t.id === moveTo);
                   if (!target) return;

@@ -501,9 +501,9 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
                 </div>
               </div>
               {/* Fixed aspect keeps the pitch the same size for every formation. */}
-              <div className="flex aspect-[3/4] flex-col justify-between rounded-lg bg-emerald-900/25 p-2">
+              <div className="flex aspect-[3/4] flex-col justify-between overflow-visible rounded-lg bg-emerald-900/25 px-2 py-4">
                 {formationRows(formation).map((row, ri) => (
-                  <div key={ri} className="flex flex-1 items-center justify-around gap-1">
+                  <div key={ri} className="flex min-h-0 flex-1 items-center justify-around gap-1 py-1">
                     {row.map((slot) => {
                       const assigned = lineups.find((l) => l.team_id === tid && l.position_code === slot);
                       const p = players.find((x) => x.id === assigned?.player_id);
@@ -512,7 +512,7 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
                       const kit = assigned?.shirt_number ?? p?.shirt_number ?? null;
                       return (
                         <button key={slot} type="button" onClick={() => setPicker({ teamId: tid, slot })}
-                          className="flex w-16 flex-col items-center gap-1 pt-1 text-center">
+                          className="relative z-10 flex w-16 flex-col items-center gap-0.5 text-center">
                           <span className="relative block overflow-visible">
                             {p ? <PlayerAvatar src={p.photo_url} name={p.name} size="sm" className="h-10 w-10" />
                               : <span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-dashed border-emerald-300/60 bg-background/70"><Plus className="h-4 w-4 text-emerald-200" /></span>}
@@ -520,7 +520,7 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
                             {icons.length > 0 && <span className="absolute -right-2 -top-1 z-30 flex items-center gap-px rounded-full bg-background p-0.5 ring-2 ring-background">{icons.slice(0, 3).map((ic, k) => <EventIcon key={k} type={ic} className="h-4 w-4" />)}</span>}
                             {rating != null && <span className={`absolute -bottom-1 -right-2 rounded-md px-1 text-[0.55rem] font-black shadow ring-2 ring-background ${ratingClass(Number(rating))}`}>{formatRating(rating)}</span>}
                           </span>
-                          <span className="line-clamp-2 text-[0.55rem] font-semibold leading-tight text-foreground">{p ? p.name : slot === "GK" ? "Goalkeeper" : "Add player"}</span>
+                          <span className="line-clamp-1 max-w-full text-[0.55rem] font-semibold leading-tight text-foreground">{p ? p.name : slot === "GK" ? "Goalkeeper" : "Add player"}</span>
                         </button>
                       );
                     })}

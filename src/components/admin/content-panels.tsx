@@ -8,6 +8,7 @@ import { Field, ImageInput, inputCls, btnPrimary, btnDanger } from "./ui";
 import { uploadMedia } from "./upload";
 import type { Database } from "@/integrations/supabase/types";
 import { createVenueDraftWithAlmail } from "@/lib/almail-ai.functions";
+import { ArabicNameField } from "./arabic-name-field";
 import { readAiImages, type AiImageInput } from "@/lib/image-files";
 
 type Channel = Database["public"]["Tables"]["broadcast_channels"]["Row"];
@@ -49,6 +50,7 @@ export function VenuesPanel() {
     <div className="grid gap-2 sm:grid-cols-2">{filterByText(q.data, search, (v) => [v.name, v.city, v.country]).map((v) => <Item key={v.id} title={v.name} subtitle={[v.city, v.country, v.capacity ? `${v.capacity.toLocaleString()} seats` : null].filter(Boolean).join(" · ")} onEdit={() => setForm(v)} onDelete={async () => { await supabase.from("venues").delete().eq("id", v.id); qc.invalidateQueries({ queryKey: ["admin", "venues"] }); }} />)}</div>
     <div className="mt-4 grid gap-3 border-t border-border pt-4 sm:grid-cols-2">
       <Field label="Venue name"><input className={inputCls} value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
+      <ArabicNameField englishName={form.name} />
       <Field label="City"><input className={inputCls} value={form.city ?? ""} onChange={(e) => setForm({ ...form, city: e.target.value })} /></Field>
       <Field label="Country"><CountrySelect value={form.country} onChange={(name, country) => setForm({ ...form, country: name, country_code: country?.code ?? null })} /></Field>
       <Field label="Capacity"><input type="number" className={inputCls} value={form.capacity ?? ""} onChange={(e) => setForm({ ...form, capacity: e.target.value ? Number(e.target.value) : null })} /></Field>
