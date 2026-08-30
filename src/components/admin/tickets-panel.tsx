@@ -163,12 +163,14 @@ function OffersView() {
             </label>
           ))}
         </div>
+        <p className="mt-3 text-xs text-muted-foreground">Saving generates one unique QR code per capacity slot. Fans receive codes from this pool when they purchase.</p>
         <div className="mt-4 flex gap-2">
-          <button className={btnPrimary} disabled={busy || (!editing && !matchId)} onClick={save}>
-            {busy && <Loader2 className="h-3.5 w-3.5 animate-spin" />} {editing ? "Save ticket" : "Create ticket"}
+          <button className={btnPrimary} disabled={busy || (!editing && !matchId) || !form.capacity.trim()} onClick={save}>
+            {busy && <Loader2 className="h-3.5 w-3.5 animate-spin" />} {editing ? "Save ticket" : "Create ticket & codes"}
           </button>
           {editing && <button className={btnGhost} onClick={() => { setEditing(null); setForm({ ...emptyOffer }); }}>Cancel</button>}
         </div>
+
       </div>
 
       <div className="space-y-2">
