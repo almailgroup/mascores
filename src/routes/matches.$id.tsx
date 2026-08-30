@@ -55,6 +55,7 @@ function MatchPage() {
   const dates = useDates();
   const { id } = Route.useParams();
   const [tab, setTab] = useState<"details" | "lineups" | "stats" | "standings" | "previous" | "media">("details");
+  const [lineupSide, setLineupSide] = useState<"home" | "away">("home");
   useRealtime(["matches", "match_events", "match_lineups", "player_ratings", "match_stats", "match_chat_messages", "media_items", "standings_rows"]);
   const m = useQuery({
     queryKey: ["match", id],
@@ -214,7 +215,24 @@ function MatchPage() {
         </div>
       </div>}
 
-      {tab === "lineups" && lineupsVisible && <div className="space-y-4"><div className="grid gap-4 md:grid-cols-2">{([["home", match.home, match.home_formation], ["away", match.away, match.away_formation]] as const).map(([side, team, formation]) => {
+      {tab === "lineups" && lineupsVisible && <div className="space-y-4">
+      <div className="relative grid grid-cols-2 gap-1 rounded-full border border-border bg-muted/60 p-1">
+        <span
+          className="absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-full bg-primary shadow-sm transition-transform duration-300 ease-out"
+          style={{ transform: lineupSide === "away" ? "translateX(calc(100% + 0.25rem))" : "translateX(0)" }}
+        />
+        {([["home", match.home], ["away", match.away]] as const).map(([side, team]) => (
+          <button
+            key={side}
+            onClick={() => setLineupSide(side)}
+            className={`relative z-10 flex min-w-0 items-center justify-center gap-2 rounded-full px-3 py-2 text-xs font-bold transition-colors sm:text-sm ${lineupSide === side ? "text-primary-foreground" : "text-muted-foreground"}`}
+          >
+            <TeamCrest name={team?.name} logo={team?.logo_url} className="h-5 w-5 shrink-0" />
+            <span className="truncate">{tx(team?.name) ?? "TBD"}</span>
+          </button>
+        ))}
+      </div>
+      {([["home", match.home, match.home_formation], ["away", match.away, match.away_formation]] as const).filter(([side]) => side === lineupSide).map(([side, team, formation]) => {
         const rows = lineups.data?.filter((item) => item.team_id === team?.id) ?? [];
         const starters = rows.filter((r) => r.is_starting);
         const bench = rows.filter((r) => !r.is_starting);
@@ -229,23 +247,24 @@ function MatchPage() {
           .filter((type) => type && hasEventArt(type));
         return (
           <div key={side} className="rounded-2xl border border-border bg-card p-4">
-            <h3 className="mb-3 flex items-center gap-2 font-bold">{tx(team?.name) ?? "TBD"}{showPitch && <span className="rounded bg-muted px-2 py-0.5 text-[0.65rem] font-semibold">{num(activeFormation)}</span>}</h3>
+            {showPitch && <div className="mb-3 flex items-center justify-end"><span className="rounded bg-muted px-2 py-0.5 text-[0.65rem] font-semibold">{num(activeFormation)}</span></div>}
             {showPitch && (
-              <div className="relative mb-4 space-y-2 overflow-hidden rounded-2xl p-3" style={{ background: "repeating-linear-gradient(180deg,#1b7a3f 0 28px,#17703a 28px 56px)" }}>
+              <div className="relative mx-auto mb-4 aspect-[3/4] w-full max-w-md overflow-hidden rounded-2xl p-3" style={{ background: "repeating-linear-gradient(180deg,#1b7a3f 0 28px,#17703a 28px 56px)" }}>
                 <span className="pointer-events-none absolute inset-2 rounded-lg border-2 border-white/35" />
                 <span className="pointer-events-none absolute left-2 right-2 top-1/2 border-t-2 border-white/35" />
                 <span className="pointer-events-none absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/35" />
                 <span className="pointer-events-none absolute left-1/2 top-2 h-12 w-32 -translate-x-1/2 border-2 border-t-0 border-white/35" />
                 <span className="pointer-events-none absolute bottom-2 left-1/2 h-12 w-32 -translate-x-1/2 border-2 border-b-0 border-white/35" />
+                <div className="relative flex h-full flex-col">
                 {formationRows(activeFormation).map((row, ri) => (
-                <div key={ri} className="relative flex justify-around gap-1 pt-1">
+                <div key={ri} className="relative flex min-h-0 flex-1 items-center justify-around gap-1">
                     {row.map((slot) => {
                       const lu = starters.find((s) => s.position_code === slot);
-                      if (!lu) return <div key={slot} className="h-16 w-14" />;
+                      if (!lu) return <div key={slot} className="w-14" />;
                       const marks = marksFor(lu.player_id);
                       const pitchRating = ratings.data?.find((item) => item.player_id === lu.player_id)?.rating;
                       return (
-                        <Link key={slot} to="/players/$id" params={{ id: lu.player_id }} className="relative z-10 flex w-16 flex-col items-center gap-0.5 pt-3 text-center">
+                        <Link key={slot} to="/players/$id" params={{ id: lu.player_id }} className="relative z-10 flex w-16 flex-col items-center gap-0.5 text-center">
                           <span className="relative block h-11 w-11 overflow-visible">
                             <span className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border-2 border-white/70 bg-muted text-xs font-bold">
                               {lu.player?.photo_url ? <img src={lu.player.photo_url} alt="" className="h-full w-full object-cover" /> : num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}
@@ -256,12 +275,13 @@ function MatchPage() {
                             {marks.length > 0 && <span className="absolute -right-2 -top-2 z-30 flex items-center gap-px rounded-full bg-background p-0.5 shadow ring-2 ring-background">{marks.slice(0, 3).map((t, k) => <EventArt key={k} type={t} className="h-4 w-4" />)}</span>}
                           </span>
                           <span className="line-clamp-2 text-[0.6rem] font-semibold leading-tight text-white drop-shadow">{tx(lu.player?.name)}</span>
-                          {pitchRating != null && <span className={`rounded px-1.5 text-[0.6rem] font-black leading-4 ${ratingClass(Number(pitchRating))}`}>{num(formatRating(pitchRating))}</span>}
+                          <span className={`h-4 rounded px-1.5 text-[0.6rem] font-black leading-4 ${pitchRating != null ? ratingClass(Number(pitchRating)) : "opacity-0"}`}>{pitchRating != null ? num(formatRating(pitchRating)) : "0.0"}</span>
                         </Link>
                       );
                     })}
                   </div>
                 ))}
+                </div>
               </div>
             )}
             {(() => {
@@ -298,7 +318,7 @@ function MatchPage() {
             {rows.length === 0 && <p className="text-sm text-muted-foreground">{tx("No lineup posted.")}</p>}
           </div>
         );
-      })}</div>
+      })}
       <MatchMomentum matchId={id} home={match.home} away={match.away} minutes={match.momentum_minutes ?? 90} events={(events.data ?? []).map((e) => ({ minute: e.minute, type: e.type, team_id: e.team_id }))} />
       </div>}
       {tab === "stats" && <div className="rounded-2xl border border-border bg-card p-4">{stats.data && stats.data.length > 0 ? stats.data.map((item) => <div key={item.id} className="grid grid-cols-[1fr_2fr_1fr] border-t border-border py-3 text-center first:border-0"><strong>{num(item.home_value)}</strong><span className="text-muted-foreground">{tx(item.label)}</span><strong>{num(item.away_value)}</strong></div>) : <p className="text-sm text-muted-foreground">{tx("No statistics published yet.")}</p>}</div>}
