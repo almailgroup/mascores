@@ -526,9 +526,9 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
                     })}
                   </div>
                 ))}
-                <div className="mt-1 text-center text-[0.6rem] text-muted-foreground">{formation}</div>
-                {squad.length === 0 && <div className="text-center text-[0.6rem] text-muted-foreground">Add players to this squad first.</div>}
               </div>
+              <div className="mt-1 text-center text-[0.6rem] text-muted-foreground">{formation}</div>
+              {squad.length === 0 && <div className="text-center text-[0.6rem] text-muted-foreground">Add players to this squad first.</div>}
 
               <div className="mt-3">
                 <div className="mb-2 flex items-center justify-between">
