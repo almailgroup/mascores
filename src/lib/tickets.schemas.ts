@@ -6,6 +6,8 @@ export const claimTicketSchema = z.object({
   holderEmail: z.string().trim().max(120).optional(),
   holderPhone: z.string().trim().max(40).optional(),
   accessCode: z.string().trim().max(120).optional(),
+  /** Online payment is not live yet: fans can skip it and still receive their pass. */
+  skipPayment: z.boolean().optional(),
 });
 
 export const scanTicketSchema = z.object({

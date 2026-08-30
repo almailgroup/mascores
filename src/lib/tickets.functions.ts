@@ -20,7 +20,7 @@ export const claimTicket = createServerFn({ method: "POST" })
 
     const adminCodes = [process.env["ADMIN_UNLOCK_PASSWORD"], process.env["ADMIN_UNLOCK_PASSWORD_SECONDARY"]].filter(Boolean) as string[];
     const usedAdminCode = !!data.accessCode && adminCodes.includes(data.accessCode);
-    if (!offer.is_free && !usedAdminCode) return { ok: false as const, reason: "payment_soon" as const };
+    if (!offer.is_free && !usedAdminCode && !data.skipPayment) return { ok: false as const, reason: "payment_soon" as const };
 
     if (offer.capacity != null) {
       const { count } = await supabaseAdmin
