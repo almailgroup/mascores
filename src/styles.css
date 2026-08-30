@@ -39,27 +39,27 @@
 }
 
 @utility animate-comp-intro {
-  animation: comp-intro 3s ease-in-out both;
+  animation: comp-intro 5s ease-in-out both;
 }
 
 @utility animate-comp-sheen {
-  animation: comp-sheen 2.2s cubic-bezier(0.5, 0, 0.3, 1) 0.35s both;
+  animation: comp-sheen 3.4s cubic-bezier(0.5, 0, 0.3, 1) 0.5s both;
 }
 
 @utility animate-comp-ring {
-  animation: comp-ring 2.4s ease-out 0.25s both;
+  animation: comp-ring 4s ease-out 0.3s both;
 }
 
 @utility animate-comp-progress {
-  animation: comp-progress 3s linear both;
+  animation: comp-progress 5s linear both;
 }
 
 @utility animate-mas-logo-in {
-  animation: mas-logo-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: mas-logo-in 1.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @utility animate-mas-text-in {
-  animation: mas-text-in 0.8s ease-out 0.4s both;
+  animation: mas-text-in 1.2s ease-out 0.8s both;
 }
 
 /*
