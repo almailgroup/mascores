@@ -1,5 +1,5 @@
-
-import { ArabicNameField } from "./arabic-name-field";import { useState } from "react";
+import { useState } from "react";
+import { ArabicNameField } from "./arabic-name-field";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase, POSITIONS, type Player, type Team } from "@/lib/db";

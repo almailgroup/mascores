@@ -2123,6 +2123,8 @@ export type Database = {
       revoke_admin: { Args: { _uid: string }; Returns: undefined }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      voice_delete_room: { Args: { _room_id: string }; Returns: undefined }
+      voice_end_room: { Args: { _room_id: string }; Returns: undefined }
       voice_host_profiles: {
         Args: { _ids: string[] }
         Returns: {
@@ -2131,6 +2133,10 @@ export type Database = {
           followers: number
           id: string
         }[]
+      }
+      voice_manage_participant: {
+        Args: { _action: string; _room_id: string; _user_id: string }
+        Returns: undefined
       }
       voice_room_by_code: {
         Args: { _code: string }
