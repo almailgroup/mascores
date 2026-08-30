@@ -30,8 +30,8 @@ export function CompetitionIntro({ theme, name, season, logoUrl }: {
   return (
     <div
       aria-hidden
-      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center gap-5 transition-opacity duration-500 ${phase === "closing" ? "opacity-0" : "opacity-100"}`}
-      style={{ background: theme.hero }}
+      className={`fixed inset-0 z-[200] flex flex-col items-center justify-center gap-5 transition-opacity duration-500 ${phase === "closing" ? "opacity-0" : "opacity-100"}`}
+      style={{ ...theme.vars, background: theme.hero }}
     >
       <div
         className="animate-mas-logo-in flex h-28 w-28 items-center justify-center overflow-hidden rounded-3xl bg-background/95 p-3 sm:h-36 sm:w-36"
