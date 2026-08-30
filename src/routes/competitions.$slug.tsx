@@ -13,6 +13,8 @@ import { CompetitionStats } from "@/components/competition-stats";
 import { useI18n } from "@/lib/i18n";
 import type { Database } from "@/integrations/supabase/types";
 import { CalendarDays, ChevronRight, Play, Trophy } from "lucide-react";
+import { competitionTheme } from "@/lib/competition-theme";
+import { CompetitionIntro } from "@/components/competition-intro";
 
 type PositionLabel = Database["public"]["Tables"]["standings_position_labels"]["Row"];
 type Row = StandingRow & { team: Team | null };
@@ -134,22 +136,28 @@ function CompetitionPage() {
     ? (["overview", "matches", "media", "news"] as const)
     : (["overview", "matches", "standings", "stats", "teams", "awards", "media", "news"] as const);
 
+  const theme = competitionTheme({ slug: c.slug, name: c.name });
+  const activeSeason = season ?? c.season ?? c.seasons?.[0] ?? null;
+
   return (
     <AppShell>
+      {theme && <CompetitionIntro theme={theme} name={tx(c.name)} season={activeSeason ? num(activeSeason) : null} logoUrl={c.logo_url} />}
+      <div style={theme?.vars}>
       <BackButton />
-       <div className="mb-3 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 border-b border-border pb-3">
-         <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl text-primary sm:h-14 sm:w-14">
+       <div className={`mb-3 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 pb-3 ${theme ? "-mx-4 rounded-b-3xl px-4 pt-4 text-primary-foreground sm:mx-0 sm:rounded-3xl" : "border-b border-border"}`}
+         style={theme ? { background: theme.hero } : undefined}>
+         <div className={`flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl text-primary sm:h-14 sm:w-14 ${theme ? "bg-background/95 p-1.5" : ""}`}>
           {c.logo_url ? <img src={c.logo_url} alt="" className="h-full w-full object-contain" /> : <Trophy className="h-7 w-7" />}
         </div>
         <div className="min-w-0">
           <h1 className="truncate text-base font-bold leading-tight sm:text-2xl">{tx(c.name)}</h1>
-           <div className="mt-0.5 flex min-w-0 flex-wrap items-center gap-1.5 text-[0.7rem] text-muted-foreground sm:text-xs">
+           <div className={`mt-0.5 flex min-w-0 flex-wrap items-center gap-1.5 text-[0.7rem] sm:text-xs ${theme ? "text-primary-foreground/85" : "text-muted-foreground"}`}>
             {!friendly && <FlagIcon value={c.country_code ?? c.country} />}
              <span className="truncate">{(friendly ? [tx(c.category)] : [tx(c.country), tx(c.category)]).filter(Boolean).join(" · ")}</span>
              {(c.seasons?.length ?? 0) > 0 && <select aria-label="Season" className="rounded-full border border-border bg-background px-2 py-0.5 text-[0.7rem] font-semibold text-foreground" value={season ?? c.season ?? c.seasons[0]} onChange={(e) => setSeason(e.target.value)}>{c.seasons.map((item) => <option key={item} value={item}>{num(item)}</option>)}</select>}
           </div>
         </div>
-        <div className="col-span-2"><DurationBar startsOn={c.starts_on} endsOn={c.ends_on} /></div>
+        <div className="col-span-2"><DurationBar startsOn={c.starts_on} endsOn={c.ends_on} onHero={!!theme} /></div>
       </div>
 
       <div className="mb-5 flex max-w-full gap-1 overflow-x-auto border-b border-border pb-2 text-xs sm:text-sm">
@@ -244,6 +252,7 @@ function CompetitionPage() {
       {tab === "awards" && !friendly && <>{awards.data && awards.data.length > 0 ? <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{awards.data.map((award) => <div key={award.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4">{award.player?.photo_url ? <img src={award.player.photo_url} alt="" className="h-12 w-12 rounded-full object-cover" /> : <div className="h-12 w-12 rounded-full bg-muted" />}<div><div className="font-bold">{tx(award.player?.name) ?? tx("Player")}</div><div className="text-xs text-muted-foreground">{award.award_type === "player_of_round" ? `${tx("Player of round")} ${award.round_number ?? "—"}` : tx("Player of the season")}{award.season ? ` · ${award.season}` : ""}</div></div></div>)}</div> : <EmptyState title={tx("No competition awards yet")} />}</>}
       {tab === "media" && <>{media.data && media.data.length > 0 ? <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{media.data.map((item) => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="rounded-lg border border-border bg-card p-4 hover:border-primary"><div className="text-xs font-bold uppercase text-primary">{item.source}</div><div className="mt-1 font-semibold">{tx(item.title) || tx("Open media")}</div><div className="mt-1 truncate text-xs text-muted-foreground">{item.url}</div></a>)}</div> : <EmptyState title={tx("No competition media yet")} />}</>}
       {tab === "news" && <LinkedNews kind="competition" id={c.id} />}
+      </div>
     </AppShell>
   );
 }
@@ -427,7 +436,7 @@ function TeamCell({ label, team, note }: { label: string; team: Team | null; not
 }
 
 /** Tournament duration as a live progress bar between the start and end dates. */
-function DurationBar({ startsOn, endsOn }: { startsOn: string | null; endsOn: string | null }) {
+function DurationBar({ startsOn, endsOn, onHero }: { startsOn: string | null; endsOn: string | null; onHero?: boolean }) {
   const tx = useTx();
   const dates = useDates();
   const num = useNum();
@@ -438,13 +447,13 @@ function DurationBar({ startsOn, endsOn }: { startsOn: string | null; endsOn: st
   const pct = Math.max(0, Math.min(100, Math.round(((Date.now() - start) / (end - start)) * 100)));
   return (
     <div>
-      <div className="flex items-center justify-between text-[0.65rem] font-semibold tabular-nums text-muted-foreground">
+      <div className={`flex items-center justify-between text-[0.65rem] font-semibold tabular-nums ${onHero ? "text-primary-foreground/85" : "text-muted-foreground"}`}>
         <span>{num(dates.dob(startsOn))}</span>
         <span className="uppercase tracking-wide">{tx("Duration")} · {num(pct)}%</span>
         <span>{num(dates.dob(endsOn))}</span>
       </div>
-      <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-        <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
+      <div className={`mt-1.5 h-1.5 w-full overflow-hidden rounded-full ${onHero ? "bg-primary-foreground/25" : "bg-muted"}`}>
+        <div className={`h-full rounded-full transition-all ${onHero ? "bg-primary-foreground" : "bg-primary"}`} style={{ width: `${pct}%` }} />
       </div>
     </div>
   );
