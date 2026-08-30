@@ -63,10 +63,10 @@ function TeamPage() {
     const compIds = [...new Set((mine ?? []).map((r) => r.competition_id))];
     if (compIds.length === 0) return [];
     const { data } = await supabase.from("standings_rows")
-      .select("*, competition:competition_id(name,slug), team:team_id(id,name,logo_url)")
+      .select("*, competition:competition_id(name,slug,logo_url), team:team_id(id,name,logo_url)")
       .in("competition_id", compIds)
       .order("sort_order");
-    return (data ?? []) as unknown as (StandingRow & { competition: { name: string; slug: string } | null; team: { id: string; name: string; logo_url: string | null } | null })[];
+    return (data ?? []) as unknown as (StandingRow & { competition: { name: string; slug: string; logo_url: string | null } | null; team: { id: string; name: string; logo_url: string | null } | null })[];
   }});
   const coaches = useQuery({ queryKey: ["team-coaches", id], queryFn: async () => {
     const { data } = await supabase.from("coaches").select("*").eq("team_id", id);
@@ -168,32 +168,7 @@ function TeamPage() {
 
       {tab === "standings" && (
         rows.data && rows.data.length > 0 ? (
-          <div className="grid gap-6">
-            {[...new Map(rows.data.map((r) => [r.competition_id, r])).values()].map((head) => {
-              const group = rows.data!.filter((r) => r.competition_id === head.competition_id);
-              return (
-                <div key={head.competition_id} className="overflow-hidden rounded-2xl border border-border bg-card">
-                  <Link to="/competitions/$slug" params={{ slug: head.competition?.slug ?? "" }} className="flex items-center justify-between gap-2 border-b border-border px-4 py-3 text-sm font-bold hover:text-primary">
-                    {tx(head.competition?.name) ?? tx("Competition")}
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                  <div className="divide-y divide-border">
-                    {group.map((r, index) => (
-                      <Link key={r.id} to="/teams/$id" params={{ id: r.team?.id ?? r.team_id }}
-                        className={`flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-accent ${r.team_id === id ? "bg-primary/10 font-bold" : ""}`}>
-                        <span className="w-5 shrink-0 text-xs tabular-nums text-muted-foreground">{num(index + 1)}</span>
-                        <TeamCrest name={r.team?.name} logo={r.team?.logo_url} className="h-5 w-5 shrink-0" />
-                        <span className="min-w-0 flex-1 truncate">{tx(r.team?.name) ?? tx("Team")}</span>
-                        {r.qualification_label && <span className="hidden shrink-0 rounded-full px-2 py-0.5 text-[0.6rem] font-semibold sm:inline" style={{ backgroundColor: `${r.qualification_color ?? "#888"}22`, color: r.qualification_color ?? undefined }}>{tx(r.qualification_label)}</span>}
-                        <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{num(r.played)} · {num(r.gf)}:{num(r.ga)}</span>
-                        <span className="w-8 shrink-0 text-end font-black tabular-nums">{num(r.points + r.points_adjust)}</span>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <StandingsTabs rows={rows.data} teamId={id} num={num} tx={tx} />
         ) : <EmptyState title={tx("Not in a table yet")} />
       )}
 
@@ -385,3 +360,58 @@ function RecentForm({ matches, teamId }: { matches: MatchWithTeams[]; teamId: st
   );
 }
 
+
+type TeamStandingRow = StandingRow & {
+  competition: { name: string; slug: string; logo_url: string | null } | null;
+  team: { id: string; name: string; logo_url: string | null } | null;
+};
+
+/** Standings for every competition the club is in, picked from a bar instead of stacked. */
+function StandingsTabs({ rows, teamId, num, tx }: {
+  rows: TeamStandingRow[];
+  teamId: string;
+  num: (v: string | number) => string;
+  tx: (v: string | null | undefined) => string | undefined;
+}) {
+  const comps = [...new Map(rows.map((r) => [r.competition_id, r])).values()];
+  const [active, setActive] = useState(comps[0]?.competition_id ?? "");
+  const current = comps.find((c) => c.competition_id === active) ?? comps[0];
+  const list = rows.filter((r) => r.competition_id === current?.competition_id);
+
+  return (
+    <div>
+      {comps.length > 1 && (
+        <div className="mb-4 flex gap-1 overflow-x-auto rounded-full border border-border bg-card p-1">
+          {comps.map((c) => (
+            <button key={c.competition_id} onClick={() => setActive(c.competition_id)}
+              className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold ${c.competition_id === current?.competition_id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+              {c.competition?.logo_url && <img src={c.competition.logo_url} alt="" className="h-4 w-4 object-contain" />}
+              <span className="max-w-[9rem] truncate">{tx(c.competition?.name) ?? tx("Competition")}</span>
+            </button>
+          ))}
+        </div>
+      )}
+      <div className="overflow-hidden rounded-2xl border border-border bg-card">
+        <Link to="/competitions/$slug" params={{ slug: current?.competition?.slug ?? "" }}
+          className="flex items-center gap-2 border-b border-border px-4 py-3 text-sm font-bold hover:text-primary">
+          {current?.competition?.logo_url && <img src={current.competition.logo_url} alt="" className="h-6 w-6 shrink-0 object-contain" />}
+          <span className="min-w-0 flex-1 truncate">{tx(current?.competition?.name) ?? tx("Competition")}</span>
+          <ArrowRight className="h-4 w-4 shrink-0" />
+        </Link>
+        <div className="divide-y divide-border">
+          {list.map((r, index) => (
+            <Link key={r.id} to="/teams/$id" params={{ id: r.team?.id ?? r.team_id }}
+              className={`flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-accent ${r.team_id === teamId ? "bg-primary/10 font-bold" : ""}`}>
+              <span className="w-5 shrink-0 text-xs tabular-nums text-muted-foreground">{num(index + 1)}</span>
+              <TeamCrest name={r.team?.name} logo={r.team?.logo_url} className="h-5 w-5 shrink-0" />
+              <span className="min-w-0 flex-1 truncate">{tx(r.team?.name) ?? tx("Team")}</span>
+              {r.qualification_label && <span className="hidden shrink-0 rounded-full px-2 py-0.5 text-[0.6rem] font-semibold sm:inline" style={{ backgroundColor: `${r.qualification_color ?? "#888"}22`, color: r.qualification_color ?? undefined }}>{tx(r.qualification_label)}</span>}
+              <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{num(r.played)} · {num(r.gf)}:{num(r.ga)}</span>
+              <span className="w-8 shrink-0 text-end font-black tabular-nums">{num(r.points + r.points_adjust)}</span>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
