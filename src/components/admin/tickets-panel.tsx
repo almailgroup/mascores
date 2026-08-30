@@ -79,6 +79,8 @@ function OffersView() {
 
   const save = async () => {
     if (!matchId && !editing) return;
+    const capacity = Number(form.capacity);
+    if (!Number.isFinite(capacity) || capacity < 1) return;
     setBusy(true);
     const payload = {
       match_id: editing?.match_id ?? matchId!,
@@ -87,17 +89,27 @@ function OffersView() {
       price: form.is_free ? 0 : Number(form.price || 0),
       currency: form.currency.trim() || "KWD",
       is_free: form.is_free,
-      capacity: form.capacity.trim() ? Number(form.capacity) : null,
+      capacity,
       show_row: form.show_row,
       show_seat: form.show_seat,
       notes: form.notes.trim() || null,
       is_active: form.is_active,
     };
+    let offerId = editing?.id ?? null;
     if (editing) await supabase.from("ticket_offers").update(payload).eq("id", editing.id);
-    else await supabase.from("ticket_offers").insert(payload);
+    else {
+      const { data } = await supabase.from("ticket_offers").insert(payload).select("id").maybeSingle();
+      offerId = data?.id ?? null;
+    }
+    if (offerId) {
+      try { await makePool({ data: { offerId, capacity } }); }
+      catch { /* codes can be topped up again by saving the ticket */ }
+    }
     await qc.invalidateQueries({ queryKey: ["admin-ticket-offers"] });
+    await qc.invalidateQueries({ queryKey: ["admin-ticket-counts"] });
     setForm({ ...emptyOffer });
     setEditing(null);
+
     setBusy(false);
   };
 
