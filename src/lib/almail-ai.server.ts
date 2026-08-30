@@ -48,9 +48,8 @@ async function runAlmail(prompt: string, images: ImageInput[]) {
 
   try {
     const result = await generateText({
-      model: provider("openai/gpt-5.6-sol"),
+      model: provider("google/gemini-3.5-flash"),
       messages: [{ role: "user", content }],
-      providerOptions: { lovable: { reasoningEffort: "none" } },
     });
     if (!result.text.trim()) throw new Error("Almail AI returned an empty answer. Try again with clearer notes or photos.");
     return result.text;
