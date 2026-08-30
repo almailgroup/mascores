@@ -142,7 +142,7 @@ function CompetitionPage() {
   return (
     <AppShell>
       {theme && <CompetitionIntro theme={theme} name={tx(c.name)} season={activeSeason ? num(activeSeason) : null} logoUrl={c.logo_url} />}
-      <div style={theme?.vars}>
+      <div style={theme ? { ...theme.vars, backgroundImage: theme.page } : undefined} className={theme ? "-mx-4 px-4" : undefined}>
       <BackButton />
        <div className={`mb-3 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 pb-3 ${theme ? "-mx-4 rounded-b-3xl px-4 pt-4 text-primary-foreground sm:mx-0 sm:rounded-3xl" : "border-b border-border"}`}
          style={theme ? { background: theme.hero } : undefined}>
