@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Mic, MicOff, Loader2, Lock, Globe2, Hand, LogOut, Copy, Check, UserPlus, UserCheck, PhoneOff, Radio } from "lucide-react";
+import { Mic, MicOff, Loader2, Lock, Globe2, Hand, LogOut, Copy, Check, UserPlus, UserCheck, PhoneOff, Radio, EyeOff } from "lucide-react";
 import { AppShell, BackButton } from "@/components/app-shell";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -33,6 +33,7 @@ function VoiceRoomPage() {
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
   const [joined, setJoined] = useState(false);
+  const [anon, setAnon] = useState(false);
 
   const room = useQuery({
     queryKey: ["voice-room", id],
@@ -63,6 +64,7 @@ function VoiceRoomPage() {
   const membership = useQuery({
     enabled: !!user && !!room.data,
     queryKey: ["voice-membership", id, user?.id],
+    refetchInterval: 5000,
     queryFn: async () => {
       const { data } = await supabase.from("voice_room_participants").select("id, role, is_muted, hand_raised").eq("room_id", id).eq("user_id", user!.id).maybeSingle();
       return data as { id: string; role: VoiceRole; is_muted: boolean; hand_raised: boolean } | null;
@@ -92,14 +94,20 @@ function VoiceRoomPage() {
 
   const live = room.data?.status === "live";
   const me = user && joined
-    ? { userId: user.id, name: profile.data?.display_name ?? user.email?.split("@")[0] ?? "Guest", avatar: profile.data?.avatar_url ?? null, role }
+    ? {
+        userId: user.id,
+        name: anon ? "Anonymous listener" : (profile.data?.display_name ?? user.email?.split("@")[0] ?? "Guest"),
+        avatar: anon ? null : (profile.data?.avatar_url ?? null),
+        role: anon ? ("listener" as VoiceRole) : role,
+      }
     : null;
 
-  const { roster, remote, muted, toggleMute, hand, setHand, micError, connected } = useVoiceRoom({ roomId: id, me, enabled: !!me && live });
+  const { roster, remote, muted, toggleMute, hand, setHand, micError, connected, speakerCount, listenerCount } = useVoiceRoom({ roomId: id, me, enabled: !!me && live });
 
   // Join the room roster (host joins automatically when the room is created).
-  const join = async () => {
+  const join = async (anonymous = false) => {
     if (!user) { void navigate({ to: "/auth" }); return; }
+    setAnon(anonymous);
     await supabase.from("voice_room_participants")
       .upsert({ room_id: id, user_id: user.id, role: isHost ? "host" : "listener", is_muted: !isHost, left_at: null }, { onConflict: "room_id,user_id" });
     await qc.invalidateQueries({ queryKey: ["voice-membership", id] });
@@ -194,6 +202,11 @@ function VoiceRoomPage() {
               {following.data ? tx("Following") : tx("Follow")}
             </button>
           )}
+          {isHost && live && (
+            <button onClick={endRoom} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-destructive px-3 text-xs font-bold text-destructive-foreground">
+              <PhoneOff className="h-3.5 w-3.5" /> {tx("End room")}
+            </button>
+          )}
           {isHost && room.data.invite_code && (
             <button
               onClick={async () => { await navigator.clipboard.writeText(inviteLink(room.data!.invite_code!)); setCopied(true); window.setTimeout(() => setCopied(false), 1500); }}
@@ -208,9 +221,14 @@ function VoiceRoomPage() {
         <div className="p-4">
           {!live && <p className="text-sm text-muted-foreground">{tx("This room has ended.")}</p>}
           {live && !joined && (
-            <button onClick={join} className="inline-flex h-11 items-center gap-2 rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground shadow">
-              <Radio className="h-4 w-4" /> {tx("Join the room")}
-            </button>
+            <div className="flex flex-wrap gap-2">
+              <button onClick={() => join(false)} className="inline-flex h-11 items-center gap-2 rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground shadow">
+                <Radio className="h-4 w-4" /> {tx("Join to listen")}
+              </button>
+              <button onClick={() => join(true)} className="inline-flex h-11 items-center gap-2 rounded-full border border-border bg-card px-5 text-sm font-bold">
+                <EyeOff className="h-4 w-4" /> {tx("Listen anonymously")}
+              </button>
+            </div>
           )}
 
           {live && joined && (
@@ -218,10 +236,12 @@ function VoiceRoomPage() {
               <div className="mb-3 flex items-center gap-2 text-[0.7rem] font-semibold text-muted-foreground">
                 {connected ? <span className="inline-flex items-center gap-1 text-primary"><span className="h-1.5 w-1.5 rounded-full bg-primary" /> {tx("Connected")}</span> : <span className="inline-flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> {tx("Connecting…")}</span>}
                 <span>· {roster.length} {tx("in the room")}</span>
+                <span>· {speakerCount} {tx("speaking")}</span>
+                <span>· {listenerCount} {tx("listening")}</span>
               </div>
               {micError && <p className="mb-3 rounded-xl bg-destructive/10 p-3 text-xs font-semibold text-destructive">{tx(micError)}</p>}
 
-              <h2 className="text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Speakers")}</h2>
+              <h2 className="text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Speakers")} ({speakerCount})</h2>
               <div className="mt-2 grid grid-cols-3 gap-3 sm:grid-cols-5">
                 {speakers.map((peer) => (
                   <PeerTile key={peer.userId} peer={peer} canManage={isHost && !peer.self} onDemote={() => setRole(peer.userId, "listener")} />
@@ -243,7 +263,7 @@ function VoiceRoomPage() {
                 </div>
               )}
 
-              <h2 className="mt-5 text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Listeners")}</h2>
+              <h2 className="mt-5 text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Listeners")} ({listenerCount})</h2>
               <div className="mt-2 grid grid-cols-4 gap-3 sm:grid-cols-6">
                 {listeners.map((peer) => (
                   <PeerTile key={peer.userId} peer={peer} small canManage={isHost && !peer.self} onPromote={() => setRole(peer.userId, "speaker")} />

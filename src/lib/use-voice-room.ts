@@ -117,6 +117,10 @@ export function useVoiceRoom({ roomId, me, enabled }: { roomId: string; me: Me |
   // Mic capture for hosts and speakers.
   useEffect(() => {
     if (!enabled || !me || !publishes(me.role)) return;
+    if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+      setMicError("This browser cannot capture the microphone here. Open the site over https and try again.");
+      return;
+    }
     let cancelled = false;
     (async () => {
       try {
@@ -124,10 +128,12 @@ export function useVoiceRoom({ roomId, me, enabled }: { roomId: string; me: Me |
         if (cancelled) { stream.getTracks().forEach((t) => t.stop()); return; }
         stream.getAudioTracks().forEach((t) => { t.enabled = false; });
         localRef.current = stream;
-        pcsRef.current.forEach((pc) => stream.getTracks().forEach((t) => {
-          const sender = pc.getSenders().find((s) => s.track?.kind === "audio");
-          if (sender) void sender.replaceTrack(t); else pc.addTrack(t, stream);
-        }));
+        setMicError(null);
+        // Rebuild peer connections so the fresh mic track is actually published.
+        pcsRef.current.forEach((pc) => pc.close());
+        pcsRef.current.clear();
+        setRemote([]);
+        void sendPresence();
       } catch {
         if (!cancelled) setMicError("Microphone access is blocked. Allow it in your browser to speak.");
       }
@@ -198,7 +204,9 @@ export function useVoiceRoom({ roomId, me, enabled }: { roomId: string; me: Me |
   const toggleMute = useCallback(() => {
     setMuted((prev) => {
       const next = !prev;
-      localRef.current?.getAudioTracks().forEach((t) => { t.enabled = !next; });
+      const tracks = localRef.current?.getAudioTracks() ?? [];
+      if (!next && tracks.length === 0) setMicError("Microphone is not ready yet. Allow access and try again.");
+      tracks.forEach((t) => { t.enabled = !next; });
       return next;
     });
   }, []);
@@ -247,5 +255,7 @@ export function useVoiceRoom({ roomId, me, enabled }: { roomId: string; me: Me |
     return rank(a.role) - rank(b.role) || a.name.localeCompare(b.name);
   }), [peers, speaking, me?.userId]);
 
-  return { roster, remote, muted, toggleMute, hand, setHand, micError, connected };
+  const speakerCount = roster.filter((p) => p.role !== "listener").length;
+  const listenerCount = roster.length - speakerCount;
+  return { roster, remote, muted, toggleMute, hand, setHand, micError, connected, speakerCount, listenerCount };
 }

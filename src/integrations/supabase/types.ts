@@ -1821,7 +1821,9 @@ export type Database = {
           code: string
           created_at: string
           currency: string
+          holder_email: string | null
           holder_name: string | null
+          holder_phone: string | null
           id: string
           issued_with_admin_code: boolean
           match_id: string
@@ -1838,7 +1840,9 @@ export type Database = {
           code: string
           created_at?: string
           currency?: string
+          holder_email?: string | null
           holder_name?: string | null
+          holder_phone?: string | null
           id?: string
           issued_with_admin_code?: boolean
           match_id: string
@@ -1855,7 +1859,9 @@ export type Database = {
           code?: string
           created_at?: string
           currency?: string
+          holder_email?: string | null
           holder_name?: string | null
+          holder_phone?: string | null
           id?: string
           issued_with_admin_code?: boolean
           match_id?: string

@@ -274,9 +274,18 @@ function ContributePage() {
               </div>
               {error && <div className="text-sm text-destructive">{error}</div>}
               {sent && <div className="rounded-xl border border-primary/40 bg-primary/10 px-3 py-2 text-sm text-primary">Submitted for review. The main admin will approve or reject it.</div>}
-              <button disabled={busy || !title.trim() || !body.trim()} onClick={submit} className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground disabled:opacity-60">
-                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} Submit for review
-              </button>
+              <div className="rounded-xl border border-dashed border-border px-3 py-2 text-xs text-muted-foreground">
+                Direct publishing is coming soon — for now your article is sent to the main admin for review.
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <button disabled={busy || !title.trim() || !body.trim()} onClick={submit} className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground disabled:opacity-60">
+                  {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} Submit for review
+                </button>
+                <button disabled className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-muted px-6 text-sm font-semibold text-muted-foreground">
+                  Publish news — coming soon
+                </button>
+              </div>
+
             </div>
           </div>
 
