@@ -141,10 +141,12 @@ function RootComponent() {
       <ThemeProvider>
         <I18nProvider>
           <CurrencyProvider>
-            <AutoTranslateProvider>
-              <IntroSplash />
-              <LanguageReadyGate><Outlet /></LanguageReadyGate>
-            </AutoTranslateProvider>
+            <HeightUnitProvider>
+              <AutoTranslateProvider>
+                <IntroSplash />
+                <LanguageReadyGate><Outlet /></LanguageReadyGate>
+              </AutoTranslateProvider>
+            </HeightUnitProvider>
           </CurrencyProvider>
         </I18nProvider>
       </ThemeProvider>
