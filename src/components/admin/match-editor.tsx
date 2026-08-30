@@ -500,9 +500,10 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
                 <button type="button" onClick={() => setClearTeam(tid)} className="rounded border border-border px-2 py-1 text-[0.6rem] font-semibold text-destructive hover:bg-accent">Clear all</button>
                 </div>
               </div>
-              <div className="rounded-lg bg-emerald-900/25 p-2 pt-4">
+              {/* Fixed aspect keeps the pitch the same size for every formation. */}
+              <div className="flex aspect-[3/4] flex-col justify-between rounded-lg bg-emerald-900/25 p-2">
                 {formationRows(formation).map((row, ri) => (
-                  <div key={ri} className="mb-3 flex justify-around gap-1">
+                  <div key={ri} className="flex flex-1 items-center justify-around gap-1">
                     {row.map((slot) => {
                       const assigned = lineups.find((l) => l.team_id === tid && l.position_code === slot);
                       const p = players.find((x) => x.id === assigned?.player_id);
