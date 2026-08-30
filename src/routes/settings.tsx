@@ -7,6 +7,7 @@ import { useTheme } from "@/components/theme-provider";
 import { AppShell } from "@/components/app-shell";
 import { uploadMedia } from "@/components/admin/upload";
 import { CURRENCIES, useCurrency } from "@/lib/currency";
+import { useHeightUnit } from "@/lib/units";
 import { deleteMyAccount } from "@/lib/account.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { Save, LogOut, Loader2, LogIn, Camera, Trash2 } from "lucide-react";
