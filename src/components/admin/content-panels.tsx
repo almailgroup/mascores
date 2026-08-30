@@ -15,6 +15,7 @@ type Channel = Database["public"]["Tables"]["broadcast_channels"]["Row"];
 export function VenuesPanel() {
   const qc = useQueryClient();
   const [form, setForm] = useState<Partial<Venue>>({});
+  const [search, setSearch] = useState("");
   const [aiText, setAiText] = useState("");
   const [aiImages, setAiImages] = useState<AiImageInput[]>([]);
   const [aiBusy, setAiBusy] = useState(false);
@@ -44,7 +45,8 @@ export function VenuesPanel() {
         <button className={btnPrimary} disabled={aiBusy || (!aiText.trim() && aiImages.length === 0)} onClick={generate}><Sparkles className="h-3.5 w-3.5" />{aiBusy ? "Reading venue…" : "Create editable venue draft"}</button>
       </div>
     </div>
-    <div className="grid gap-2 sm:grid-cols-2">{q.data?.map((v) => <Item key={v.id} title={v.name} subtitle={[v.city, v.country, v.capacity ? `${v.capacity.toLocaleString()} seats` : null].filter(Boolean).join(" · ")} onEdit={() => setForm(v)} onDelete={async () => { await supabase.from("venues").delete().eq("id", v.id); qc.invalidateQueries({ queryKey: ["admin", "venues"] }); }} />)}</div>
+    <SearchBar value={search} onChange={setSearch} placeholder="Search stadiums" />
+    <div className="grid gap-2 sm:grid-cols-2">{filterByText(q.data, search, (v) => [v.name, v.city, v.country]).map((v) => <Item key={v.id} title={v.name} subtitle={[v.city, v.country, v.capacity ? `${v.capacity.toLocaleString()} seats` : null].filter(Boolean).join(" · ")} onEdit={() => setForm(v)} onDelete={async () => { await supabase.from("venues").delete().eq("id", v.id); qc.invalidateQueries({ queryKey: ["admin", "venues"] }); }} />)}</div>
     <div className="mt-4 grid gap-3 border-t border-border pt-4 sm:grid-cols-2">
       <Field label="Venue name"><input className={inputCls} value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
       <Field label="City"><input className={inputCls} value={form.city ?? ""} onChange={(e) => setForm({ ...form, city: e.target.value })} /></Field>
@@ -60,22 +62,26 @@ export function VenuesPanel() {
 export function ChannelsPanel() {
   const qc = useQueryClient();
   const [form, setForm] = useState<Partial<Channel>>({});
+  const [search, setSearch] = useState("");
   const q = useQuery({ queryKey: ["admin", "channels"], queryFn: async () => (await supabase.from("broadcast_channels").select("*").order("name")).data as Channel[] ?? [] });
   const save = async () => { if (!form.name?.trim()) return; if (form.id) await supabase.from("broadcast_channels").update(form).eq("id", form.id); else await supabase.from("broadcast_channels").insert(form as never); setForm({}); qc.invalidateQueries({ queryKey: ["admin", "channels"] }); };
   return <LibraryPanel icon={<Radio className="h-5 w-5" />} title="Broadcast channels" subtitle="Create channel records and attach them to matches.">
-    <div className="grid gap-2 sm:grid-cols-2">{q.data?.map((c) => <Item key={c.id} title={c.name} subtitle={c.country_code ?? "Global"} image={c.logo_url} onEdit={() => setForm(c)} onDelete={async () => { await supabase.from("broadcast_channels").delete().eq("id", c.id); qc.invalidateQueries({ queryKey: ["admin", "channels"] }); }} />)}</div>
+    <SearchBar value={search} onChange={setSearch} placeholder="Search channels" />
+    <div className="grid gap-2 sm:grid-cols-2">{filterByText(q.data, search, (c) => [c.name, c.country_code]).map((c) => <Item key={c.id} title={c.name} subtitle={c.country_code ?? "Global"} image={c.logo_url} onEdit={() => setForm(c)} onDelete={async () => { await supabase.from("broadcast_channels").delete().eq("id", c.id); qc.invalidateQueries({ queryKey: ["admin", "channels"] }); }} />)}</div>
     <div className="mt-4 grid gap-3 border-t border-border pt-4 sm:grid-cols-2"><Field label="Channel name"><input className={inputCls} value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field><Field label="Country"><CountrySelect value={form.country_code} onChange={(_, country) => setForm({ ...form, country_code: country?.code ?? null })} /></Field><Field label="Logo"><ImageInput value={form.logo_url ?? null} onChange={(logo_url) => setForm({ ...form, logo_url })} onFile={async (file) => { const logo_url = await uploadMedia("competition-logos", file); if (logo_url) setForm({ ...form, logo_url }); }} /></Field><div className="self-end"><button className={btnPrimary} onClick={save}><Plus className="h-3.5 w-3.5" /> {form.id ? "Save channel" : "Add channel"}</button></div></div>
   </LibraryPanel>;
 }
 
 export function TransfersAdminPanel() {
   const qc = useQueryClient();
+  const [search, setSearch] = useState("");
   const [draft, setDraft] = useState<Partial<Transfer>>({ person_type: "player", transfer_type: "Transfer", season: "26/27" });
   const q = useQuery({ queryKey: ["admin", "all-transfers"], queryFn: async () => (await supabase.from("transfers").select("*").order("moved_on", { ascending: false })).data as Transfer[] ?? [] });
   const add = async () => { if (!draft.person_id || (!draft.from_club && !draft.to_club)) return; await supabase.from("transfers").insert(draft as never); setDraft({ person_type: "player", transfer_type: "Transfer", season: "26/27" }); qc.invalidateQueries({ queryKey: ["admin", "all-transfers"] }); };
   return <LibraryPanel icon={<Repeat2 className="h-5 w-5" />} title="Transfer manager" subtitle="Add moves to any club, including clubs outside the database.">
     <div className="grid gap-3 sm:grid-cols-3"><Field label="Player or coach ID"><input className={inputCls} value={draft.person_id ?? ""} onChange={(e) => setDraft({ ...draft, person_id: e.target.value })} /></Field><Field label="From club"><input className={inputCls} value={draft.from_club ?? ""} onChange={(e) => setDraft({ ...draft, from_club: e.target.value })} /></Field><Field label="To club"><input className={inputCls} value={draft.to_club ?? ""} onChange={(e) => setDraft({ ...draft, to_club: e.target.value })} /></Field><Field label="Date"><input type="date" className={inputCls} value={draft.moved_on ?? ""} onChange={(e) => setDraft({ ...draft, moved_on: e.target.value || null })} /></Field><Field label="Season"><input className={inputCls} value={draft.season ?? ""} onChange={(e) => setDraft({ ...draft, season: e.target.value })} /></Field><div className="self-end"><button className={btnPrimary} onClick={add}><Plus className="h-3.5 w-3.5" /> Add transfer</button></div></div>
-    <div className="mt-4 grid gap-2">{q.data?.slice(0, 50).map((t) => <Item key={t.id} title={`${t.from_club ?? "Free agent"} → ${t.to_club ?? "—"}`} subtitle={[t.moved_on, t.transfer_type, t.season].filter(Boolean).join(" · ")} onDelete={async () => { await supabase.from("transfers").delete().eq("id", t.id); qc.invalidateQueries({ queryKey: ["admin", "all-transfers"] }); }} />)}</div>
+    <div className="mt-4"><SearchBar value={search} onChange={setSearch} placeholder="Search by club or season" /></div>
+    <div className="grid gap-2">{filterByText(q.data, search, (t) => [t.from_club, t.to_club, t.season, t.transfer_type]).slice(0, 50).map((t) => <Item key={t.id} title={`${t.from_club ?? "Free agent"} → ${t.to_club ?? "—"}`} subtitle={[t.moved_on, t.transfer_type, t.season].filter(Boolean).join(" · ")} onDelete={async () => { await supabase.from("transfers").delete().eq("id", t.id); qc.invalidateQueries({ queryKey: ["admin", "all-transfers"] }); }} />)}</div>
   </LibraryPanel>;
 }
 
@@ -85,3 +91,18 @@ export function AlmailAiPanel({ onNews, onCompetitions, onVenues }: { onNews: ()
 
 function LibraryPanel({ icon, title, subtitle, children }: { icon: React.ReactNode; title: string; subtitle: string; children: React.ReactNode }) { return <div><div className="mb-5 flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">{icon}</div><div><h2 className="text-lg font-bold">{title}</h2><p className="text-xs text-muted-foreground">{subtitle}</p></div></div>{children}</div>; }
 function Item({ title, subtitle, image, onEdit, onDelete }: { title: string; subtitle?: string; image?: string | null; onEdit?: () => void; onDelete: () => void }) { return <div className="flex items-center gap-3 rounded-lg border border-border bg-card p-3">{image && <img src={image} alt="" className="h-9 w-9 object-contain" />}<button className="min-w-0 flex-1 text-left" onClick={onEdit}><div className="truncate text-sm font-semibold">{title}</div>{subtitle && <div className="truncate text-xs text-muted-foreground">{subtitle}</div>}</button><button className={btnDanger} onClick={onDelete}><Trash2 className="h-3.5 w-3.5" /></button></div>; }
+/** Shared admin search input — every long library list gets one. */
+export function SearchBar({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) {
+  return (
+    <div className="mb-3">
+      <input className={`${inputCls} max-w-sm`} placeholder={placeholder} value={value} onChange={(e) => onChange(e.target.value)} />
+    </div>
+  );
+}
+
+/** Filter any admin list by a free-text term across the given fields. */
+export function filterByText<T>(rows: T[] | undefined, term: string, fields: (row: T) => (string | null | undefined)[]): T[] {
+  const q = term.trim().toLowerCase();
+  if (!q) return rows ?? [];
+  return (rows ?? []).filter((row) => fields(row).some((f) => (f ?? "").toLowerCase().includes(q)));
+}

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { SearchBar, filterByText } from "./content-panels";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase, slugify, type NewsPost } from "@/lib/db";
@@ -15,6 +16,7 @@ type Form = Partial<NewsPost>;
 export function NewsPanel() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
   const [form, setForm] = useState<Form>({});
   const [aiOpen, setAiOpen] = useState(false);
   const [aiNotes, setAiNotes] = useState("");
@@ -106,7 +108,8 @@ export function NewsPanel() {
         </div>
       </Modal>
       <div className="grid gap-2">
-        {(q.data ?? []).map((n) => (
+        <SearchBar value={search} onChange={setSearch} placeholder="Search posts" />
+        {filterByText(q.data, search, (n) => [n.title, n.title_ar, n.author_display, n.slug]).map((n) => (
           <div key={n.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3">
             {n.cover_url && <img src={n.cover_url} alt="" className="h-12 w-16 rounded object-cover" />}
             <div className="min-w-0 flex-1">
