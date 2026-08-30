@@ -52,6 +52,7 @@ function PlayerPage() {
   const { id } = Route.useParams();
   const { t: tr } = useI18n();
   const { currency } = useCurrency();
+  const { heightUnit } = useHeightUnit();
   const [tab, setTab] = useState<Tab>("details");
 
   const q = useQuery({ queryKey: ["player", id], queryFn: async () => {
