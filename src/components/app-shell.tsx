@@ -1,27 +1,34 @@
 import { Link, useLocation, useRouter } from "@tanstack/react-router";
-import { Home, Search, Trophy, Newspaper, ArrowLeftRight, Ticket, Settings, LogIn, ArrowLeft } from "lucide-react";
-import { useEffect, type ReactNode } from "react";
+import { Home, Search, Trophy, Newspaper, ArrowLeftRight, Ticket, Settings, LogIn, ArrowLeft, MoreHorizontal, Radio, X } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import { BrandLogo } from "@/components/brand-logo";
 
-type NavItem = { to: "/" | "/search" | "/competitions" | "/news" | "/transfers" | "/tickets" | "/settings"; labelKey: string; icon: typeof Home; exact?: boolean };
-const NAV: NavItem[] = [
+type NavItem = { to: "/" | "/search" | "/competitions" | "/news" | "/transfers" | "/tickets" | "/voice" | "/settings"; labelKey: string; icon: typeof Home; exact?: boolean };
+/** Shown in the mobile tab bar. */
+const PRIMARY_NAV: NavItem[] = [
   { to: "/", labelKey: "nav.home", icon: Home, exact: true },
   { to: "/search", labelKey: "nav.search", icon: Search },
   { to: "/competitions", labelKey: "nav.competitions", icon: Trophy },
   { to: "/news", labelKey: "nav.news", icon: Newspaper },
+];
+/** Reached from the "More" sheet on mobile, always visible on desktop. */
+const SECONDARY_NAV: NavItem[] = [
+  { to: "/voice", labelKey: "nav.voice", icon: Radio },
   { to: "/transfers", labelKey: "nav.transfers", icon: ArrowLeftRight },
   { to: "/tickets", labelKey: "nav.tickets", icon: Ticket },
   { to: "/settings", labelKey: "nav.settings", icon: Settings },
 ];
+const NAV: NavItem[] = [...PRIMARY_NAV, ...SECONDARY_NAV];
 
 export function AppShell({ children, bare = false }: { children: ReactNode; bare?: boolean }) {
   const { user, loading } = useAuth();
   const { t } = useI18n();
   const location = useLocation();
+  const [moreOpen, setMoreOpen] = useState(false);
   useEffect(() => { void user; }, [user]);
 
   const profile = useQuery({
@@ -91,7 +98,7 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
 
       {!bare && <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/60 bg-background/95 backdrop-blur-xl md:hidden">
         <div className="mx-auto flex max-w-7xl items-center justify-around px-2 py-2">
-          {NAV.map((item) => {
+          {PRIMARY_NAV.map((item) => {
             const active = item.exact ? location.pathname === item.to : location.pathname.startsWith(item.to);
             return (
               <Link
@@ -106,8 +113,45 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
               </Link>
             );
           })}
+          <button
+            type="button"
+            onClick={() => setMoreOpen(true)}
+            className={`flex flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-1 text-[0.6rem] font-medium ${
+              SECONDARY_NAV.some((item) => location.pathname.startsWith(item.to)) ? "text-primary" : "text-muted-foreground"
+            }`}
+          >
+            <MoreHorizontal className="h-5 w-5" />
+            {t("nav.more")}
+          </button>
         </div>
       </nav>}
+
+      {!bare && moreOpen && (
+        <div className="fixed inset-0 z-50 flex items-end bg-black/50 md:hidden" onClick={() => setMoreOpen(false)}>
+          <div className="w-full rounded-t-3xl border-t border-border bg-background p-4 pb-6" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-sm font-bold">{t("nav.more")}</h2>
+              <button onClick={() => setMoreOpen(false)} aria-label="Close" className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {SECONDARY_NAV.map((item) => (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  onClick={() => setMoreOpen(false)}
+                  className={`flex items-center gap-2 rounded-2xl border p-3 text-sm font-semibold ${
+                    location.pathname.startsWith(item.to) ? "border-primary bg-primary/10 text-primary" : "border-border bg-card"
+                  }`}
+                >
+                  <item.icon className="h-4 w-4" /> {t(item.labelKey)}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
