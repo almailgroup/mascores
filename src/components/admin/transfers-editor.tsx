@@ -6,12 +6,13 @@ import { inputCls, btnPrimary, btnGhost } from "./ui";
 import { createTransferDraftsWithAlmail } from "@/lib/almail-ai.functions";
 import { readAiImages, type AiImageInput } from "@/lib/image-files";
 import { Plus, Trash2, Sparkles, ImagePlus, Loader2, Pencil, Check, X } from "lucide-react";
+import { TeamSelect } from "@/components/team-select";
 
 const TYPES = ["Transfer", "Loan", "Loan return", "Free agent", "Youth promotion", "Retired", "Appointed", "Left"];
 
 /** Pick a saved club or type any club name that is not in the database. */
 export function ClubInput({ value, onChange, placeholder }: { value: string | null | undefined; onChange: (v: string | null) => void; placeholder: string }) {
-  const teams = useQuery({ queryKey: ["admin", "team-names"], queryFn: async () => ((await supabase.from("teams").select("id,name").order("name")).data ?? []) as Pick<Team, "id" | "name">[] });
+  const teams = useQuery({ queryKey: ["admin", "team-names"], queryFn: async () => ((await supabase.from("teams").select("id,name,logo_url,country").order("name")).data ?? []) as Pick<Team, "id" | "name" | "logo_url" | "country">[] });
   const known = (teams.data ?? []).some((t) => t.name === value);
   const [manual, setManual] = useState(false);
   const typing = manual || (!!value && !known);
@@ -20,10 +21,7 @@ export function ClubInput({ value, onChange, placeholder }: { value: string | nu
       {typing ? (
         <input className={inputCls} placeholder={placeholder} value={value ?? ""} onChange={(e) => onChange(e.target.value || null)} />
       ) : (
-        <select className={inputCls} value={value ?? ""} onChange={(e) => onChange(e.target.value || null)}>
-          <option value="">{placeholder}</option>
-          {(teams.data ?? []).map((t) => <option key={t.id} value={t.name}>{t.name}</option>)}
-        </select>
+        <TeamSelect teams={teams.data ?? []} value={(teams.data ?? []).find((team) => team.name === value)?.id} onChange={(_, team) => onChange(team?.name ?? null)} placeholder={placeholder} />
       )}
       <button type="button" className="text-start text-[0.65rem] font-semibold text-primary" onClick={() => { setManual(!typing); onChange(null); }}>
         {typing ? "Pick a saved club" : "Type a club that is not saved"}

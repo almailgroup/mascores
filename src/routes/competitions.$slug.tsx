@@ -15,6 +15,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { CalendarDays, ChevronRight, Play, Trophy } from "lucide-react";
 import { competitionTheme } from "@/lib/competition-theme";
 import { CompetitionIntro } from "@/components/competition-intro";
+import { SeasonMenu } from "@/components/season-menu";
 
 type PositionLabel = Database["public"]["Tables"]["standings_position_labels"]["Row"];
 type Row = StandingRow & { team: Team | null };
@@ -163,7 +164,7 @@ function CompetitionPage() {
            <div className={`mt-0.5 flex min-w-0 flex-wrap items-center gap-1.5 text-[0.7rem] sm:text-xs ${theme ? "text-primary-foreground/85" : "text-muted-foreground"}`}>
             {!friendly && <FlagIcon value={c.country_code ?? c.country} />}
              <span className="truncate">{(friendly ? [tx(c.category)] : [tx(c.country), tx(c.category)]).filter(Boolean).join(" · ")}</span>
-             {(c.seasons?.length ?? 0) > 0 && <select aria-label="Season" className="rounded-full border border-border bg-background px-2 py-0.5 text-[0.7rem] font-semibold text-foreground" value={season ?? c.season ?? c.seasons[0]} onChange={(e) => setSeason(e.target.value)}>{c.seasons.map((item) => <option key={item} value={item}>{num(item)}</option>)}</select>}
+              {(c.seasons?.length ?? 0) > 0 && <SeasonMenu seasons={c.seasons} value={activeSeason} onChange={setSeason} />}
           </div>
         </div>
         <div className="col-span-2"><DurationBar startsOn={c.starts_on} endsOn={c.ends_on} onHero={!!theme} /></div>

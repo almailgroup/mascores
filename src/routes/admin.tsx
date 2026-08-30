@@ -20,6 +20,7 @@ import { CompetitionAwardsManager, MediaManager } from "@/components/admin/media
 import { ChatReportsPanel } from "@/components/admin/chat-reports-panel";
 import { TicketsPanel } from "@/components/admin/tickets-panel";
 import { ConfirmDelete } from "@/components/confirm-delete";
+import { SeasonMenu } from "@/components/season-menu";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — MansourAlmailScores" }, { name: "robots", content: "noindex" }] }),
@@ -204,21 +205,10 @@ function SeasonPicker({ competition, onChange, season, onSeason }: { competition
 
   return (
     <div className="relative shrink-0">
-      <select
-        aria-label="Season"
-        className="rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold"
-        value={creating ? "__new" : current}
-        onChange={(e) => {
-          if (e.target.value === "__new") setCreating(true);
-          else if (e.target.value === "__delete") { if (current) setDeleteSeason(current); }
-          else onSeason(e.target.value);
-        }}
-      >
-        {seasons.length === 0 && <option value="">No season</option>}
-        {seasons.map((item) => <option key={item} value={item}>{item}</option>)}
-        <option value="__new">Create season…</option>
-        {current && <option value="__delete">Delete {current}…</option>}
-      </select>
+      <SeasonMenu seasons={seasons} value={current} onChange={onSeason} footer={<>
+        <button type="button" className="block w-full rounded-lg px-3 py-2 text-start text-xs font-semibold hover:bg-accent" onClick={() => setCreating(true)}>Create season…</button>
+        {current && <button type="button" className="block w-full rounded-lg px-3 py-2 text-start text-xs font-semibold text-destructive hover:bg-accent" onClick={() => setDeleteSeason(current)}>Delete {current}…</button>}
+      </>} />
       <ConfirmDelete
         open={!!deleteSeason}
         title={`Delete season ${deleteSeason ?? ""}`}
@@ -226,7 +216,7 @@ function SeasonPicker({ competition, onChange, season, onSeason }: { competition
         confirmWord={deleteSeason ?? "DELETE"}
         actionLabel="Delete season"
         onCancel={() => setDeleteSeason(null)}
-        onConfirm={() => removeSeason(deleteSeason!)}
+        onConfirm={() => deleteSeason ? removeSeason(deleteSeason) : undefined}
       />
       {creating && (
         <div className="absolute end-0 z-40 mt-2 w-64 rounded-2xl border border-border bg-card p-3 shadow-xl">
