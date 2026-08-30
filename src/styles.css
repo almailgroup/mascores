@@ -15,6 +15,17 @@
   100% { opacity: 1; transform: translateY(0); letter-spacing: 0em; }
 }
 
+@keyframes comp-intro {
+  0% { opacity: 0; }
+  12% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@utility animate-comp-intro {
+  animation: comp-intro 2.6s ease-in-out both;
+}
+
 @utility animate-mas-logo-in {
   animation: mas-logo-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
