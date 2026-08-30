@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { ArabicNameField } from "./arabic-name-field";import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase, POSITIONS, type Player, type Team } from "@/lib/db";
@@ -102,6 +103,7 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
 
         <div className="grid gap-3 rounded-2xl border border-border bg-card p-4 sm:grid-cols-2 lg:grid-cols-3">
           <Field label="Name *"><input className={inputCls} value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
+          <ArabicNameField englishName={form.name} />
           <Field label="Position">
             <select className={inputCls} value={form.position ?? "Unknown"} onChange={(e) => setForm({ ...form, position: e.target.value })}>
               {POSITIONS.map((p) => <option key={p} value={p}>{p}</option>)}
