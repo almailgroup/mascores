@@ -39,6 +39,8 @@ export const claimTicket = createServerFn({ method: "POST" })
         match_id: offer.match_id,
         user_id: context.userId,
         holder_name: data.holderName?.trim() || null,
+        holder_email: data.holderEmail?.trim() || null,
+        holder_phone: data.holderPhone?.trim() || null,
         code,
         price_paid: usedAdminCode ? 0 : Number(offer.price),
         currency: offer.currency,
