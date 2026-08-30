@@ -22,8 +22,17 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
     },
   });
   const teams = useQuery({
-    queryKey: ["admin", "team-library"],
-    queryFn: async () => (await supabase.from("teams").select("id,name").order("name")).data ?? [],
+    queryKey: ["admin", "team-library-picker"],
+    queryFn: async () => (await supabase.from("teams").select("id,name,country,country_code,is_national").order("name")).data ?? [],
+  });
+  /** Only teams that belong to the competition's country (and the right kind) may hold its title. */
+  const titleHolderTeams = (teams.data ?? []).filter((team) => {
+    if (form.is_national && !team.is_national) return false;
+    if (!form.is_national && team.is_national) return false;
+    const scope = form.scope ?? "national";
+    if (scope !== "national") return true;
+    if (!form.country && !form.country_code) return true;
+    return form.country_code ? team.country_code === form.country_code : team.country === form.country;
   });
 
   const save = async () => {
@@ -59,7 +68,7 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
             </div>
             <div className="min-w-0 flex-1">
               <div className="truncate font-semibold">{c.name}</div>
-              <div className="truncate text-xs text-muted-foreground">{[c.country, c.season, c.format].filter(Boolean).join(" · ")}</div>
+              <div className="truncate text-xs text-muted-foreground">{[c.scope && c.scope !== "national" ? c.region ?? c.scope : c.country, c.season, c.format].filter(Boolean).join(" · ")}</div>
             </div>
             <button className={btnGhost} onClick={() => onOpen(c)}>Manage <ChevronRight className="h-3.5 w-3.5" /></button>
             <button className={btnGhost} onClick={() => { setForm(c); setOpen(true); }}><Pencil className="h-3.5 w-3.5" /></button>
@@ -74,7 +83,24 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
           <Field label="Name"><input className={inputCls} value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value, slug: form.slug || slugify(e.target.value) })} /></Field>
           <Field label="Slug"><input className={inputCls} value={form.slug ?? ""} onChange={(e) => setForm({ ...form, slug: e.target.value })} /></Field>
           <Field label="Sport"><select className={inputCls} value={form.sport ?? "football"} onChange={(e) => setForm({ ...form, sport: e.target.value })}><option value="football">Football</option><option value="basketball">Basketball</option><option value="american_football">American football</option><option value="hockey">Hockey</option><option value="volleyball">Volleyball</option><option value="handball">Handball</option></select></Field>
-          <Field label="Country"><CountrySelect value={form.country} onChange={(name, country) => setForm({ ...form, country: name, country_code: country?.code ?? null })} /></Field>
+          <Field label="Scope">
+            <select className={inputCls} value={form.scope ?? "national"} onChange={(e) => setForm({ ...form, scope: e.target.value, region: e.target.value === "national" ? null : form.region })}>
+              <option value="national">National (one country)</option>
+              <option value="continental">Continental (e.g. AFC, UEFA)</option>
+              <option value="regional">Regional (e.g. GCC, Middle East)</option>
+              <option value="international">International (worldwide)</option>
+            </select>
+          </Field>
+          {(form.scope ?? "national") === "national" ? (
+            <Field label="Country"><CountrySelect value={form.country} onChange={(name, country) => setForm({ ...form, country: name, country_code: country?.code ?? null })} /></Field>
+          ) : (
+            <Field label="Region or confederation">
+              <input className={inputCls} list="mas-regions" placeholder="GCC, Middle East, Asia, Europe…" value={form.region ?? ""} onChange={(e) => setForm({ ...form, region: e.target.value || null })} />
+              <datalist id="mas-regions">
+                {["GCC", "Middle East", "Arab world", "North Africa", "West Asia", "Asia (AFC)", "Europe (UEFA)", "Africa (CAF)", "South America (CONMEBOL)", "North America (CONCACAF)", "Oceania (OFC)", "World (FIFA)"].map((r) => <option key={r} value={r} />)}
+              </datalist>
+            </Field>
+          )}
           <Field label="Category">
             <select className={inputCls} value={form.category ?? ""} onChange={(e) => setForm({ ...form, category: e.target.value || null })}>
               <option value="">Choose a category</option>
@@ -98,7 +124,7 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
           <Field label="Higher division"><select className={inputCls} value={form.higher_division_id ?? ""} onChange={(e) => setForm({ ...form, higher_division_id: e.target.value || null })}><option value="">None</option>{(q.data ?? []).filter((item) => item.id !== form.id).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></Field>
           <Field label="Lower division"><select className={inputCls} value={form.lower_division_id ?? ""} onChange={(e) => setForm({ ...form, lower_division_id: e.target.value || null })}><option value="">None</option>{(q.data ?? []).filter((item) => item.id !== form.id).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></Field>
           <Field label="Parent competition"><select className={inputCls} value={form.parent_competition_id ?? ""} onChange={(e) => setForm({ ...form, parent_competition_id: e.target.value || null })}><option value="">None</option>{(q.data ?? []).filter((item) => item.id !== form.id).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></Field>
-          <Field label="Title holder"><select className={inputCls} value={form.title_holder_team_id ?? ""} onChange={(e) => setForm({ ...form, title_holder_team_id: e.target.value || null })}><option value="">None</option>{teams.data?.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}</select></Field>
+          <Field label="Title holder"><select className={inputCls} value={form.title_holder_team_id ?? ""} onChange={(e) => setForm({ ...form, title_holder_team_id: e.target.value || null })}><option value="">None</option>{titleHolderTeams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}</select></Field>
           <Field label="Standings mode"><select className={inputCls} value={form.standings_mode ?? "table"} onChange={(e) => setForm({ ...form, standings_mode: e.target.value })}><option value="table">League table</option><option value="groups">Groups</option><option value="knockout">Knockout</option></select></Field>
           <div className="sm:col-span-2">
             <Field label="Logo">

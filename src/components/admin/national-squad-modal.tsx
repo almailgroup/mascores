@@ -16,22 +16,34 @@ export function NationalSquadModal({ team, onClose }: { team: Team; onClose: () 
   const key = ["admin", "call-ups", team.id];
   const [adding, setAdding] = useState(false);
   const [poolSearch, setPoolSearch] = useState("");
+  const [anyNationality, setAnyNationality] = useState(false);
   const [editing, setEditing] = useState<NationalPlayer | null>(null);
   const [confirmRemove, setConfirmRemove] = useState<NationalPlayer | null>(null);
 
   const squad = useQuery({ queryKey: key, queryFn: () => fetchNationalSquad(team.id) });
   const pool = useQuery({
     enabled: adding && poolSearch.trim().length > 1,
-    queryKey: ["admin", "call-up-pool", poolSearch.trim()],
+    queryKey: ["admin", "call-up-pool", team.id, poolSearch.trim(), anyNationality],
     queryFn: async () => {
-      const { data } = await supabase.from("players").select("*, team:team_id(id,name)").ilike("name", `%${poolSearch.trim()}%`).order("name").limit(40);
+      let query = supabase.from("players").select("*, team:team_id(id,name)").ilike("name", `%${poolSearch.trim()}%`);
+      // A national team can only call up players of its own nationality.
+      if (!anyNationality) {
+        const parts = [team.country_code ? `nationality_code.eq.${team.country_code}` : null, team.country ? `nationality.eq.${team.country}` : null].filter(Boolean);
+        if (parts.length) query = query.or(parts.join(","));
+      }
+      const { data } = await query.order("name").limit(40);
       return (data ?? []) as unknown as PoolPlayer[];
     },
   });
   const invalidate = () => { qc.invalidateQueries({ queryKey: key }); qc.invalidateQueries({ queryKey: ["national-squad", team.id] }); };
 
+  /** A saved national kit (photo, number, position) is remembered per player and reapplied on every future call-up. */
   const callUp = async (playerId: string) => {
-    await supabase.from("national_team_players").insert({ team_id: team.id, player_id: playerId } as never);
+    const { data: kit } = await supabase.from("national_player_kits").select("shirt_number,photo_url,position").eq("team_id", team.id).eq("player_id", playerId).maybeSingle();
+    await supabase.from("national_team_players").insert({
+      team_id: team.id, player_id: playerId,
+      shirt_number: kit?.shirt_number ?? null, photo_url: kit?.photo_url ?? null, position: kit?.position ?? null,
+    } as never);
     setPoolSearch(""); setAdding(false); invalidate();
   };
 
@@ -42,9 +54,13 @@ export function NationalSquadModal({ team, onClose }: { team: Team; onClose: () 
 
       {adding && (
         <div className="mt-3 rounded-2xl border border-border bg-background/50 p-3">
-          <Field label="Search any player by name">
+          <Field label={`Search ${team.country ?? team.name} players by name`}>
             <input autoFocus className={inputCls} placeholder="Type a player name" value={poolSearch} onChange={(e) => setPoolSearch(e.target.value)} />
           </Field>
+          <label className="mt-2 flex items-center gap-2 text-[0.65rem] text-muted-foreground">
+            <input type="checkbox" className="h-4 w-4" checked={anyNationality} onChange={(e) => setAnyNationality(e.target.checked)} />
+            Allow any nationality (for naturalised players)
+          </label>
           <div className="mt-2 max-h-64 space-y-1 overflow-y-auto">
             {(pool.data ?? []).filter((p) => !(squad.data ?? []).some((s) => s.id === p.id)).map((p) => (
               <button key={p.id} type="button" onClick={() => callUp(p.id)}
@@ -129,6 +145,10 @@ function CallUpEditor({ player, onClose }: { player: NationalPlayer; onClose: ()
         <button className={btnGhost} onClick={onClose}>Cancel</button>
         <button className={btnPrimary} onClick={async () => {
           await supabase.from("national_team_players").update({ shirt_number: shirt, photo_url: photo, position }).eq("id", player.call_up.id);
+          // Remember it so the player keeps this national face even after being dropped and recalled later.
+          const existing = await supabase.from("national_player_kits").select("id").eq("team_id", player.call_up.team_id).eq("player_id", player.id).maybeSingle();
+          if (existing.data) await supabase.from("national_player_kits").update({ shirt_number: shirt, photo_url: photo, position }).eq("id", existing.data.id);
+          else await supabase.from("national_player_kits").insert({ team_id: player.call_up.team_id, player_id: player.id, shirt_number: shirt, photo_url: photo, position } as never);
           onClose();
         }}><Plus className="h-3.5 w-3.5" /> Save</button>
       </div>
