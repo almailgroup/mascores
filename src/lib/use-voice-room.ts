@@ -104,11 +104,11 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
     return pc;
   }, [closePeer, track]);
 
-  const negotiate = useCallback(async (otherId: string, otherRole: VoiceRole) => {
+  const negotiate = useCallback(async (otherId: string, otherRole: VoiceRole, force = false) => {
     const current = meRef.current;
     const channel = channelRef.current;
     if (!current || !channel) return;
-    if (current.userId >= otherId) return; // lower id initiates, avoids glare
+    if (!force && current.userId >= otherId) return; // lower id initiates initially, avoiding glare
     const pc = ensurePeer(otherId, otherRole);
     if (!pc || pc.signalingState !== "stable" || pc.currentRemoteDescription) return;
     const offer = await pc.createOffer();
@@ -137,7 +137,7 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
         setRemote([]);
         await sendPresence();
         peersRef.current.forEach((peer) => {
-          if (peer.userId !== me.userId) void negotiate(peer.userId, peer.role);
+          if (peer.userId !== me.userId) void negotiate(peer.userId, peer.role, true);
         });
       } catch {
         if (!cancelled) setMicError("Microphone access is blocked. Allow it in your browser to speak.");

@@ -16,6 +16,9 @@ import { MatchRow, type MatchWithTeams } from "@/components/match-list";
 import { fetchNationalSquad } from "@/lib/national";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
 import { TeamStats, type TeamComp } from "@/components/team-stats";
+import { SeasonMenu } from "@/components/season-menu";
+import { StandingsTable } from "@/components/standings-table";
+import type { Database } from "@/integrations/supabase/types";
 
 export const Route = createFileRoute("/teams/$id")({
   head: () => ({
@@ -64,11 +67,21 @@ function TeamPage() {
     const compIds = [...new Set((mine ?? []).map((r) => r.competition_id))];
     if (compIds.length === 0) return [];
     const { data } = await supabase.from("standings_rows")
-      .select("*, competition:competition_id(name,slug,logo_url), team:team_id(id,name,logo_url)")
+      .select("*, competition:competition_id(name,slug,logo_url,season,seasons), team:team_id(id,name,logo_url,short_name)")
       .in("competition_id", compIds)
       .order("sort_order");
-    return (data ?? []) as unknown as (StandingRow & { competition: { name: string; slug: string; logo_url: string | null } | null; team: { id: string; name: string; logo_url: string | null } | null })[];
+    return (data ?? []) as unknown as TeamStandingRow[];
   }});
+  const positionLabels = useQuery({
+    enabled: !!rows.data?.length,
+    queryKey: ["team-standings-labels", ...(rows.data ?? []).map((row) => row.competition_id)],
+    queryFn: async () => {
+      const ids = [...new Set((rows.data ?? []).map((row) => row.competition_id))];
+      if (!ids.length) return [];
+      const { data } = await supabase.from("standings_position_labels").select("*").in("competition_id", ids);
+      return (data ?? []) as Database["public"]["Tables"]["standings_position_labels"]["Row"][];
+    },
+  });
   const coaches = useQuery({ queryKey: ["team-coaches", id], queryFn: async () => {
     const { data } = await supabase.from("coaches").select("*").eq("team_id", id);
     return (data ?? []) as Coach[];
@@ -174,7 +187,7 @@ function TeamPage() {
 
       {tab === "standings" && (
         rows.data && rows.data.length > 0 ? (
-          <StandingsTabs rows={rows.data} teamId={id} num={num} tx={tx} />
+          <StandingsTabs rows={rows.data} labels={positionLabels.data ?? []} teamId={id} tx={tx} />
         ) : <EmptyState title={tx("Not in a table yet")} />
       )}
 
@@ -371,21 +384,26 @@ function RecentForm({ matches, teamId }: { matches: MatchWithTeams[]; teamId: st
 
 
 type TeamStandingRow = StandingRow & {
-  competition: { name: string; slug: string; logo_url: string | null } | null;
-  team: { id: string; name: string; logo_url: string | null } | null;
+  competition: { name: string; slug: string; logo_url: string | null; season: string | null; seasons: string[] } | null;
+  team: { id: string; name: string; logo_url: string | null; short_name: string | null } | null;
 };
 
 /** Standings for every competition the club is in, picked from a bar instead of stacked. */
-function StandingsTabs({ rows, teamId, num, tx }: {
+function StandingsTabs({ rows, labels, teamId, tx }: {
   rows: TeamStandingRow[];
+  labels: Database["public"]["Tables"]["standings_position_labels"]["Row"][];
   teamId: string;
-  num: (v: string | number) => string;
   tx: (v: string | null | undefined) => string | null | undefined;
 }) {
   const comps = [...new Map(rows.map((r) => [r.competition_id, r])).values()];
   const [active, setActive] = useState(comps[0]?.competition_id ?? "");
+  const [selectedSeasons, setSelectedSeasons] = useState<Record<string, string>>({});
   const current = comps.find((c) => c.competition_id === active) ?? comps[0];
-  const list = rows.filter((r) => r.competition_id === current?.competition_id);
+  const availableSeasons = [...new Set(rows.filter((row) => row.competition_id === current?.competition_id).map((row) => row.season).filter((value): value is string => !!value))];
+  const configuredSeason = current?.competition?.season;
+  const activeSeason = current ? (selectedSeasons[current.competition_id] ?? (configuredSeason && availableSeasons.includes(configuredSeason) ? configuredSeason : availableSeasons[0]) ?? "") : "";
+  const list = rows.filter((r) => r.competition_id === current?.competition_id && (!activeSeason || r.season === activeSeason));
+  const currentLabels = labels.filter((label) => label.competition_id === current?.competition_id && (!activeSeason || label.season === activeSeason));
 
   return (
     <div>
@@ -405,21 +423,10 @@ function StandingsTabs({ rows, teamId, num, tx }: {
           className="flex items-center gap-2 border-b border-border px-4 py-3 text-sm font-bold hover:text-primary">
           {current?.competition?.logo_url && <img src={current.competition.logo_url} alt="" className="h-6 w-6 shrink-0 object-contain" />}
           <span className="min-w-0 flex-1 truncate">{tx(current?.competition?.name) ?? tx("Competition")}</span>
+          {availableSeasons.length > 0 && <span onClick={(event) => event.preventDefault()}><SeasonMenu seasons={availableSeasons} value={activeSeason} onChange={(value) => current && setSelectedSeasons((previous) => ({ ...previous, [current.competition_id]: value }))} /></span>}
           <ArrowRight className="h-4 w-4 shrink-0" />
         </Link>
-        <div className="divide-y divide-border">
-          {list.map((r, index) => (
-            <Link key={r.id} to="/teams/$id" params={{ id: r.team?.id ?? r.team_id }}
-              className={`flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-accent ${r.team_id === teamId ? "bg-primary/10 font-bold" : ""}`}>
-              <span className="w-5 shrink-0 text-xs tabular-nums text-muted-foreground">{num(index + 1)}</span>
-              <TeamCrest name={r.team?.name} logo={r.team?.logo_url} className="h-5 w-5 shrink-0" />
-              <span className="min-w-0 flex-1 truncate">{tx(r.team?.name) ?? tx("Team")}</span>
-              {r.qualification_label && <span className="hidden shrink-0 rounded-full px-2 py-0.5 text-[0.6rem] font-semibold sm:inline" style={{ backgroundColor: `${r.qualification_color ?? "#888"}22`, color: r.qualification_color ?? undefined }}>{tx(r.qualification_label)}</span>}
-              <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{num(r.played)} · {num(r.gf)}:{num(r.ga)}</span>
-              <span className="w-8 shrink-0 text-end font-black tabular-nums">{num(r.points + r.points_adjust)}</span>
-            </Link>
-          ))}
-        </div>
+        <div className="p-3"><StandingsTable rows={list} labels={currentLabels} highlightTeamId={teamId} /></div>
       </div>
     </div>
   );
