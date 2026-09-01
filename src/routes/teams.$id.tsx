@@ -400,7 +400,8 @@ function StandingsTabs({ rows, labels, teamId, tx }: {
   const [selectedSeasons, setSelectedSeasons] = useState<Record<string, string>>({});
   const current = comps.find((c) => c.competition_id === active) ?? comps[0];
   const availableSeasons = [...new Set(rows.filter((row) => row.competition_id === current?.competition_id).map((row) => row.season).filter((value): value is string => !!value))];
-  const activeSeason = current ? (selectedSeasons[current.competition_id] ?? current.competition?.season ?? availableSeasons[0] ?? "") : "";
+  const configuredSeason = current?.competition?.season;
+  const activeSeason = current ? (selectedSeasons[current.competition_id] ?? (configuredSeason && availableSeasons.includes(configuredSeason) ? configuredSeason : availableSeasons[0]) ?? "") : "";
   const list = rows.filter((r) => r.competition_id === current?.competition_id && (!activeSeason || r.season === activeSeason));
   const currentLabels = labels.filter((label) => label.competition_id === current?.competition_id && (!activeSeason || label.season === activeSeason));
 
