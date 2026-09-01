@@ -16,6 +16,7 @@ import { CalendarDays, ChevronRight, Play, Trophy } from "lucide-react";
 import { competitionTheme } from "@/lib/competition-theme";
 import { CompetitionIntro } from "@/components/competition-intro";
 import { SeasonMenu } from "@/components/season-menu";
+import { StandingsTable } from "@/components/standings-table";
 
 type PositionLabel = Database["public"]["Tables"]["standings_position_labels"]["Row"];
 type Row = StandingRow & { team: Team | null };
@@ -185,68 +186,7 @@ function CompetitionPage() {
         <CompetitionStats competitionId={c.id} season={season ?? c.season ?? null} /></>}
 
       {tab === "standings" && !friendly && <><SectionHeader title={t("tab.standings")} action={<div />} />
-      {standings.data && standings.data.length > 0 ? (
-        <div className="space-y-6">
-          {groupsOf(standings.data).map(([group, rows]) => {
-            const labels = (posLabels.data ?? []).filter((l) => (l.group_label ?? null) === group);
-            const used = rows
-              .map((_, i) => labels.find((l) => l.position === i + 1))
-              .filter((l): l is PositionLabel => !!l)
-              .filter((l, i, arr) => arr.findIndex((x) => x.label === l.label) === i);
-            return (
-              <div key={group ?? "single"}>
-                {group && <div className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">{tx(group)}</div>}
-                <div className="overflow-hidden rounded-2xl border border-border bg-card">
-                  <table className="w-full table-fixed text-sm">
-                    <thead className="bg-muted/50 text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground"><tr>
-                       <th className="w-9 py-2.5 text-center">#</th>
-                       <th className="py-2.5 ps-1 text-start">{tx("Team")}</th>
-                      <th className="w-9 py-2.5 text-center">P</th><th className="w-9 py-2.5 text-center">W</th>
-                      <th className="w-9 py-2.5 text-center">D</th><th className="w-9 py-2.5 text-center">L</th>
-                      <th className="hidden w-9 py-2.5 text-center sm:table-cell">GF</th>
-                      <th className="hidden w-9 py-2.5 text-center sm:table-cell">GA</th>
-                      <th className="w-12 py-2.5 pe-3 text-center">Pts</th>
-                    </tr></thead>
-                    <tbody>{rows.map((r, i) => {
-                      const lbl = labels.find((l) => l.position === i + 1);
-                      return (
-                        <tr key={r.id} className="border-t border-border align-middle" style={{ borderInlineStart: lbl ? `4px solid ${lbl.color}` : "4px solid transparent" }}>
-                           <td className="py-2.5 text-center text-xs tabular-nums text-muted-foreground">{num(i + 1)}</td>
-                          <td className="py-2.5 ps-1">
-                            {r.team ? (
-                              <Link to="/teams/$id" params={{ id: r.team.id }} className="flex min-w-0 items-center gap-2 font-medium hover:text-primary">
-                                <TeamCrest name={r.team.name} logo={r.team.logo_url} className="h-5 w-5 shrink-0" />
-                                <span className="truncate">{tx(r.team.name)}</span>
-                              </Link>
-                            ) : "—"}
-                          </td>
-                           <td className="py-2.5 text-center tabular-nums">{num(r.played)}</td>
-                           <td className="py-2.5 text-center tabular-nums">{num(r.won)}</td>
-                           <td className="py-2.5 text-center tabular-nums">{num(r.drawn)}</td>
-                           <td className="py-2.5 text-center tabular-nums">{num(r.lost)}</td>
-                           <td className="hidden py-2.5 text-center tabular-nums sm:table-cell">{num(r.gf)}</td>
-                           <td className="hidden py-2.5 text-center tabular-nums sm:table-cell">{num(r.ga)}</td>
-                           <td className="py-2.5 pe-3 text-center font-bold tabular-nums">{num(r.points + r.points_adjust)}</td>
-                        </tr>
-                      );
-                    })}
-                    </tbody>
-                  </table>
-                </div>
-                {used.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-3 text-xs text-muted-foreground">
-                    {used.map((l) => (
-                      <span key={l.id} className="inline-flex items-center gap-1.5">
-                         <span className="h-2.5 w-2.5 rounded-full" style={{ background: l.color }} />{tx(l.label)}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      ) : <EmptyState title={tx("No standings yet")} />}</>}
+      {standings.data && standings.data.length > 0 ? <StandingsTable rows={standings.data} labels={posLabels.data ?? []} /> : <EmptyState title={tx("No standings yet")} />}</>}
 
       {tab === "teams" && !friendly && <><SectionHeader title={tx("Teams")} />
       {teams.data && teams.data.length > 0 ? (
