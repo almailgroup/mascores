@@ -287,7 +287,16 @@ function CheckoutModal({ offer, remaining, onClose }: { offer: OfferRow; remaini
     /* Buying takes over the whole page: extra bottom padding keeps the action
        buttons clear of the mobile navigation bar. */
     <div className="fixed inset-0 z-[120] overflow-y-auto bg-background">
-      <div className="mx-auto w-full max-w-lg px-5 pb-40 pt-6">
+      {/* Own back bar, above the site header, so leaving checkout is always tappable. */}
+      <div className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur-xl">
+        <div className="mx-auto flex w-full max-w-lg items-center gap-2 px-5 py-3">
+          <button onClick={onClose} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-sm font-medium text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="h-4 w-4" /> {tx("Back")}
+          </button>
+          <span className="ms-auto text-xs font-semibold text-muted-foreground">{tx("Tickets")}</span>
+        </div>
+      </div>
+      <div className="mx-auto w-full max-w-lg px-5 pb-40 pt-5">
         <div className="mb-4 flex items-start gap-3">
           <div className="min-w-0 flex-1">
             <div className="text-[0.65rem] font-bold uppercase tracking-widest text-primary">{tx(offer.name)}</div>
