@@ -181,18 +181,35 @@ export function MatchShare({ data, mode }: { data: MatchShareData; mode: "result
     return () => { window.removeEventListener("keyup", onKey); window.removeEventListener("blur", onBlur); window.removeEventListener("focus", onFocus); };
   }, []);
 
-  const share = async () => {
+  const title = `${data.home.name ?? ""} ${data.homeScore}-${data.awayScore} ${data.away.name ?? ""}`.trim();
+  const fileName = `${title.replace(/[^\w\u0600-\u06FF -]/g, "").replace(/\s+/g, "-") || "match"}.png`;
+
+  const saveToFile = () => {
     const blob = blobRef.current;
     if (!blob) return;
-    const file = new File([blob], "match.png", { type: "image/png" });
-    const nav = navigator as Navigator & { canShare?: (data: ShareData) => boolean };
-    if (nav.share && nav.canShare?.({ files: [file] })) {
-      try { await nav.share({ files: [file], title: `${data.home.name} ${data.homeScore}-${data.awayScore} ${data.away.name}` }); return; } catch { /* cancelled */ }
-    }
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = "match.png";
+    link.download = fileName;
     link.click();
+  };
+
+  /** iOS/Android share sheet: this is where "Save Image" adds it to the camera roll. */
+  const saveToPhotos = async () => {
+    const blob = blobRef.current;
+    if (!blob) return;
+    const file = new File([blob], fileName, { type: "image/png" });
+    const nav = navigator as Navigator & { canShare?: (data: ShareData) => boolean };
+    if (nav.share && nav.canShare?.({ files: [file] })) {
+      try { await nav.share({ files: [file], title }); return; } catch { return; /* cancelled */ }
+    }
+    saveToFile();
+  };
+
+  /** Opens a mail draft; the image is saved alongside so it can be attached. */
+  const sendByEmail = () => {
+    saveToFile();
+    const body = `${title}\n${data.competition}\n${data.kickoff}\n\n${label("The match image has been saved to your device - attach it to this email.", "تم حفظ صورة المباراة على جهازك - أضفها كمرفق لهذه الرسالة.")}`;
+    window.location.href = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
   };
 
   return (
@@ -218,10 +235,20 @@ export function MatchShare({ data, mode }: { data: MatchShareData; mode: "result
                 ? <div className="grid h-56 place-items-center text-xs text-muted-foreground">{label("Creating image…", "جارٍ إنشاء الصورة…")}</div>
                 : <img src={preview} alt="" className="w-full" />}
             </div>
-            <button type="button" disabled={busy || !preview} onClick={share}
+            <button type="button" disabled={busy || !preview} onClick={saveToPhotos}
               className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-bold text-primary-foreground disabled:opacity-50">
-              <Download className="h-4 w-4" /> {label("Share image", "مشاركة الصورة")}
+              <ImageDown className="h-4 w-4" /> {label("Save to photos", "حفظ في الصور")}
             </button>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <button type="button" disabled={busy || !preview} onClick={sendByEmail}
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-border px-4 py-2.5 text-sm font-semibold disabled:opacity-50">
+                <Mail className="h-4 w-4" /> {label("Email image", "إرسال بالبريد")}
+              </button>
+              <button type="button" disabled={busy || !preview} onClick={saveToFile}
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-border px-4 py-2.5 text-sm font-semibold disabled:opacity-50">
+                <Download className="h-4 w-4" /> {label("Save file", "حفظ الملف")}
+              </button>
+            </div>
           </div>
         </div>
       )}
