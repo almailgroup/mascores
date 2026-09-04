@@ -309,7 +309,7 @@ function MatchPage() {
               return (
                 <>
                   {startersList.length > 0 && <div>{startersList.map(row)}</div>}
-                  <TeamCoach teamId={team?.id} />
+                  <TeamCoach teamId={team?.id} coachId={side === "home" ? match.home_coach_id : match.away_coach_id} />
                   {benchList.length > 0 && (
                     <div className="mt-3">
                       <h4 className="mb-1 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Bench")}</h4>
@@ -337,13 +337,19 @@ function PreviousMatches({ competitionId, currentId }: { competitionId: string; 
   return <PreviousMatchesInner competitionId={competitionId} currentId={currentId} />;
 }
 
-/** Coach block under each lineup. */
-function TeamCoach({ teamId }: { teamId: string | undefined }) {
+/**
+ * Coach block under each lineup. A coach chosen for this specific match wins;
+ * otherwise the club's current coach is shown as a fallback.
+ */
+function TeamCoach({ teamId, coachId }: { teamId: string | undefined; coachId?: string | null }) {
   const tx = useTx();
   const q = useQuery({
-    queryKey: ["lineup-coach", teamId],
-    enabled: !!teamId,
-    queryFn: async () => (await supabase.from("coaches").select("id,name,photo_url,nationality").eq("team_id", teamId!).limit(1).maybeSingle()).data,
+    queryKey: ["lineup-coach", teamId, coachId ?? null],
+    enabled: !!teamId || !!coachId,
+    queryFn: async () => {
+      if (coachId) return (await supabase.from("coaches").select("id,name,photo_url,nationality").eq("id", coachId).maybeSingle()).data;
+      return (await supabase.from("coaches").select("id,name,photo_url,nationality").eq("team_id", teamId!).limit(1).maybeSingle()).data;
+    },
   });
   if (!q.data) return null;
   return (
