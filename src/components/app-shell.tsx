@@ -201,3 +201,34 @@ export function LoadingSkeleton({ count = 4, className = "h-24" }: { count?: num
     </div>
   );
 }
+
+/**
+ * Hint that a page continues below the fold. It appears only while the page is
+ * scrollable and the reader is still near the top, then fades away for good.
+ */
+export function ScrollHint({ label }: { label?: string }) {
+  const { lang } = useI18n();
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const update = () => {
+      const room = document.documentElement.scrollHeight - window.innerHeight;
+      setShow(room > 220 && window.scrollY < 80);
+    };
+    update();
+    const timer = window.setTimeout(update, 600);
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    return () => { window.clearTimeout(timer); window.removeEventListener("scroll", update); window.removeEventListener("resize", update); };
+  }, []);
+  if (!show) return null;
+  return (
+    <button
+      type="button"
+      onClick={() => window.scrollBy({ top: window.innerHeight * 0.75, behavior: "smooth" })}
+      className="pointer-events-auto fixed bottom-24 left-1/2 z-40 inline-flex -translate-x-1/2 animate-bounce items-center gap-1.5 rounded-full border border-border bg-card/95 px-3 py-1.5 text-[0.7rem] font-bold text-muted-foreground shadow-lg backdrop-blur"
+    >
+      {label ?? (lang === "ar" ? "اسحب للأسفل للمزيد" : "Scroll for more")}
+      <ChevronDown className="h-3.5 w-3.5" />
+    </button>
+  );
+}
