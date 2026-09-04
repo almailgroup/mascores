@@ -2064,8 +2064,63 @@ export type Database = {
         }
         Relationships: []
       }
+      voice_recordings: {
+        Row: {
+          audio_url: string
+          cover_url: string | null
+          created_at: string
+          duration_seconds: number
+          host_id: string
+          id: string
+          match_id: string | null
+          room_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          audio_url: string
+          cover_url?: string | null
+          created_at?: string
+          duration_seconds?: number
+          host_id: string
+          id?: string
+          match_id?: string | null
+          room_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          audio_url?: string
+          cover_url?: string | null
+          created_at?: string
+          duration_seconds?: number
+          host_id?: string
+          id?: string
+          match_id?: string | null
+          room_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voice_recordings_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voice_recordings_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "voice_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       voice_room_participants: {
         Row: {
+          anonymous: boolean
           created_at: string
           hand_raised: boolean
           id: string
@@ -2079,6 +2134,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          anonymous?: boolean
           created_at?: string
           hand_raised?: boolean
           id?: string
@@ -2092,6 +2148,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          anonymous?: boolean
           created_at?: string
           hand_raised?: boolean
           id?: string
