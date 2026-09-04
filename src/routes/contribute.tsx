@@ -232,60 +232,17 @@ function ContributePage() {
         </section>
       ) : (
         <section className="mt-6 grid gap-4">
-          <div className="rounded-3xl border border-border bg-card p-6">
-            <div className="flex items-center gap-2 text-sm font-semibold"><Sparkles className="h-4 w-4 text-primary" /> Draft with Almail AI</div>
-            <textarea className={`${inputCls} mt-3`} rows={5} maxLength={10000} placeholder="Paste your notes, score, names or quotes…" value={aiNotes} onChange={(e) => setAiNotes(e.target.value)} />
-            <label className="mt-3 inline-flex h-9 cursor-pointer items-center gap-2 rounded-full border border-border bg-background px-3 text-xs font-medium hover:bg-accent">
-              <ImagePlus className="h-3.5 w-3.5" /> Add images
-              <input className="sr-only" type="file" accept="image/png,image/jpeg,image/webp" multiple onChange={async (e) => { if (e.target.files) setAiImages(await readAiImages(e.target.files)); }} />
-            </label>
-            {aiImages.length > 0 && <span className="ml-2 text-xs text-muted-foreground">{aiImages.length} attached</span>}
-            <div className="mt-3">
-              <button disabled={busy} onClick={generate} className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground disabled:opacity-60">
-                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />} Generate draft
-              </button>
-            </div>
+          {/* News writing is intentionally disabled: the whole desk is a
+              coming-soon placeholder until publishing opens. */}
+          <div className="rounded-3xl border border-dashed border-primary/40 bg-primary/5 p-8 text-center">
+            <Sparkles className="mx-auto h-6 w-6 text-primary" />
+            <div className="mt-3 text-lg font-black">Publishing news — coming soon</div>
+            <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+              The news desk is not open yet. Your reporter access is saved and you will be able to write and publish
+              articles here as soon as the feature launches.
+            </p>
           </div>
 
-          <div className="rounded-3xl border border-border bg-card p-6">
-            <div className="text-sm font-semibold">Your article</div>
-            <div className="mt-3 grid gap-3">
-              <input className={inputCls} placeholder="Headline" value={title} onChange={(e) => setTitle(e.target.value)} />
-              <textarea className={inputCls} rows={2} placeholder="Short summary (optional)" value={excerpt} onChange={(e) => setExcerpt(e.target.value)} />
-              <textarea className={inputCls} rows={10} placeholder="Article body (Markdown)" value={body} onChange={(e) => setBody(e.target.value)} />
-              <div>
-                <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Cover photo</label>
-                <input type="file" accept="image/*" className="mt-1 block text-xs" onChange={async (e) => {
-                  const f = e.target.files?.[0]; if (!f) return;
-                  const url = await uploadMedia("news-covers", f); if (url) setCover(url);
-                }} />
-                {cover && <img src={cover} alt="" className="mt-2 max-h-56 w-full rounded-2xl bg-muted/60 object-contain" />}
-              </div>
-              <NewsLinkPicker teamId={links.team_id} competitionId={links.competition_id} playerId={links.player_id} onChange={setLinks} />
-              <div className="rounded-2xl border border-dashed border-border p-3">
-                <div className="text-sm font-semibold">Proof</div>
-                <p className="mt-1 text-xs text-muted-foreground">Attach a photo or note that backs up your reporting. Required for approval.</p>
-                <textarea className={`${inputCls} mt-2`} rows={2} placeholder="Source, link or explanation" value={proofNote} onChange={(e) => setProofNote(e.target.value)} />
-                <input type="file" accept="image/*" className="mt-2 block text-xs" onChange={async (e) => {
-                  const f = e.target.files?.[0]; if (!f) return;
-                  const url = await uploadMedia("news-covers", f); if (url) setProofUrl(url);
-                }} />
-                {proofUrl && <div className="mt-1 text-xs text-muted-foreground">Attachment uploaded.</div>}
-              </div>
-              {error && <div className="text-sm text-destructive">{error}</div>}
-              {sent && <div className="rounded-xl border border-primary/40 bg-primary/10 px-3 py-2 text-sm text-primary">Submitted for review. The main admin will approve or reject it.</div>}
-              <div className="rounded-xl border border-dashed border-border px-3 py-2 text-xs text-muted-foreground">
-                Publishing news is coming soon — for now your article is sent to the main admin for review.
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <button disabled={busy || !title.trim() || !body.trim()} onClick={submit} className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground disabled:opacity-60">
-                  {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} Submit for review
-                </button>
-              </div>
-
-
-            </div>
-          </div>
 
           <div className="rounded-3xl border border-border bg-card p-6">
             <div className="text-sm font-semibold">Your submissions</div>

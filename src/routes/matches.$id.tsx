@@ -330,15 +330,15 @@ function MatchPage() {
       <MatchMomentum matchId={id} home={match.home} away={match.away} minutes={match.momentum_minutes ?? 90} events={(events.data ?? []).map((e) => ({ minute: e.minute, type: e.type, team_id: e.team_id }))} />
       </div>}
       {tab === "stats" && <div className="rounded-2xl border border-border bg-card p-4">{stats.data && stats.data.length > 0 ? stats.data.map((item) => <div key={item.id} className="grid grid-cols-[1fr_2fr_1fr] border-t border-border py-3 text-center first:border-0"><strong>{num(item.home_value)}</strong><span className="text-muted-foreground">{tx(item.label)}</span><strong>{num(item.away_value)}</strong></div>) : <p className="text-sm text-muted-foreground">{tx("No statistics published yet.")}</p>}</div>}
-      {tab === "previous" && <PreviousMatches competitionId={match.competition_id} currentId={match.id} />}
+      {tab === "previous" && <PreviousMatches homeId={match.home_team_id} awayId={match.away_team_id} currentId={match.id} />}
       {tab === "standings" && <MatchStandings competitionId={match.competition_id} season={match.season} liveTeamIds={isLive ? [match.home_team_id, match.away_team_id].filter(Boolean) as string[] : []} highlightIds={[match.home_team_id, match.away_team_id].filter(Boolean) as string[]} />}
       {tab === "media" && <div><h3 className="mb-3 font-bold">{tx("Videos & media")}</h3><div className="grid gap-2">{media.data?.map((item) => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="rounded-xl border border-border bg-card p-4 hover:border-primary"><div className="text-xs font-bold uppercase text-primary">{item.source}</div><div className="mt-1 font-semibold">{tx(item.title) || tx("Open media")}</div></a>)}{media.data?.length === 0 && <p className="text-sm text-muted-foreground">{tx("No media posted.")}</p>}</div></div>}
     </AppShell>
   );
 }
 
-function PreviousMatches({ competitionId, currentId }: { competitionId: string; currentId: string }) {
-  return <PreviousMatchesInner competitionId={competitionId} currentId={currentId} />;
+function PreviousMatches({ homeId, awayId, currentId }: { homeId: string | null; awayId: string | null; currentId: string }) {
+  return <PreviousMatchesInner homeId={homeId} awayId={awayId} currentId={currentId} />;
 }
 
 /**
@@ -368,10 +368,52 @@ function TeamCoach({ teamId, coachId }: { teamId: string | undefined; coachId?: 
   );
 }
 
-function PreviousMatchesInner({ competitionId, currentId }: { competitionId: string; currentId: string }) {
+/** Head-to-head: only earlier meetings between these two clubs, any competition. */
+function PreviousMatchesInner({ homeId, awayId, currentId }: { homeId: string | null; awayId: string | null; currentId: string }) {
   const tx = useTx();
-  const q = useQuery({ queryKey: ["previous-matches", competitionId, currentId], queryFn: async () => (await supabase.from("matches").select("*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url)").eq("competition_id", competitionId).neq("id", currentId).in("status", ["ft", "aet", "pen", "awarded"]).order("kickoff_at", { ascending: false }).limit(10)).data ?? [] });
-  return <div className="grid gap-2">{q.data?.map((match) => <Link key={match.id} to="/matches/$id" params={{ id: match.id }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 hover:border-primary"><span className="min-w-0 flex-1 truncate font-semibold">{tx(match.home?.name) ?? "TBD"} vs {tx(match.away?.name) ?? "TBD"}</span><strong>{match.home_score ?? 0}–{match.away_score ?? 0}</strong></Link>)}{q.data?.length === 0 && <p className="text-sm text-muted-foreground">{tx("No previous matches yet.")}</p>}</div>;
+  const q = useQuery({
+    enabled: !!homeId && !!awayId,
+    queryKey: ["head-to-head", homeId, awayId, currentId],
+    queryFn: async () => (await supabase.from("matches")
+      .select("*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url), competition:competition_id(name,logo_url)")
+      .or(`and(home_team_id.eq.${homeId},away_team_id.eq.${awayId}),and(home_team_id.eq.${awayId},away_team_id.eq.${homeId})`)
+      .neq("id", currentId)
+      .in("status", ["ft", "aet", "pen", "awarded"])
+      .order("kickoff_at", { ascending: false }).limit(20)).data ?? [],
+  });
+
+  if (!homeId || !awayId) return <p className="text-sm text-muted-foreground">{tx("Both clubs are needed to show head-to-head matches.")}</p>;
+  const rows = q.data ?? [];
+  let homeWins = 0, awayWins = 0, draws = 0;
+  for (const m of rows) {
+    const hs = m.home_score ?? 0, as = m.away_score ?? 0;
+    if (hs === as) draws++;
+    else if ((hs > as) === (m.home_team_id === homeId)) homeWins++;
+    else awayWins++;
+  }
+
+  return (
+    <div className="grid gap-2">
+      {rows.length > 0 && (
+        <div className="grid grid-cols-3 gap-2 rounded-2xl border border-border bg-card p-4 text-center">
+          {[[tx("Wins"), homeWins], [tx("Draws"), draws], [tx("Wins"), awayWins]].map(([label, value], i) => (
+            <div key={i}>
+              <div className="text-lg font-black">{value}</div>
+              <div className="text-[0.6rem] font-semibold uppercase tracking-widest text-muted-foreground">{label}</div>
+            </div>
+          ))}
+        </div>
+      )}
+      {rows.map((match) => (
+        <Link key={match.id} to="/matches/$id" params={{ id: match.id }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 hover:border-primary">
+          {match.competition?.logo_url ? <img src={match.competition.logo_url} alt="" className="h-6 w-6 shrink-0 object-contain" /> : null}
+          <span className="min-w-0 flex-1 truncate font-semibold">{tx(match.home?.name) ?? "TBD"} vs {tx(match.away?.name) ?? "TBD"}</span>
+          <strong>{match.home_score ?? 0}–{match.away_score ?? 0}</strong>
+        </Link>
+      ))}
+      {rows.length === 0 && <p className="text-sm text-muted-foreground">{tx("These two clubs have not met before.")}</p>}
+    </div>
+  );
 }
 
 /** League table for the match's competition, with the two clubs highlighted (live-tinted while playing). */
