@@ -36,19 +36,24 @@ export const Route = createFileRoute("/matches/$id")({
   component: MatchPage,
 });
 
-/** Crest + name that navigates to the club page. */
-function TeamHeadline({ team, align }: { team: Team | null; align: "left" | "right" }) {
+/** Crest + name that navigates to the club page. Both sides keep the same
+ *  crest box and name box height so one taller badge never pushes the other
+ *  club's name onto two lines. */
+function TeamHeadline({ team }: { team: Team | null }) {
   const tx = useTx();
   const body = (
     <>
-      <TeamCrest name={team?.name} logo={team?.logo_url} className="h-14 w-14" rounded="rounded-2xl" />
-      <span className="mt-2 block text-lg font-bold">{tx(team?.name) ?? "TBD"}</span>
+      <span className="flex h-14 items-center justify-center">
+        <TeamCrest name={team?.name} logo={team?.logo_url} className="h-14 w-14" rounded="rounded-2xl" />
+      </span>
+      <span className="mt-2 line-clamp-2 min-h-10 text-balance text-base font-bold leading-5 sm:text-lg">{tx(team?.name) ?? "TBD"}</span>
     </>
   );
-  const cls = `flex flex-col ${align === "right" ? "items-end text-right" : "items-start text-left"}`;
+  const cls = "flex min-w-0 flex-col items-center text-center";
   if (!team) return <div className={cls}>{body}</div>;
   return <Link to="/teams/$id" params={{ id: team.id }} className={`${cls} transition hover:text-primary`}>{body}</Link>;
 }
+
 
 function MatchPage() {
   const tx = useTx();
