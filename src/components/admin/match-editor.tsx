@@ -878,22 +878,30 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
         <MatchStatsEditor match={match} teams={teams} />
 
         {editing && (
-          <div className="mt-3">
-            <EventForm
-              title="Edit event"
-              initial={editing}
-              teamIds={teamIds}
-              teams={teams}
-              players={players}
-              onCancel={() => setEditing(null)}
-              onSubmit={async (ev) => {
-                await supabase.from("match_events").update(ev as never).eq("id", editing.id);
-                setEditing(null);
-                qc.invalidateQueries({ queryKey: ["admin", "events", match.id] });
-              }}
-            />
-          </div>
+          <EventForm
+            key={editing.id}
+            title="Edit event"
+            initial={editing}
+            teamIds={teamIds}
+            teams={teams}
+            players={players}
+            onCancel={() => setEditing(null)}
+            onSubmit={async (ev) => {
+              const patch = {
+                type: ev.type, minute: ev.minute ?? null, extra: ev.extra ?? null,
+                team_id: ev.team_id ?? null, player_id: ev.player_id ?? null,
+                assist_player_id: ev.assist_player_id ?? null, sub_out_player_id: ev.sub_out_player_id ?? null,
+                description: ev.description ?? null,
+              };
+              const { error } = await supabase.from("match_events").update(patch as never).eq("id", editing.id);
+              if (error) { toast.error(error.message); return; }
+              setEditing(null);
+              toast.success("Event updated");
+              qc.invalidateQueries({ queryKey: ["admin", "events", match.id] });
+            }}
+          />
         )}
+
       </div>
     </div>
     </>
