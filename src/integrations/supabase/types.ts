@@ -246,6 +246,7 @@ export type Database = {
           id: string
           is_national: boolean
           logo_url: string | null
+          logo_url_dark: string | null
           lower_division_id: string | null
           name: string
           parent_competition_id: string | null
@@ -274,6 +275,7 @@ export type Database = {
           id?: string
           is_national?: boolean
           logo_url?: string | null
+          logo_url_dark?: string | null
           lower_division_id?: string | null
           name: string
           parent_competition_id?: string | null
@@ -302,6 +304,7 @@ export type Database = {
           id?: string
           is_national?: boolean
           logo_url?: string | null
+          logo_url_dark?: string | null
           lower_division_id?: string | null
           name?: string
           parent_competition_id?: string | null
@@ -783,6 +786,7 @@ export type Database = {
       }
       matches: {
         Row: {
+          away_coach_id: string | null
           away_formation: string | null
           away_pen: number | null
           away_score: number | null
@@ -791,6 +795,7 @@ export type Database = {
           competition_id: string
           created_at: string
           highlight_url: string | null
+          home_coach_id: string | null
           home_formation: string | null
           home_pen: number | null
           home_score: number | null
@@ -816,6 +821,7 @@ export type Database = {
           venue_id: string | null
         }
         Insert: {
+          away_coach_id?: string | null
           away_formation?: string | null
           away_pen?: number | null
           away_score?: number | null
@@ -824,6 +830,7 @@ export type Database = {
           competition_id: string
           created_at?: string
           highlight_url?: string | null
+          home_coach_id?: string | null
           home_formation?: string | null
           home_pen?: number | null
           home_score?: number | null
@@ -849,6 +856,7 @@ export type Database = {
           venue_id?: string | null
         }
         Update: {
+          away_coach_id?: string | null
           away_formation?: string | null
           away_pen?: number | null
           away_score?: number | null
@@ -857,6 +865,7 @@ export type Database = {
           competition_id?: string
           created_at?: string
           highlight_url?: string | null
+          home_coach_id?: string | null
           home_formation?: string | null
           home_pen?: number | null
           home_score?: number | null
@@ -883,6 +892,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "matches_away_coach_id_fkey"
+            columns: ["away_coach_id"]
+            isOneToOne: false
+            referencedRelation: "coaches"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "matches_away_team_id_fkey"
             columns: ["away_team_id"]
             isOneToOne: false
@@ -894,6 +910,13 @@ export type Database = {
             columns: ["competition_id"]
             isOneToOne: false
             referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_home_coach_id_fkey"
+            columns: ["home_coach_id"]
+            isOneToOne: false
+            referencedRelation: "coaches"
             referencedColumns: ["id"]
           },
           {
@@ -1307,6 +1330,7 @@ export type Database = {
           photo_url: string | null
           position: string | null
           shirt_number: number | null
+          social_links: Json
           team_id: string | null
           updated_at: string
         }
@@ -1323,6 +1347,7 @@ export type Database = {
           photo_url?: string | null
           position?: string | null
           shirt_number?: number | null
+          social_links?: Json
           team_id?: string | null
           updated_at?: string
         }
@@ -1339,6 +1364,7 @@ export type Database = {
           photo_url?: string | null
           position?: string | null
           shirt_number?: number | null
+          social_links?: Json
           team_id?: string | null
           updated_at?: string
         }
@@ -1693,6 +1719,7 @@ export type Database = {
           media_urls: string[]
           name: string
           short_name: string | null
+          social_links: Json
           trophies: number
           updated_at: string
           venue_city: string | null
@@ -1716,6 +1743,7 @@ export type Database = {
           media_urls?: string[]
           name: string
           short_name?: string | null
+          social_links?: Json
           trophies?: number
           updated_at?: string
           venue_city?: string | null
@@ -1739,6 +1767,7 @@ export type Database = {
           media_urls?: string[]
           name?: string
           short_name?: string | null
+          social_links?: Json
           trophies?: number
           updated_at?: string
           venue_city?: string | null
@@ -1896,6 +1925,7 @@ export type Database = {
           created_at: string
           fee: string | null
           from_club: string | null
+          from_club_logo_url: string | null
           id: string
           moved_on: string | null
           person_id: string
@@ -1903,12 +1933,14 @@ export type Database = {
           season: string | null
           sort_order: number
           to_club: string | null
+          to_club_logo_url: string | null
           transfer_type: string | null
         }
         Insert: {
           created_at?: string
           fee?: string | null
           from_club?: string | null
+          from_club_logo_url?: string | null
           id?: string
           moved_on?: string | null
           person_id: string
@@ -1916,12 +1948,14 @@ export type Database = {
           season?: string | null
           sort_order?: number
           to_club?: string | null
+          to_club_logo_url?: string | null
           transfer_type?: string | null
         }
         Update: {
           created_at?: string
           fee?: string | null
           from_club?: string | null
+          from_club_logo_url?: string | null
           id?: string
           moved_on?: string | null
           person_id?: string
@@ -1929,6 +1963,7 @@ export type Database = {
           season?: string | null
           sort_order?: number
           to_club?: string | null
+          to_club_logo_url?: string | null
           transfer_type?: string | null
         }
         Relationships: []
@@ -1954,6 +1989,39 @@ export type Database = {
           locale?: string
           source_text?: string
           translated_text?: string
+        }
+        Relationships: []
+      }
+      user_suspensions: {
+        Row: {
+          banned: boolean
+          created_at: string
+          created_by: string | null
+          id: string
+          reason: string | null
+          suspended_until: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          banned?: boolean
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          reason?: string | null
+          suspended_until?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          banned?: boolean
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          reason?: string | null
+          suspended_until?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -2054,6 +2122,7 @@ export type Database = {
           host_id: string
           id: string
           invite_code: string
+          match_id: string | null
           photo_url: string | null
           started_at: string
           status: string
@@ -2068,6 +2137,7 @@ export type Database = {
           host_id: string
           id?: string
           invite_code?: string
+          match_id?: string | null
           photo_url?: string | null
           started_at?: string
           status?: string
@@ -2082,6 +2152,7 @@ export type Database = {
           host_id?: string
           id?: string
           invite_code?: string
+          match_id?: string | null
           photo_url?: string | null
           started_at?: string
           status?: string
@@ -2089,7 +2160,15 @@ export type Database = {
           updated_at?: string
           visibility?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "voice_rooms_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -2115,6 +2194,7 @@ export type Database = {
       }
       grant_admin: { Args: { _uid: string }; Returns: undefined }
       is_admin: { Args: { _uid: string }; Returns: boolean }
+      is_suspended: { Args: { _uid: string }; Returns: boolean }
       recompute_standings: { Args: { _comp: string }; Returns: undefined }
       record_admin_unlock_attempt: {
         Args: { _succeeded: boolean; _uid: string }
