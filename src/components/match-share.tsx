@@ -220,7 +220,7 @@ export function MatchShare({ data, mode }: { data: MatchShareData; mode: "result
       </button>
       {open && (
         <div className="fixed inset-0 z-[120] flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-6" onClick={() => setOpen(false)}>
-          <div className="max-h-[88vh] w-full max-w-md overflow-y-auto rounded-t-3xl border border-border bg-card p-5 pb-[calc(6rem+env(safe-area-inset-bottom))] shadow-2xl sm:rounded-3xl" onClick={(event) => event.stopPropagation()}>
+          <div className="max-h-[88vh] w-full max-w-md overflow-y-auto rounded-t-3xl border border-border bg-card p-5 shadow-2xl sm:rounded-3xl" onClick={(event) => event.stopPropagation()}>
             <div className="mb-3 flex items-center justify-between">
               <div>
                 <div className="text-sm font-bold">{label("Share this match?", "مشاركة هذه المباراة؟")}</div>
@@ -249,6 +249,8 @@ export function MatchShare({ data, mode }: { data: MatchShareData; mode: "result
                 <Download className="h-4 w-4" /> {label("Save file", "حفظ الملف")}
               </button>
             </div>
+            {/* Clears the bottom navigation bar so the actions stay tappable. */}
+            <div className="h-24 sm:h-0" style={{ paddingBottom: "env(safe-area-inset-bottom)" }} />
           </div>
         </div>
       )}
