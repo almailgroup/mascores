@@ -54,6 +54,11 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
   const mutedRef = useRef(true);
   const handRef = useRef(false);
   const peersRef = useRef<VoicePeer[]>([]);
+  const mixRef = useRef<{ ctx: AudioContext; dest: MediaStreamAudioDestinationNode; added: Set<string> } | null>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const recordStartRef = useRef(0);
+
   meRef.current = me;
   mutedRef.current = muted;
   handRef.current = hand;
