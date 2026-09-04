@@ -173,7 +173,7 @@ function MatchPage() {
         style={{ background: heroAccent?.hero ?? "linear-gradient(150deg, #16224a 0%, #070a12 100%)" }}>
         <div className="flex items-center justify-between">
           <BackButton className="mb-0 border-white/20 bg-white/10 text-white hover:text-white" />
-          <div className="flex items-center gap-2 [&_button]:text-white">
+          <div className="flex items-center gap-2 [&_button]:border-white/25 [&_button]:bg-white/10 [&_button]:text-white">
             <MatchShare data={shareData} mode={tab === "lineups" ? "lineups" : "result"} />
             <MatchNotificationButton matchId={match.id} teamIds={[match.home_team_id, match.away_team_id]} />
             <FavoriteButton kind="match" id={match.id} />
