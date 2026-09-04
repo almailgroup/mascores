@@ -47,7 +47,7 @@ function VoiceRoomPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("voice_rooms")
-        .select("id, host_id, title, description, photo_url, visibility, invite_code, status, started_at, ended_at")
+        .select("id, host_id, title, description, photo_url, visibility, invite_code, status, started_at, ended_at, match_id")
         .eq("id", id)
         .maybeSingle();
       if (data) return data as unknown as VoiceRoom;
