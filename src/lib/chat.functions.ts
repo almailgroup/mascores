@@ -12,10 +12,17 @@ export const getChatAuthorProfiles = createServerFn({ method: "POST" })
     return profiles ?? [];
   });
 
+/** Banned and suspended accounts cannot post or edit chat messages. */
+async function assertNotSuspended(supabaseClient: { rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown }> }, userId: string) {
+  const { data } = await supabaseClient.rpc("is_suspended", { _uid: userId });
+  if (data === true) throw new Error("Your account is restricted by the moderators, so you cannot post right now.");
+}
+
 export const postChatMessage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => postChatSchema.parse(input))
   .handler(async ({ data, context }) => {
+    await assertNotSuspended(context.supabase as never, context.userId);
     const { isMessageBlocked } = await import("./chat-moderation.server");
     if (await isMessageBlocked(data.body)) {
       throw new Error("This message was blocked by the chat moderator. Please keep it respectful.");
