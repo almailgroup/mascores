@@ -233,10 +233,10 @@ export function MatchShare({ data, mode }: { data: MatchShareData; mode: "result
             <div className="overflow-hidden rounded-2xl border border-border bg-muted">
               {busy || !preview
                 ? <div className="grid h-56 place-items-center text-xs text-muted-foreground">{label("Creating image…", "جارٍ إنشاء الصورة…")}</div>
-                : <img src={preview} alt="" className="mx-auto max-h-[42vh] w-full object-contain" />}
+                : <img src={preview} alt="" className="mx-auto max-h-[34vh] w-full object-contain" />}
             </div>
             <button type="button" disabled={busy || !preview} onClick={saveToPhotos}
-              className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-bold text-primary-foreground disabled:opacity-50">
+              className="sticky bottom-0 mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-bold text-primary-foreground disabled:opacity-50">
               <ImageDown className="h-4 w-4" /> {label("Save to photos", "حفظ في الصور")}
             </button>
             <div className="mt-2 grid grid-cols-2 gap-2">

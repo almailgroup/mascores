@@ -34,15 +34,12 @@ export function hasEventArt(type: string) {
   return type === "second_yellow" || type in ART;
 }
 
-/**
- * Renders the artwork for a match event. Icons are dark-inked, so they sit on a
- * light chip to stay legible in both themes.
- */
+/** Renders the artwork for a match event, with no plate behind it. */
 export function EventIcon({ type, className = "h-5 w-5" }: { type: string; className?: string }) {
   const label = eventLabel(type);
   if (type === "second_yellow") {
     return (
-      <span className={`inline-flex shrink-0 items-center justify-center rounded-[0.3rem] bg-white/95 p-[2px] shadow-sm ${className}`} title={label}>
+      <span className={`inline-flex shrink-0 items-center justify-center ${className}`} title={label}>
         <img src={yellowCard.url} alt="" className="h-full w-1/2 object-contain" />
         <img src={redCard.url} alt="" className="h-full w-1/2 object-contain" />
       </span>
@@ -51,7 +48,7 @@ export function EventIcon({ type, className = "h-5 w-5" }: { type: string; class
   const src = ART[type];
   if (!src) return <span className={`inline-flex shrink-0 items-center justify-center text-xs text-muted-foreground ${className}`} title={label}>•</span>;
   return (
-    <span className={`inline-flex shrink-0 items-center justify-center rounded-[0.3rem] bg-white/95 p-[2px] shadow-sm ${className}`} title={label}>
+    <span className={`inline-flex shrink-0 items-center justify-center ${className}`} title={label}>
       <img src={src} alt={label} className="h-full w-full object-contain" />
     </span>
   );
