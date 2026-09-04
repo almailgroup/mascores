@@ -214,20 +214,29 @@ export function SwipeTabs({ children, className = "" }: { children: ReactNode; c
   const { lang } = useI18n();
   const ref = useRef<HTMLDivElement | null>(null);
   const [edge, setEdge] = useState({ start: false, end: false });
+  const [swiping, setSwiping] = useState(false);
 
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
+    let idle = 0;
     const update = () => {
       const max = node.scrollWidth - node.clientWidth;
       const pos = Math.abs(node.scrollLeft);
       setEdge({ start: max > 8 && pos > 8, end: max > 8 && pos < max - 8 });
     };
+    // While the user is actually swiping, the hint gets out of the way.
+    const onScroll = () => {
+      update();
+      setSwiping(true);
+      window.clearTimeout(idle);
+      idle = window.setTimeout(() => setSwiping(false), 500);
+    };
     update();
     const timer = window.setTimeout(update, 400);
-    node.addEventListener("scroll", update, { passive: true });
+    node.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", update);
-    return () => { window.clearTimeout(timer); node.removeEventListener("scroll", update); window.removeEventListener("resize", update); };
+    return () => { window.clearTimeout(timer); window.clearTimeout(idle); node.removeEventListener("scroll", onScroll); window.removeEventListener("resize", update); };
   }, [children]);
 
   // Tapping an arrow slides most of a screenful, so one tap reveals the rest.
@@ -245,8 +254,8 @@ export function SwipeTabs({ children, className = "" }: { children: ReactNode; c
       </div>
       {/* Only a forward hint: it exists to say "there are more tabs", never to go back. */}
       <button
-        type="button" aria-label="More tabs" tabIndex={edge.end ? 0 : -1} onClick={() => nudge(1)}
-        className={`${arrowCls} end-0 ${edge.end ? "opacity-70" : "pointer-events-none opacity-0"}`}
+        type="button" aria-label="More tabs" tabIndex={edge.end && !swiping ? 0 : -1} onClick={() => nudge(1)}
+        className={`${arrowCls} end-0 ${edge.end && !swiping ? "opacity-70" : "pointer-events-none opacity-0"}`}
       >
         <ChevronRight className="h-4 w-4 rtl:rotate-180" />
       </button>

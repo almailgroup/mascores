@@ -16,6 +16,7 @@ import { FlagIcon } from "@/components/flag";
 import { EventIcon as EventArt, hasEventArt } from "@/components/event-icon";
 import { nationalOverrideMap, applyCallUp } from "@/lib/national";
 import { useLogoAccent } from "@/lib/logo-accent";
+import { StandingsTable, type PublicStandingRow } from "@/components/standings-table";
 
 /** Same slot keys the admin pitch board writes, so the public pitch mirrors it. */
 function formationRows(formation: string | null | undefined): string[][] {
@@ -523,47 +524,26 @@ function PreviousMatchesInner({ home, away, currentId }: {
 /** League table for the match's competition, with the two clubs highlighted (live-tinted while playing). */
 function MatchStandings({ competitionId, season, liveTeamIds, highlightIds }: { competitionId: string; season: string | null; liveTeamIds: string[]; highlightIds: string[] }) {
   const tx = useTx();
-  const num = useNum();
   const q = useQuery({
     queryKey: ["match-standings", competitionId, season],
     queryFn: async () => {
       let query = supabase.from("standings_rows").select("*, team:team_id(id,name,logo_url,short_name)").eq("competition_id", competitionId);
       if (season) query = query.eq("season", season);
       const { data } = await query.order("group_label", { ascending: true, nullsFirst: true }).order("sort_order");
-      return (data ?? []) as unknown as (StandingRow & { team: Team | null })[];
+      return (data ?? []) as unknown as PublicStandingRow[];
+    },
+  });
+  const labels = useQuery({
+    queryKey: ["match-standings-labels", competitionId, season],
+    queryFn: async () => {
+      let query = supabase.from("standings_position_labels").select("*").eq("competition_id", competitionId);
+      if (season) query = query.eq("season", season);
+      const { data } = await query;
+      return data ?? [];
     },
   });
   if (!q.data?.length) return <EmptyState title={tx("No standings yet")} />;
-  return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-card">
-      <table className="w-full table-fixed text-sm">
-        <thead className="bg-muted/50 text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground">
-          <tr><th className="w-9 py-2.5 text-center">#</th><th className="py-2.5 text-start">{tx("Team")}</th><th className="w-9 text-center">{tx("P")}</th><th className="w-9 text-center">{tx("GD")}</th><th className="w-10 text-center">{tx("Pts")}</th></tr>
-        </thead>
-        <tbody>
-          {q.data.map((row, i) => {
-            const isLiveRow = row.team_id ? liveTeamIds.includes(row.team_id) : false;
-            const isHighlight = row.team_id ? highlightIds.includes(row.team_id) : false;
-            return (
-              <tr key={row.id} className={`border-t border-border ${isLiveRow ? "bg-primary/15" : isHighlight ? "bg-accent/60" : ""}`}>
-                <td className="py-2.5 text-center text-xs text-muted-foreground">{num(i + 1)}</td>
-                <td className="py-2.5">
-                  <Link to="/teams/$id" params={{ id: row.team_id }} className="flex min-w-0 items-center gap-2 hover:text-primary">
-                    <TeamCrest name={row.team?.name} logo={row.team?.logo_url} className="h-5 w-5 shrink-0" />
-                    <span className="min-w-0 flex-1 truncate font-medium">{tx(row.team?.name) ?? "—"}</span>
-                    {isLiveRow && <span className="shrink-0 rounded-full bg-primary/20 px-1.5 py-0.5 text-[0.55rem] font-bold uppercase text-primary">{tx("Live")}</span>}
-                  </Link>
-                </td>
-                <td className="text-center text-xs tabular-nums">{num(row.played)}</td>
-                <td className="text-center text-xs tabular-nums">{num(row.gf - row.ga)}</td>
-                <td className="text-center text-xs font-black tabular-nums">{num(row.points + row.points_adjust)}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
-  );
+  return <StandingsTable rows={q.data} labels={labels.data ?? []} highlightTeamIds={highlightIds} liveTeamIds={liveTeamIds} />;
 }
 
 
