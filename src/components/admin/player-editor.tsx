@@ -105,7 +105,9 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
 
         <div className="grid gap-3 rounded-2xl border border-border bg-card p-4 sm:grid-cols-2 lg:grid-cols-3">
           <Field label="Name *"><input className={inputCls} value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
+          <Field label="Short name (used in lineups)"><input className={inputCls} placeholder="e.g. Al Mutawa" value={form.short_name ?? ""} onChange={(e) => setForm({ ...form, short_name: e.target.value || null })} /></Field>
           <ArabicNameField englishName={form.name} />
+
           <Field label="Position">
             <select className={inputCls} value={form.position ?? "Unknown"} onChange={(e) => setForm({ ...form, position: e.target.value })}>
               {POSITIONS.map((p) => <option key={p} value={p}>{p}</option>)}
