@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { AppShell, BackButton, EmptyState, LoadingSkeleton, SwipeTabs } from "@/components/app-shell";
 import { supabase, STATUS_LABELS, roundLabel, matchClockSeconds, formatClock, eventLabel, ratingClass, formatRating, type Match, type Team, type MatchEvent, type Lineup, type Player, type StandingRow } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
-import { PlayCircle, Radio } from "lucide-react";
+import { ChevronRight, PlayCircle, Radio } from "lucide-react";
 import { useTx, useNum, useDates } from "@/lib/auto-translate";
 import { MatchChat } from "@/components/match-chat";
 import { MatchVoice } from "@/components/match-voice";
@@ -36,19 +36,24 @@ export const Route = createFileRoute("/matches/$id")({
   component: MatchPage,
 });
 
-/** Crest + name that navigates to the club page. */
-function TeamHeadline({ team, align }: { team: Team | null; align: "left" | "right" }) {
+/** Crest + name that navigates to the club page. Both sides keep the same
+ *  crest box and name box height so one taller badge never pushes the other
+ *  club's name onto two lines. */
+function TeamHeadline({ team }: { team: Team | null }) {
   const tx = useTx();
   const body = (
     <>
-      <TeamCrest name={team?.name} logo={team?.logo_url} className="h-14 w-14" rounded="rounded-2xl" />
-      <span className="mt-2 block text-lg font-bold">{tx(team?.name) ?? "TBD"}</span>
+      <span className="flex h-14 items-center justify-center">
+        <TeamCrest name={team?.name} logo={team?.logo_url} className="h-14 w-14" rounded="rounded-2xl" />
+      </span>
+      <span className="mt-2 line-clamp-2 min-h-10 text-balance text-base font-bold leading-5 sm:text-lg">{tx(team?.name) ?? "TBD"}</span>
     </>
   );
-  const cls = `flex flex-col ${align === "right" ? "items-end text-right" : "items-start text-left"}`;
+  const cls = "flex min-w-0 flex-col items-center text-center";
   if (!team) return <div className={cls}>{body}</div>;
   return <Link to="/teams/$id" params={{ id: team.id }} className={`${cls} transition hover:text-primary`}>{body}</Link>;
 }
+
 
 function MatchPage() {
   const tx = useTx();
@@ -80,7 +85,7 @@ function MatchPage() {
     queryKey: ["match-lineups", id, m.data?.home?.is_national, m.data?.away?.is_national],
     queryFn: async () => {
       const { data } = await supabase.from("match_lineups")
-        .select("*, player:player_id(id,name,shirt_number,position,photo_url)")
+        .select("*, player:player_id(id,name,short_name,shirt_number,position,photo_url)")
         .eq("match_id", id);
       const rows = (data ?? []) as unknown as (Lineup & { player: Player | null })[];
       const overrides = await nationalOverrideMap([m.data?.home ?? null, m.data?.away ?? null]);
@@ -117,21 +122,25 @@ function MatchPage() {
   return (
     <AppShell>
       <BackButton />
+      {match.competition && (
+        <Link to="/competitions/$slug" params={{ slug: match.competition.slug }}
+          className="mb-3 flex items-center gap-3 rounded-3xl border border-border bg-card px-4 py-3 shadow-sm transition hover:border-primary">
+          {match.competition.logo_url
+            ? <img src={match.competition.logo_url} alt="" className="h-9 w-9 shrink-0 object-contain" />
+            : <span className="h-9 w-9 shrink-0 rounded-full bg-muted" />}
+          <span className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 text-sm font-bold sm:text-base">
+            <span className="capitalize">{tx(match.competition.sport)},</span>
+            {match.competition.country && <><FlagIcon value={match.competition.country_code ?? match.competition.country} /><span>{tx(match.competition.country)},</span></>}
+            <span className="truncate">{tx(match.competition.name)}</span>
+            {roundLabel(match.round_number, match.round) ? <span className="text-muted-foreground">, {tx(roundLabel(match.round_number, match.round))}</span> : null}
+          </span>
+          <ChevronRight className="h-5 w-5 shrink-0 text-primary" />
+        </Link>
+      )}
       <div className="mb-6 rounded-3xl border border-border bg-card p-6">
-        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          {match.competition ? (
-            <Link to="/competitions/$slug" params={{ slug: match.competition.slug }} className="flex min-w-0 flex-wrap items-center gap-2 font-semibold hover:text-primary">
-              {match.competition.logo_url && <img src={match.competition.logo_url} alt="" className="h-7 w-7 shrink-0 object-contain" />}
-              <span className="capitalize">{tx(match.competition.sport)}</span>
-              {match.competition.country && <><span>·</span><FlagIcon value={match.competition.country_code ?? match.competition.country} /><span>{tx(match.competition.country)}</span></>}
-              <span>·</span><span>{tx(match.competition.name)}</span>
-            </Link>
-          ) : null}
-          {roundLabel(match.round_number, match.round) ? <span>· {roundLabel(match.round_number, match.round)}</span> : null}
-        </div>
-        <div className="mt-4 grid items-center gap-4" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
-          <TeamHeadline team={match.home} align="right" />
-          <div className="text-center">
+        <div className="grid items-start gap-3" style={{ gridTemplateColumns: "minmax(0,1fr) auto minmax(0,1fr)" }}>
+          <TeamHeadline team={match.home} />
+          <div className="pt-2 text-center">
             {["scheduled", "postponed", "cancelled"].includes(match.status) ? (
               <div className="text-sm font-medium text-muted-foreground">{num(dates.kickoff(match.kickoff_at))}</div>
             ) : (
@@ -147,14 +156,15 @@ function MatchPage() {
               {match.status === "live" ? num(formatClock(clock)) : tx(STATUS_LABELS[match.status] ?? match.status)}
             </div>
           </div>
-          <TeamHeadline team={match.away} align="left" />
+          <TeamHeadline team={match.away} />
         </div>
+
         {match.venue && <div className="mt-4 text-center text-xs text-muted-foreground">{tx(match.venue)}{match.city ? ` · ${tx(match.city)}` : ""}</div>}
       </div>
 
       <div className="mb-6 border-b border-border pb-2">
         <SwipeTabs className="gap-1 text-sm">
-          {tabs.map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 py-2 font-semibold capitalize ${tab === item ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{tx(item === "media" ? "Media" : item === "previous" ? "Previous matches" : item === "details" ? "Details" : item === "lineups" ? "Lineups" : item === "standings" ? "Standings" : "Stats")}</button>)}
+          {tabs.map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 py-2 font-semibold capitalize ${tab === item ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{tx(item === "media" ? "Media" : item === "previous" ? "Matches" : item === "details" ? "Details" : item === "lineups" ? "Lineups" : item === "standings" ? "Standings" : "Stats")}</button>)}
         </SwipeTabs>
       </div>
 
@@ -282,7 +292,7 @@ function MatchPage() {
                             )}
                             {marks.length > 0 && <span className="absolute -right-2 -top-2 z-30 flex items-center gap-px rounded-full bg-background p-0.5 shadow ring-2 ring-background">{marks.slice(0, 3).map((t, k) => <EventArt key={k} type={t} className="h-4 w-4" />)}</span>}
                           </span>
-                          <span className="line-clamp-1 max-w-full text-[0.6rem] font-semibold leading-tight text-white drop-shadow">{tx(lu.player?.name)}</span>
+                          <span className="line-clamp-1 max-w-full text-[0.6rem] font-semibold leading-tight text-white drop-shadow">{tx(lu.player?.short_name || lu.player?.name)}</span>
                           <span className={`h-4 rounded px-1.5 text-[0.6rem] font-black leading-4 ${pitchRating != null ? ratingClass(Number(pitchRating)) : "opacity-0"}`}>{pitchRating != null ? num(formatRating(pitchRating)) : "0.0"}</span>
                         </Link>
                       );
@@ -330,15 +340,15 @@ function MatchPage() {
       <MatchMomentum matchId={id} home={match.home} away={match.away} minutes={match.momentum_minutes ?? 90} events={(events.data ?? []).map((e) => ({ minute: e.minute, type: e.type, team_id: e.team_id }))} />
       </div>}
       {tab === "stats" && <div className="rounded-2xl border border-border bg-card p-4">{stats.data && stats.data.length > 0 ? stats.data.map((item) => <div key={item.id} className="grid grid-cols-[1fr_2fr_1fr] border-t border-border py-3 text-center first:border-0"><strong>{num(item.home_value)}</strong><span className="text-muted-foreground">{tx(item.label)}</span><strong>{num(item.away_value)}</strong></div>) : <p className="text-sm text-muted-foreground">{tx("No statistics published yet.")}</p>}</div>}
-      {tab === "previous" && <PreviousMatches homeId={match.home_team_id} awayId={match.away_team_id} currentId={match.id} />}
+      {tab === "previous" && <PreviousMatches home={match.home} away={match.away} currentId={match.id} competitionId={match.competition_id} competitionName={match.competition?.name ?? null} />}
       {tab === "standings" && <MatchStandings competitionId={match.competition_id} season={match.season} liveTeamIds={isLive ? [match.home_team_id, match.away_team_id].filter(Boolean) as string[] : []} highlightIds={[match.home_team_id, match.away_team_id].filter(Boolean) as string[]} />}
       {tab === "media" && <div><h3 className="mb-3 font-bold">{tx("Videos & media")}</h3><div className="grid gap-2">{media.data?.map((item) => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="rounded-xl border border-border bg-card p-4 hover:border-primary"><div className="text-xs font-bold uppercase text-primary">{item.source}</div><div className="mt-1 font-semibold">{tx(item.title) || tx("Open media")}</div></a>)}{media.data?.length === 0 && <p className="text-sm text-muted-foreground">{tx("No media posted.")}</p>}</div></div>}
     </AppShell>
   );
 }
 
-function PreviousMatches({ homeId, awayId, currentId }: { homeId: string | null; awayId: string | null; currentId: string }) {
-  return <PreviousMatchesInner homeId={homeId} awayId={awayId} currentId={currentId} />;
+function PreviousMatches(props: { home: Team | null; away: Team | null; currentId: string; competitionId: string; competitionName: string | null }) {
+  return <PreviousMatchesInner {...props} />;
 }
 
 /**
@@ -369,52 +379,154 @@ function TeamCoach({ teamId, coachId }: { teamId: string | undefined; coachId?: 
 }
 
 /** Head-to-head: only earlier meetings between these two clubs, any competition. */
-function PreviousMatchesInner({ homeId, awayId, currentId }: { homeId: string | null; awayId: string | null; currentId: string }) {
+type PastRow = Match & {
+  home: Pick<Team, "id" | "name" | "logo_url"> | null;
+  away: Pick<Team, "id" | "name" | "logo_url"> | null;
+  competition: { id: string; name: string; logo_url: string | null; country: string | null; country_code: string | null } | null;
+};
+
+/**
+ * Matches tab: head-to-head by default, with a switch to either club's own
+ * past matches, plus "at home" and "this competition" filters.
+ */
+function PreviousMatchesInner({ home, away, currentId, competitionId, competitionName }: {
+  home: Team | null; away: Team | null; currentId: string; competitionId: string; competitionName: string | null;
+}) {
   const tx = useTx();
+  const num = useNum();
+  const dates = useDates();
+  const [mode, setMode] = useState<"home" | "h2h" | "away">("h2h");
+  const [atHome, setAtHome] = useState(false);
+  const [sameComp, setSameComp] = useState(false);
+  const homeId = home?.id ?? null;
+  const awayId = away?.id ?? null;
+
   const q = useQuery({
-    enabled: !!homeId && !!awayId,
-    queryKey: ["head-to-head", homeId, awayId, currentId],
-    queryFn: async () => (await supabase.from("matches")
-      .select("*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url), competition:competition_id(name,logo_url)")
-      .or(`and(home_team_id.eq.${homeId},away_team_id.eq.${awayId}),and(home_team_id.eq.${awayId},away_team_id.eq.${homeId})`)
-      .neq("id", currentId)
-      .in("status", ["ft", "aet", "pen", "awarded"])
-      .order("kickoff_at", { ascending: false }).limit(20)).data ?? [],
+    enabled: !!homeId || !!awayId,
+    queryKey: ["match-history", homeId, awayId, currentId],
+    queryFn: async () => {
+      const ids = [homeId, awayId].filter(Boolean) as string[];
+      const { data } = await supabase.from("matches")
+        .select("*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url), competition:competition_id(id,name,logo_url,country,country_code)")
+        .or(`home_team_id.in.(${ids.join(",")}),away_team_id.in.(${ids.join(",")})`)
+        .neq("id", currentId)
+        .in("status", ["ft", "aet", "pen", "awarded", "postponed", "cancelled"])
+        .order("kickoff_at", { ascending: false }).limit(80);
+      return (data ?? []) as unknown as PastRow[];
+    },
   });
 
-  if (!homeId || !awayId) return <p className="text-sm text-muted-foreground">{tx("Both clubs are needed to show head-to-head matches.")}</p>;
-  const rows = q.data ?? [];
+  if (!homeId && !awayId) return <p className="text-sm text-muted-foreground">{tx("Teams are needed to show matches.")}</p>;
+
+  const focusId = mode === "away" ? awayId : homeId;
+  const all = q.data ?? [];
+  const rows = all.filter((m) => {
+    if (mode === "h2h") {
+      const pair = [m.home_team_id, m.away_team_id];
+      if (!(pair.includes(homeId) && pair.includes(awayId))) return false;
+    } else if (!focusId || (m.home_team_id !== focusId && m.away_team_id !== focusId)) return false;
+    if (atHome && m.home_team_id !== (mode === "h2h" ? homeId : focusId)) return false;
+    if (sameComp && m.competition_id !== competitionId) return false;
+    return true;
+  });
+
+  // Head-to-head summary of the last 10 meetings.
+  const h2h = all.filter((m) => [m.home_team_id, m.away_team_id].includes(homeId) && [m.home_team_id, m.away_team_id].includes(awayId)).slice(0, 10);
   let homeWins = 0, awayWins = 0, draws = 0;
-  for (const m of rows) {
-    const hs = m.home_score ?? 0, as = m.away_score ?? 0;
-    if (hs === as) draws++;
-    else if ((hs > as) === (m.home_team_id === homeId)) homeWins++;
+  for (const m of h2h) {
+    if (m.home_score == null || m.away_score == null) continue;
+    if (m.home_score === m.away_score) draws++;
+    else if ((m.home_score > m.away_score) === (m.home_team_id === homeId)) homeWins++;
     else awayWins++;
   }
 
+  // Group the visible list by competition, keeping the newest-first order.
+  const groups: { key: string; comp: PastRow["competition"]; list: PastRow[] }[] = [];
+  for (const m of rows) {
+    const key = m.competition_id;
+    const existing = groups.find((g) => g.key === key);
+    if (existing) existing.list.push(m);
+    else groups.push({ key, comp: m.competition, list: [m] });
+  }
+
+  const atHomeName = tx((mode === "away" ? away?.name : home?.name) ?? "") ?? "";
+
   return (
-    <div className="grid gap-2">
-      {rows.length > 0 && (
-        <div className="grid grid-cols-3 gap-2 rounded-2xl border border-border bg-card p-4 text-center">
-          {[[tx("Wins"), homeWins], [tx("Draws"), draws], [tx("Wins"), awayWins]].map(([label, value], i) => (
-            <div key={i}>
-              <div className="text-lg font-black">{value}</div>
-              <div className="text-[0.6rem] font-semibold uppercase tracking-widest text-muted-foreground">{label}</div>
+    <div className="grid gap-4">
+      {h2h.length > 0 && (
+        <div className="rounded-2xl border border-border bg-card p-4 text-center">
+          <h3 className="text-sm font-bold">{tx("Head-to-head")}</h3>
+          <p className="mt-1 text-xs text-muted-foreground">{tx("Last")} {num(h2h.length)} {tx("matches")}</p>
+          <div className="mt-3 grid grid-cols-3 items-center gap-2">
+            <div className="flex min-w-0 items-center gap-2">
+              <TeamCrest name={home?.name} logo={home?.logo_url} className="h-9 w-9 shrink-0" />
+              <div className="min-w-0 text-start"><div className="text-xl font-black text-primary">{num(homeWins)}</div><div className="truncate text-xs">{tx(home?.name)}</div></div>
             </div>
-          ))}
+            <div><div className="text-xl font-black text-muted-foreground">{num(draws)}</div><div className="text-[0.6rem] uppercase tracking-widest text-muted-foreground">{tx("Draws")}</div></div>
+            <div className="flex min-w-0 items-center justify-end gap-2">
+              <div className="min-w-0 text-end"><div className="text-xl font-black text-primary">{num(awayWins)}</div><div className="truncate text-xs">{tx(away?.name)}</div></div>
+              <TeamCrest name={away?.name} logo={away?.logo_url} className="h-9 w-9 shrink-0" />
+            </div>
+          </div>
         </div>
       )}
-      {rows.map((match) => (
-        <Link key={match.id} to="/matches/$id" params={{ id: match.id }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 hover:border-primary">
-          {match.competition?.logo_url ? <img src={match.competition.logo_url} alt="" className="h-6 w-6 shrink-0 object-contain" /> : null}
-          <span className="min-w-0 flex-1 truncate font-semibold">{tx(match.home?.name) ?? "TBD"} vs {tx(match.away?.name) ?? "TBD"}</span>
-          <strong>{match.home_score ?? 0}–{match.away_score ?? 0}</strong>
-        </Link>
+
+      <div className="rounded-2xl border border-border bg-card p-4">
+        <div className="grid grid-cols-3 gap-1 rounded-full bg-muted/60 p-1">
+          {([["home", home], ["h2h", null], ["away", away]] as const).map(([key, team]) => (
+            <button key={key} onClick={() => setMode(key)}
+              className={`flex min-w-0 items-center justify-center gap-1.5 rounded-full px-2 py-2 text-xs font-bold ${mode === key ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
+              {team ? <TeamCrest name={team.name} logo={team.logo_url} className="h-5 w-5 shrink-0" /> : null}
+              {key === "h2h" ? tx("H2H") : <span className="truncate">{tx(team?.name) ?? "TBD"}</span>}
+            </button>
+          ))}
+        </div>
+        <div className="mt-3 flex flex-wrap gap-4 text-xs font-semibold">
+          <label className="flex items-center gap-2"><input type="checkbox" className="h-4 w-4 accent-[var(--primary)]" checked={atHome} onChange={(e) => setAtHome(e.target.checked)} />{tx("At")} {atHomeName}</label>
+          <label className="flex items-center gap-2"><input type="checkbox" className="h-4 w-4 accent-[var(--primary)]" checked={sameComp} onChange={(e) => setSameComp(e.target.checked)} />{tx("This competition")}{competitionName ? "" : ""}</label>
+        </div>
+      </div>
+
+      {groups.map((group) => (
+        <div key={group.key} className="overflow-hidden rounded-2xl border border-border bg-card">
+          <div className="flex items-center gap-3 border-b border-border px-4 py-3">
+            {group.comp?.logo_url ? <img src={group.comp.logo_url} alt="" className="h-7 w-7 shrink-0 object-contain" /> : <span className="h-7 w-7 shrink-0 rounded-full bg-muted" />}
+            <div className="min-w-0">
+              <div className="truncate text-sm font-bold">{tx(group.comp?.name) ?? tx("Competition")}</div>
+              {group.comp?.country && <div className="flex items-center gap-1 text-[0.7rem] text-muted-foreground"><FlagIcon value={group.comp.country_code ?? group.comp.country} />{tx(group.comp.country)}</div>}
+            </div>
+          </div>
+          <div>
+            {group.list.map((m) => {
+              const off = ["postponed", "cancelled"].includes(m.status);
+              const winner = m.home_score != null && m.away_score != null ? (m.home_score > m.away_score ? "home" : m.away_score > m.home_score ? "away" : null) : null;
+              return (
+                <Link key={m.id} to="/matches/$id" params={{ id: m.id }} className="flex items-center gap-3 border-t border-border px-4 py-2.5 first:border-0 hover:bg-accent/50">
+                  <span className="w-16 shrink-0 text-[0.7rem] leading-tight text-muted-foreground">
+                    <span className={`block ${off ? "line-through" : ""}`}>{num(dates.kickoff(m.kickoff_at))}</span>
+                    <span className="block">{off ? "" : tx(STATUS_LABELS[m.status] ?? m.status)}</span>
+                  </span>
+                  <span className="min-w-0 flex-1 space-y-1">
+                    {([["home", m.home, m.home_score] as const, ["away", m.away, m.away_score] as const]).map(([side, team, score]) => (
+                      <span key={side} className="flex min-w-0 items-center gap-2">
+                        <TeamCrest name={team?.name} logo={team?.logo_url} className="h-5 w-5 shrink-0" />
+                        <span className={`min-w-0 flex-1 truncate text-sm ${winner === side ? "font-bold" : "text-muted-foreground"}`}>{tx(team?.name) ?? "TBD"}</span>
+                        <span className={`shrink-0 text-sm tabular-nums ${winner === side ? "font-bold" : "text-muted-foreground"}`}>{score != null ? num(score) : ""}</span>
+                      </span>
+                    ))}
+                    {off && <span className="block text-[0.7rem] font-semibold text-destructive">{tx(STATUS_LABELS[m.status] ?? m.status)}</span>}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
       ))}
-      {rows.length === 0 && <p className="text-sm text-muted-foreground">{tx("These two clubs have not met before.")}</p>}
+      {rows.length === 0 && <p className="text-sm text-muted-foreground">{tx("No matches to show with these filters.")}</p>}
     </div>
   );
 }
+
 
 /** League table for the match's competition, with the two clubs highlighted (live-tinted while playing). */
 function MatchStandings({ competitionId, season, liveTeamIds, highlightIds }: { competitionId: string; season: string | null; liveTeamIds: string[]; highlightIds: string[] }) {
