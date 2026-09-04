@@ -226,7 +226,13 @@ export function SwipeTabs({ children, className = "" }: { children: ReactNode; c
     return () => { window.clearTimeout(timer); node.removeEventListener("scroll", update); window.removeEventListener("resize", update); };
   }, [children]);
 
-  const nudge = (dir: 1 | -1) => ref.current?.scrollBy({ left: dir * 160 * (lang === "ar" ? -1 : 1), behavior: "smooth" });
+  // Tapping an arrow slides most of a screenful, so one tap reveals the rest.
+  const nudge = (dir: 1 | -1) => {
+    const node = ref.current;
+    if (!node) return;
+    node.scrollBy({ left: dir * Math.max(160, node.clientWidth * 0.8) * (lang === "ar" ? -1 : 1), behavior: "smooth" });
+  };
+  const arrowCls = "absolute top-1/2 z-10 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-primary/30 bg-card text-primary shadow-md transition-opacity duration-300";
 
   return (
     <div className="relative">
@@ -234,19 +240,20 @@ export function SwipeTabs({ children, className = "" }: { children: ReactNode; c
         {children}
       </div>
       <span className={`pointer-events-none absolute inset-y-0 start-0 w-8 bg-gradient-to-r from-background to-transparent transition-opacity duration-300 ${edge.start ? "opacity-100" : "opacity-0"}`} />
-      <span className={`pointer-events-none absolute inset-y-0 end-0 w-8 bg-gradient-to-l from-background to-transparent transition-opacity duration-300 ${edge.end ? "opacity-100" : "opacity-0"}`} />
+      <span className={`pointer-events-none absolute inset-y-0 end-0 w-10 bg-gradient-to-l from-background to-transparent transition-opacity duration-300 ${edge.end ? "opacity-100" : "opacity-0"}`} />
       <button
         type="button" aria-label="Previous tabs" tabIndex={edge.start ? 0 : -1} onClick={() => nudge(-1)}
-        className={`absolute start-0 top-1/2 z-10 hidden h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-border/60 bg-card/80 text-muted-foreground/70 backdrop-blur transition-opacity duration-300 sm:inline-flex ${edge.start ? "opacity-100" : "pointer-events-none opacity-0"}`}
+        className={`${arrowCls} start-0 ${edge.start ? "opacity-100" : "pointer-events-none opacity-0"}`}
       >
         <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
       </button>
       <button
         type="button" aria-label="More tabs" tabIndex={edge.end ? 0 : -1} onClick={() => nudge(1)}
-        className={`absolute end-0 top-1/2 z-10 hidden h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-border/60 bg-card/80 text-muted-foreground/70 backdrop-blur transition-opacity duration-300 sm:inline-flex ${edge.end ? "opacity-100" : "pointer-events-none opacity-0"}`}
+        className={`${arrowCls} end-0 ${edge.end ? "opacity-100" : "pointer-events-none opacity-0"}`}
       >
         <ChevronRight className="h-4 w-4 rtl:rotate-180" />
       </button>
+
     </div>
   );
 }
