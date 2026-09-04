@@ -36,6 +36,9 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
   const [muted, setMuted] = useState(true);
   const [hand, setHand] = useState(false);
   const [micError, setMicError] = useState<string | null>(null);
+  const [micNonce, setMicNonce] = useState(0);
+  /** Retry microphone capture after the listener fixes browser permissions. */
+  const retryMic = useCallback(() => { setMicError(null); setMicNonce((n) => n + 1); }, []);
   const [connected, setConnected] = useState(false);
   const [speaking, setSpeaking] = useState<Record<string, boolean>>({});
 
@@ -139,8 +142,18 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
         peersRef.current.forEach((peer) => {
           if (peer.userId !== me.userId) void negotiate(peer.userId, peer.role, true);
         });
-      } catch {
-        if (!cancelled) setMicError("Microphone access is blocked. Allow it in your browser to speak.");
+      } catch (error) {
+        const name = (error as { name?: string } | null)?.name ?? "";
+        if (cancelled) return;
+        if (name === "NotAllowedError" || name === "SecurityError") {
+          setMicError("Microphone access is blocked. Allow the microphone for this site — inside an embedded preview you may need to open the site in its own browser tab first.");
+        } else if (name === "NotFoundError" || name === "OverconstrainedError") {
+          setMicError("No microphone was found on this device.");
+        } else if (name === "NotReadableError") {
+          setMicError("Your microphone is already in use by another app. Close it and tap Retry.");
+        } else {
+          setMicError("The microphone could not be started. Tap Retry to try again.");
+        }
       }
     })();
     return () => {
@@ -148,7 +161,7 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
       localRef.current?.getTracks().forEach((t) => t.stop());
       localRef.current = null;
     };
-  }, [enabled, me?.role, me?.userId, negotiate, sendPresence]);
+  }, [enabled, me?.role, me?.userId, negotiate, sendPresence, micNonce]);
 
   // Presence + signalling channel.
   useEffect(() => {
@@ -272,5 +285,5 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
 
   const speakerCount = roster.filter((p) => p.role !== "listener").length;
   const listenerCount = roster.length - speakerCount;
-  return { roster, remote, muted, toggleMute, forceMute, hand, setHand, micError, connected, speakerCount, listenerCount };
+  return { roster, remote, muted, toggleMute, forceMute, hand, setHand, micError, retryMic, connected, speakerCount, listenerCount };
 }
