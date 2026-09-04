@@ -10,6 +10,7 @@ import { FlagIcon } from "@/components/flag";
 import { TeamCrest } from "@/components/team-crest";
 import { useI18n } from "@/lib/i18n";
 import { PlayerAvatar } from "@/components/player-avatar";
+import { SocialLinksSection } from "@/components/social-links";
 import { LinkedNews } from "@/components/linked-news";
 import { ArrowRight, Landmark, CalendarClock, Crown, Trophy, Users } from "lucide-react";
 import { MatchRow, type MatchWithTeams } from "@/components/match-list";
@@ -218,6 +219,8 @@ function TeamPage() {
           ) : null}
 
           <RecentForm matches={matches.data ?? []} teamId={id} />
+
+          <SocialLinksSection value={t.social_links} />
 
           <section className="overflow-hidden rounded-2xl border border-border bg-card">
             <div className="border-b border-border px-4 py-2.5 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Tournaments")}</div>
