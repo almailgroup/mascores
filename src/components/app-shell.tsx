@@ -236,29 +236,22 @@ export function SwipeTabs({ children, className = "" }: { children: ReactNode; c
     if (!node) return;
     node.scrollBy({ left: dir * Math.max(160, node.clientWidth * 0.8) * (lang === "ar" ? -1 : 1), behavior: "smooth" });
   };
-  const arrowCls = "absolute top-1/2 z-10 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-primary/30 bg-card text-primary shadow-md transition-opacity duration-300";
+  const arrowCls = "absolute top-1/2 z-10 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-current/10 text-current opacity-70 transition-opacity duration-300";
 
   return (
     <div className="relative">
       <div ref={ref} className={`flex max-w-full snap-x scroll-px-4 overflow-x-auto scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${className}`}>
         {children}
       </div>
-      <span className={`pointer-events-none absolute inset-y-0 start-0 w-8 bg-gradient-to-r from-background to-transparent transition-opacity duration-300 ${edge.start ? "opacity-100" : "opacity-0"}`} />
-      <span className={`pointer-events-none absolute inset-y-0 end-0 w-10 bg-gradient-to-l from-background to-transparent transition-opacity duration-300 ${edge.end ? "opacity-100" : "opacity-0"}`} />
-      <button
-        type="button" aria-label="Previous tabs" tabIndex={edge.start ? 0 : -1} onClick={() => nudge(-1)}
-        className={`${arrowCls} start-0 ${edge.start ? "opacity-100" : "pointer-events-none opacity-0"}`}
-      >
-        <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
-      </button>
+      {/* Only a forward hint: it exists to say "there are more tabs", never to go back. */}
       <button
         type="button" aria-label="More tabs" tabIndex={edge.end ? 0 : -1} onClick={() => nudge(1)}
-        className={`${arrowCls} end-0 ${edge.end ? "opacity-100" : "pointer-events-none opacity-0"}`}
+        className={`${arrowCls} end-0 ${edge.end ? "opacity-70" : "pointer-events-none opacity-0"}`}
       >
         <ChevronRight className="h-4 w-4 rtl:rotate-180" />
       </button>
-
     </div>
   );
 }
+
 

@@ -1,7 +1,7 @@
 import { TeamCrest } from "@/components/team-crest";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AppShell, EmptyState, LoadingSkeleton, SectionHeader, SwipeTabs } from "@/components/app-shell";
 import { supabase, formatKickoff, type Competition, type Team, type Match, type StandingRow } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
@@ -12,12 +12,13 @@ import { MatchRow, type MatchWithTeams } from "@/components/match-list";
 import { CompetitionStats } from "@/components/competition-stats";
 import { useI18n } from "@/lib/i18n";
 import type { Database } from "@/integrations/supabase/types";
-import { ArrowLeft, CalendarDays, ChevronRight, Play, Trophy, Medal, Star, Users, Shapes, Globe2, Flag as FlagIco, ListOrdered } from "lucide-react";
+import { CalendarDays, ChevronRight, Play, Trophy, Bell, Medal, Star, Users, Shapes, Globe2, Flag as FlagIco, ListOrdered } from "lucide-react";
 import { competitionTheme, DEFAULT_HERO } from "@/lib/competition-theme";
 import { useFavorites } from "@/hooks/use-favorites";
 import { SeasonMenu } from "@/components/season-menu";
 import { StandingsTable } from "@/components/standings-table";
 import { useCompetitionLogo } from "@/lib/comp-logo";
+import { useLogoAccent } from "@/lib/logo-accent";
 
 type PositionLabel = Database["public"]["Tables"]["standings_position_labels"]["Row"];
 type Row = StandingRow & { team: Team | null };
@@ -39,7 +40,7 @@ export const Route = createFileRoute("/competitions/$slug")({
 
 function CompetitionPage() {
   const { slug } = Route.useParams();
-  const [tab, setTab] = useState<"overview" | "matches" | "standings" | "stats" | "teams" | "awards" | "media" | "news">("overview");
+  const [tab, setTab] = useState<CompTab>("overview");
   const [season, setSeason] = useState<string | null>(null);
   useRealtime(["competitions", "teams", "matches", "standings_rows", "competition_awards", "media_items"]);
 
@@ -148,60 +149,20 @@ function CompetitionPage() {
   return (
     <AppShell>
       <div style={theme ? (theme.vars as React.CSSProperties) : undefined}>
-        {/* Dark hero band: navigation, identity, season picker and tabs all sit
-            on one coloured header, the way the mockup shows it. */}
-        <div
-          className="-mx-4 -mt-6 mb-4 px-4 pb-0 pt-3 text-white sm:-mx-6 sm:px-6"
-          style={{ background: theme ? theme.hero : DEFAULT_HERO }}
-        >
-          <div className="flex items-center justify-between">
-            <button onClick={() => history.back()} aria-label={tx("Back")} className="-ms-2 inline-flex h-10 w-10 items-center justify-center rounded-full text-white/90 hover:bg-white/10">
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => toggleFavorite("competition", c.id)}
-                aria-label={tx("Favorite")}
-                className={`-me-2 inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-white/10 ${faved ? "text-amber-300" : "text-white/80"}`}
-              >
-                <Star className="h-5 w-5" fill={faved ? "currentColor" : "none"} />
-              </button>
-            </div>
-          </div>
+        <CompetitionHero
+          c={c}
+          logo={compLogo(c)}
+          hero={theme ? theme.hero : null}
+          activeSeason={activeSeason}
+          friendly={friendly}
+          faved={faved}
+          onToggleFav={() => toggleFavorite("competition", c.id)}
+          onSeason={setSeason}
+          tab={tab}
+          tabs={tabs}
+          onTab={setTab}
+        />
 
-          <div className="mt-1 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-1.5 shadow-lg">
-              {compLogo(c) ? <img src={compLogo(c)!} alt="" className="h-full w-full object-contain" /> : <Trophy className="h-7 w-7 text-primary" />}
-            </div>
-            <div className="min-w-0">
-              <h1 className="truncate text-lg font-black leading-tight sm:text-2xl">{tx(c.name)}</h1>
-              <div className="mt-1 flex min-w-0 items-center gap-2">
-                {(c.seasons?.length ?? 0) > 0
-                  ? <SeasonMenu seasons={c.seasons} value={activeSeason} onChange={setSeason} onHero />
-                  : <span className="text-xs font-bold text-white/80">{activeSeason ? num(activeSeason) : ""}</span>}
-                {!friendly && <FlagIcon value={c.country_code ?? c.country} />}
-              </div>
-            </div>
-            {!friendly && (
-              <div className="shrink-0 rounded-2xl bg-white/15 px-3 py-2 text-center backdrop-blur-sm">
-                <div className="text-base font-black leading-none tabular-nums">{num(teams.data?.length ?? 0)}</div>
-                <div className="mt-1 text-[0.6rem] font-semibold uppercase tracking-wide text-white/75">{tx("Teams")}</div>
-              </div>
-            )}
-          </div>
-
-          <div className="mt-3">
-            <SwipeTabs className="gap-1 text-xs sm:text-sm">
-              {tabs.map((item) => (
-                <button
-                  key={item}
-                  onClick={() => setTab(item)}
-                  className={`shrink-0 border-b-2 px-3 py-2.5 font-bold capitalize sm:px-4 ${tab === item ? "border-white text-white" : "border-transparent text-white/65"}`}
-                >{item === "awards" ? tx("Awards") : t(`tab.${item}`)}</button>
-              ))}
-            </SwipeTabs>
-          </div>
-        </div>
 
 
        {tab === "overview" && <CompetitionOverviewTab c={c} season={season} teams={teams.data ?? []} titleHolder={friendly ? null : (titleHolder ?? null)} titles={friendly ? [] : (compTitles.data ?? [])} divisions={friendly ? [] : (divisions.data ?? [])} matches={matches.data ?? []} media={media.data ?? []} friendly={friendly} />}
@@ -235,6 +196,119 @@ function CompetitionPage() {
     </AppShell>
   );
 }
+
+type CompTab = "overview" | "matches" | "standings" | "stats" | "teams" | "awards" | "media" | "news";
+
+const COMP_ALERT_KEY = "mas.competition_notification_ids";
+
+/**
+ * Coloured competition header. The band takes its colour from the competition
+ * logo itself (a yellow badge gives a yellow header), falling back to the brand
+ * navy only when no logo colour can be read.
+ */
+function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggleFav, onSeason, tab, tabs, onTab }: {
+  c: Competition;
+  logo: string | null;
+  hero: string | null;
+  activeSeason: string | null;
+  friendly: boolean;
+  faved: boolean;
+  onToggleFav: () => void;
+  onSeason: (season: string | null) => void;
+  tab: CompTab;
+  tabs: readonly CompTab[];
+  onTab: (tab: CompTab) => void;
+}) {
+  const tx = useTx();
+  const num = useNum();
+  const { t } = useI18n();
+  const accent = useLogoAccent(hero ? null : logo);
+  const background = hero ?? accent?.hero ?? DEFAULT_HERO;
+  const onLight = !hero && Boolean(accent?.onLight);
+
+  const followers = useQuery({
+    queryKey: ["comp-followers", c.id],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("competition_follower_count", { _competition_id: c.id });
+      return typeof data === "number" ? data : 0;
+    },
+  });
+  const [bump, setBump] = useState(0);
+  const followerCount = Math.max(0, (followers.data ?? 0) + bump);
+
+  const [alerts, setAlerts] = useState<string[]>([]);
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(COMP_ALERT_KEY);
+      setAlerts(raw ? (JSON.parse(raw) as string[]) : []);
+    } catch { /* ignore */ }
+  }, []);
+  const alerted = alerts.includes(c.id);
+  const toggleAlert = () => {
+    const next = alerted ? alerts.filter((id) => id !== c.id) : [...alerts, c.id];
+    setAlerts(next);
+    try { window.localStorage.setItem(COMP_ALERT_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+  };
+
+  const fg = onLight ? "oklch(0.2 0.04 260)" : "oklch(1 0 0)";
+  const chip = onLight ? "bg-black/10" : "bg-white/15";
+
+  return (
+    <div className="-mx-4 -mt-6 mb-4 px-4 pb-0 pt-3 sm:-mx-6 sm:px-6" style={{ background, color: fg }}>
+      <div className="flex items-center justify-end gap-1">
+        <button
+          onClick={toggleAlert}
+          aria-label={tx("Notifications")}
+          className={`inline-flex h-10 w-10 items-center justify-center rounded-full ${chip.replace("bg-", "hover:bg-")} ${alerted ? "opacity-100" : "opacity-70"}`}
+        >
+          <Bell className="h-5 w-5" fill={alerted ? "currentColor" : "none"} />
+        </button>
+        <button
+          onClick={() => { onToggleFav(); setBump((v) => (faved ? v - 1 : v + 1)); }}
+          aria-label={tx("Follow")}
+          className={`-me-2 inline-flex h-10 w-10 items-center justify-center rounded-full ${chip.replace("bg-", "hover:bg-")} ${faved ? "text-amber-400" : "opacity-70"}`}
+        >
+          <Star className="h-5 w-5" fill={faved ? "currentColor" : "none"} />
+        </button>
+      </div>
+
+      <div className="mt-1 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-1.5 shadow-lg">
+          {logo ? <img src={logo} alt="" className="h-full w-full object-contain" /> : <Trophy className="h-7 w-7 text-primary" />}
+        </div>
+        <div className="min-w-0">
+          <h1 className="truncate text-lg font-black leading-tight sm:text-2xl">{tx(c.name)}</h1>
+          <div className="mt-1 flex min-w-0 items-center gap-2">
+            {(c.seasons?.length ?? 0) > 0
+              ? <SeasonMenu seasons={c.seasons} value={activeSeason} onChange={onSeason} onHero />
+              : <span className="text-xs font-bold opacity-80">{activeSeason ? num(activeSeason) : ""}</span>}
+            {!friendly && <FlagIcon value={c.country_code ?? c.country} />}
+          </div>
+        </div>
+        <div className={`shrink-0 rounded-2xl px-3 py-2 text-center backdrop-blur-sm ${chip}`}>
+          <div className="text-base font-black leading-none tabular-nums">{num(followerCount)}</div>
+          <div className="mt-1 text-[0.6rem] font-semibold uppercase tracking-wide opacity-80">
+            {tx(followerCount === 1 ? "Follower" : "Followers")}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-3">
+        <SwipeTabs className="gap-1 text-xs sm:text-sm">
+          {tabs.map((item) => (
+            <button
+              key={item}
+              onClick={() => onTab(item)}
+              className={`shrink-0 border-b-2 px-3 py-2.5 font-bold capitalize sm:px-4 ${tab === item ? "border-current" : "border-transparent opacity-65"}`}
+            >{item === "awards" ? tx("Awards") : t(`tab.${item}`)}</button>
+          ))}
+        </SwipeTabs>
+      </div>
+    </div>
+  );
+}
+
+
 
 function CompetitionOverviewTab({ c, season, teams, titleHolder, titles, divisions, matches, media, friendly = false }: {
   c: Competition;
@@ -288,6 +362,8 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
 }) {
   const tx = useTx();
   const num = useNum();
+  const logo = useCompetitionLogo()(c);
+
   // Honours (title holder, most titles, title winners) belong to the live/newest season only.
   const isCurrentSeason = !season || !c.season || season === c.season;
   const showHonours = !friendly && isCurrentSeason;
@@ -315,7 +391,9 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
       {/* Season window, straight under the header like the mockup. */}
       <section className="rounded-2xl border border-border bg-card p-4 shadow-sm">
         <div className="flex min-w-0 items-center gap-3">
-          <TrophyBadge />
+          <span className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-2xl bg-muted/60 p-1">
+            {logo ? <img src={logo} alt="" className="h-full w-full object-contain" /> : <Trophy className="h-6 w-6 text-primary" />}
+          </span>
           <div className="min-w-0">
             <div className="truncate text-base font-black leading-tight">{tx(c.name)}</div>
             <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -327,21 +405,32 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
         <div className="mt-3"><DurationBar startsOn={c.starts_on} endsOn={c.ends_on} /></div>
       </section>
 
-      {/* Key numbers strip */}
-      <section className="overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-3 shadow-sm sm:p-4">
+      {/* Key numbers strip — each stat gets its own colour so the block reads
+          like a scoreboard instead of a plain grey table. */}
+      <section className="overflow-hidden rounded-2xl border border-border bg-card p-3 shadow-sm sm:p-4">
         <div className={`grid gap-2 ${friendly ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6"}`}>
           {cells.map(([label, value]) => {
             const Icon = CELL_ICONS[label] ?? Star;
+            const tint = CELL_TINTS[label] ?? "var(--primary)";
             return (
-              <div key={label} className="rounded-xl border border-border/60 bg-background/70 px-3 py-2.5 backdrop-blur">
-                <div className="flex items-center gap-1.5 text-[0.6rem] font-bold uppercase tracking-wide text-muted-foreground">
-                  <Icon className="h-3 w-3 text-primary" /> {tx(label)}
+              <div
+                key={label}
+                className="relative overflow-hidden rounded-xl border px-3 py-2.5"
+                style={{
+                  borderColor: `color-mix(in oklab, ${tint} 35%, transparent)`,
+                  background: `linear-gradient(150deg, color-mix(in oklab, ${tint} 16%, var(--card)) 0%, var(--card) 85%)`,
+                }}
+              >
+                <span className="absolute inset-y-0 start-0 w-1" style={{ background: tint }} />
+                <div className="flex items-center gap-1.5 text-[0.6rem] font-bold uppercase tracking-wide" style={{ color: `color-mix(in oklab, ${tint} 78%, var(--foreground))` }}>
+                  <Icon className="h-3 w-3" /> {tx(label)}
                 </div>
                 <div className="mt-1.5 truncate text-sm font-black tabular-nums sm:text-base">{tx(value)}</div>
               </div>
             );
           })}
         </div>
+
       </section>
 
       {featured && (
@@ -420,10 +509,6 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
   );
 }
 
-function TrophyBadge() {
-  return <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary"><Trophy className="h-6 w-6" /></span>;
-}
-
 function TeamCell({ label, team, note }: { label: string; team: Team | null; note?: string | null }) {
   const tx = useTx();
   return (
@@ -463,6 +548,15 @@ function DurationBar({ startsOn, endsOn, onHero }: { startsOn: string | null; en
     </div>
   );
 }
+
+const CELL_TINTS: Record<string, string> = {
+  Season: "var(--chart-2)",
+  Teams: "var(--primary)",
+  Matches: "var(--chart-5)",
+  Format: "var(--chart-4)",
+  Sport: "var(--success)",
+  Country: "var(--chart-1)",
+};
 
 const CELL_ICONS: Record<string, typeof Star> = {
   Season: CalendarDays,
