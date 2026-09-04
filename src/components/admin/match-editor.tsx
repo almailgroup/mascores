@@ -548,9 +548,16 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
                   }}
                 >
                   <option value="">No coach</option>
-                  {(coachesQ.data ?? []).map((coach) => (
-                    <option key={coach.id} value={coach.id}>{coach.name}{coach.team_id === tid ? " (current)" : ""}</option>
-                  ))}
+                  <optgroup label="Current coach of this club">
+                    {(coachesQ.data ?? []).filter((coach) => coach.team_id === tid).map((coach) => (
+                      <option key={coach.id} value={coach.id}>{coach.name}</option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="Previous / other coaches">
+                    {(coachesQ.data ?? []).filter((coach) => coach.team_id !== tid).map((coach) => (
+                      <option key={coach.id} value={coach.id}>{coach.name}{coach.team?.name ? ` — ${coach.team.name}` : " — free agent"}</option>
+                    ))}
+                  </optgroup>
                 </select>
               </div>
 
