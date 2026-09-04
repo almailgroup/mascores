@@ -103,9 +103,9 @@ const CompetitionsIndexRoute = CompetitionsIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const VoiceIdRoute = VoiceIdRouteImport.update({
-  id: '/voice/$id',
-  path: '/voice/$id',
-  getParentRoute: () => rootRouteImport,
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => VoiceRoute,
 } as any)
 const VenuesIdRoute = VenuesIdRouteImport.update({
   id: '/venues/$id',
@@ -310,7 +310,6 @@ export interface RootRouteChildren {
   PlayersIdRoute: typeof PlayersIdRoute
   TeamsIdRoute: typeof TeamsIdRoute
   VenuesIdRoute: typeof VenuesIdRoute
-  VoiceIdRoute: typeof VoiceIdRoute
   CompetitionsIndexRoute: typeof CompetitionsIndexRoute
   NewsIndexRoute: typeof NewsIndexRoute
   VoiceIndexRoute: typeof VoiceIndexRoute
@@ -418,10 +417,10 @@ declare module '@tanstack/react-router' {
     }
     '/voice/$id': {
       id: '/voice/$id'
-      path: '/voice/$id'
+      path: '/$id'
       fullPath: '/voice/$id'
       preLoaderRoute: typeof VoiceIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof VoiceRoute
     }
     '/venues/$id': {
       id: '/venues/$id'
@@ -494,7 +493,6 @@ const rootRouteChildren: RootRouteChildren = {
   PlayersIdRoute: PlayersIdRoute,
   TeamsIdRoute: TeamsIdRoute,
   VenuesIdRoute: VenuesIdRoute,
-  VoiceIdRoute: VoiceIdRoute,
   CompetitionsIndexRoute: CompetitionsIndexRoute,
   NewsIndexRoute: NewsIndexRoute,
   VoiceIndexRoute: VoiceIndexRoute,
