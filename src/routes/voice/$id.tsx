@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Mic, MicOff, Loader2, Lock, Globe2, Hand, LogOut, Copy, Check, UserPlus, UserCheck, PhoneOff, Radio, EyeOff, Trash2, UserMinus, Volume2 } from "lucide-react";
+import { Mic, MicOff, Loader2, Lock, Globe2, Hand, LogOut, Copy, Check, UserPlus, UserCheck, PhoneOff, Radio, EyeOff, Trash2, UserMinus, Volume2, Circle } from "lucide-react";
 import { AppShell, BackButton } from "@/components/app-shell";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -10,6 +10,7 @@ import { useTx } from "@/lib/auto-translate";
 import { inviteLink, liveFor, roomCover, type VoiceHost, type VoiceRoom } from "@/lib/voice";
 import { useVoiceRoom, type VoiceRole } from "@/lib/use-voice-room";
 import { suspensionMessage, useMySuspension } from "@/lib/suspension";
+import { uploadMedia } from "@/components/admin/upload";
 
 export const Route = createFileRoute("/voice/$id")({
   head: () => ({
@@ -37,6 +38,7 @@ function VoiceRoomPage() {
   const [joined, setJoined] = useState(false);
   const [anon, setAnon] = useState(false);
   const [joining, setJoining] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [audioUnlocked, setAudioUnlocked] = useState(false);
 
   const room = useQuery({
@@ -45,7 +47,7 @@ function VoiceRoomPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("voice_rooms")
-        .select("id, host_id, title, description, photo_url, visibility, invite_code, status, started_at, ended_at")
+        .select("id, host_id, title, description, photo_url, visibility, invite_code, status, started_at, ended_at, match_id")
         .eq("id", id)
         .maybeSingle();
       if (data) return data as unknown as VoiceRoom;
@@ -70,8 +72,8 @@ function VoiceRoomPage() {
     queryKey: ["voice-membership", id, user?.id],
     refetchInterval: 5000,
     queryFn: async () => {
-      const { data } = await supabase.from("voice_room_participants").select("id, role, is_muted, hand_raised").eq("room_id", id).eq("user_id", user!.id).maybeSingle();
-      return data as { id: string; role: VoiceRole; is_muted: boolean; hand_raised: boolean } | null;
+      const { data } = await supabase.from("voice_room_participants").select("id, role, is_muted, hand_raised, anonymous").eq("room_id", id).eq("user_id", user!.id).maybeSingle();
+      return data as { id: string; role: VoiceRole; is_muted: boolean; hand_raised: boolean; anonymous: boolean } | null;
     },
   });
 
@@ -80,14 +82,14 @@ function VoiceRoomPage() {
     queryKey: ["voice-participants", id],
     refetchInterval: 3000,
     queryFn: async () => {
-      const { data } = await supabase.from("voice_room_participants").select("user_id,role,is_muted,hand_raised").eq("room_id", id).is("left_at", null);
-      const ids = (data ?? []).map((row) => row.user_id);
+      const { data } = await supabase.from("voice_room_participants").select("user_id,role,is_muted,hand_raised,anonymous").eq("room_id", id).is("left_at", null);
+      const ids = (data ?? []).filter((row) => !row.anonymous).map((row) => row.user_id);
       const { data: profiles } = ids.length ? await supabase.rpc("chat_author_profiles", { _ids: ids }) : { data: [] };
       const byId = new Map((profiles ?? []).map((profile) => [profile.id, profile]));
       return (data ?? []).map((row) => ({
         userId: row.user_id,
-        name: byId.get(row.user_id)?.display_name ?? "Listener",
-        avatar: byId.get(row.user_id)?.avatar_url ?? null,
+        name: row.anonymous ? "Anonymous listener" : (byId.get(row.user_id)?.display_name ?? "Listener"),
+        avatar: row.anonymous ? null : (byId.get(row.user_id)?.avatar_url ?? null),
         role: row.role as VoiceRole,
         muted: row.is_muted,
         hand: row.hand_raised,
@@ -128,7 +130,7 @@ function VoiceRoomPage() {
       }
     : null;
 
-  const { roster, remote, muted, toggleMute, forceMute, hand, setHand, micError, retryMic, connected, audioReady, speakerCount, listenerCount } = useVoiceRoom({ roomId: id, me, enabled: !!me && live, storedPeers: participants.data ?? [] });
+  const { roster, remote, muted, toggleMute, forceMute, hand, setHand, micError, retryMic, connected, audioReady, speakerCount, listenerCount, recording, startRecording, stopRecording } = useVoiceRoom({ roomId: id, me, enabled: !!me && live, storedPeers: participants.data ?? [] });
 
   // Join the room roster (host joins automatically when the room is created).
   const join = async (anonymous = false) => {
@@ -139,7 +141,7 @@ function VoiceRoomPage() {
     setAnon(anonymous);
     const existingRole = membership.data?.role;
     const { error } = await supabase.from("voice_room_participants")
-      .upsert({ room_id: id, user_id: user.id, role: isHost ? "host" : (existingRole ?? "listener"), is_muted: true, left_at: null }, { onConflict: "room_id,user_id" });
+      .upsert({ room_id: id, user_id: user.id, role: isHost ? "host" : (anonymous ? "listener" : (existingRole ?? "listener")), is_muted: true, left_at: null, anonymous: anonymous }, { onConflict: "room_id,user_id" });
     if (error) {
       setActionError(tx("Could not join this room. Please try again."));
       setJoining(false);
@@ -171,6 +173,36 @@ function VoiceRoomPage() {
     setJoined(false);
     void qc.invalidateQueries({ queryKey: ["voice-rooms"] });
     void navigate({ to: "/voice" });
+  };
+
+  const toggleRecording = async () => {
+    if (!recording) {
+      const ok = await startRecording();
+      if (!ok) setActionError(tx("This browser cannot record voice rooms."));
+      return;
+    }
+    setSaving(true);
+    const result = await stopRecording();
+    if (result && user && room.data) {
+      const ext = result.blob.type.includes("mp4") ? "m4a" : "webm";
+      const file = new File([result.blob], `${crypto.randomUUID()}.${ext}`, { type: result.blob.type });
+      const url = await uploadMedia("voice-recordings", file);
+      if (url) {
+        await supabase.from("voice_recordings").insert({
+          room_id: id,
+          host_id: user.id,
+          match_id: room.data.match_id ?? null,
+          title: room.data.title,
+          cover_url: room.data.photo_url,
+          audio_url: url,
+          duration_seconds: result.seconds,
+        });
+        await qc.invalidateQueries({ queryKey: ["voice-replays"] });
+      } else {
+        setActionError(tx("The replay could not be saved."));
+      }
+    }
+    setSaving(false);
   };
 
   const manage = async (userId: string, action: "promote" | "demote" | "mute" | "remove") => {
@@ -209,6 +241,8 @@ function VoiceRoomPage() {
   // action). Including local `muted` here caused the initial stored `true`
   // value to immediately undo a speaker's own Unmute gesture.
   useEffect(() => { if (membership.data?.is_muted) forceMute(); }, [membership.data?.is_muted, forceMute]);
+
+  useEffect(() => { if (membership.data?.anonymous) setAnon(true); }, [membership.data?.anonymous]);
 
   useEffect(() => { if (isHost && live && !joined) setJoined(true); }, [isHost, live, joined]);
 
@@ -369,9 +403,16 @@ function VoiceRoomPage() {
               </button>
             )}
             {isHost ? (
-              <button onClick={endRoom} className="inline-flex h-11 items-center gap-2 rounded-full bg-destructive px-4 text-sm font-bold text-destructive-foreground">
-                <PhoneOff className="h-4 w-4" /> {tx("End")}
-              </button>
+              <>
+                <button onClick={() => void toggleRecording()} disabled={saving}
+                  className={`inline-flex h-11 items-center gap-2 rounded-full px-4 text-sm font-bold disabled:opacity-60 ${recording ? "bg-destructive/15 text-destructive" : "border border-border bg-card"}`}>
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Circle className={`h-4 w-4 ${recording ? "fill-destructive" : ""}`} />}
+                  {recording ? tx("Save replay") : tx("Record")}
+                </button>
+                <button onClick={endRoom} className="inline-flex h-11 items-center gap-2 rounded-full bg-destructive px-4 text-sm font-bold text-destructive-foreground">
+                  <PhoneOff className="h-4 w-4" /> {tx("End")}
+                </button>
+              </>
             ) : (
               <button onClick={leave} className="inline-flex h-11 items-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-bold">
                 <LogOut className="h-4 w-4" /> {tx("Leave")}

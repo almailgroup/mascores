@@ -11,6 +11,7 @@ export type VoiceRoom = {
   status: "live" | "ended";
   started_at: string;
   ended_at: string | null;
+  match_id?: string | null;
 };
 
 export type VoiceHost = { id: string; display_name: string | null; avatar_url: string | null; followers: number };

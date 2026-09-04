@@ -42,6 +42,8 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
   const [connected, setConnected] = useState(false);
   const [audioReady, setAudioReady] = useState(false);
   const [speaking, setSpeaking] = useState<Record<string, boolean>>({});
+  const [recording, setRecording] = useState(false);
+
 
   const channelRef = useRef<RealtimeChannel | null>(null);
   const pcsRef = useRef<Map<string, RTCPeerConnection>>(new Map());
@@ -52,6 +54,11 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
   const mutedRef = useRef(true);
   const handRef = useRef(false);
   const peersRef = useRef<VoicePeer[]>([]);
+  const mixRef = useRef<{ ctx: AudioContext; dest: MediaStreamAudioDestinationNode; added: Set<string> } | null>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const recordStartRef = useRef(0);
+
   meRef.current = me;
   mutedRef.current = muted;
   handRef.current = hand;
@@ -273,6 +280,61 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
     setMuted(true);
   }, []);
 
+  /** Mix every voice in the room into one track so hosts can save a replay. */
+  const addToMix = useCallback((id: string, stream: MediaStream) => {
+    const mix = mixRef.current;
+    if (!mix || mix.added.has(id) || stream.getAudioTracks().length === 0) return;
+    try {
+      mix.ctx.createMediaStreamSource(stream).connect(mix.dest);
+      mix.added.add(id);
+    } catch { /* stream not ready yet */ }
+  }, []);
+
+  const startRecording = useCallback(async () => {
+    if (recorderRef.current) return true;
+    if (typeof MediaRecorder === "undefined") return false;
+    const AudioCtx = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioCtx) return false;
+    const ctx = new AudioCtx();
+    await ctx.resume().catch(() => undefined);
+    mixRef.current = { ctx, dest: ctx.createMediaStreamDestination(), added: new Set() };
+    if (localRef.current) addToMix("self", localRef.current);
+    remote.forEach((entry) => addToMix(entry.userId, entry.stream));
+    const mime = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"].find((type) => MediaRecorder.isTypeSupported(type));
+    const recorder = new MediaRecorder(mixRef.current.dest.stream, mime ? { mimeType: mime } : undefined);
+    chunksRef.current = [];
+    recorder.ondataavailable = (event) => { if (event.data.size > 0) chunksRef.current.push(event.data); };
+    recorder.start(2000);
+    recorderRef.current = recorder;
+    recordStartRef.current = Date.now();
+    setRecording(true);
+    return true;
+  }, [addToMix, remote]);
+
+  const stopRecording = useCallback(async () => {
+    const recorder = recorderRef.current;
+    if (!recorder) return null;
+    const blob = await new Promise<Blob>((resolve) => {
+      recorder.onstop = () => resolve(new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" }));
+      recorder.stop();
+    });
+    recorderRef.current = null;
+    setRecording(false);
+    const seconds = Math.max(1, Math.round((Date.now() - recordStartRef.current) / 1000));
+    await mixRef.current?.ctx.close().catch(() => undefined);
+    mixRef.current = null;
+    chunksRef.current = [];
+    return { blob, seconds };
+  }, []);
+
+  // Keep late joiners in the recording.
+  useEffect(() => {
+    if (!recording) return;
+    if (localRef.current) addToMix("self", localRef.current);
+    remote.forEach((entry) => addToMix(entry.userId, entry.stream));
+  }, [recording, remote, addToMix, audioReady]);
+
+
   // Simple speaking meter for the local mic and every remote stream.
   useEffect(() => {
     if (!enabled) return;
@@ -324,5 +386,5 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
 
   const speakerCount = roster.filter((p) => p.role !== "listener").length;
   const listenerCount = roster.length - speakerCount;
-  return { roster, remote, muted, toggleMute, forceMute, hand, setHand, micError, retryMic, connected, audioReady, speakerCount, listenerCount };
+  return { roster, remote, muted, toggleMute, forceMute, hand, setHand, micError, retryMic, connected, audioReady, speakerCount, listenerCount, recording, startRecording, stopRecording };
 }

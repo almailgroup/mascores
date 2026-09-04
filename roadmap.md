@@ -68,3 +68,10 @@ Still open (frontend polish):
 - [x] X-style listen-first flow with hand raising, host promotion, participant counts and explicit mobile audio unlock
 - [x] Microphone starts from the user's tap, reconnects peers with ICE restart, and queues early connection candidates
 - Voice audio still needs final two-account verification on physical devices
+
+## Voice replays pass
+- [x] Hosts can record a room and save it as a replay (mixed audio upload)
+- [x] Replays listed on the voice page, on linked match pages, and in account settings
+- [x] Admin voice tab: browse rooms/replays, end, delete
+- [x] Anonymous listening stored per participant and masked in the roster
+- [x] Optional match link when starting a room from the voice page

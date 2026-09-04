@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Mic, Plus, Radio, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTx } from "@/lib/auto-translate";
+import { VoiceReplays } from "@/components/voice-replays";
 import { roomCover, type VoiceRoom } from "@/lib/voice";
 
 type RoomRow = VoiceRoom & { listeners: number };
@@ -62,6 +63,10 @@ export function MatchVoice({ matchId }: { matchId: string }) {
           ))}
         </div>
       )}
+      <div className="border-t border-border p-4">
+        <div className="mb-2 text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Replays")}</div>
+        <VoiceReplays matchId={matchId} limit={5} />
+      </div>
     </section>
   );
 }
