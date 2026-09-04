@@ -132,7 +132,9 @@ function MatchPage() {
   const awayAccent = useLogoAccent(m.data?.away?.logo_url ?? null);
   const homeColor = homeAccent?.color ?? awayAccent?.color ?? "#16224a";
   const awayColor = awayAccent?.color ?? homeAccent?.color ?? "#070a12";
-  const heroBackground = `linear-gradient(100deg, ${homeColor} 0%, ${homeColor} 26%, color-mix(in oklab, ${homeColor}, ${awayColor}) 50%, ${awayColor} 74%, ${awayColor} 100%)`;
+  // Two solid halves joined by a thin seam in a slightly shifted tone - never a blend of both colours.
+  const seamColor = `color-mix(in oklab, ${homeColor} 50%, #000 12%)`;
+  const heroBackground = `linear-gradient(100deg, ${homeColor} 0%, ${homeColor} 49.4%, ${seamColor} 49.4%, ${seamColor} 50.6%, ${awayColor} 50.6%, ${awayColor} 100%)`;
   const [, tickClock] = useState(0);
   useEffect(() => {
     if (!m.data?.timer_running) return;

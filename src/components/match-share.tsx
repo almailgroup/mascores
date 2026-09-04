@@ -55,12 +55,13 @@ async function drawCard(data: MatchShareData, mode: "result" | "lineups"): Promi
 
   const accent = data.accent || "#123a8a";
   const accentAway = data.accentAway || accent;
-  // Left side wears the home colour, right side the away colour.
-  const gradient = ctx.createLinearGradient(0, 0, W, H * 0.25);
-  gradient.addColorStop(0, accent);
-  gradient.addColorStop(1, accentAway);
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, W, H);
+  // Two solid halves that meet at a thin seam - the colours never blend together.
+  ctx.fillStyle = accent;
+  ctx.fillRect(0, 0, W / 2, H);
+  ctx.fillStyle = accentAway;
+  ctx.fillRect(W / 2, 0, W / 2, H);
+  ctx.fillStyle = "rgba(0,0,0,0.35)";
+  ctx.fillRect(W / 2 - 4, 0, 8, H);
   ctx.fillStyle = "rgba(0,0,0,0.25)";
   ctx.fillRect(0, 0, W, H);
 
@@ -233,10 +234,10 @@ export function MatchShare({ data, mode }: { data: MatchShareData; mode: "result
             <div className="overflow-hidden rounded-2xl border border-border bg-muted">
               {busy || !preview
                 ? <div className="grid h-56 place-items-center text-xs text-muted-foreground">{label("Creating image…", "جارٍ إنشاء الصورة…")}</div>
-                : <img src={preview} alt="" className="mx-auto max-h-[42vh] w-full object-contain" />}
+                : <img src={preview} alt="" className="mx-auto max-h-[34vh] w-full object-contain" />}
             </div>
             <button type="button" disabled={busy || !preview} onClick={saveToPhotos}
-              className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-bold text-primary-foreground disabled:opacity-50">
+              className="sticky bottom-0 mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-bold text-primary-foreground disabled:opacity-50">
               <ImageDown className="h-4 w-4" /> {label("Save to photos", "حفظ في الصور")}
             </button>
             <div className="mt-2 grid grid-cols-2 gap-2">
