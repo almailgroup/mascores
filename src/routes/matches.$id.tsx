@@ -17,6 +17,23 @@ import { EventIcon as EventArt, hasEventArt } from "@/components/event-icon";
 import { nationalOverrideMap, applyCallUp } from "@/lib/national";
 import { useLogoAccent } from "@/lib/logo-accent";
 import { StandingsTable, type PublicStandingRow } from "@/components/standings-table";
+import { MatchShare } from "@/components/match-share";
+
+/** Crest + name used inside the tinted match hero. */
+function HeroTeam({ team }: { team: Team | null }) {
+  const tx = useTx();
+  const body = (
+    <>
+      <span className="grid h-16 w-16 place-items-center rounded-2xl bg-white/95 p-1.5">
+        <TeamCrest name={team?.name} logo={team?.logo_url} className="h-full w-full" rounded="rounded-xl" />
+      </span>
+      <span className="mt-2 line-clamp-2 min-h-9 text-balance text-sm font-bold leading-4.5 sm:text-base">{tx(team?.name) ?? "TBD"}</span>
+    </>
+  );
+  const cls = "flex min-w-0 flex-col items-center text-center text-white";
+  if (!team) return <div className={cls}>{body}</div>;
+  return <Link to="/teams/$id" params={{ id: team.id }} className={cls}>{body}</Link>;
+}
 
 /** Same slot keys the admin pitch board writes, so the public pitch mirrors it. */
 function formationRows(formation: string | null | undefined): string[][] {
