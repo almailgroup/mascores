@@ -134,7 +134,7 @@ function SearchPage() {
             {q && <button aria-label={tx("Clear")} onClick={() => setQ("")} className="text-muted-foreground"><X className="h-4 w-4" /></button>}
           </div>
         </div>
-        <div className="relative mt-3 flex gap-2 overflow-x-auto pb-0.5 text-xs">
+        <div className="relative mt-3 flex flex-wrap gap-2 text-xs">
           {FILTERS.map((f) => (
             <button key={f.key} onClick={() => setFilter(f.key)}
               className={`whitespace-nowrap rounded-full px-3.5 py-1.5 font-bold transition ${filter === f.key ? "bg-card text-primary shadow-sm" : "bg-white/15 text-white/90 dark:bg-black/10 dark:text-[#0b0f1a]/80"}`}>
