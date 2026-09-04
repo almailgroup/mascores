@@ -589,3 +589,57 @@ function timelineWithBreaks(events: TimelineEvent[], status: string, homeTeamId:
   if (!["scheduled", "live", "ht"].includes(status)) out.push({ kind: "divider", key: "ft", label: "FT" });
   return out;
 }
+type StatRow = { id: string; label: string; home_value: string | number | null; away_value: string | number | null };
+
+/** Colour-accented comparison bars for published match statistics. */
+function MatchStatsPanel({ rows, home, away }: { rows: StatRow[]; home?: Partial<Team> | null; away?: Partial<Team> | null }) {
+  const tx = useTx();
+  const num = useNum();
+  if (rows.length === 0) {
+    return <div className="rounded-2xl border border-border bg-card p-6 text-center text-sm text-muted-foreground">{tx("No statistics published yet.")}</div>;
+  }
+  const val = (v: string | number | null) => {
+    const n = Number(String(v ?? "").replace("%", ""));
+    return Number.isFinite(n) ? Math.max(0, n) : 0;
+  };
+  return (
+    <div className="overflow-hidden rounded-2xl border border-border bg-card">
+      <div className="flex items-center justify-between gap-3 border-b border-border bg-gradient-to-r from-primary/12 via-card to-primary/12 px-4 py-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <TeamCrest name={home?.name} logo={home?.logo_url ?? null} className="h-6 w-6 shrink-0" />
+          <span className="truncate text-xs font-bold">{tx(home?.short_name || home?.name || "")}</span>
+        </div>
+        <span className="text-[0.65rem] font-bold uppercase tracking-wide text-muted-foreground">{tx("Statistics")}</span>
+        <div className="flex min-w-0 items-center justify-end gap-2">
+          <span className="truncate text-xs font-bold">{tx(away?.short_name || away?.name || "")}</span>
+          <TeamCrest name={away?.name} logo={away?.logo_url ?? null} className="h-6 w-6 shrink-0" />
+        </div>
+      </div>
+      <div className="divide-y divide-border">
+        {rows.map((item) => {
+          const h = val(item.home_value);
+          const a = val(item.away_value);
+          const total = h + a;
+          const hp = total > 0 ? (h / total) * 100 : 50;
+          return (
+            <div key={item.id} className="px-4 py-3">
+              <div className="flex items-center justify-between text-sm">
+                <strong className={h >= a ? "text-primary" : "text-muted-foreground"}>{num(item.home_value)}</strong>
+                <span className="text-xs font-semibold text-muted-foreground">{tx(item.label)}</span>
+                <strong className={a >= h ? "text-emerald-500" : "text-muted-foreground"}>{num(item.away_value)}</strong>
+              </div>
+              <div className="mt-2 flex h-2 gap-1 overflow-hidden rounded-full">
+                <div className="flex justify-end rounded-full bg-primary/15" style={{ width: `${hp}%` }}>
+                  <span className="h-full w-full rounded-full bg-gradient-to-l from-primary to-primary/60" />
+                </div>
+                <div className="rounded-full bg-emerald-500/15" style={{ width: `${100 - hp}%` }}>
+                  <span className="block h-full w-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400/60" />
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
