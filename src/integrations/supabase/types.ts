@@ -2244,6 +2244,10 @@ export type Database = {
           id: string
         }[]
       }
+      competition_follower_count: {
+        Args: { _competition_id: string }
+        Returns: number
+      }
       fuzzy_search: {
         Args: { _limit?: number; _q: string }
         Returns: {
