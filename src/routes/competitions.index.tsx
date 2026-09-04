@@ -14,6 +14,7 @@ export const Route = createFileRoute("/competitions/")({
 
 function CompetitionsList() {
   const tx = useTx();
+  const compLogo = useCompetitionLogo();
   const num = useNum();
   useRealtime(["competitions"]);
   const q = useQuery({
