@@ -347,8 +347,8 @@ function MatchPage() {
   );
 }
 
-function PreviousMatches({ homeId, awayId, currentId }: { homeId: string | null; awayId: string | null; currentId: string }) {
-  return <PreviousMatchesInner homeId={homeId} awayId={awayId} currentId={currentId} />;
+function PreviousMatches(props: { home: Team | null; away: Team | null; currentId: string; competitionId: string; competitionName: string | null }) {
+  return <PreviousMatchesInner {...props} />;
 }
 
 /**
@@ -503,7 +503,7 @@ function PreviousMatchesInner({ home, away, currentId, competitionId, competitio
               return (
                 <Link key={m.id} to="/matches/$id" params={{ id: m.id }} className="flex items-center gap-3 border-t border-border px-4 py-2.5 first:border-0 hover:bg-accent/50">
                   <span className="w-16 shrink-0 text-[0.7rem] leading-tight text-muted-foreground">
-                    <span className={`block ${off ? "line-through" : ""}`}>{num(dates.short(m.kickoff_at))}</span>
+                    <span className={`block ${off ? "line-through" : ""}`}>{num(dates.kickoff(m.kickoff_at))}</span>
                     <span className="block">{off ? "" : tx(STATUS_LABELS[m.status] ?? m.status)}</span>
                   </span>
                   <span className="min-w-0 flex-1 space-y-1">
