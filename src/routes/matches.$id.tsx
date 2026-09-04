@@ -15,6 +15,7 @@ import { MapPin, Users } from "lucide-react";
 import { FlagIcon } from "@/components/flag";
 import { EventIcon as EventArt, hasEventArt } from "@/components/event-icon";
 import { nationalOverrideMap, applyCallUp } from "@/lib/national";
+import { useLogoAccent } from "@/lib/logo-accent";
 
 /** Same slot keys the admin pitch board writes, so the public pitch mirrors it. */
 function formationRows(formation: string | null | undefined): string[][] {
@@ -595,6 +596,11 @@ type StatRow = { id: string; label: string; home_value: string | number | null; 
 function MatchStatsPanel({ rows, home, away }: { rows: StatRow[]; home?: Partial<Team> | null; away?: Partial<Team> | null }) {
   const tx = useTx();
   const num = useNum();
+  // Bars take each club's own badge colour instead of a fixed blue/green pair.
+  const homeAccent = useLogoAccent(home?.logo_url ?? null);
+  const awayAccent = useLogoAccent(away?.logo_url ?? null);
+  const homeColor = homeAccent?.color ?? "var(--primary)";
+  const awayColor = awayAccent?.color ?? "var(--muted-foreground)";
   if (rows.length === 0) {
     return <div className="rounded-2xl border border-border bg-card p-6 text-center text-sm text-muted-foreground">{tx("No statistics published yet.")}</div>;
   }
@@ -604,7 +610,7 @@ function MatchStatsPanel({ rows, home, away }: { rows: StatRow[]; home?: Partial
   };
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card">
-      <div className="flex items-center justify-between gap-3 border-b border-border bg-gradient-to-r from-primary/12 via-card to-primary/12 px-4 py-3">
+      <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3" style={{ background: `linear-gradient(90deg, color-mix(in oklab, ${homeColor} 16%, var(--card)) 0%, var(--card) 50%, color-mix(in oklab, ${awayColor} 16%, var(--card)) 100%)` }}>
         <div className="flex min-w-0 items-center gap-2">
           <TeamCrest name={home?.name} logo={home?.logo_url ?? null} className="h-6 w-6 shrink-0" />
           <span className="truncate text-xs font-bold">{tx(home?.short_name || home?.name || "")}</span>
@@ -624,16 +630,16 @@ function MatchStatsPanel({ rows, home, away }: { rows: StatRow[]; home?: Partial
           return (
             <div key={item.id} className="px-4 py-3">
               <div className="flex items-center justify-between text-sm">
-                <strong className={h >= a ? "text-primary" : "text-muted-foreground"}>{num(item.home_value)}</strong>
+                <strong style={h >= a ? { color: homeColor } : undefined} className={h >= a ? "" : "text-muted-foreground"}>{num(item.home_value)}</strong>
                 <span className="text-xs font-semibold text-muted-foreground">{tx(item.label)}</span>
-                <strong className={a >= h ? "text-emerald-500" : "text-muted-foreground"}>{num(item.away_value)}</strong>
+                <strong style={a >= h ? { color: awayColor } : undefined} className={a >= h ? "" : "text-muted-foreground"}>{num(item.away_value)}</strong>
               </div>
               <div className="mt-2 flex h-2 gap-1 overflow-hidden rounded-full">
-                <div className="flex justify-end rounded-full bg-primary/15" style={{ width: `${hp}%` }}>
-                  <span className="h-full w-full rounded-full bg-gradient-to-l from-primary to-primary/60" />
+                <div className="flex justify-end rounded-full" style={{ width: `${hp}%`, background: `color-mix(in oklab, ${homeColor} 18%, transparent)` }}>
+                  <span className="h-full w-full rounded-full" style={{ background: `linear-gradient(270deg, ${homeColor} 0%, color-mix(in oklab, ${homeColor} 60%, transparent) 100%)` }} />
                 </div>
-                <div className="rounded-full bg-emerald-500/15" style={{ width: `${100 - hp}%` }}>
-                  <span className="block h-full w-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400/60" />
+                <div className="rounded-full" style={{ width: `${100 - hp}%`, background: `color-mix(in oklab, ${awayColor} 18%, transparent)` }}>
+                  <span className="block h-full w-full rounded-full" style={{ background: `linear-gradient(90deg, ${awayColor} 0%, color-mix(in oklab, ${awayColor} 60%, transparent) 100%)` }} />
                 </div>
               </div>
             </div>
