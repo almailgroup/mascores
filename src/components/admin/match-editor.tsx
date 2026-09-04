@@ -851,10 +851,12 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
             players={players}
             onCancel={() => setComposer(null)}
             onSubmit={async (ev) => {
-              await supabase.from("match_events").insert({ ...ev, match_id: match.id } as never);
+              const { error } = await supabase.from("match_events").insert({ ...ev, match_id: match.id } as never);
+              if (error) { toast.error(error.message); return; }
               setComposer(null);
               qc.invalidateQueries({ queryKey: ["admin", "events", match.id] });
             }}
+
           />
         )}
       </div>
