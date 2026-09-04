@@ -126,8 +126,12 @@ function MatchPage() {
   const broadcasts = useQuery({ queryKey: ["match-broadcasts", id], queryFn: async () => (await supabase.from("match_broadcasts").select("channel:broadcast_channels(id,name,logo_url,country_code)").eq("match_id", id)).data ?? [] });
   const media = useQuery({ queryKey: ["match-media", id], queryFn: async () => (await supabase.from("media_items").select("*").eq("owner_type", "match").eq("owner_id", id).order("sort_order")).data ?? [] });
   const ratings = useQuery({ queryKey: ["match-ratings", id], queryFn: async () => (await supabase.from("player_ratings").select("player_id,rating").eq("match_id", id)).data ?? [] });
-  // The hero takes its colour from the home badge (away badge as fallback).
-  const heroAccent = useLogoAccent(m.data?.home?.logo_url ?? m.data?.away?.logo_url ?? null);
+  // The hero blends both badges: home colour on the left, away colour on the right.
+  const homeAccent = useLogoAccent(m.data?.home?.logo_url ?? null);
+  const awayAccent = useLogoAccent(m.data?.away?.logo_url ?? null);
+  const homeColor = homeAccent?.color ?? awayAccent?.color ?? "#16224a";
+  const awayColor = awayAccent?.color ?? homeAccent?.color ?? "#070a12";
+  const heroBackground = `linear-gradient(100deg, ${homeColor} 0%, ${homeColor} 26%, color-mix(in oklab, ${homeColor}, ${awayColor}) 50%, ${awayColor} 74%, ${awayColor} 100%)`;
   const [, tickClock] = useState(0);
   useEffect(() => {
     if (!m.data?.timer_running) return;
