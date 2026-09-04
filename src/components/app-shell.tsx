@@ -214,7 +214,7 @@ export function SwipeTabs({ children, className = "" }: { children: ReactNode; c
   const { lang } = useI18n();
   const ref = useRef<HTMLDivElement | null>(null);
   const [edge, setEdge] = useState({ start: false, end: false });
-  const [swiping, setSwiping] = useState(false);
+  const [moved, setMoved] = useState(false);
 
   useEffect(() => {
     const node = ref.current;
@@ -225,12 +225,10 @@ export function SwipeTabs({ children, className = "" }: { children: ReactNode; c
       const pos = Math.abs(node.scrollLeft);
       setEdge({ start: max > 8 && pos > 8, end: max > 8 && pos < max - 8 });
     };
-    // While the user is actually swiping, the hint gets out of the way.
+    // Once the user swipes at all, the hint is done for good.
     const onScroll = () => {
       update();
-      setSwiping(true);
-      window.clearTimeout(idle);
-      idle = window.setTimeout(() => setSwiping(false), 500);
+      setMoved(true);
     };
     update();
     const timer = window.setTimeout(update, 400);
@@ -245,9 +243,9 @@ export function SwipeTabs({ children, className = "" }: { children: ReactNode; c
     if (!node) return;
     node.scrollBy({ left: dir * Math.max(160, node.clientWidth * 0.8) * (lang === "ar" ? -1 : 1), behavior: "smooth" });
   };
-  const arrowCls = "absolute top-1/2 z-10 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-current/10 text-current opacity-70 transition-opacity duration-300";
+  const arrowCls = "absolute top-1/2 z-10 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-current/10 text-current transition-opacity duration-300";
   // The arrow is only a first-time hint: once the row has been moved at all it stays away.
-  const hint = edge.end && !edge.start && !swiping;
+  const hint = edge.end && !moved;
 
   return (
     <div className="relative">
