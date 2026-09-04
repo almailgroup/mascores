@@ -1330,6 +1330,7 @@ export type Database = {
           photo_url: string | null
           position: string | null
           shirt_number: number | null
+          short_name: string | null
           social_links: Json
           team_id: string | null
           updated_at: string
@@ -1347,6 +1348,7 @@ export type Database = {
           photo_url?: string | null
           position?: string | null
           shirt_number?: number | null
+          short_name?: string | null
           social_links?: Json
           team_id?: string | null
           updated_at?: string
@@ -1364,6 +1366,7 @@ export type Database = {
           photo_url?: string | null
           position?: string | null
           shirt_number?: number | null
+          short_name?: string | null
           social_links?: Json
           team_id?: string | null
           updated_at?: string
