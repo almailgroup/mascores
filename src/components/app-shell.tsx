@@ -97,9 +97,13 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
 
       {!bare && <LiveVoiceAlert />}
 
-      <main className="relative z-10 mx-auto max-w-7xl px-4 pb-28 pt-6 sm:px-6">{children}</main>
+      {/* Extra bottom room so the iPhone home bar never covers page actions. */}
+      <main
+        className="relative z-10 mx-auto max-w-7xl px-4 pt-6 sm:px-6"
+        style={{ paddingBottom: "calc(7rem + env(safe-area-inset-bottom))" }}
+      >{children}</main>
 
-      {!bare && <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/60 bg-background/95 backdrop-blur-xl md:hidden">
+      {!bare && <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/60 bg-background/95 backdrop-blur-xl md:hidden" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
         <div className="mx-auto flex max-w-7xl items-center justify-around px-2 py-2">
           {PRIMARY_NAV.map((item) => {
             const active = item.exact ? location.pathname === item.to : location.pathname.startsWith(item.to);
@@ -131,7 +135,7 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
 
       {!bare && moreOpen && (
         <div className="fixed inset-0 z-50 flex items-end bg-black/50 md:hidden" onClick={() => setMoreOpen(false)}>
-          <div className="w-full rounded-t-3xl border-t border-border bg-background p-4 pb-6" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full rounded-t-3xl border-t border-border bg-background p-4" style={{ paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))" }} onClick={(e) => e.stopPropagation()}>
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-sm font-bold">{t("nav.more")}</h2>
               <button onClick={() => setMoreOpen(false)} aria-label="Close" className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border">

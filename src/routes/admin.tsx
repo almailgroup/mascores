@@ -122,16 +122,16 @@ function AdminPage() {
         </div>
       ) : (
         <div>
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Admin control centre</h1>
-              <p className="mt-1 text-sm text-muted-foreground">Competitions, matches, players, news, AI and reusable libraries in one place.</p>
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 sm:flex sm:flex-wrap sm:justify-between">
+            <div className="min-w-0">
+              <h1 className="text-xl font-bold tracking-tight sm:text-3xl">Admin control centre</h1>
+              <p className="mt-1 text-xs text-muted-foreground sm:text-sm">Pick a section below. Everything is grouped, so nothing needs sideways scrolling.</p>
             </div>
             <button
               onClick={async () => { await supabase.auth.signOut(); navigate({ to: "/" }); }}
-              className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-semibold hover:bg-accent"
+              className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-border bg-card px-3 text-xs font-semibold hover:bg-accent sm:px-4 sm:text-sm"
             >
-              <LogOut className="h-4 w-4" /> Sign out
+              <LogOut className="h-4 w-4" /> <span className="hidden sm:inline">Sign out</span>
             </button>
           </div>
           <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">

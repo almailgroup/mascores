@@ -115,8 +115,12 @@ function SearchPage() {
       {/* Focused search surface: two-tone brand header (black→blue in light mode,
           white→blue in dark mode) with the logo set as a faint watermark. */}
       <div className="relative -mx-4 -mt-4 mb-4 sticky top-0 z-30 overflow-hidden bg-gradient-to-r from-[#0b0f1a] to-primary px-4 pb-3 pt-4 text-white shadow-lg dark:from-white dark:to-primary dark:text-[#0b0f1a] sm:rounded-b-3xl">
-        <img src={logoLight.url} alt="" aria-hidden className="pointer-events-none absolute -end-6 -top-6 h-32 w-32 opacity-10 dark:hidden" />
-        <img src={logoDark} alt="" aria-hidden className="pointer-events-none absolute -end-6 -top-6 hidden h-32 w-32 opacity-15 dark:block" />
+        {/* The light header is dark, so the white mark shows there; the dark
+            header is white, so the navy mark shows there. */}
+        <img src={logoDark} alt="" aria-hidden className="pointer-events-none absolute -end-4 -top-5 h-36 w-36 rotate-[-8deg] opacity-25 dark:hidden" />
+        <img src={logoDark} alt="" aria-hidden className="pointer-events-none absolute -bottom-10 -start-6 h-24 w-24 rotate-[12deg] opacity-15 dark:hidden" />
+        <img src={logoLight.url} alt="" aria-hidden className="pointer-events-none absolute -end-4 -top-5 hidden h-36 w-36 rotate-[-8deg] opacity-25 dark:block" />
+        <img src={logoLight.url} alt="" aria-hidden className="pointer-events-none absolute -bottom-10 -start-6 hidden h-24 w-24 rotate-[12deg] opacity-15 dark:block" />
         <div className="relative flex items-center gap-2">
           <button type="button" aria-label={tx("Back")} onClick={() => { if (router.history.canGoBack()) router.history.back(); else void router.navigate({ to: "/" }); }}
             className="grid h-9 w-9 shrink-0 place-items-center rounded-full hover:bg-white/20 dark:hover:bg-black/10">
@@ -130,7 +134,7 @@ function SearchPage() {
             {q && <button aria-label={tx("Clear")} onClick={() => setQ("")} className="text-muted-foreground"><X className="h-4 w-4" /></button>}
           </div>
         </div>
-        <div className="relative mt-3 flex gap-2 overflow-x-auto pb-0.5 text-xs">
+        <div className="relative mt-3 flex flex-wrap gap-2 text-xs">
           {FILTERS.map((f) => (
             <button key={f.key} onClick={() => setFilter(f.key)}
               className={`whitespace-nowrap rounded-full px-3.5 py-1.5 font-bold transition ${filter === f.key ? "bg-card text-primary shadow-sm" : "bg-white/15 text-white/90 dark:bg-black/10 dark:text-[#0b0f1a]/80"}`}>

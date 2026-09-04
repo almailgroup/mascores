@@ -1,4 +1,5 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { ImageCropper } from "@/components/image-cropper";
 
 export function Field({ label, children }: { label: string; children: ReactNode }) {
@@ -17,17 +18,32 @@ export const btnGhost = "inline-flex h-10 shrink-0 items-center gap-2 rounded-fu
 export const btnDanger = "inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-destructive/40 bg-destructive/10 px-3 text-xs font-medium text-destructive hover:bg-destructive/20 sm:h-9";
 
 export function Modal({ open, onClose, title, children, wide, fullPage }: { open: boolean; onClose: () => void; title: string; children: ReactNode; wide?: boolean; fullPage?: boolean }) {
-  if (!open) return null;
-  return (
-    <div className={`fixed inset-0 z-50 flex items-start justify-center overflow-y-auto overscroll-contain bg-foreground/60 ${fullPage ? "p-0" : "p-2 backdrop-blur-sm sm:p-4"}`} onClick={onClose}>
-      <div className={`${fullPage ? "min-h-screen max-w-6xl rounded-none border-x sm:my-4 sm:min-h-0 sm:rounded-lg" : `my-3 ${wide ? "max-w-4xl" : "max-w-lg"} rounded-3xl sm:my-8`} w-full min-w-0 border border-border bg-card p-4 shadow-2xl sm:p-6`} onClick={(e) => e.stopPropagation()}>
+  // Rendered through a portal so a sheet opened from inside another sheet
+  // (e.g. editing an event while the match manager is open) is never trapped
+  // by the parent's scroll container or stacking context — that was why
+  // "Edit event" appeared to do nothing on iPhone.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!open || !mounted || typeof document === "undefined") return null;
+  return createPortal(
+    <div
+      className={`fixed inset-0 z-[70] flex items-start justify-center overflow-y-auto overscroll-contain bg-foreground/60 ${fullPage ? "p-0" : "p-2 backdrop-blur-sm sm:p-4"}`}
+      onClick={onClose}
+      style={{ WebkitOverflowScrolling: "touch" }}
+    >
+      <div
+        className={`${fullPage ? "min-h-screen max-w-6xl rounded-none border-x sm:my-4 sm:min-h-0 sm:rounded-lg" : `my-3 ${wide ? "max-w-4xl" : "max-w-lg"} rounded-3xl sm:my-8`} w-full min-w-0 border border-border bg-card p-4 shadow-2xl sm:p-6`}
+        style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom))" }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="sticky top-0 z-10 -mx-4 mb-4 flex items-center justify-between border-b border-border bg-card px-4 pb-2 pt-1 sm:-mx-6 sm:px-6">
-          <h3 className="min-w-0 truncate text-lg font-bold">{title}</h3>
-          <button onClick={onClose} className="rounded-full px-2 py-1 text-sm text-muted-foreground hover:bg-accent">✕</button>
+          <h3 className="min-w-0 truncate text-base font-bold sm:text-lg">{title}</h3>
+          <button onClick={onClose} className="-me-1 inline-flex h-9 w-9 items-center justify-center rounded-full text-sm text-muted-foreground hover:bg-accent">✕</button>
         </div>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
