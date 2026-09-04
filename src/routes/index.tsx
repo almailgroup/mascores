@@ -97,6 +97,8 @@ function Home() {
   return (
     <AppShell>
       <ScoreBoard liveCount={live.data?.length ?? 0} />
+      <TicketsBanner />
+
 
       {(live.data?.length ?? 0) > 0 && <MatchSection title={t("home.live")} data={live.data} loading={live.isLoading} />}
       <MatchSection title={t("home.upcoming")} data={upcoming.data} loading={upcoming.isLoading} />
