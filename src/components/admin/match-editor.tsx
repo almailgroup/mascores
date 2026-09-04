@@ -557,7 +557,7 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
               <div className="mt-3">
                 <h4 className="mb-1 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">Coach for this match</h4>
                 <select
-                  className="w-full rounded border border-border bg-background px-2 py-1.5 text-xs"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-base sm:py-2 sm:text-sm"
                   value={(side === "home" ? match.home_coach_id : match.away_coach_id) ?? ""}
                   onChange={async (e) => {
                     const value = e.target.value || null;
@@ -566,14 +566,14 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
                   }}
                 >
                   <option value="">No coach</option>
-                  <optgroup label="Current coach of this club">
+                  <optgroup label="Current coach">
                     {(coachesQ.data ?? []).filter((coach) => coach.team_id === tid).map((coach) => (
                       <option key={coach.id} value={coach.id}>{coach.name}</option>
                     ))}
                   </optgroup>
-                  <optgroup label="Previous / other coaches">
+                  <optgroup label="Previous coaches">
                     {(coachesQ.data ?? []).filter((coach) => coach.team_id !== tid).map((coach) => (
-                      <option key={coach.id} value={coach.id}>{coach.name}{coach.team?.name ? ` — ${coach.team.name}` : " — free agent"}</option>
+                      <option key={coach.id} value={coach.id}>{coach.name}</option>
                     ))}
                   </optgroup>
                 </select>
