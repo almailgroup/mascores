@@ -75,9 +75,12 @@ async function drawCard(data: MatchShareData, mode: "result" | "lineups"): Promi
   const [homeLogo, awayLogo] = await Promise.all([loadImage(data.home.logo_url), loadImage(data.away.logo_url)]);
   const crest = (img: HTMLImageElement | null, cx: number, cy: number, size: number, label?: string | null) => {
     ctx.save();
-    ctx.fillStyle = "rgba(255,255,255,0.94)";
-    roundRect(ctx, cx - size / 2, cy - size / 2, size, size, 28);
-    ctx.fill();
+    if (!img) {
+      // Monogram fallback still needs a plate; a real badge sits on the colour.
+      ctx.fillStyle = "rgba(255,255,255,0.94)";
+      roundRect(ctx, cx - size / 2, cy - size / 2, size, size, 28);
+      ctx.fill();
+    }
     if (img) {
       const scale = Math.min((size - 24) / img.width, (size - 24) / img.height);
       ctx.drawImage(img, cx - (img.width * scale) / 2, cy - (img.height * scale) / 2, img.width * scale, img.height * scale);
