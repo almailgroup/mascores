@@ -213,6 +213,21 @@ function CreateRoom({ onClose, onCreated, matchId = null }: { onClose: () => voi
   const [cropFile, setCropFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [linkedMatch, setLinkedMatch] = useState<string>(matchId ?? "");
+
+  // Optional: attach the room to a match so it shows on that match page.
+  const matches = useQuery({
+    enabled: !matchId,
+    queryKey: ["voice-match-options"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("matches")
+        .select("id, kickoff_at, home:home_team_id(name), away:away_team_id(name)")
+        .order("kickoff_at", { ascending: false })
+        .limit(40);
+      return (data ?? []) as unknown as { id: string; kickoff_at: string | null; home: { name: string } | null; away: { name: string } | null }[];
+    },
+  });
 
   const create = async () => {
     if (!user || !title.trim()) return;
@@ -221,7 +236,7 @@ function CreateRoom({ onClose, onCreated, matchId = null }: { onClose: () => voi
     if (restricted) { setError(tx("This account cannot start a voice room right now.")); setBusy(false); return; }
     const { data, error: insertError } = await supabase
       .from("voice_rooms")
-      .insert({ host_id: user.id, title: title.trim(), description: description.trim() || null, photo_url: photo, visibility, match_id: matchId })
+      .insert({ host_id: user.id, title: title.trim(), description: description.trim() || null, photo_url: photo, visibility, match_id: linkedMatch || null })
       .select("id")
       .maybeSingle();
     if (insertError || !data) { setError(tx("Could not start the room. Please try again.")); setBusy(false); return; }
@@ -257,6 +272,20 @@ function CreateRoom({ onClose, onCreated, matchId = null }: { onClose: () => voi
         </div>
         <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} placeholder={tx("What is this room about? (optional)")}
           className="mt-3 w-full rounded-xl border border-border bg-card p-3 text-sm outline-none focus:ring-2 focus:ring-primary/40" />
+        {!matchId && (
+          <label className="mt-3 block">
+            <span className="text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Link to a match (optional)")}</span>
+            <select value={linkedMatch} onChange={(e) => setLinkedMatch(e.target.value)}
+              className="mt-1 h-10 w-full rounded-xl border border-border bg-card px-3 text-sm outline-none focus:ring-2 focus:ring-primary/40">
+              <option value="">{tx("No match")}</option>
+              {(matches.data ?? []).map((m) => (
+                <option key={m.id} value={m.id}>
+                  {(m.home?.name ?? "?") + " v " + (m.away?.name ?? "?")}{m.kickoff_at ? ` — ${new Date(m.kickoff_at).toLocaleDateString()}` : ""}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <div className="mt-3 grid grid-cols-2 gap-2">
           {([["public", Globe2, tx("Public — anyone can join")], ["private", Lock, tx("Private — invite link only")]] as const).map(([value, Icon, label]) => (
             <button key={value} onClick={() => setVisibility(value)}
