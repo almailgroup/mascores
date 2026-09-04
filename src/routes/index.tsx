@@ -8,7 +8,7 @@ import { useI18n } from "@/lib/i18n";
 import { useRealtime } from "@/lib/realtime";
 import { useFavorites, FavoriteButton } from "@/hooks/use-favorites";
 import { MatchGroups, MatchRow, type MatchWithTeams } from "@/components/match-list";
-import { Trophy, ChevronLeft, ChevronRight } from "lucide-react";
+import { Trophy, ChevronLeft, ChevronRight, Ticket as TicketIcon, ArrowRight } from "lucide-react";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
 
 export const Route = createFileRoute("/")({
