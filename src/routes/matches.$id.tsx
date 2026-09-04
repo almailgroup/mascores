@@ -16,6 +16,7 @@ import { FlagIcon } from "@/components/flag";
 import { EventIcon as EventArt, hasEventArt } from "@/components/event-icon";
 import { nationalOverrideMap, applyCallUp } from "@/lib/national";
 import { useLogoAccent } from "@/lib/logo-accent";
+import { StandingsTable, type PublicStandingRow } from "@/components/standings-table";
 
 /** Same slot keys the admin pitch board writes, so the public pitch mirrors it. */
 function formationRows(formation: string | null | undefined): string[][] {
