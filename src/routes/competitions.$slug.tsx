@@ -2,7 +2,7 @@ import { TeamCrest } from "@/components/team-crest";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { AppShell, BackButton, EmptyState, LoadingSkeleton, SectionHeader, SwipeTabs } from "@/components/app-shell";
+import { AppShell, EmptyState, LoadingSkeleton, SectionHeader, SwipeTabs } from "@/components/app-shell";
 import { supabase, formatKickoff, type Competition, type Team, type Match, type StandingRow } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 import { FlagIcon } from "@/components/flag";
@@ -312,6 +312,21 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
   ];
   return (
     <div className="space-y-4">
+      {/* Season window, straight under the header like the mockup. */}
+      <section className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+        <div className="flex min-w-0 items-center gap-3">
+          <TrophyBadge />
+          <div className="min-w-0">
+            <div className="truncate text-base font-black leading-tight">{tx(c.name)}</div>
+            <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+              {!friendly && <FlagIcon value={c.country_code ?? c.country} />}
+              <span className="truncate">{[tx(c.country), tx(c.category)].filter(Boolean).join(" \u00b7 ")}</span>
+            </div>
+          </div>
+        </div>
+        <div className="mt-3"><DurationBar startsOn={c.starts_on} endsOn={c.ends_on} /></div>
+      </section>
+
       {/* Key numbers strip */}
       <section className="overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-3 shadow-sm sm:p-4">
         <div className={`grid gap-2 ${friendly ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6"}`}>
@@ -403,6 +418,10 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
       {c.description && <p className="rounded-xl border border-border bg-card p-3 text-xs leading-relaxed text-muted-foreground sm:text-sm">{tx(c.description)}</p>}
     </div>
   );
+}
+
+function TrophyBadge() {
+  return <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary"><Trophy className="h-6 w-6" /></span>;
 }
 
 function TeamCell({ label, team, note }: { label: string; team: Team | null; note?: string | null }) {
