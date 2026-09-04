@@ -392,6 +392,10 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
     queryKey: ["admin", "events", match.id],
     queryFn: async () => (await supabase.from("match_events").select("*").eq("match_id", match.id)).data as MatchEvent[] ?? [],
   });
+  const coachesQ = useQuery({
+    queryKey: ["admin", "coaches-all"],
+    queryFn: async () => (await supabase.from("coaches").select("id,name,team_id").order("name")).data ?? [],
+  });
   const ratingsQ = useQuery({
     queryKey: ["admin", "match-ratings", match.id],
     queryFn: async () => (await supabase.from("player_ratings").select("*").eq("match_id", match.id)).data ?? [],
@@ -529,6 +533,26 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
               </div>
               <div className="mt-1 text-center text-[0.6rem] text-muted-foreground">{formation}</div>
               {squad.length === 0 && <div className="text-center text-[0.6rem] text-muted-foreground">Add players to this squad first.</div>}
+
+              {/* Coach for THIS match — pick whoever was actually in charge, or
+                  "No coach" when the club was between managers. */}
+              <div className="mt-3">
+                <h4 className="mb-1 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">Coach for this match</h4>
+                <select
+                  className="w-full rounded border border-border bg-background px-2 py-1.5 text-xs"
+                  value={(side === "home" ? match.home_coach_id : match.away_coach_id) ?? ""}
+                  onChange={async (e) => {
+                    const value = e.target.value || null;
+                    await supabase.from("matches").update(side === "home" ? { home_coach_id: value } : { away_coach_id: value }).eq("id", match.id);
+                    onSaved();
+                  }}
+                >
+                  <option value="">No coach</option>
+                  {(coachesQ.data ?? []).map((coach) => (
+                    <option key={coach.id} value={coach.id}>{coach.name}{coach.team_id === tid ? " (current)" : ""}</option>
+                  ))}
+                </select>
+              </div>
 
               <div className="mt-3">
                 <div className="mb-2 flex items-center justify-between">
