@@ -549,6 +549,15 @@ function DurationBar({ startsOn, endsOn, onHero }: { startsOn: string | null; en
   );
 }
 
+const CELL_TINTS: Record<string, string> = {
+  Season: "var(--chart-2)",
+  Teams: "var(--primary)",
+  Matches: "var(--chart-5)",
+  Format: "var(--chart-4)",
+  Sport: "var(--success)",
+  Country: "var(--chart-1)",
+};
+
 const CELL_ICONS: Record<string, typeof Star> = {
   Season: CalendarDays,
   Teams: Users,
