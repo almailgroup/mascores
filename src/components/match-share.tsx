@@ -19,6 +19,7 @@ export type MatchShareData = {
   homeLineup: ShareLineupPlayer[];
   awayLineup: ShareLineupPlayer[];
   accent: string;
+  accentAway?: string;
 };
 
 function loadImage(url?: string | null): Promise<HTMLImageElement | null> {
@@ -53,9 +54,11 @@ async function drawCard(data: MatchShareData, mode: "result" | "lineups"): Promi
   if (!ctx) return null;
 
   const accent = data.accent || "#123a8a";
-  const gradient = ctx.createLinearGradient(0, 0, W, H);
+  const accentAway = data.accentAway || accent;
+  // Left side wears the home colour, right side the away colour.
+  const gradient = ctx.createLinearGradient(0, 0, W, H * 0.25);
   gradient.addColorStop(0, accent);
-  gradient.addColorStop(1, "#07090f");
+  gradient.addColorStop(1, accentAway);
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, W, H);
   ctx.fillStyle = "rgba(0,0,0,0.25)";
