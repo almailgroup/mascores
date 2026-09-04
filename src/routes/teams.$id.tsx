@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { MediaGallery } from "@/components/media-gallery";
-import { AppShell, BackButton, EmptyState, LoadingSkeleton } from "@/components/app-shell";
+import { AppShell, BackButton, EmptyState, LoadingSkeleton, SwipeTabs } from "@/components/app-shell";
 import { supabase, formatKickoff, type Team, type Player, type Match, type StandingRow, type Coach, type Transfer } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 import { FavoriteButton } from "@/hooks/use-favorites";
