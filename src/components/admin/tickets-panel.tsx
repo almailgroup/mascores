@@ -53,6 +53,7 @@ function OffersView() {
   const [busy, setBusy] = useState(false);
   const [deleteOffer, setDeleteOffer] = useState<Offer | null>(null);
   const [issueOffer, setIssueOffer] = useState<Offer | null>(null);
+  const [buyersOffer, setBuyersOffer] = useState<Offer | null>(null);
   const makePool = useServerFn(generateTicketPool);
 
   const counts = useQuery({
@@ -193,6 +194,8 @@ function OffersView() {
 
               </div>
               <button className={btnGhost} onClick={() => setIssueOffer(offer)}><QrIcon className="h-3.5 w-3.5" /> Passes</button>
+              <button className={btnGhost} onClick={async () => { await supabase.from("ticket_offers").update({ is_active: !offer.is_active }).eq("id", offer.id); await qc.invalidateQueries({ queryKey: ["admin-ticket-offers"] }); }}>{offer.is_active ? "Hide" : "Show"}</button>
+              <button className={btnGhost} onClick={() => setBuyersOffer(offer)}>Buyers</button>
               <button className={btnGhost} onClick={() => { setEditing(offer); setForm({ name: offer.name, stand: offer.stand ?? "", price: String(offer.price), currency: offer.currency, is_free: offer.is_free, capacity: offer.capacity ? String(offer.capacity) : "", show_row: offer.show_row, show_seat: offer.show_seat, notes: offer.notes ?? "", is_active: offer.is_active }); }}>Edit</button>
               <button className={btnDanger} onClick={() => setDeleteOffer(offer)}>Delete</button>
             </div>
@@ -211,6 +214,7 @@ function OffersView() {
         onConfirm={async () => { await supabase.from("ticket_offers").delete().eq("id", deleteOffer!.id); setDeleteOffer(null); await qc.invalidateQueries({ queryKey: ["admin-ticket-offers"] }); }}
       />
       {issueOffer && <PassesModal offer={issueOffer} onClose={() => setIssueOffer(null)} />}
+      {buyersOffer && <BuyersModal offer={buyersOffer} onClose={() => setBuyersOffer(null)} />}
     </div>
   );
 }
@@ -277,6 +281,44 @@ function PassesModal({ offer, onClose }: { offer: Offer; onClose: () => void }) 
         ))}
         {(tickets.data ?? []).length === 0 && <p className="text-sm text-muted-foreground">No passes generated yet.</p>}
       </div>
+    </Modal>
+  );
+}
+
+/** Who bought passes for this ticket, with the contact details they entered. */
+function BuyersModal({ offer, onClose }: { offer: Offer; onClose: () => void }) {
+  const buyers = useQuery({
+    queryKey: ["admin-ticket-buyers", offer.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("tickets")
+        .select("id, code, status, holder_name, holder_email, holder_phone, price_paid, currency, created_at, used_at")
+        .eq("offer_id", offer.id)
+        .neq("status", "pool")
+        .order("created_at", { ascending: false });
+      return data ?? [];
+    },
+  });
+  return (
+    <Modal open onClose={onClose} title={`${offer.name} buyers`} wide>
+      {buyers.isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : (buyers.data ?? []).length === 0 ? (
+        <p className="text-sm text-muted-foreground">Nobody has bought this ticket yet.</p>
+      ) : (
+        <div className="space-y-2">
+          {(buyers.data ?? []).map((row) => (
+            <div key={row.id} className="rounded-xl border border-border p-3 text-xs">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-bold">{row.holder_name ?? "No name given"}</span>
+                <span className={`rounded-full px-2 py-0.5 text-[0.6rem] font-bold ${row.status === "used" ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary"}`}>{row.status}</span>
+                <span className="font-mono tracking-wider text-muted-foreground">{row.code}</span>
+              </div>
+              <div className="mt-1 text-muted-foreground">
+                {[row.holder_email, row.holder_phone, `${row.price_paid} ${row.currency}`, new Date(row.created_at).toLocaleString()].filter(Boolean).join(" · ")}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </Modal>
   );
 }
