@@ -173,6 +173,36 @@ function VoiceRoomPage() {
     void navigate({ to: "/voice" });
   };
 
+  const toggleRecording = async () => {
+    if (!recording) {
+      const ok = await startRecording();
+      if (!ok) setActionError(tx("This browser cannot record voice rooms."));
+      return;
+    }
+    setSaving(true);
+    const result = await stopRecording();
+    if (result && user && room.data) {
+      const ext = result.blob.type.includes("mp4") ? "m4a" : "webm";
+      const file = new File([result.blob], `${crypto.randomUUID()}.${ext}`, { type: result.blob.type });
+      const url = await uploadMedia("voice-recordings", file);
+      if (url) {
+        await supabase.from("voice_recordings").insert({
+          room_id: id,
+          host_id: user.id,
+          match_id: room.data.match_id ?? null,
+          title: room.data.title,
+          cover_url: room.data.photo_url,
+          audio_url: url,
+          duration_seconds: result.seconds,
+        });
+        await qc.invalidateQueries({ queryKey: ["voice-replays"] });
+      } else {
+        setActionError(tx("The replay could not be saved."));
+      }
+    }
+    setSaving(false);
+  };
+
   const manage = async (userId: string, action: "promote" | "demote" | "mute" | "remove") => {
     const { error } = await supabase.rpc("voice_manage_participant", { _room_id: id, _user_id: userId, _action: action });
     if (error) { setActionError(error.message); return; }
@@ -371,9 +401,16 @@ function VoiceRoomPage() {
               </button>
             )}
             {isHost ? (
-              <button onClick={endRoom} className="inline-flex h-11 items-center gap-2 rounded-full bg-destructive px-4 text-sm font-bold text-destructive-foreground">
-                <PhoneOff className="h-4 w-4" /> {tx("End")}
-              </button>
+              <>
+                <button onClick={() => void toggleRecording()} disabled={saving}
+                  className={`inline-flex h-11 items-center gap-2 rounded-full px-4 text-sm font-bold disabled:opacity-60 ${recording ? "bg-destructive/15 text-destructive" : "border border-border bg-card"}`}>
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Circle className={`h-4 w-4 ${recording ? "fill-destructive" : ""}`} />}
+                  {recording ? tx("Save replay") : tx("Record")}
+                </button>
+                <button onClick={endRoom} className="inline-flex h-11 items-center gap-2 rounded-full bg-destructive px-4 text-sm font-bold text-destructive-foreground">
+                  <PhoneOff className="h-4 w-4" /> {tx("End")}
+                </button>
+              </>
             ) : (
               <button onClick={leave} className="inline-flex h-11 items-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-bold">
                 <LogOut className="h-4 w-4" /> {tx("Leave")}
