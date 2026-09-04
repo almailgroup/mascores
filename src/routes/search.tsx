@@ -1,10 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, EmptyState } from "@/components/app-shell";
 import { supabase } from "@/lib/db";
 import { FlagIcon } from "@/components/flag";
-import { Search as SearchIcon, Trophy, Shield, User, Building2, Clock, X } from "lucide-react";
+import { Search as SearchIcon, Trophy, Shield, User, Building2, Clock, X, ArrowLeft } from "lucide-react";
 import { useReverseTranslate, useTx } from "@/lib/auto-translate";
 import { COUNTRIES } from "@/lib/countries";
 
@@ -38,6 +38,7 @@ function readHistory(): Visited[] {
 
 function SearchPage() {
   const tx = useTx();
+  const router = useRouter();
   const reverse = useReverseTranslate();
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
@@ -109,41 +110,56 @@ function SearchPage() {
 
   return (
     <AppShell>
-      <div className="mb-4 flex items-center gap-2 rounded-2xl border border-border bg-card px-4 py-3">
-        <SearchIcon className="h-4 w-4 text-muted-foreground" />
-        <input value={q} onChange={(e) => setQ(e.target.value)}
-          placeholder={tx("Teams, players, competitions, coaches, stadiums…")}
-          className="flex-1 bg-transparent text-sm outline-none" />
+      {/* Focused search surface: coloured header with the field and filters
+          pinned to the top, then the list of previously opened entities. */}
+      <div className="-mx-4 -mt-4 mb-4 sticky top-0 z-30 bg-primary px-4 pb-3 pt-4 text-primary-foreground shadow-lg sm:rounded-b-3xl">
+        <div className="flex items-center gap-2">
+          <button type="button" aria-label={tx("Back")} onClick={() => { if (router.history.canGoBack()) router.history.back(); else void router.navigate({ to: "/" }); }}
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-full hover:bg-primary-foreground/15">
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <div className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-full bg-primary-foreground px-4 text-foreground">
+            <SearchIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <input autoFocus value={q} onChange={(e) => setQ(e.target.value)}
+              placeholder={tx("Search")}
+              className="min-w-0 flex-1 bg-transparent text-base outline-none sm:text-sm" />
+            {q && <button aria-label={tx("Clear")} onClick={() => setQ("")} className="text-muted-foreground"><X className="h-4 w-4" /></button>}
+          </div>
+        </div>
+        <div className="mt-3 flex gap-2 overflow-x-auto pb-0.5 text-xs">
+          {FILTERS.map((f) => (
+            <button key={f.key} onClick={() => setFilter(f.key)}
+              className={`whitespace-nowrap rounded-full px-3.5 py-1.5 font-bold transition ${filter === f.key ? "bg-primary-foreground text-primary" : "bg-primary-foreground/15 text-primary-foreground/90"}`}>
+              {tx(f.label)}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {history.length > 0 && (
+      {history.length > 0 && q.length < 2 && (
         <div className="mb-5">
-          <div className="mb-2 flex items-center justify-between text-xs font-semibold uppercase text-muted-foreground">
+          <div className="mb-2 flex items-center justify-between text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">
             <span className="inline-flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> {tx("Recently viewed")}</span>
-            <button className="font-semibold text-destructive" onClick={() => writeHistory([])}>{tx("Clear all")}</button>
+            <button className="text-destructive" onClick={() => writeHistory([])}>{tx("Clear all")}</button>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="overflow-hidden rounded-2xl border border-border bg-card">
             {history.map((item) => (
-              <span key={item.key} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1.5 text-xs">
-                <Link to={item.to as never} params={item.params as never} className="inline-flex items-center gap-1.5 font-medium hover:text-primary">
-                  {item.logo ? <img src={item.logo} alt="" className="h-4 w-4 object-contain" /> : null}
-                  {tx(item.label)}
+              <div key={item.key} className="flex items-center gap-3 border-b border-border/60 px-3 py-2.5 last:border-0">
+                <Link to={item.to as never} params={item.params as never} className="flex min-w-0 flex-1 items-center gap-3">
+                  {item.logo
+                    ? <img src={item.logo} alt="" className="h-9 w-9 shrink-0 rounded-full bg-muted object-contain p-0.5" />
+                    : <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-muted text-[0.7rem] font-black">{item.label.slice(0, 1).toUpperCase()}</span>}
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-bold">{tx(item.label)}</span>
+                    <span className="block truncate text-[0.7rem] capitalize text-muted-foreground">{tx(FILTERS.find((f) => f.key === item.kind)?.label ?? "")}</span>
+                  </span>
                 </Link>
-                <button aria-label={`Remove ${item.label}`} onClick={() => writeHistory(history.filter((h) => h.key !== item.key))} className="text-muted-foreground hover:text-destructive"><X className="h-3 w-3" /></button>
-              </span>
+                <button aria-label={`Remove ${item.label}`} onClick={() => writeHistory(history.filter((h) => h.key !== item.key))} className="shrink-0 text-muted-foreground hover:text-destructive"><X className="h-4 w-4" /></button>
+              </div>
             ))}
           </div>
         </div>
       )}
-
-      <div className="mb-5 flex gap-1 overflow-x-auto rounded-full border border-border bg-card p-1 text-xs">
-        {FILTERS.map((f) => (
-          <button key={f.key} onClick={() => setFilter(f.key)}
-            className={`whitespace-nowrap rounded-full px-4 py-1.5 font-semibold ${filter === f.key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-             {tx(f.label)}
-          </button>
-        ))}
-      </div>
 
       {q.length < 2 ? <EmptyState title={tx("Type to search")} /> : !res.data ? null : total === 0 ? <EmptyState title={tx("No results")} /> : (
         <div className="space-y-6">

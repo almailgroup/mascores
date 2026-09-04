@@ -44,6 +44,12 @@ type MyTicket = {
 const TICKET_SELECT =
   "id, code, status, row_label, seat_label, holder_name, price_paid, currency, used_at, created_at, offer:offer_id(name, stand), match:match_id(kickoff_at, venue, home:home_team_id(name), away:away_team_id(name), competition:competition_id(name))";
 
+/** A pass stops working three hours after kickoff. */
+function isExpired(kickoff: string | null | undefined): boolean {
+  if (!kickoff) return false;
+  return Date.now() - new Date(kickoff).getTime() > 3 * 60 * 60 * 1000;
+}
+
 function TicketsPage() {
   const tx = useTx();
   const { user } = useAuth();
@@ -86,6 +92,7 @@ function TicketsPage() {
 
   const grouped = new Map<string, OfferRow[]>();
   for (const offer of offers.data ?? []) {
+    if (isExpired(offer.match?.kickoff_at)) continue;
     const list = grouped.get(offer.match_id) ?? [];
     list.push(offer);
     grouped.set(offer.match_id, list);
@@ -181,8 +188,10 @@ function TicketCard({ ticket }: { ticket: MyTicket }) {
   const tx = useTx();
   const used = ticket.status === "used";
   const m = ticket.match;
+  const expired = !used && isExpired(m?.kickoff_at);
   return (
-    <div className={`relative flex overflow-hidden rounded-3xl border shadow-sm ${used ? "border-border bg-muted/40" : "border-primary/40 bg-card"}`}>
+    <div className={`relative flex overflow-hidden rounded-3xl border shadow-sm ${used || expired ? "border-border bg-muted/40" : "border-primary/40 bg-card"}`}>
+      {expired && <span className="absolute end-3 top-3 z-10 rounded-full bg-muted px-2 py-0.5 text-[0.6rem] font-black uppercase tracking-widest text-muted-foreground">{tx("Expired")}</span>}
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2 bg-gradient-to-r from-primary to-primary/70 px-4 py-2.5 text-primary-foreground">
           <span className="text-[0.65rem] font-black uppercase tracking-[0.2em]">{tx("Entry pass")}</span>
@@ -275,8 +284,10 @@ function CheckoutModal({ offer, remaining, onClose }: { offer: OfferRow; remaini
   };
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4">
-      <div className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl border border-border bg-card p-5 sm:rounded-3xl">
+    /* Buying takes over the whole page: extra bottom padding keeps the action
+       buttons clear of the mobile navigation bar. */
+    <div className="fixed inset-0 z-[120] overflow-y-auto bg-background">
+      <div className="mx-auto w-full max-w-lg px-5 pb-40 pt-6">
         <div className="mb-4 flex items-start gap-3">
           <div className="min-w-0 flex-1">
             <div className="text-[0.65rem] font-bold uppercase tracking-widest text-primary">{tx(offer.name)}</div>

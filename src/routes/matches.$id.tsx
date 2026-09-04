@@ -2,7 +2,7 @@ import { TeamCrest } from "@/components/team-crest";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { AppShell, BackButton, EmptyState, LoadingSkeleton } from "@/components/app-shell";
+import { AppShell, BackButton, EmptyState, LoadingSkeleton, ScrollHint } from "@/components/app-shell";
 import { supabase, STATUS_LABELS, roundLabel, matchClockSeconds, formatClock, eventLabel, ratingClass, formatRating, type Match, type Team, type MatchEvent, type Lineup, type Player, type StandingRow } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 import { PlayCircle, Radio } from "lucide-react";
@@ -115,6 +115,7 @@ function MatchPage() {
 
   return (
     <AppShell>
+      <ScrollHint />
       <BackButton />
       <div className="mb-6 rounded-3xl border border-border bg-card p-6">
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
@@ -249,7 +250,10 @@ function MatchPage() {
           <div key={side} className="rounded-2xl border border-border bg-card p-4">
             {showPitch && <div className="mb-3 flex items-center justify-end"><span className="rounded bg-muted px-2 py-0.5 text-[0.65rem] font-semibold">{num(activeFormation)}</span></div>}
             {showPitch && (
-              <div className="relative mx-auto mb-4 aspect-[3/4] w-full max-w-md overflow-hidden rounded-2xl px-3 py-5" style={{ background: "repeating-linear-gradient(180deg,#1b7a3f 0 28px,#17703a 28px 56px)" }}>
+              // Turf and markings live on a clipped layer so player cards (and the
+              // goalkeeper's rating on the bottom row) are never cut off.
+              <div className="relative mx-auto mb-4 aspect-[3/4] w-full max-w-md rounded-2xl px-3 pb-9 pt-6">
+                <span className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl" style={{ background: "repeating-linear-gradient(180deg,#1b7a3f 0 28px,#17703a 28px 56px)" }} />
                 <span className="pointer-events-none absolute inset-2 rounded-lg border-2 border-white/35" />
                 <span className="pointer-events-none absolute left-2 right-2 top-1/2 border-t-2 border-white/35" />
                 <span className="pointer-events-none absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/35" />
@@ -305,7 +309,7 @@ function MatchPage() {
               return (
                 <>
                   {startersList.length > 0 && <div>{startersList.map(row)}</div>}
-                  <TeamCoach teamId={team?.id} />
+                  <TeamCoach teamId={team?.id} coachId={side === "home" ? match.home_coach_id : match.away_coach_id} />
                   {benchList.length > 0 && (
                     <div className="mt-3">
                       <h4 className="mb-1 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Bench")}</h4>
@@ -333,13 +337,19 @@ function PreviousMatches({ competitionId, currentId }: { competitionId: string; 
   return <PreviousMatchesInner competitionId={competitionId} currentId={currentId} />;
 }
 
-/** Coach block under each lineup. */
-function TeamCoach({ teamId }: { teamId: string | undefined }) {
+/**
+ * Coach block under each lineup. A coach chosen for this specific match wins;
+ * otherwise the club's current coach is shown as a fallback.
+ */
+function TeamCoach({ teamId, coachId }: { teamId: string | undefined; coachId?: string | null }) {
   const tx = useTx();
   const q = useQuery({
-    queryKey: ["lineup-coach", teamId],
-    enabled: !!teamId,
-    queryFn: async () => (await supabase.from("coaches").select("id,name,photo_url,nationality").eq("team_id", teamId!).limit(1).maybeSingle()).data,
+    queryKey: ["lineup-coach", teamId, coachId ?? null],
+    enabled: !!teamId || !!coachId,
+    queryFn: async () => {
+      if (coachId) return (await supabase.from("coaches").select("id,name,photo_url,nationality").eq("id", coachId).maybeSingle()).data;
+      return (await supabase.from("coaches").select("id,name,photo_url,nationality").eq("team_id", teamId!).limit(1).maybeSingle()).data;
+    },
   });
   if (!q.data) return null;
   return (

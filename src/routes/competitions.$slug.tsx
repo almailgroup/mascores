@@ -2,7 +2,7 @@ import { TeamCrest } from "@/components/team-crest";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { AppShell, BackButton, EmptyState, LoadingSkeleton, SectionHeader } from "@/components/app-shell";
+import { AppShell, BackButton, EmptyState, LoadingSkeleton, SectionHeader, ScrollHint } from "@/components/app-shell";
 import { supabase, formatKickoff, type Competition, type Team, type Match, type StandingRow } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 import { FlagIcon } from "@/components/flag";
@@ -143,6 +143,7 @@ function CompetitionPage() {
 
   return (
     <AppShell>
+      <ScrollHint />
       {theme && <CompetitionIntro theme={theme} name={tx(c.name)} season={activeSeason ? num(activeSeason) : null} logoUrl={c.logo_url} />}
       {theme && (
         <div aria-hidden className="pointer-events-none fixed inset-0 z-0" style={{ background: theme.backdrop }}>
@@ -165,8 +166,8 @@ function CompetitionPage() {
            <div className={`mt-0.5 flex min-w-0 flex-wrap items-center gap-1.5 text-[0.7rem] sm:text-xs ${theme ? "text-primary-foreground/85" : "text-muted-foreground"}`}>
             {!friendly && <FlagIcon value={c.country_code ?? c.country} />}
              <span className="truncate">{(friendly ? [tx(c.category)] : [tx(c.country), tx(c.category)]).filter(Boolean).join(" · ")}</span>
-              {(c.seasons?.length ?? 0) > 0 && <SeasonMenu seasons={c.seasons} value={activeSeason} onChange={setSeason} />}
           </div>
+          {(c.seasons?.length ?? 0) > 0 && <div className="mt-2"><SeasonMenu seasons={c.seasons} value={activeSeason} onChange={setSeason} onHero={!!theme} /></div>}
         </div>
         <div className="col-span-2"><DurationBar startsOn={c.starts_on} endsOn={c.ends_on} onHero={!!theme} /></div>
       </div>

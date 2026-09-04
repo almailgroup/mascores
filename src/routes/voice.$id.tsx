@@ -32,6 +32,7 @@ function VoiceRoomPage() {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [joined, setJoined] = useState(false);
   const [anon, setAnon] = useState(false);
 
@@ -123,7 +124,7 @@ function VoiceRoomPage() {
       }
     : null;
 
-  const { roster, remote, muted, toggleMute, forceMute, hand, setHand, micError, connected, speakerCount, listenerCount } = useVoiceRoom({ roomId: id, me, enabled: !!me && live, storedPeers: participants.data ?? [] });
+  const { roster, remote, muted, toggleMute, forceMute, hand, setHand, micError, retryMic, connected, speakerCount, listenerCount } = useVoiceRoom({ roomId: id, me, enabled: !!me && live, storedPeers: participants.data ?? [] });
 
   // Join the room roster (host joins automatically when the room is created).
   const join = async (anonymous = false) => {
@@ -150,8 +151,14 @@ function VoiceRoomPage() {
 
   const deleteRoom = async () => {
     if (!window.confirm(tx("Delete this voice room permanently?"))) return;
-    const { error } = await supabase.rpc("voice_delete_room", { _room_id: id });
-    if (!error) void navigate({ to: "/voice" });
+    // Ended rooms delete cleanly; a live room is ended first so listeners drop out.
+    if (live) await supabase.rpc("voice_end_room", { _room_id: id });
+    await supabase.from("voice_room_participants").delete().eq("room_id", id);
+    const { error } = await supabase.from("voice_rooms").delete().eq("id", id);
+    if (error) { setActionError(error.message); return; }
+    setJoined(false);
+    void qc.invalidateQueries({ queryKey: ["voice-rooms"] });
+    void navigate({ to: "/voice" });
   };
 
   const manage = async (userId: string, action: "promote" | "demote" | "mute" | "remove") => {
@@ -238,7 +245,7 @@ function VoiceRoomPage() {
               <PhoneOff className="h-3.5 w-3.5" /> {tx("End room")}
             </button>
           )}
-          {isHost && !live && (
+          {isHost && (
             <button onClick={deleteRoom} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-destructive px-3 text-xs font-bold text-destructive-foreground">
               <Trash2 className="h-3.5 w-3.5" /> {tx("Delete room")}
             </button>
@@ -275,7 +282,13 @@ function VoiceRoomPage() {
                 <span>· {speakerCount} {tx("speaking")}</span>
                 <span>· {listenerCount} {tx("listening")}</span>
               </div>
-              {micError && <p className="mb-3 rounded-xl bg-destructive/10 p-3 text-xs font-semibold text-destructive">{tx(micError)}</p>}
+              {micError && (
+                <div className="mb-3 rounded-xl bg-destructive/10 p-3 text-xs font-semibold text-destructive">
+                  {tx(micError)}
+                  <button onClick={retryMic} className="mt-2 inline-flex h-8 items-center rounded-full bg-destructive px-3 text-[0.7rem] font-bold text-destructive-foreground">{tx("Retry microphone")}</button>
+                </div>
+              )}
+              {actionError && <p className="mb-3 rounded-xl bg-destructive/10 p-3 text-xs font-semibold text-destructive">{actionError}</p>}
 
               <h2 className="text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Speakers")} ({speakerCount})</h2>
               <div className="mt-2 grid grid-cols-3 gap-3 sm:grid-cols-5">
