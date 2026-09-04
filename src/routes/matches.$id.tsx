@@ -337,8 +337,8 @@ function MatchPage() {
   );
 }
 
-function PreviousMatches({ competitionId, currentId }: { competitionId: string; currentId: string }) {
-  return <PreviousMatchesInner competitionId={competitionId} currentId={currentId} />;
+function PreviousMatches({ homeId, awayId, currentId }: { homeId: string | null; awayId: string | null; currentId: string }) {
+  return <PreviousMatchesInner homeId={homeId} awayId={awayId} currentId={currentId} />;
 }
 
 /**
