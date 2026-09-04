@@ -53,3 +53,15 @@ Still open (needs DB columns — migration pending):
 Still open (frontend polish):
 - Richer awards/winner presentation and a more premium competition overview info box.
 - Confirm the "publish news" action is fully removed for reporters.
+
+## Done in this pass
+- Per-match coach picker (admin) and match-specific coach display
+- Users & moderation admin tab: ban / timed suspension / lift, enforced in chat + ticket claims
+- Social media links for clubs and players (admin editor + public section)
+- Light/dark competition logos everywhere (hero, intro, list)
+- Voice rooms linked to matches, with a voice section on the match page
+- Transfer history club crest uploads and public display
+- Professional awards board and premium competition key-numbers strip
+
+## Still open
+- Voice audio (WebRTC speaking) needs live browser verification on a real device
