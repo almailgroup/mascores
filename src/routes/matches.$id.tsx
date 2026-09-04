@@ -249,7 +249,10 @@ function MatchPage() {
           <div key={side} className="rounded-2xl border border-border bg-card p-4">
             {showPitch && <div className="mb-3 flex items-center justify-end"><span className="rounded bg-muted px-2 py-0.5 text-[0.65rem] font-semibold">{num(activeFormation)}</span></div>}
             {showPitch && (
-              <div className="relative mx-auto mb-4 aspect-[3/4] w-full max-w-md overflow-hidden rounded-2xl px-3 py-5" style={{ background: "repeating-linear-gradient(180deg,#1b7a3f 0 28px,#17703a 28px 56px)" }}>
+              {/* Turf and markings live on a clipped layer so player cards (and the
+                  goalkeeper's rating on the bottom row) are never cut off. */}
+              <div className="relative mx-auto mb-4 aspect-[3/4] w-full max-w-md rounded-2xl px-3 pb-9 pt-6">
+                <span className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl" style={{ background: "repeating-linear-gradient(180deg,#1b7a3f 0 28px,#17703a 28px 56px)" }} />
                 <span className="pointer-events-none absolute inset-2 rounded-lg border-2 border-white/35" />
                 <span className="pointer-events-none absolute left-2 right-2 top-1/2 border-t-2 border-white/35" />
                 <span className="pointer-events-none absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/35" />

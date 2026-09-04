@@ -501,7 +501,7 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
                 </div>
               </div>
               {/* Fixed aspect keeps the pitch the same size for every formation. */}
-              <div className="flex aspect-[3/4] flex-col justify-between overflow-visible rounded-lg bg-emerald-900/25 px-2 py-4">
+              <div className="flex aspect-[3/4] flex-col justify-between overflow-visible rounded-lg bg-emerald-900/25 px-2 pb-9 pt-5">
                 {formationRows(formation).map((row, ri) => (
                   <div key={ri} className="flex min-h-0 flex-1 items-center justify-around gap-1 py-1">
                     {row.map((slot) => {
