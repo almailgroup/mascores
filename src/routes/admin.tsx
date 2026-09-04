@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import { unlockAdmin } from "@/lib/admin.functions";
-import { Loader2, ShieldCheck, ArrowLeft, Bot, CalendarDays, Newspaper, Radio, Repeat2, Trophy, Landmark, Shield, Users, LogOut, Flag, Globe, Ticket } from "lucide-react";
+import { Loader2, ShieldCheck, ArrowLeft, Bot, CalendarDays, Newspaper, Radio, Repeat2, Trophy, Landmark, Shield, Users, LogOut, Flag, Globe, Ticket, UserCog } from "lucide-react";
 import type { Competition } from "@/lib/db";
 import { CompetitionsPanel } from "@/components/admin/competitions-panel";
 import { TeamsPanel } from "@/components/admin/teams-panel";
@@ -19,6 +19,7 @@ import { AlmailAiPanel, ChannelsPanel, TransfersAdminPanel, VenuesPanel } from "
 import { CompetitionAwardsManager, MediaManager } from "@/components/admin/media-manager";
 import { ChatReportsPanel } from "@/components/admin/chat-reports-panel";
 import { TicketsPanel } from "@/components/admin/tickets-panel";
+import { UsersPanel } from "@/components/admin/users-panel";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import { SeasonMenu } from "@/components/season-menu";
 
@@ -35,7 +36,7 @@ function AdminPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [tab, setTab] = useState<"competitions" | "teams" | "countries" | "players" | "news" | "ai" | "venues" | "channels" | "transfers" | "reports" | "tickets">("competitions");
+  const [tab, setTab] = useState<"competitions" | "teams" | "countries" | "players" | "news" | "ai" | "venues" | "channels" | "transfers" | "reports" | "tickets" | "users">("competitions");
   const [openComp, setOpenComp] = useState<Competition | null>(null);
   const [adminSeason, setAdminSeason] = useState<string | null>(null);
   const [compTab, setCompTab] = useState<"overview" | "teams" | "matches" | "standings" | "awards" | "media">("overview");
@@ -127,7 +128,7 @@ function AdminPage() {
           </div>
           <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
             {([
-              ["competitions", Trophy], ["teams", Shield], ["countries", Globe], ["players", Users], ["news", Newspaper], ["ai", Bot], ["venues", Landmark], ["channels", Radio], ["transfers", Repeat2], ["tickets", Ticket], ["reports", Flag],
+              ["competitions", Trophy], ["teams", Shield], ["countries", Globe], ["players", Users], ["news", Newspaper], ["ai", Bot], ["venues", Landmark], ["channels", Radio], ["transfers", Repeat2], ["tickets", Ticket], ["reports", Flag], ["users", UserCog],
             ] as const).map(([k, Icon]) => (
               <button key={k} onClick={() => setTab(k)} className={`flex min-h-20 flex-col items-start justify-between rounded-lg border p-3 text-left font-semibold capitalize ${tab === k ? "border-primary bg-primary/10 text-primary" : "border-border bg-card hover:border-primary/50"}`}><Icon className="h-4 w-4" />{k === "ai" ? "Almail AI" : k}</button>
             ))}
@@ -157,6 +158,7 @@ function AdminPage() {
             {tab === "transfers" && <TransfersAdminPanel />}
             {tab === "tickets" && <TicketsPanel />}
             {tab === "reports" && <ChatReportsPanel />}
+            {tab === "users" && <UsersPanel />}
           </div>
         </div>
       )}

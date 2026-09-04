@@ -8,6 +8,7 @@ import { uploadMedia } from "./upload";
 import { CountrySelect } from "@/components/country-select";
 import { DateWheel } from "@/components/date-wheel";
 import { TransfersEditor } from "./transfers-editor";
+import { SocialLinksField } from "./social-links-field";
 import { createPlayerDraftWithAlmail } from "@/lib/almail-ai.functions";
 import { readAiImages, type AiImageInput } from "@/lib/image-files";
 import { releasePlayerToFreeAgent, transferPlayerToClub, deletePlayerForever } from "@/lib/player-moves";
@@ -125,6 +126,9 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
           </Field></div>
           <div className="sm:col-span-2 lg:col-span-3"><Field label="Media gallery">
             <MediaUrls urls={form.media_urls ?? []} onChange={(v) => setForm({ ...form, media_urls: v })} bucket="player-photos" />
+          </Field></div>
+          <div className="sm:col-span-2 lg:col-span-3"><Field label="Social media">
+            <SocialLinksField value={form.social_links} onChange={(v) => setForm({ ...form, social_links: v })} />
           </Field></div>
         </div>
 
