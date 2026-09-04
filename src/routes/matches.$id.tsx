@@ -18,6 +18,7 @@ import { nationalOverrideMap, applyCallUp } from "@/lib/national";
 import { useLogoAccent } from "@/lib/logo-accent";
 import { StandingsTable, type PublicStandingRow } from "@/components/standings-table";
 import { MatchShare } from "@/components/match-share";
+import { displayShortName } from "@/lib/short-name";
 import { FavoriteButton, MatchNotificationButton } from "@/hooks/use-favorites";
 
 /** Crest + name used inside the tinted match hero. */
@@ -158,7 +159,7 @@ function MatchPage() {
   const awayScorers = scorerList(match.away_team_id);
   const starters = (teamId: string | null | undefined) => (lineups.data ?? [])
     .filter((row) => row.team_id === teamId && row.is_starting)
-    .map((row) => ({ number: row.shirt_number ? String(row.shirt_number) : "", name: tx(row.player?.short_name || row.player?.name) ?? "" }));
+    .map((row) => ({ number: row.shirt_number ? String(row.shirt_number) : "", name: tx(displayShortName(row.player?.short_name, row.player?.name)) ?? "" }));
   const shareData = {
     competition: [tx(match.competition?.name) ?? "", roundLabel(match.round_number, match.round) ? tx(roundLabel(match.round_number, match.round)) : ""].filter(Boolean).join(" · "),
     kickoff: dates.kickoff(match.kickoff_at),
@@ -229,7 +230,7 @@ function MatchPage() {
       </div>
 
       <div className="px-4 pb-6 sm:px-6">
-      {match.competition && (
+      {tab === "details" && match.competition && (
         <Link to="/competitions/$slug" params={{ slug: match.competition.slug }}
           className="mb-4 flex items-center gap-3 rounded-3xl border border-border bg-card px-4 py-3 shadow-sm transition hover:border-primary">
           {match.competition.logo_url
@@ -369,7 +370,7 @@ function MatchPage() {
                             )}
                             {marks.length > 0 && <span className="absolute -right-2 -top-2 z-30 flex items-center gap-px rounded-full bg-background p-0.5 shadow ring-2 ring-background">{marks.slice(0, 3).map((t, k) => <EventArt key={k} type={t} className="h-4 w-4" />)}</span>}
                           </span>
-                          <span className="line-clamp-1 max-w-full text-[0.6rem] font-semibold leading-tight text-white drop-shadow">{tx(lu.player?.short_name || lu.player?.name)}</span>
+                          <span className="line-clamp-1 max-w-full text-[0.6rem] font-semibold leading-tight text-white drop-shadow">{tx(displayShortName(lu.player?.short_name, lu.player?.name))}</span>
                           <span className={`h-4 rounded px-1.5 text-[0.6rem] font-black leading-4 ${pitchRating != null ? ratingClass(Number(pitchRating)) : "opacity-0"}`}>{pitchRating != null ? num(formatRating(pitchRating)) : "0.0"}</span>
                         </Link>
                       );
