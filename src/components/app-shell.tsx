@@ -203,40 +203,8 @@ export function LoadingSkeleton({ count = 4, className = "h-24" }: { count?: num
 }
 
 /**
- * Hint that a page continues below the fold. It appears only while the page is
- * scrollable and the reader is still near the top, then fades away for good.
- */
-export function ScrollHint({ label }: { label?: string }) {
-  const { lang } = useI18n();
-  const [show, setShow] = useState(false);
-  useEffect(() => {
-    const update = () => {
-      const room = document.documentElement.scrollHeight - window.innerHeight;
-      setShow(room > 220 && window.scrollY < 80);
-    };
-    update();
-    const timer = window.setTimeout(update, 600);
-    window.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update);
-    return () => { window.clearTimeout(timer); window.removeEventListener("scroll", update); window.removeEventListener("resize", update); };
-  }, []);
-  if (!show) return null;
-  return (
-    <button
-      type="button"
-      onClick={() => window.scrollBy({ top: window.innerHeight * 0.75, behavior: "smooth" })}
-      className="pointer-events-auto fixed bottom-24 left-1/2 z-40 inline-flex -translate-x-1/2 animate-bounce items-center gap-1.5 rounded-full border border-border bg-card/95 px-3 py-1.5 text-[0.7rem] font-bold text-muted-foreground shadow-lg backdrop-blur"
-    >
-      {label ?? (lang === "ar" ? "اسحب للأسفل للمزيد" : "Scroll for more")}
-      <ChevronDown className="h-3.5 w-3.5" />
-    </button>
-  );
-}
-
-/**
- * Wraps a horizontally scrollable tab row and tells the reader there is more to
- * the side: soft fades, tappable arrows, and a "Swipe for more" pill that fades
- * out once the row has been swiped to the end.
+ * Wraps a horizontally scrollable tab row with a quiet hint that there is more
+ * to the side: soft edge fades and a small arrow, no animation or nagging pill.
  */
 export function SwipeTabs({ children, className = "" }: { children: ReactNode; className?: string }) {
   const { lang } = useI18n();
@@ -262,28 +230,24 @@ export function SwipeTabs({ children, className = "" }: { children: ReactNode; c
 
   return (
     <div className="relative">
-      <div ref={ref} className={`flex max-w-full overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${className}`}>
+      <div ref={ref} className={`flex max-w-full snap-x scroll-px-4 overflow-x-auto scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${className}`}>
         {children}
       </div>
-      {edge.start && (
-        <>
-          <span className="pointer-events-none absolute inset-y-0 start-0 w-10 bg-gradient-to-r from-background to-transparent" />
-          <button type="button" aria-label="Previous tabs" onClick={() => nudge(-1)}
-            className="absolute start-0 top-1/2 z-10 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card/95 text-muted-foreground shadow">
-            <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
-          </button>
-        </>
-      )}
-      {edge.end && (
-        <>
-          <span className="pointer-events-none absolute inset-y-0 end-0 w-14 bg-gradient-to-l from-background to-transparent" />
-          <button type="button" onClick={() => nudge(1)}
-            className="absolute end-0 top-1/2 z-10 inline-flex -translate-y-1/2 animate-pulse items-center gap-1 rounded-full border border-border bg-card/95 px-2 py-1 text-[0.6rem] font-bold text-muted-foreground shadow">
-            {lang === "ar" ? "اسحب للمزيد" : "Swipe for more"}
-            <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" />
-          </button>
-        </>
-      )}
+      <span className={`pointer-events-none absolute inset-y-0 start-0 w-8 bg-gradient-to-r from-background to-transparent transition-opacity duration-300 ${edge.start ? "opacity-100" : "opacity-0"}`} />
+      <span className={`pointer-events-none absolute inset-y-0 end-0 w-8 bg-gradient-to-l from-background to-transparent transition-opacity duration-300 ${edge.end ? "opacity-100" : "opacity-0"}`} />
+      <button
+        type="button" aria-label="Previous tabs" tabIndex={edge.start ? 0 : -1} onClick={() => nudge(-1)}
+        className={`absolute start-0 top-1/2 z-10 hidden h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-border/60 bg-card/80 text-muted-foreground/70 backdrop-blur transition-opacity duration-300 sm:inline-flex ${edge.start ? "opacity-100" : "pointer-events-none opacity-0"}`}
+      >
+        <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
+      </button>
+      <button
+        type="button" aria-label="More tabs" tabIndex={edge.end ? 0 : -1} onClick={() => nudge(1)}
+        className={`absolute end-0 top-1/2 z-10 hidden h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-border/60 bg-card/80 text-muted-foreground/70 backdrop-blur transition-opacity duration-300 sm:inline-flex ${edge.end ? "opacity-100" : "pointer-events-none opacity-0"}`}
+      >
+        <ChevronRight className="h-4 w-4 rtl:rotate-180" />
+      </button>
     </div>
   );
 }
+
