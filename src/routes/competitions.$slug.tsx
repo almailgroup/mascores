@@ -12,7 +12,7 @@ import { MatchRow, type MatchWithTeams } from "@/components/match-list";
 import { CompetitionStats } from "@/components/competition-stats";
 import { useI18n } from "@/lib/i18n";
 import type { Database } from "@/integrations/supabase/types";
-import { ArrowLeft, CalendarDays, ChevronRight, Play, Trophy, Bell, Medal, Star, Users, Shapes, Globe2, Flag as FlagIco, ListOrdered } from "lucide-react";
+import { CalendarDays, ChevronRight, Play, Trophy, Bell, Medal, Star, Users, Shapes, Globe2, Flag as FlagIco, ListOrdered } from "lucide-react";
 import { competitionTheme, DEFAULT_HERO } from "@/lib/competition-theme";
 import { useFavorites } from "@/hooks/use-favorites";
 import { SeasonMenu } from "@/components/season-menu";
@@ -389,7 +389,9 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
       {/* Season window, straight under the header like the mockup. */}
       <section className="rounded-2xl border border-border bg-card p-4 shadow-sm">
         <div className="flex min-w-0 items-center gap-3">
-          <TrophyBadge />
+          <span className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-2xl bg-muted/60 p-1">
+            {logo ? <img src={logo} alt="" className="h-full w-full object-contain" /> : <Trophy className="h-6 w-6 text-primary" />}
+          </span>
           <div className="min-w-0">
             <div className="truncate text-base font-black leading-tight">{tx(c.name)}</div>
             <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -492,10 +494,6 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
       {c.description && <p className="rounded-xl border border-border bg-card p-3 text-xs leading-relaxed text-muted-foreground sm:text-sm">{tx(c.description)}</p>}
     </div>
   );
-}
-
-function TrophyBadge() {
-  return <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary"><Trophy className="h-6 w-6" /></span>;
 }
 
 function TeamCell({ label, team, note }: { label: string; team: Team | null; note?: string | null }) {
