@@ -2,7 +2,7 @@ import { TeamCrest } from "@/components/team-crest";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { AppShell, BackButton, EmptyState, LoadingSkeleton, SectionHeader, SwipeTabs } from "@/components/app-shell";
+import { AppShell, EmptyState, LoadingSkeleton, SectionHeader, SwipeTabs } from "@/components/app-shell";
 import { supabase, formatKickoff, type Competition, type Team, type Match, type StandingRow } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 import { FlagIcon } from "@/components/flag";
@@ -12,9 +12,9 @@ import { MatchRow, type MatchWithTeams } from "@/components/match-list";
 import { CompetitionStats } from "@/components/competition-stats";
 import { useI18n } from "@/lib/i18n";
 import type { Database } from "@/integrations/supabase/types";
-import { CalendarDays, ChevronRight, Play, Trophy, Medal, Star, Users, Shapes, Globe2, Flag as FlagIco, ListOrdered } from "lucide-react";
-import { competitionTheme } from "@/lib/competition-theme";
-import { CompetitionIntro } from "@/components/competition-intro";
+import { ArrowLeft, CalendarDays, ChevronRight, Play, Trophy, Medal, Star, Users, Shapes, Globe2, Flag as FlagIco, ListOrdered } from "lucide-react";
+import { competitionTheme, DEFAULT_HERO } from "@/lib/competition-theme";
+import { useFavorites } from "@/hooks/use-favorites";
 import { SeasonMenu } from "@/components/season-menu";
 import { StandingsTable } from "@/components/standings-table";
 import { useCompetitionLogo } from "@/lib/comp-logo";
@@ -131,6 +131,7 @@ function CompetitionPage() {
   const dates = useDates();
   const { t } = useI18n();
   const compLogo = useCompetitionLogo();
+  const { isFavorite, toggle: toggleFavorite } = useFavorites();
 
   if (comp.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;
   if (!comp.data) return <AppShell><EmptyState title="Competition not found" /></AppShell>;
@@ -141,43 +142,67 @@ function CompetitionPage() {
     : (["overview", "matches", "standings", "stats", "teams", "awards", "media", "news"] as const);
 
   const theme = competitionTheme({ slug: c.slug, name: c.name });
+  const faved = isFavorite("competition", c.id);
   const activeSeason = season ?? c.season ?? c.seasons?.[0] ?? null;
 
   return (
     <AppShell>
-      {theme && <CompetitionIntro theme={theme} name={tx(c.name)} season={activeSeason ? num(activeSeason) : null} logoUrl={compLogo(c)} />}
-      {theme && (
-        <div aria-hidden className="pointer-events-none fixed inset-0 z-0" style={{ background: theme.backdrop }}>
-          <span className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.9) 55%, rgba(255,255,255,0.97) 100%)" }} />
-        </div>
-      )}
-      <div
-        style={theme ? { ...theme.vars, backgroundImage: theme.page, color: "var(--foreground)" } : undefined}
-        className={theme ? "relative z-10 -mx-4 px-4 pb-8" : undefined}
-      >
-
-      <BackButton />
-       <div className={`mb-3 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 pb-3 ${theme ? "-mx-4 rounded-b-3xl px-4 pt-4 text-primary-foreground sm:mx-0 sm:rounded-3xl" : "border-b border-border"}`}
-         style={theme ? { background: theme.hero } : undefined}>
-         <div className={`flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl text-primary sm:h-14 sm:w-14 ${theme ? "bg-background/95 p-1.5" : ""}`}>
-          {compLogo(c) ? <img src={compLogo(c)!} alt="" className="h-full w-full object-contain" /> : <Trophy className="h-7 w-7" />}
-        </div>
-        <div className="min-w-0">
-          <h1 className="truncate text-base font-bold leading-tight sm:text-2xl">{tx(c.name)}</h1>
-           <div className={`mt-0.5 flex min-w-0 flex-wrap items-center gap-1.5 text-[0.7rem] sm:text-xs ${theme ? "text-primary-foreground/85" : "text-muted-foreground"}`}>
-            {!friendly && <FlagIcon value={c.country_code ?? c.country} />}
-             <span className="truncate">{(friendly ? [tx(c.category)] : [tx(c.country), tx(c.category)]).filter(Boolean).join(" · ")}</span>
+      <div style={theme ? (theme.vars as React.CSSProperties) : undefined}>
+        {/* Dark hero band: navigation, identity, season picker and tabs all sit
+            on one coloured header, the way the mockup shows it. */}
+        <div
+          className="-mx-4 -mt-6 mb-4 px-4 pb-0 pt-3 text-white sm:-mx-6 sm:px-6"
+          style={{ background: theme ? theme.hero : DEFAULT_HERO }}
+        >
+          <div className="flex items-center justify-between">
+            <button onClick={() => history.back()} aria-label={tx("Back")} className="-ms-2 inline-flex h-10 w-10 items-center justify-center rounded-full text-white/90 hover:bg-white/10">
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => toggleFavorite("competition", c.id)}
+                aria-label={tx("Favorite")}
+                className={`-me-2 inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-white/10 ${faved ? "text-amber-300" : "text-white/80"}`}
+              >
+                <Star className="h-5 w-5" fill={faved ? "currentColor" : "none"} />
+              </button>
+            </div>
           </div>
-          {(c.seasons?.length ?? 0) > 0 && <div className="mt-2"><SeasonMenu seasons={c.seasons} value={activeSeason} onChange={setSeason} onHero={!!theme} /></div>}
-        </div>
-        <div className="col-span-2"><DurationBar startsOn={c.starts_on} endsOn={c.ends_on} onHero={!!theme} /></div>
-      </div>
 
-      <div className="mb-5 border-b border-border pb-2">
-        <SwipeTabs className="gap-1 text-xs sm:text-sm">
-          {tabs.map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-3 py-2 font-semibold capitalize sm:px-4 ${tab === item ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{item === "awards" ? tx("Awards") : t(`tab.${item}`)}</button>)}
-        </SwipeTabs>
-      </div>
+          <div className="mt-1 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-1.5 shadow-lg">
+              {compLogo(c) ? <img src={compLogo(c)!} alt="" className="h-full w-full object-contain" /> : <Trophy className="h-7 w-7 text-primary" />}
+            </div>
+            <div className="min-w-0">
+              <h1 className="truncate text-lg font-black leading-tight sm:text-2xl">{tx(c.name)}</h1>
+              <div className="mt-1 flex min-w-0 items-center gap-2">
+                {(c.seasons?.length ?? 0) > 0
+                  ? <SeasonMenu seasons={c.seasons} value={activeSeason} onChange={setSeason} onHero />
+                  : <span className="text-xs font-bold text-white/80">{activeSeason ? num(activeSeason) : ""}</span>}
+                {!friendly && <FlagIcon value={c.country_code ?? c.country} />}
+              </div>
+            </div>
+            {!friendly && (
+              <div className="shrink-0 rounded-2xl bg-white/15 px-3 py-2 text-center backdrop-blur-sm">
+                <div className="text-base font-black leading-none tabular-nums">{num(teams.data?.length ?? 0)}</div>
+                <div className="mt-1 text-[0.6rem] font-semibold uppercase tracking-wide text-white/75">{tx("Teams")}</div>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-3">
+            <SwipeTabs className="gap-1 text-xs sm:text-sm">
+              {tabs.map((item) => (
+                <button
+                  key={item}
+                  onClick={() => setTab(item)}
+                  className={`shrink-0 border-b-2 px-3 py-2.5 font-bold capitalize sm:px-4 ${tab === item ? "border-white text-white" : "border-transparent text-white/65"}`}
+                >{item === "awards" ? tx("Awards") : t(`tab.${item}`)}</button>
+              ))}
+            </SwipeTabs>
+          </div>
+        </div>
+
 
        {tab === "overview" && <CompetitionOverviewTab c={c} season={season} teams={teams.data ?? []} titleHolder={friendly ? null : (titleHolder ?? null)} titles={friendly ? [] : (compTitles.data ?? [])} divisions={friendly ? [] : (divisions.data ?? [])} matches={matches.data ?? []} media={media.data ?? []} friendly={friendly} />}
 
@@ -287,6 +312,21 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
   ];
   return (
     <div className="space-y-4">
+      {/* Season window, straight under the header like the mockup. */}
+      <section className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+        <div className="flex min-w-0 items-center gap-3">
+          <TrophyBadge />
+          <div className="min-w-0">
+            <div className="truncate text-base font-black leading-tight">{tx(c.name)}</div>
+            <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+              {!friendly && <FlagIcon value={c.country_code ?? c.country} />}
+              <span className="truncate">{[tx(c.country), tx(c.category)].filter(Boolean).join(" \u00b7 ")}</span>
+            </div>
+          </div>
+        </div>
+        <div className="mt-3"><DurationBar startsOn={c.starts_on} endsOn={c.ends_on} /></div>
+      </section>
+
       {/* Key numbers strip */}
       <section className="overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-3 shadow-sm sm:p-4">
         <div className={`grid gap-2 ${friendly ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6"}`}>
@@ -378,6 +418,10 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
       {c.description && <p className="rounded-xl border border-border bg-card p-3 text-xs leading-relaxed text-muted-foreground sm:text-sm">{tx(c.description)}</p>}
     </div>
   );
+}
+
+function TrophyBadge() {
+  return <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary"><Trophy className="h-6 w-6" /></span>;
 }
 
 function TeamCell({ label, team, note }: { label: string; team: Team | null; note?: string | null }) {
