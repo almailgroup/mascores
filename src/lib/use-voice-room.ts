@@ -42,6 +42,8 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
   const [connected, setConnected] = useState(false);
   const [audioReady, setAudioReady] = useState(false);
   const [speaking, setSpeaking] = useState<Record<string, boolean>>({});
+  const [recording, setRecording] = useState(false);
+
 
   const channelRef = useRef<RealtimeChannel | null>(null);
   const pcsRef = useRef<Map<string, RTCPeerConnection>>(new Map());
