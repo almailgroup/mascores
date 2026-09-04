@@ -38,6 +38,7 @@ export const editChatMessage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => editChatSchema.parse(input))
   .handler(async ({ data, context }) => {
+    await assertNotSuspended(context.supabase as never, context.userId);
     const { isMessageBlocked } = await import("./chat-moderation.server");
     if (await isMessageBlocked(data.body)) {
       throw new Error("This message was blocked by the chat moderator. Please keep it respectful.");
