@@ -2,7 +2,7 @@ import { TeamCrest } from "@/components/team-crest";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { AppShell, BackButton, EmptyState, LoadingSkeleton, ScrollHint, SwipeTabs } from "@/components/app-shell";
+import { AppShell, BackButton, EmptyState, LoadingSkeleton, SwipeTabs } from "@/components/app-shell";
 import { supabase, STATUS_LABELS, roundLabel, matchClockSeconds, formatClock, eventLabel, ratingClass, formatRating, type Match, type Team, type MatchEvent, type Lineup, type Player, type StandingRow } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 import { PlayCircle, Radio } from "lucide-react";
@@ -116,7 +116,6 @@ function MatchPage() {
 
   return (
     <AppShell>
-      <ScrollHint />
       <BackButton />
       <div className="mb-6 rounded-3xl border border-border bg-card p-6">
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
