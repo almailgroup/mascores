@@ -147,8 +147,13 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
           <Field label="Title holder"><select className={inputCls} value={form.title_holder_team_id ?? ""} onChange={(e) => setForm({ ...form, title_holder_team_id: e.target.value || null })}><option value="">None</option>{titleHolderTeams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}</select></Field>
           <Field label="Standings mode"><select className={inputCls} value={form.standings_mode ?? "table"} onChange={(e) => setForm({ ...form, standings_mode: e.target.value })}><option value="table">League table</option><option value="groups">Groups</option><option value="knockout">Knockout</option></select></Field>
           <div className="sm:col-span-2">
-            <Field label="Logo">
+            <Field label="Logo (light mode)">
               <ImageInput value={form.logo_url ?? null} onChange={(v) => setForm({ ...form, logo_url: v })} onFile={async (f) => { const url = await uploadMedia("competition-logos", f); if (url) setForm({ ...form, logo_url: url }); }} />
+            </Field>
+          </div>
+          <div className="sm:col-span-2">
+            <Field label="Logo (dark mode) — optional">
+              <ImageInput value={form.logo_url_dark ?? null} onChange={(v) => setForm({ ...form, logo_url_dark: v })} onFile={async (f) => { const url = await uploadMedia("competition-logos", f); if (url) setForm({ ...form, logo_url_dark: url }); }} />
             </Field>
           </div>
           <div className="sm:col-span-2">

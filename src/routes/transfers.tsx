@@ -127,8 +127,10 @@ function TransfersPage() {
                           : (tx(r.player?.name) ?? tx("Unknown"))}
                       </div>
                       <div className="mt-1 flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
+                        {r.from_club_logo_url ? <img src={r.from_club_logo_url} alt="" className="h-4 w-4 shrink-0 object-contain" /> : null}
                         <span className="truncate">{tx(r.from_club) ?? "Free agent"}</span>
                         <ArrowRight className="h-3.5 w-3.5 shrink-0 text-primary" />
+                        {r.to_club_logo_url ? <img src={r.to_club_logo_url} alt="" className="h-4 w-4 shrink-0 object-contain" /> : null}
                         <span className="truncate font-semibold text-foreground">{tx(r.to_club) ?? "—"}</span>
                       </div>
                     </div>

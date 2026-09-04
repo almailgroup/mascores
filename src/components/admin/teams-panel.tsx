@@ -14,6 +14,7 @@ import { TeamCrest } from "@/components/team-crest";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import { VenueSelect } from "./venue-select";
 import { ArabicNameField } from "./arabic-name-field";
+import { SocialLinksField } from "./social-links-field";
 import { MediaUrls } from "./media-urls";
 import { NationalSquadModal } from "./national-squad-modal";
 import { SeasonSquadModal } from "./season-squad-modal";
@@ -205,6 +206,9 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
           </Field></div>
           <div className="sm:col-span-2"><Field label="Media gallery">
             <MediaUrls urls={form.media_urls ?? []} onChange={(v) => setForm({ ...form, media_urls: v })} bucket="team-logos" />
+          </Field></div>
+          <div className="sm:col-span-2"><Field label="Social media">
+            <SocialLinksField value={form.social_links} onChange={(v) => setForm({ ...form, social_links: v })} />
           </Field></div>
         </div>
         <label className="mt-3 flex items-start gap-2 rounded-xl border border-border bg-background/50 p-3 text-xs">

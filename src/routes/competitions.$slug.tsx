@@ -12,11 +12,12 @@ import { MatchRow, type MatchWithTeams } from "@/components/match-list";
 import { CompetitionStats } from "@/components/competition-stats";
 import { useI18n } from "@/lib/i18n";
 import type { Database } from "@/integrations/supabase/types";
-import { CalendarDays, ChevronRight, Play, Trophy } from "lucide-react";
+import { CalendarDays, ChevronRight, Play, Trophy, Medal, Star, Users, Shapes, Globe2, Flag as FlagIco, ListOrdered } from "lucide-react";
 import { competitionTheme } from "@/lib/competition-theme";
 import { CompetitionIntro } from "@/components/competition-intro";
 import { SeasonMenu } from "@/components/season-menu";
 import { StandingsTable } from "@/components/standings-table";
+import { useCompetitionLogo } from "@/lib/comp-logo";
 
 type PositionLabel = Database["public"]["Tables"]["standings_position_labels"]["Row"];
 type Row = StandingRow & { team: Team | null };
@@ -129,6 +130,7 @@ function CompetitionPage() {
   const num = useNum();
   const dates = useDates();
   const { t } = useI18n();
+  const compLogo = useCompetitionLogo();
 
   if (comp.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;
   if (!comp.data) return <AppShell><EmptyState title="Competition not found" /></AppShell>;
@@ -144,7 +146,7 @@ function CompetitionPage() {
   return (
     <AppShell>
       <ScrollHint />
-      {theme && <CompetitionIntro theme={theme} name={tx(c.name)} season={activeSeason ? num(activeSeason) : null} logoUrl={c.logo_url} />}
+      {theme && <CompetitionIntro theme={theme} name={tx(c.name)} season={activeSeason ? num(activeSeason) : null} logoUrl={compLogo(c)} />}
       {theme && (
         <div aria-hidden className="pointer-events-none fixed inset-0 z-0" style={{ background: theme.backdrop }}>
           <span className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.9) 55%, rgba(255,255,255,0.97) 100%)" }} />
@@ -159,7 +161,7 @@ function CompetitionPage() {
        <div className={`mb-3 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 pb-3 ${theme ? "-mx-4 rounded-b-3xl px-4 pt-4 text-primary-foreground sm:mx-0 sm:rounded-3xl" : "border-b border-border"}`}
          style={theme ? { background: theme.hero } : undefined}>
          <div className={`flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl text-primary sm:h-14 sm:w-14 ${theme ? "bg-background/95 p-1.5" : ""}`}>
-          {c.logo_url ? <img src={c.logo_url} alt="" className="h-full w-full object-contain" /> : <Trophy className="h-7 w-7" />}
+          {compLogo(c) ? <img src={compLogo(c)!} alt="" className="h-full w-full object-contain" /> : <Trophy className="h-7 w-7" />}
         </div>
         <div className="min-w-0">
           <h1 className="truncate text-base font-bold leading-tight sm:text-2xl">{tx(c.name)}</h1>
@@ -200,7 +202,7 @@ function CompetitionPage() {
           ))}
         </div>
       ) : <EmptyState title={tx("No teams yet")} />}</>}
-      {tab === "awards" && !friendly && <>{awards.data && awards.data.length > 0 ? <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{awards.data.map((award) => <div key={award.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4">{award.player?.photo_url ? <img src={award.player.photo_url} alt="" className="h-12 w-12 rounded-full object-cover" /> : <div className="h-12 w-12 rounded-full bg-muted" />}<div><div className="font-bold">{tx(award.player?.name) ?? tx("Player")}</div><div className="text-xs text-muted-foreground">{award.award_type === "player_of_round" ? `${tx("Player of round")} ${award.round_number ?? "—"}` : tx("Player of the season")}{award.season ? ` · ${award.season}` : ""}</div></div></div>)}</div> : <EmptyState title={tx("No competition awards yet")} />}</>}
+      {tab === "awards" && !friendly && <AwardsBoard awards={awards.data ?? []} />}
       {tab === "media" && <>{media.data && media.data.length > 0 ? <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{media.data.map((item) => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="rounded-lg border border-border bg-card p-4 hover:border-primary"><div className="text-xs font-bold uppercase text-primary">{item.source}</div><div className="mt-1 font-semibold">{tx(item.title) || tx("Open media")}</div><div className="mt-1 truncate text-xs text-muted-foreground">{item.url}</div></a>)}</div> : <EmptyState title={tx("No competition media yet")} />}</>}
       {tab === "news" && <LinkedNews kind="competition" id={c.id} />}
       </div>
@@ -285,13 +287,20 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
   return (
     <div className="space-y-4">
       {/* Key numbers strip */}
-      <section className={`grid grid-cols-3 gap-px overflow-hidden rounded-xl border border-border bg-border ${friendly ? "" : "sm:grid-cols-6"}`}>
-        {cells.map(([label, value]) => (
-          <div key={label} className="bg-card px-2.5 py-3 text-center">
-            <div className="text-[0.6rem] font-bold uppercase tracking-wide text-muted-foreground">{tx(label)}</div>
-            <div className="mt-1 truncate text-xs font-bold tabular-nums sm:text-sm">{tx(value)}</div>
-          </div>
-        ))}
+      <section className="overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-3 shadow-sm sm:p-4">
+        <div className={`grid gap-2 ${friendly ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6"}`}>
+          {cells.map(([label, value]) => {
+            const Icon = CELL_ICONS[label] ?? Star;
+            return (
+              <div key={label} className="rounded-xl border border-border/60 bg-background/70 px-3 py-2.5 backdrop-blur">
+                <div className="flex items-center gap-1.5 text-[0.6rem] font-bold uppercase tracking-wide text-muted-foreground">
+                  <Icon className="h-3 w-3 text-primary" /> {tx(label)}
+                </div>
+                <div className="mt-1.5 truncate text-sm font-black tabular-nums sm:text-base">{tx(value)}</div>
+              </div>
+            );
+          })}
+        </div>
       </section>
 
       {featured && (
@@ -406,6 +415,73 @@ function DurationBar({ startsOn, endsOn, onHero }: { startsOn: string | null; en
       <div className={`mt-1.5 h-1.5 w-full overflow-hidden rounded-full ${onHero ? "bg-primary-foreground/25" : "bg-muted"}`}>
         <div className={`h-full rounded-full transition-all ${onHero ? "bg-primary-foreground" : "bg-primary"}`} style={{ width: `${pct}%` }} />
       </div>
+    </div>
+  );
+}
+
+const CELL_ICONS: Record<string, typeof Star> = {
+  Season: CalendarDays,
+  Teams: Users,
+  Matches: ListOrdered,
+  Format: Shapes,
+  Sport: Trophy,
+  Country: FlagIco,
+};
+
+/** Trophy-style award cards: bigger portrait, gold ribbon and a clear round badge. */
+function AwardsBoard({ awards }: { awards: { id: string; award_type: string; round_number: number | null; season: string | null; note: string | null; player: { id: string; name: string; photo_url: string | null } | null }[] }) {
+  const tx = useTx();
+  const num = useNum();
+  if (awards.length === 0) return <EmptyState title={tx("No competition awards yet")} />;
+  const season = awards.filter((a) => a.award_type !== "player_of_round");
+  const rounds = awards.filter((a) => a.award_type === "player_of_round");
+  return (
+    <div className="space-y-5">
+      {season.length > 0 && (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {season.map((award) => (
+            <div key={award.id} className="relative overflow-hidden rounded-3xl border border-amber-400/40 bg-gradient-to-br from-amber-400/20 via-card to-card p-5 shadow-sm">
+              <span className="absolute end-4 top-4 inline-flex items-center gap-1 rounded-full bg-amber-400/25 px-3 py-1 text-[0.6rem] font-black uppercase tracking-widest text-amber-600 dark:text-amber-300">
+                <Medal className="h-3 w-3" /> {tx("Player of the season")}
+              </span>
+              <div className="flex items-center gap-4">
+                {award.player?.photo_url
+                  ? <img src={award.player.photo_url} alt="" className="h-20 w-20 shrink-0 rounded-2xl object-cover ring-2 ring-amber-400/60" />
+                  : <div className="h-20 w-20 shrink-0 rounded-2xl bg-muted" />}
+                <div className="min-w-0">
+                  <div className="truncate text-lg font-black leading-tight">{tx(award.player?.name) ?? tx("Player")}</div>
+                  {award.season && <div className="mt-1 text-xs font-bold text-muted-foreground">{num(award.season)}</div>}
+                  {award.note && <div className="mt-1 text-xs text-muted-foreground">{tx(award.note)}</div>}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {rounds.length > 0 && (
+        <section className="overflow-hidden rounded-2xl border border-border bg-card">
+          <div className="border-b border-border bg-muted/40 px-4 py-2.5 text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Player of the round")}</div>
+          <div className="divide-y divide-border">
+            {rounds.map((award) => (
+              <div key={award.id} className="flex items-center gap-3 px-4 py-3">
+                <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[0.7rem] font-black text-primary">
+                  {award.round_number != null ? num(award.round_number) : "—"}
+                </span>
+                {award.player?.photo_url
+                  ? <img src={award.player.photo_url} alt="" className="h-10 w-10 shrink-0 rounded-full object-cover" />
+                  : <div className="h-10 w-10 shrink-0 rounded-full bg-muted" />}
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-bold">{tx(award.player?.name) ?? tx("Player")}</div>
+                  <div className="truncate text-[0.7rem] text-muted-foreground">
+                    {tx("Round")} {award.round_number != null ? num(award.round_number) : "—"}{award.season ? ` · ${num(award.season)}` : ""}
+                  </div>
+                </div>
+                <Medal className="h-4 w-4 shrink-0 text-amber-500" />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

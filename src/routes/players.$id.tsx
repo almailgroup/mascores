@@ -11,6 +11,7 @@ import { useHeightUnit } from "@/lib/units";
 import { FlagIcon } from "@/components/flag";
 import { useI18n } from "@/lib/i18n";
 import { PlayerAvatar } from "@/components/player-avatar";
+import { SocialLinksSection } from "@/components/social-links";
 import { LinkedNews } from "@/components/linked-news";
 import { formatMoney, useCurrency } from "@/lib/currency";
 import { ArrowRight, CalendarDays } from "lucide-react";
@@ -167,7 +168,7 @@ function PlayerPage() {
                 const from = transferClubs.data?.find((team) => team.name === r.from_club);
                 const to = transferClubs.data?.find((team) => team.name === r.to_club);
                 return <div key={r.id} className="grid grid-cols-[2.25rem_minmax(0,1fr)] items-start gap-3 border-b border-border p-3 last:border-b-0 sm:grid-cols-[3rem_minmax(0,1fr)]">
-                  <TeamCrest name={to?.name ?? r.to_club ?? r.from_club} logo={to?.logo_url ?? from?.logo_url ?? null} className="h-9 w-9 sm:h-10 sm:w-10" />
+                  <TeamCrest name={to?.name ?? r.to_club ?? r.from_club} logo={to?.logo_url ?? r.to_club_logo_url ?? from?.logo_url ?? r.from_club_logo_url ?? null} className="h-9 w-9 sm:h-10 sm:w-10" />
                   <div className="min-w-0">
                     <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[0.8rem] font-semibold leading-snug sm:text-sm">
                       <span className="break-words">{tx(r.from_club) ?? tx("Free agent")}</span>
@@ -185,6 +186,8 @@ function PlayerPage() {
               })}
             </div>
           ) : <EmptyState title={tx("No transfers recorded")} />}
+
+          <div className="mt-8"><SocialLinksSection value={p.social_links} /></div>
         </>
       )}
 

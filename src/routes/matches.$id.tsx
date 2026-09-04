@@ -8,6 +8,7 @@ import { useRealtime } from "@/lib/realtime";
 import { PlayCircle, Radio } from "lucide-react";
 import { useTx, useNum, useDates } from "@/lib/auto-translate";
 import { MatchChat } from "@/components/match-chat";
+import { MatchVoice } from "@/components/match-voice";
 import { MatchPrediction } from "@/components/match-prediction";
 import { MatchMomentum } from "@/components/match-momentum";
 import { MapPin, Users } from "lucide-react";
@@ -212,6 +213,7 @@ function MatchPage() {
             </div>
 
           {match.highlight_url && <a href={match.highlight_url} target="_blank" rel="noreferrer" className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4 font-semibold hover:border-primary"><PlayCircle className="h-5 w-5 text-primary" /> {tx("Watch match highlights")}</a>}
+          <MatchVoice matchId={id} />
           <MatchChat matchId={id} />
         </div>
       </div>}

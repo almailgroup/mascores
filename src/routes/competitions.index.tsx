@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { AppShell, EmptyState, LoadingSkeleton, SectionHeader } from "@/components/app-shell";
 import { supabase, type Competition } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
+import { useCompetitionLogo } from "@/lib/comp-logo";
 import { Trophy } from "lucide-react";
 import { useNum, useTx } from "@/lib/auto-translate";
 
@@ -13,6 +14,7 @@ export const Route = createFileRoute("/competitions/")({
 
 function CompetitionsList() {
   const tx = useTx();
+  const compLogo = useCompetitionLogo();
   const num = useNum();
   useRealtime(["competitions"]);
   const q = useQuery({
@@ -32,7 +34,7 @@ function CompetitionsList() {
           {q.data.map((c) => (
             <Link key={c.id} to="/competitions/$slug" params={{ slug: c.slug }} className="group flex items-center gap-3 rounded-2xl border border-border bg-card p-4 hover:border-primary/50 hover:shadow-lg">
                <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl text-primary">
-                {c.logo_url ? <img src={c.logo_url} alt="" className="h-full w-full object-contain" /> : <Trophy className="h-6 w-6" />}
+                {compLogo(c) ? <img src={compLogo(c)!} alt="" className="h-full w-full object-contain" /> : <Trophy className="h-6 w-6" />}
               </div>
               <div className="min-w-0">
                 <div className="truncate font-semibold">{tx(c.name)}</div>
