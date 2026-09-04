@@ -12,9 +12,9 @@ import { MatchRow, type MatchWithTeams } from "@/components/match-list";
 import { CompetitionStats } from "@/components/competition-stats";
 import { useI18n } from "@/lib/i18n";
 import type { Database } from "@/integrations/supabase/types";
-import { CalendarDays, ChevronRight, Play, Trophy, Medal, Star, Users, Shapes, Globe2, Flag as FlagIco, ListOrdered } from "lucide-react";
-import { competitionTheme } from "@/lib/competition-theme";
-import { CompetitionIntro } from "@/components/competition-intro";
+import { ArrowLeft, CalendarDays, ChevronRight, Play, Trophy, Medal, Star, Users, Shapes, Globe2, Flag as FlagIco, ListOrdered } from "lucide-react";
+import { competitionTheme, DEFAULT_HERO } from "@/lib/competition-theme";
+import { useFavorites } from "@/hooks/use-favorites";
 import { SeasonMenu } from "@/components/season-menu";
 import { StandingsTable } from "@/components/standings-table";
 import { useCompetitionLogo } from "@/lib/comp-logo";
@@ -131,6 +131,7 @@ function CompetitionPage() {
   const dates = useDates();
   const { t } = useI18n();
   const compLogo = useCompetitionLogo();
+  const { isFavorite, toggle: toggleFavorite } = useFavorites();
 
   if (comp.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;
   if (!comp.data) return <AppShell><EmptyState title="Competition not found" /></AppShell>;
@@ -141,6 +142,7 @@ function CompetitionPage() {
     : (["overview", "matches", "standings", "stats", "teams", "awards", "media", "news"] as const);
 
   const theme = competitionTheme({ slug: c.slug, name: c.name });
+  const faved = isFavorite("competition", c.id);
   const activeSeason = season ?? c.season ?? c.seasons?.[0] ?? null;
 
   return (
