@@ -85,7 +85,7 @@ function MatchPage() {
     queryKey: ["match-lineups", id, m.data?.home?.is_national, m.data?.away?.is_national],
     queryFn: async () => {
       const { data } = await supabase.from("match_lineups")
-        .select("*, player:player_id(id,name,shirt_number,position,photo_url)")
+        .select("*, player:player_id(id,name,short_name,shirt_number,position,photo_url)")
         .eq("match_id", id);
       const rows = (data ?? []) as unknown as (Lineup & { player: Player | null })[];
       const overrides = await nationalOverrideMap([m.data?.home ?? null, m.data?.away ?? null]);
@@ -164,7 +164,7 @@ function MatchPage() {
 
       <div className="mb-6 border-b border-border pb-2">
         <SwipeTabs className="gap-1 text-sm">
-          {tabs.map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 py-2 font-semibold capitalize ${tab === item ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{tx(item === "media" ? "Media" : item === "previous" ? "Previous matches" : item === "details" ? "Details" : item === "lineups" ? "Lineups" : item === "standings" ? "Standings" : "Stats")}</button>)}
+          {tabs.map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 py-2 font-semibold capitalize ${tab === item ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{tx(item === "media" ? "Media" : item === "previous" ? "Matches" : item === "details" ? "Details" : item === "lineups" ? "Lineups" : item === "standings" ? "Standings" : "Stats")}</button>)}
         </SwipeTabs>
       </div>
 
@@ -292,7 +292,7 @@ function MatchPage() {
                             )}
                             {marks.length > 0 && <span className="absolute -right-2 -top-2 z-30 flex items-center gap-px rounded-full bg-background p-0.5 shadow ring-2 ring-background">{marks.slice(0, 3).map((t, k) => <EventArt key={k} type={t} className="h-4 w-4" />)}</span>}
                           </span>
-                          <span className="line-clamp-1 max-w-full text-[0.6rem] font-semibold leading-tight text-white drop-shadow">{tx(lu.player?.name)}</span>
+                          <span className="line-clamp-1 max-w-full text-[0.6rem] font-semibold leading-tight text-white drop-shadow">{tx(lu.player?.short_name || lu.player?.name)}</span>
                           <span className={`h-4 rounded px-1.5 text-[0.6rem] font-black leading-4 ${pitchRating != null ? ratingClass(Number(pitchRating)) : "opacity-0"}`}>{pitchRating != null ? num(formatRating(pitchRating)) : "0.0"}</span>
                         </Link>
                       );
