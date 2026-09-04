@@ -21,8 +21,8 @@ export function Modal({ open, onClose, title, children, wide, fullPage }: { open
   return (
     <div className={`fixed inset-0 z-50 flex items-start justify-center overflow-y-auto overscroll-contain bg-foreground/60 ${fullPage ? "p-0" : "p-2 backdrop-blur-sm sm:p-4"}`} onClick={onClose}>
       <div className={`${fullPage ? "min-h-screen max-w-6xl rounded-none border-x sm:my-4 sm:min-h-0 sm:rounded-lg" : `my-3 ${wide ? "max-w-4xl" : "max-w-lg"} rounded-3xl sm:my-8`} w-full min-w-0 border border-border bg-card p-4 shadow-2xl sm:p-6`} onClick={(e) => e.stopPropagation()}>
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-bold">{title}</h3>
+        <div className="sticky top-0 z-10 -mx-4 mb-4 flex items-center justify-between border-b border-border bg-card px-4 pb-2 pt-1 sm:-mx-6 sm:px-6">
+          <h3 className="min-w-0 truncate text-lg font-bold">{title}</h3>
           <button onClick={onClose} className="rounded-full px-2 py-1 text-sm text-muted-foreground hover:bg-accent">✕</button>
         </div>
         {children}

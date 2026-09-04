@@ -1,4 +1,6 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import logoLight from "@/assets/logo-mark-v2.png.asset.json";
+import logoDark from "@/assets/logo-mark-dark.png";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, EmptyState } from "@/components/app-shell";
@@ -110,15 +112,17 @@ function SearchPage() {
 
   return (
     <AppShell>
-      {/* Focused search surface: coloured header with the field and filters
-          pinned to the top, then the list of previously opened entities. */}
-      <div className="-mx-4 -mt-4 mb-4 sticky top-0 z-30 bg-primary px-4 pb-3 pt-4 text-primary-foreground shadow-lg sm:rounded-b-3xl">
-        <div className="flex items-center gap-2">
+      {/* Focused search surface: two-tone brand header (black→blue in light mode,
+          white→blue in dark mode) with the logo set as a faint watermark. */}
+      <div className="relative -mx-4 -mt-4 mb-4 sticky top-0 z-30 overflow-hidden bg-gradient-to-r from-[#0b0f1a] to-primary px-4 pb-3 pt-4 text-white shadow-lg dark:from-white dark:to-primary dark:text-[#0b0f1a] sm:rounded-b-3xl">
+        <img src={logoLight.url} alt="" aria-hidden className="pointer-events-none absolute -end-6 -top-6 h-32 w-32 opacity-10 dark:hidden" />
+        <img src={logoDark} alt="" aria-hidden className="pointer-events-none absolute -end-6 -top-6 hidden h-32 w-32 opacity-15 dark:block" />
+        <div className="relative flex items-center gap-2">
           <button type="button" aria-label={tx("Back")} onClick={() => { if (router.history.canGoBack()) router.history.back(); else void router.navigate({ to: "/" }); }}
-            className="grid h-9 w-9 shrink-0 place-items-center rounded-full hover:bg-primary-foreground/15">
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-full hover:bg-white/20 dark:hover:bg-black/10">
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <div className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-full bg-primary-foreground px-4 text-foreground">
+          <div className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-full bg-card px-4 text-foreground shadow-sm">
             <SearchIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
             <input autoFocus value={q} onChange={(e) => setQ(e.target.value)}
               placeholder={tx("Search")}
@@ -126,15 +130,16 @@ function SearchPage() {
             {q && <button aria-label={tx("Clear")} onClick={() => setQ("")} className="text-muted-foreground"><X className="h-4 w-4" /></button>}
           </div>
         </div>
-        <div className="mt-3 flex gap-2 overflow-x-auto pb-0.5 text-xs">
+        <div className="relative mt-3 flex gap-2 overflow-x-auto pb-0.5 text-xs">
           {FILTERS.map((f) => (
             <button key={f.key} onClick={() => setFilter(f.key)}
-              className={`whitespace-nowrap rounded-full px-3.5 py-1.5 font-bold transition ${filter === f.key ? "bg-primary-foreground text-primary" : "bg-primary-foreground/15 text-primary-foreground/90"}`}>
+              className={`whitespace-nowrap rounded-full px-3.5 py-1.5 font-bold transition ${filter === f.key ? "bg-card text-primary shadow-sm" : "bg-white/15 text-white/90 dark:bg-black/10 dark:text-[#0b0f1a]/80"}`}>
               {tx(f.label)}
             </button>
           ))}
         </div>
       </div>
+
 
       {history.length > 0 && q.length < 2 && (
         <div className="mb-5">

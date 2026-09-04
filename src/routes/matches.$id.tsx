@@ -340,14 +340,14 @@ function MatchPage() {
       <MatchMomentum matchId={id} home={match.home} away={match.away} minutes={match.momentum_minutes ?? 90} events={(events.data ?? []).map((e) => ({ minute: e.minute, type: e.type, team_id: e.team_id }))} />
       </div>}
       {tab === "stats" && <div className="rounded-2xl border border-border bg-card p-4">{stats.data && stats.data.length > 0 ? stats.data.map((item) => <div key={item.id} className="grid grid-cols-[1fr_2fr_1fr] border-t border-border py-3 text-center first:border-0"><strong>{num(item.home_value)}</strong><span className="text-muted-foreground">{tx(item.label)}</span><strong>{num(item.away_value)}</strong></div>) : <p className="text-sm text-muted-foreground">{tx("No statistics published yet.")}</p>}</div>}
-      {tab === "previous" && <PreviousMatches home={match.home} away={match.away} currentId={match.id} competitionId={match.competition_id} competitionName={match.competition?.name ?? null} />}
+      {tab === "previous" && <PreviousMatches home={match.home} away={match.away} currentId={match.id} />}
       {tab === "standings" && <MatchStandings competitionId={match.competition_id} season={match.season} liveTeamIds={isLive ? [match.home_team_id, match.away_team_id].filter(Boolean) as string[] : []} highlightIds={[match.home_team_id, match.away_team_id].filter(Boolean) as string[]} />}
       {tab === "media" && <div><h3 className="mb-3 font-bold">{tx("Videos & media")}</h3><div className="grid gap-2">{media.data?.map((item) => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="rounded-xl border border-border bg-card p-4 hover:border-primary"><div className="text-xs font-bold uppercase text-primary">{item.source}</div><div className="mt-1 font-semibold">{tx(item.title) || tx("Open media")}</div></a>)}{media.data?.length === 0 && <p className="text-sm text-muted-foreground">{tx("No media posted.")}</p>}</div></div>}
     </AppShell>
   );
 }
 
-function PreviousMatches(props: { home: Team | null; away: Team | null; currentId: string; competitionId: string; competitionName: string | null }) {
+function PreviousMatches(props: { home: Team | null; away: Team | null; currentId: string }) {
   return <PreviousMatchesInner {...props} />;
 }
 
@@ -389,15 +389,13 @@ type PastRow = Match & {
  * Matches tab: head-to-head by default, with a switch to either club's own
  * past matches, plus "at home" and "this competition" filters.
  */
-function PreviousMatchesInner({ home, away, currentId, competitionId, competitionName }: {
-  home: Team | null; away: Team | null; currentId: string; competitionId: string; competitionName: string | null;
+function PreviousMatchesInner({ home, away, currentId }: {
+  home: Team | null; away: Team | null; currentId: string;
 }) {
   const tx = useTx();
   const num = useNum();
   const dates = useDates();
   const [mode, setMode] = useState<"home" | "h2h" | "away">("h2h");
-  const [atHome, setAtHome] = useState(false);
-  const [sameComp, setSameComp] = useState(false);
   const homeId = home?.id ?? null;
   const awayId = away?.id ?? null;
 
@@ -425,8 +423,6 @@ function PreviousMatchesInner({ home, away, currentId, competitionId, competitio
       const pair = [m.home_team_id, m.away_team_id];
       if (!(pair.includes(homeId) && pair.includes(awayId))) return false;
     } else if (!focusId || (m.home_team_id !== focusId && m.away_team_id !== focusId)) return false;
-    if (atHome && m.home_team_id !== (mode === "h2h" ? homeId : focusId)) return false;
-    if (sameComp && m.competition_id !== competitionId) return false;
     return true;
   });
 
@@ -449,7 +445,6 @@ function PreviousMatchesInner({ home, away, currentId, competitionId, competitio
     else groups.push({ key, comp: m.competition, list: [m] });
   }
 
-  const atHomeName = tx((mode === "away" ? away?.name : home?.name) ?? "") ?? "";
 
   return (
     <div className="grid gap-4">
@@ -480,10 +475,6 @@ function PreviousMatchesInner({ home, away, currentId, competitionId, competitio
               {key === "h2h" ? tx("H2H") : <span className="truncate">{tx(team?.name) ?? "TBD"}</span>}
             </button>
           ))}
-        </div>
-        <div className="mt-3 flex flex-wrap gap-4 text-xs font-semibold">
-          <label className="flex items-center gap-2"><input type="checkbox" className="h-4 w-4 accent-[var(--primary)]" checked={atHome} onChange={(e) => setAtHome(e.target.checked)} />{tx("At")} {atHomeName}</label>
-          <label className="flex items-center gap-2"><input type="checkbox" className="h-4 w-4 accent-[var(--primary)]" checked={sameComp} onChange={(e) => setSameComp(e.target.checked)} />{tx("This competition")}{competitionName ? "" : ""}</label>
         </div>
       </div>
 

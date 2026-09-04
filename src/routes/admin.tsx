@@ -88,14 +88,21 @@ function AdminPage() {
     <AppShell bare={!!openComp}>
       {openComp ? (
         <div>
-          <div className="mb-3 flex min-w-0 items-center gap-2">
-            <button onClick={() => setOpenComp(null)} className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full hover:bg-accent" aria-label="All competitions">
-              <ArrowLeft className="h-4 w-4" />
-            </button>
-            {openComp.logo_url && <img src={openComp.logo_url} alt="" className="h-8 w-8 shrink-0 object-contain" />}
-            <span className="min-w-0 flex-1 truncate text-sm font-bold">{openComp.name}</span>
-            <SeasonPicker competition={openComp} onChange={setOpenComp} season={adminSeason} onSeason={setAdminSeason} />
+          {/* Back arrow and title keep their own row so the season button can
+              never sit on top of them on narrow screens. */}
+          <div className="mb-3">
+            <div className="flex min-w-0 items-center gap-2">
+              <button onClick={() => setOpenComp(null)} className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full hover:bg-accent" aria-label="All competitions">
+                <ArrowLeft className="h-4 w-4" />
+              </button>
+              {openComp.logo_url && <img src={openComp.logo_url} alt="" className="h-8 w-8 shrink-0 object-contain" />}
+              <span className="min-w-0 flex-1 truncate text-sm font-bold">{openComp.name}</span>
+            </div>
+            <div className="mt-2 flex justify-start ps-10">
+              <SeasonPicker competition={openComp} onChange={setOpenComp} season={adminSeason} onSeason={setAdminSeason} />
+            </div>
           </div>
+
           <div className="flex max-w-full gap-1 overflow-x-auto border-b border-border pb-2 text-xs">
             {(openComp.format === "friendly"
               ? (["overview", "teams", "matches", "media"] as const)
