@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase, currentSeason, type Transfer, type Team } from "@/lib/db";
-import { inputCls, btnPrimary, btnGhost } from "./ui";
+import { inputCls, btnPrimary, btnGhost, ImageInput } from "./ui";
+import { uploadMedia } from "./upload";
 import { createTransferDraftsWithAlmail } from "@/lib/almail-ai.functions";
 import { readAiImages, type AiImageInput } from "@/lib/image-files";
 import { Plus, Trash2, Sparkles, ImagePlus, Loader2, Pencil, Check, X } from "lucide-react";
@@ -11,7 +12,7 @@ import { TeamSelect } from "@/components/team-select";
 const TYPES = ["Transfer", "Loan", "Loan return", "Free agent", "Youth promotion", "Retired", "Appointed", "Left"];
 
 /** Pick a saved club or type any club name that is not in the database. */
-export function ClubInput({ value, onChange, placeholder }: { value: string | null | undefined; onChange: (v: string | null) => void; placeholder: string }) {
+export function ClubInput({ value, onChange, placeholder, logo, onLogo }: { value: string | null | undefined; onChange: (v: string | null) => void; placeholder: string; logo?: string | null; onLogo?: (v: string | null) => void }) {
   const teams = useQuery({ queryKey: ["admin", "team-names"], queryFn: async () => ((await supabase.from("teams").select("id,name,logo_url,country").order("name")).data ?? []) as Pick<Team, "id" | "name" | "logo_url" | "country">[] });
   const known = (teams.data ?? []).some((t) => t.name === value);
   const [manual, setManual] = useState(false);
@@ -26,6 +27,12 @@ export function ClubInput({ value, onChange, placeholder }: { value: string | nu
       <button type="button" className="text-start text-[0.65rem] font-semibold text-primary" onClick={() => { setManual(!typing); onChange(null); }}>
         {typing ? "Pick a saved club" : "Type a club that is not saved"}
       </button>
+      {typing && onLogo && (
+        <div>
+          <div className="mb-1 text-[0.6rem] font-semibold uppercase tracking-widest text-muted-foreground">Club crest (optional)</div>
+          <ImageInput value={logo ?? null} onChange={onLogo} onFile={async (file) => { const url = await uploadMedia("team-logos", file); if (url) onLogo(url); }} />
+        </div>
+      )}
     </div>
   );
 }
@@ -111,8 +118,8 @@ export function TransfersEditor({ personType, personId, personName }: { personTy
       <div className="grid gap-1">
         {(q.data ?? []).map((tr) => editId === tr.id ? (
           <div key={tr.id} className="grid gap-2 rounded-lg border border-primary/40 bg-primary/5 p-2 sm:grid-cols-2">
-            <ClubInput value={editRow.from_club} onChange={(v) => setEditRow({ ...editRow, from_club: v })} placeholder="From club" />
-            <ClubInput value={editRow.to_club} onChange={(v) => setEditRow({ ...editRow, to_club: v })} placeholder="To club" />
+            <ClubInput value={editRow.from_club} onChange={(v) => setEditRow({ ...editRow, from_club: v })} placeholder="From club" logo={editRow.from_club_logo_url} onLogo={(v) => setEditRow({ ...editRow, from_club_logo_url: v })} />
+            <ClubInput value={editRow.to_club} onChange={(v) => setEditRow({ ...editRow, to_club: v })} placeholder="To club" logo={editRow.to_club_logo_url} onLogo={(v) => setEditRow({ ...editRow, to_club_logo_url: v })} />
             <input type="date" className={inputCls} value={editRow.moved_on ?? ""} onChange={(e) => setEditRow({ ...editRow, moved_on: e.target.value || null })} />
             <input className={inputCls} placeholder="Fee (optional)" value={editRow.fee ?? ""} onChange={(e) => setEditRow({ ...editRow, fee: e.target.value })} />
             <input className={inputCls} placeholder="Season e.g. 26/27" value={editRow.season ?? ""} onChange={(e) => setEditRow({ ...editRow, season: e.target.value })} />
@@ -127,6 +134,7 @@ export function TransfersEditor({ personType, personId, personName }: { personTy
         ) : (
           <div key={tr.id} className="flex items-center gap-2 rounded-lg border border-border bg-background/60 p-2 text-xs">
             <span className="w-24 shrink-0 text-muted-foreground">{tr.moved_on ?? tr.season ?? "—"}</span>
+            {(tr.to_club_logo_url ?? tr.from_club_logo_url) ? <img src={(tr.to_club_logo_url ?? tr.from_club_logo_url)!} alt="" className="h-5 w-5 shrink-0 object-contain" /> : null}
             <span className="flex-1 truncate">{tr.from_club ?? "Free agent"} → {tr.to_club ?? "Free agent"}</span>
             <span className="shrink-0 text-muted-foreground">{[tr.transfer_type, tr.fee].filter(Boolean).join(" · ")}</span>
             <button onClick={() => { setEditId(tr.id); setEditRow(tr); }} className="text-muted-foreground hover:text-primary"><Pencil className="h-3 w-3" /></button>
@@ -137,8 +145,8 @@ export function TransfersEditor({ personType, personId, personName }: { personTy
       </div>
 
       <div className="mt-2 grid gap-2 rounded-lg border border-border bg-background/40 p-2 sm:grid-cols-2">
-        <ClubInput value={draft.from_club} onChange={(v) => setDraft({ ...draft, from_club: v })} placeholder="From club" />
-        <ClubInput value={draft.to_club} onChange={(v) => setDraft({ ...draft, to_club: v })} placeholder="To club" />
+        <ClubInput value={draft.from_club} onChange={(v) => setDraft({ ...draft, from_club: v })} placeholder="From club" logo={draft.from_club_logo_url} onLogo={(v) => setDraft({ ...draft, from_club_logo_url: v })} />
+        <ClubInput value={draft.to_club} onChange={(v) => setDraft({ ...draft, to_club: v })} placeholder="To club" logo={draft.to_club_logo_url} onLogo={(v) => setDraft({ ...draft, to_club_logo_url: v })} />
         <input type="date" className={inputCls} value={draft.moved_on ?? ""} onChange={(e) => setDraft({ ...draft, moved_on: e.target.value || null })} />
         <input className={inputCls} placeholder="Fee (optional)" value={draft.fee ?? ""} onChange={(e) => setDraft({ ...draft, fee: e.target.value })} />
         <input className={inputCls} placeholder="Season e.g. 26/27" value={draft.season ?? ""} onChange={(e) => setDraft({ ...draft, season: e.target.value })} />
