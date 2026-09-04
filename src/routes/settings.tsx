@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n, type Lang } from "@/lib/i18n";
 import { useTheme } from "@/components/theme-provider";
+import { VoiceReplays } from "@/components/voice-replays";
 import { AppShell } from "@/components/app-shell";
 import { uploadMedia } from "@/components/admin/upload";
 import { CURRENCIES, useCurrency } from "@/lib/currency";
@@ -166,6 +167,14 @@ function SettingsPage() {
             <LogOut className="h-4 w-4" /> {t("settings.signOut")}
           </button>
         </div>
+      )}
+
+      {user && (
+        <section className="mt-10">
+          <h2 className="text-sm font-bold">{t("settings.myReplays") === "settings.myReplays" ? "My voice replays" : t("settings.myReplays")}</h2>
+          <p className="mb-3 text-xs text-muted-foreground">Voice chats you recorded. Play them again or delete them.</p>
+          <VoiceReplays mine />
+        </section>
       )}
 
       {user && <section className="mt-10 rounded-2xl border border-destructive/30 bg-destructive/5 px-4 py-3">
