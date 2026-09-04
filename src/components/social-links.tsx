@@ -36,12 +36,14 @@ export function SocialLinksSection({ value, title }: { value: unknown; title?: s
   const tx = useTx();
   const links = normalizeSocial(value);
   const entries = SOCIAL_NETWORKS.filter((network) => links[network.key]);
-  if (entries.length === 0) return null;
   return (
     <section className="overflow-hidden rounded-2xl border border-border bg-card">
       <div className="border-b border-border px-4 py-2.5 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">
-        {tx(title ?? "Social media")}
+        {tx(title ?? "Social media pages")}
       </div>
+      {entries.length === 0 && (
+        <p className="p-4 text-sm text-muted-foreground">{tx("No social media pages added yet.")}</p>
+      )}
       <div className="flex flex-wrap gap-2 p-3">
         {entries.map((network) => (
           <a
