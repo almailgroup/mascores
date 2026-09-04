@@ -148,60 +148,20 @@ function CompetitionPage() {
   return (
     <AppShell>
       <div style={theme ? (theme.vars as React.CSSProperties) : undefined}>
-        {/* Dark hero band: navigation, identity, season picker and tabs all sit
-            on one coloured header, the way the mockup shows it. */}
-        <div
-          className="-mx-4 -mt-6 mb-4 px-4 pb-0 pt-3 text-white sm:-mx-6 sm:px-6"
-          style={{ background: theme ? theme.hero : DEFAULT_HERO }}
-        >
-          <div className="flex items-center justify-between">
-            <button onClick={() => history.back()} aria-label={tx("Back")} className="-ms-2 inline-flex h-10 w-10 items-center justify-center rounded-full text-white/90 hover:bg-white/10">
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => toggleFavorite("competition", c.id)}
-                aria-label={tx("Favorite")}
-                className={`-me-2 inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-white/10 ${faved ? "text-amber-300" : "text-white/80"}`}
-              >
-                <Star className="h-5 w-5" fill={faved ? "currentColor" : "none"} />
-              </button>
-            </div>
-          </div>
+        <CompetitionHero
+          c={c}
+          logo={compLogo(c)}
+          hero={theme ? theme.hero : null}
+          activeSeason={activeSeason}
+          friendly={friendly}
+          faved={faved}
+          onToggleFav={() => toggleFavorite("competition", c.id)}
+          onSeason={setSeason}
+          tab={tab}
+          tabs={tabs}
+          onTab={(value) => setTab(value)}
+        />
 
-          <div className="mt-1 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-1.5 shadow-lg">
-              {compLogo(c) ? <img src={compLogo(c)!} alt="" className="h-full w-full object-contain" /> : <Trophy className="h-7 w-7 text-primary" />}
-            </div>
-            <div className="min-w-0">
-              <h1 className="truncate text-lg font-black leading-tight sm:text-2xl">{tx(c.name)}</h1>
-              <div className="mt-1 flex min-w-0 items-center gap-2">
-                {(c.seasons?.length ?? 0) > 0
-                  ? <SeasonMenu seasons={c.seasons} value={activeSeason} onChange={setSeason} onHero />
-                  : <span className="text-xs font-bold text-white/80">{activeSeason ? num(activeSeason) : ""}</span>}
-                {!friendly && <FlagIcon value={c.country_code ?? c.country} />}
-              </div>
-            </div>
-            {!friendly && (
-              <div className="shrink-0 rounded-2xl bg-white/15 px-3 py-2 text-center backdrop-blur-sm">
-                <div className="text-base font-black leading-none tabular-nums">{num(teams.data?.length ?? 0)}</div>
-                <div className="mt-1 text-[0.6rem] font-semibold uppercase tracking-wide text-white/75">{tx("Teams")}</div>
-              </div>
-            )}
-          </div>
-
-          <div className="mt-3">
-            <SwipeTabs className="gap-1 text-xs sm:text-sm">
-              {tabs.map((item) => (
-                <button
-                  key={item}
-                  onClick={() => setTab(item)}
-                  className={`shrink-0 border-b-2 px-3 py-2.5 font-bold capitalize sm:px-4 ${tab === item ? "border-white text-white" : "border-transparent text-white/65"}`}
-                >{item === "awards" ? tx("Awards") : t(`tab.${item}`)}</button>
-              ))}
-            </SwipeTabs>
-          </div>
-        </div>
 
 
        {tab === "overview" && <CompetitionOverviewTab c={c} season={season} teams={teams.data ?? []} titleHolder={friendly ? null : (titleHolder ?? null)} titles={friendly ? [] : (compTitles.data ?? [])} divisions={friendly ? [] : (divisions.data ?? [])} matches={matches.data ?? []} media={media.data ?? []} friendly={friendly} />}
