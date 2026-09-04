@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { AppShell, BackButton, EmptyState, LoadingSkeleton, SwipeTabs } from "@/components/app-shell";
 import { supabase, STATUS_LABELS, roundLabel, matchClockSeconds, formatClock, eventLabel, ratingClass, formatRating, type Match, type Team, type MatchEvent, type Lineup, type Player, type StandingRow } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
-import { PlayCircle, Radio } from "lucide-react";
+import { ChevronRight, PlayCircle, Radio } from "lucide-react";
 import { useTx, useNum, useDates } from "@/lib/auto-translate";
 import { MatchChat } from "@/components/match-chat";
 import { MatchVoice } from "@/components/match-voice";
