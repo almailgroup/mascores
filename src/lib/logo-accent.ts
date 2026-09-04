@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
  * tinted with the competition's own identity (a yellow badge gives a yellow
  * header) instead of one fixed navy band.
  */
-export type LogoAccent = { hero: string; onLight: boolean };
+export type LogoAccent = { hero: string; onLight: boolean; color: string };
 
 const cache = new Map<string, LogoAccent | null>();
 
@@ -83,7 +83,7 @@ function extract(img: HTMLImageElement): LogoAccent | null {
       : { h, s: Math.max(0.35, Math.min(0.95, s)), l: Math.min(0.42, Math.max(0.24, l)) };
     const from = hsl(base.h, base.s, light ? base.l + 0.08 : base.l + 0.06);
     const to = hsl(base.h, base.s * 0.92, light ? base.l - 0.06 : Math.max(0.14, base.l - 0.12));
-    return { hero: `linear-gradient(150deg, ${from} 0%, ${to} 100%)`, onLight: light };
+    return { hero: `linear-gradient(150deg, ${from} 0%, ${to} 100%)`, onLight: light, color: hsl(base.h, Math.max(0.45, base.s), light ? 0.5 : 0.45) };
   } catch {
     return null;
   }
