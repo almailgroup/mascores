@@ -267,7 +267,7 @@ export function SwipeTabs({ children, className = "" }: { children: ReactNode; c
       </div>
       {edge.start && (
         <>
-          <span className="pointer-events-none absolute inset-y-0 start-0 w-10 bg-gradient-to-e from-background to-transparent" />
+          <span className="pointer-events-none absolute inset-y-0 start-0 w-10 bg-gradient-to-r from-background to-transparent" />
           <button type="button" aria-label="Previous tabs" onClick={() => nudge(-1)}
             className="absolute start-0 top-1/2 z-10 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card/95 text-muted-foreground shadow">
             <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
@@ -276,7 +276,7 @@ export function SwipeTabs({ children, className = "" }: { children: ReactNode; c
       )}
       {edge.end && (
         <>
-          <span className="pointer-events-none absolute inset-y-0 end-0 w-14 bg-gradient-to-s from-background to-transparent" />
+          <span className="pointer-events-none absolute inset-y-0 end-0 w-14 bg-gradient-to-l from-background to-transparent" />
           <button type="button" onClick={() => nudge(1)}
             className="absolute end-0 top-1/2 z-10 inline-flex -translate-y-1/2 animate-pulse items-center gap-1 rounded-full border border-border bg-card/95 px-2 py-1 text-[0.6rem] font-bold text-muted-foreground shadow">
             {lang === "ar" ? "اسحب للمزيد" : "Swipe for more"}
