@@ -22,7 +22,10 @@ export const Route = createFileRoute("/voice")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  validateSearch: (search: Record<string, unknown>): { code?: string } => (typeof search["code"] === "string" ? { code: search["code"] as string } : {}),
+  validateSearch: (search: Record<string, unknown>): { code?: string; match?: string } => ({
+    ...(typeof search["code"] === "string" ? { code: search["code"] as string } : {}),
+    ...(typeof search["match"] === "string" ? { match: search["match"] as string } : {}),
+  }),
   component: VoicePage,
 });
 
@@ -34,8 +37,8 @@ function VoicePage() {
   const tx = useTx();
   const qc = useQueryClient();
   const navigate = useNavigate();
-  const { code } = Route.useSearch();
-  const [creating, setCreating] = useState(false);
+  const { code, match } = Route.useSearch();
+  const [creating, setCreating] = useState(!!match);
   const [joinCode, setJoinCode] = useState(code ?? "");
   const [codeError, setCodeError] = useState<string | null>(null);
 
@@ -148,7 +151,7 @@ function VoicePage() {
         </div>
       </section>
 
-      {creating && <CreateRoom onClose={() => setCreating(false)} onCreated={(id) => navigate({ to: "/voice/$id", params: { id } })} />}
+      {creating && <CreateRoom matchId={match ?? null} onClose={() => setCreating(false)} onCreated={(id) => navigate({ to: "/voice/$id", params: { id } })} />}
     </AppShell>
   );
 }
@@ -192,7 +195,7 @@ function RoomCard({ room, host, lang, following, onFollow, isSelf }: {
   );
 }
 
-function CreateRoom({ onClose, onCreated }: { onClose: () => void; onCreated: (id: string) => void }) {
+function CreateRoom({ onClose, onCreated, matchId = null }: { onClose: () => void; onCreated: (id: string) => void; matchId?: string | null }) {
   const { user } = useAuth();
   const tx = useTx();
   const [title, setTitle] = useState("");
@@ -208,7 +211,7 @@ function CreateRoom({ onClose, onCreated }: { onClose: () => void; onCreated: (i
     setBusy(true); setError(null);
     const { data, error: insertError } = await supabase
       .from("voice_rooms")
-      .insert({ host_id: user.id, title: title.trim(), description: description.trim() || null, photo_url: photo, visibility })
+      .insert({ host_id: user.id, title: title.trim(), description: description.trim() || null, photo_url: photo, visibility, match_id: matchId })
       .select("id")
       .maybeSingle();
     if (insertError || !data) { setError(tx("Could not start the room. Please try again.")); setBusy(false); return; }
@@ -223,6 +226,7 @@ function CreateRoom({ onClose, onCreated }: { onClose: () => void; onCreated: (i
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-6" onClick={onClose}>
       <div className="w-full max-w-lg rounded-t-3xl border border-border bg-background p-5 sm:rounded-3xl" onClick={(e) => e.stopPropagation()}>
         <h2 className="text-lg font-bold">{tx("Start a voice room")}</h2>
+        {matchId && <p className="mt-1 text-xs font-semibold text-primary">{tx("This room will appear on the match page.")}</p>}
         <div className="mt-4 flex gap-3">
           <img src={preview} alt="" className="h-20 w-20 shrink-0 rounded-2xl object-cover" />
           <div className="flex-1 space-y-2">
