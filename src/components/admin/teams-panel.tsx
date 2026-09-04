@@ -346,17 +346,11 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
         })}
       </div>
 
+      <p className="mt-4 text-[0.65rem] text-muted-foreground">Releasing a player keeps him in the database as a free agent. To delete a player for good, use the Players section.</p>
+
       <PlayerBatchImport open={batchOpen} onClose={() => setBatchOpen(false)} teamId={team.id} onSaved={invalidate} />
       {editing && <PlayerEditor player={editing} teamId={team.id} teamName={team.name} onClose={() => { setEditing(null); invalidate(); }} />}
-      <ConfirmDelete
-        open={!!confirmPlayer}
-        title={`Delete ${confirmPlayer?.name ?? ""}`}
-        description="This permanently removes the player from the database, including their squad entry and history. This cannot be undone."
-        confirmWord="DELETE"
-        actionLabel="Delete player"
-        onCancel={() => setConfirmPlayer(null)}
-        onConfirm={async () => { await deletePlayerForever(confirmPlayer!.id); setConfirmPlayer(null); invalidate(); }}
-      />
+
     </Modal>
   );
 }
