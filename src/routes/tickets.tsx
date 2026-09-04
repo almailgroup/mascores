@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Ticket as TicketIcon, Loader2, CheckCircle2, Clock, ArrowRight, X, Sparkles, Minus, Plus } from "lucide-react";
+import { Ticket as TicketIcon, Loader2, CheckCircle2, Clock, ArrowRight, ArrowLeft, X, Sparkles, Minus, Plus } from "lucide-react";
 import { AppShell, BackButton } from "@/components/app-shell";
 import { QrCode } from "@/components/qr-code";
 import { supabase } from "@/integrations/supabase/client";
