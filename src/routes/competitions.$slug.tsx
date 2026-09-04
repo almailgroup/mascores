@@ -223,8 +223,11 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
   const num = useNum();
   const { t } = useI18n();
   const accent = useLogoAccent(hero ? null : logo);
-  const background = hero ?? accent?.hero ?? DEFAULT_HERO;
-  const onLight = !hero && Boolean(accent?.onLight);
+  // No custom hero and no logo to sample: use a clean white band instead of navy.
+  const noLogo = !hero && !logo;
+  const background = hero ?? (noLogo ? "linear-gradient(160deg, #ffffff 0%, #f1f5f9 100%)" : accent?.hero ?? DEFAULT_HERO);
+  const onLight = noLogo || (!hero && Boolean(accent?.onLight));
+
 
   const followers = useQuery({
     queryKey: ["comp-followers", c.id],
