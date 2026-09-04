@@ -196,6 +196,119 @@ function CompetitionPage() {
   );
 }
 
+type CompTab = "overview" | "matches" | "standings" | "stats" | "teams" | "awards" | "media" | "news";
+
+const COMP_ALERT_KEY = "mas.competition_notification_ids";
+
+/**
+ * Coloured competition header. The band takes its colour from the competition
+ * logo itself (a yellow badge gives a yellow header), falling back to the brand
+ * navy only when no logo colour can be read.
+ */
+function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggleFav, onSeason, tab, tabs, onTab }: {
+  c: Competition;
+  logo: string | null;
+  hero: string | null;
+  activeSeason: string | null;
+  friendly: boolean;
+  faved: boolean;
+  onToggleFav: () => void;
+  onSeason: (season: string | null) => void;
+  tab: CompTab;
+  tabs: readonly CompTab[];
+  onTab: (tab: CompTab) => void;
+}) {
+  const tx = useTx();
+  const num = useNum();
+  const { t } = useI18n();
+  const accent = useLogoAccent(hero ? null : logo);
+  const background = hero ?? accent?.hero ?? DEFAULT_HERO;
+  const onLight = !hero && Boolean(accent?.onLight);
+
+  const followers = useQuery({
+    queryKey: ["comp-followers", c.id],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("competition_follower_count", { _competition_id: c.id });
+      return typeof data === "number" ? data : 0;
+    },
+  });
+  const [bump, setBump] = useState(0);
+  const followerCount = Math.max(0, (followers.data ?? 0) + bump);
+
+  const [alerts, setAlerts] = useState<string[]>([]);
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(COMP_ALERT_KEY);
+      setAlerts(raw ? (JSON.parse(raw) as string[]) : []);
+    } catch { /* ignore */ }
+  }, []);
+  const alerted = alerts.includes(c.id);
+  const toggleAlert = () => {
+    const next = alerted ? alerts.filter((id) => id !== c.id) : [...alerts, c.id];
+    setAlerts(next);
+    try { window.localStorage.setItem(COMP_ALERT_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+  };
+
+  const fg = onLight ? "oklch(0.2 0.04 260)" : "oklch(1 0 0)";
+  const chip = onLight ? "bg-black/10" : "bg-white/15";
+
+  return (
+    <div className="-mx-4 -mt-6 mb-4 px-4 pb-0 pt-3 sm:-mx-6 sm:px-6" style={{ background, color: fg }}>
+      <div className="flex items-center justify-end gap-1">
+        <button
+          onClick={toggleAlert}
+          aria-label={tx("Notifications")}
+          className={`inline-flex h-10 w-10 items-center justify-center rounded-full ${chip.replace("bg-", "hover:bg-")} ${alerted ? "opacity-100" : "opacity-70"}`}
+        >
+          <Bell className="h-5 w-5" fill={alerted ? "currentColor" : "none"} />
+        </button>
+        <button
+          onClick={() => { onToggleFav(); setBump((v) => (faved ? v - 1 : v + 1)); }}
+          aria-label={tx("Follow")}
+          className={`-me-2 inline-flex h-10 w-10 items-center justify-center rounded-full ${chip.replace("bg-", "hover:bg-")} ${faved ? "text-amber-400" : "opacity-70"}`}
+        >
+          <Star className="h-5 w-5" fill={faved ? "currentColor" : "none"} />
+        </button>
+      </div>
+
+      <div className="mt-1 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-1.5 shadow-lg">
+          {logo ? <img src={logo} alt="" className="h-full w-full object-contain" /> : <Trophy className="h-7 w-7 text-primary" />}
+        </div>
+        <div className="min-w-0">
+          <h1 className="truncate text-lg font-black leading-tight sm:text-2xl">{tx(c.name)}</h1>
+          <div className="mt-1 flex min-w-0 items-center gap-2">
+            {(c.seasons?.length ?? 0) > 0
+              ? <SeasonMenu seasons={c.seasons} value={activeSeason} onChange={onSeason} onHero />
+              : <span className="text-xs font-bold opacity-80">{activeSeason ? num(activeSeason) : ""}</span>}
+            {!friendly && <FlagIcon value={c.country_code ?? c.country} />}
+          </div>
+        </div>
+        <div className={`shrink-0 rounded-2xl px-3 py-2 text-center backdrop-blur-sm ${chip}`}>
+          <div className="text-base font-black leading-none tabular-nums">{num(followerCount)}</div>
+          <div className="mt-1 text-[0.6rem] font-semibold uppercase tracking-wide opacity-80">
+            {tx(followerCount === 1 ? "Follower" : "Followers")}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-3">
+        <SwipeTabs className="gap-1 text-xs sm:text-sm">
+          {tabs.map((item) => (
+            <button
+              key={item}
+              onClick={() => onTab(item)}
+              className={`shrink-0 border-b-2 px-3 py-2.5 font-bold capitalize sm:px-4 ${tab === item ? "border-current" : "border-transparent opacity-65"}`}
+            >{item === "awards" ? tx("Awards") : t(`tab.${item}`)}</button>
+          ))}
+        </SwipeTabs>
+      </div>
+    </div>
+  );
+}
+
+
+
 function CompetitionOverviewTab({ c, season, teams, titleHolder, titles, divisions, matches, media, friendly = false }: {
   c: Competition;
   season: string | null;
