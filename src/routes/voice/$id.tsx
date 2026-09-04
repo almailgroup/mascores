@@ -205,7 +205,10 @@ function VoiceRoomPage() {
     void supabase.from("voice_room_participants").update({ is_muted: muted, hand_raised: hand, last_seen_at: new Date().toISOString() }).eq("room_id", id).eq("user_id", user.id);
   }, [muted, hand, joined, user, id]);
 
-  useEffect(() => { if (membership.data?.is_muted && !muted) forceMute(); }, [membership.data?.is_muted, muted, forceMute]);
+  // React only to a stored mute-state change (for example a host moderation
+  // action). Including local `muted` here caused the initial stored `true`
+  // value to immediately undo a speaker's own Unmute gesture.
+  useEffect(() => { if (membership.data?.is_muted) forceMute(); }, [membership.data?.is_muted, forceMute]);
 
   useEffect(() => { if (isHost && live && !joined) setJoined(true); }, [isHost, live, joined]);
 
