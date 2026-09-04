@@ -55,12 +55,13 @@ async function drawCard(data: MatchShareData, mode: "result" | "lineups"): Promi
 
   const accent = data.accent || "#123a8a";
   const accentAway = data.accentAway || accent;
-  // Left side wears the home colour, right side the away colour.
-  const gradient = ctx.createLinearGradient(0, 0, W, H * 0.25);
-  gradient.addColorStop(0, accent);
-  gradient.addColorStop(1, accentAway);
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, W, H);
+  // Two solid halves that meet at a thin seam - the colours never blend together.
+  ctx.fillStyle = accent;
+  ctx.fillRect(0, 0, W / 2, H);
+  ctx.fillStyle = accentAway;
+  ctx.fillRect(W / 2, 0, W / 2, H);
+  ctx.fillStyle = "rgba(0,0,0,0.35)";
+  ctx.fillRect(W / 2 - 4, 0, 8, H);
   ctx.fillStyle = "rgba(0,0,0,0.25)";
   ctx.fillRect(0, 0, W, H);
 
