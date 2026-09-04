@@ -362,6 +362,8 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
 }) {
   const tx = useTx();
   const num = useNum();
+  const logo = useCompetitionLogo()(c);
+
   // Honours (title holder, most titles, title winners) belong to the live/newest season only.
   const isCurrentSeason = !season || !c.season || season === c.season;
   const showHonours = !friendly && isCurrentSeason;
