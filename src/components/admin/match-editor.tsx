@@ -394,7 +394,7 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
   });
   const coachesQ = useQuery({
     queryKey: ["admin", "coaches-all"],
-    queryFn: async () => (await supabase.from("coaches").select("id,name,team_id").order("name")).data ?? [],
+    queryFn: async () => (await supabase.from("coaches").select("id,name,team_id,team:team_id(name)").order("name")).data ?? [],
   });
   const ratingsQ = useQuery({
     queryKey: ["admin", "match-ratings", match.id],
