@@ -405,21 +405,32 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
         <div className="mt-3"><DurationBar startsOn={c.starts_on} endsOn={c.ends_on} /></div>
       </section>
 
-      {/* Key numbers strip */}
-      <section className="overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-3 shadow-sm sm:p-4">
+      {/* Key numbers strip — each stat gets its own colour so the block reads
+          like a scoreboard instead of a plain grey table. */}
+      <section className="overflow-hidden rounded-2xl border border-border bg-card p-3 shadow-sm sm:p-4">
         <div className={`grid gap-2 ${friendly ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6"}`}>
           {cells.map(([label, value]) => {
             const Icon = CELL_ICONS[label] ?? Star;
+            const tint = CELL_TINTS[label] ?? "var(--primary)";
             return (
-              <div key={label} className="rounded-xl border border-border/60 bg-background/70 px-3 py-2.5 backdrop-blur">
-                <div className="flex items-center gap-1.5 text-[0.6rem] font-bold uppercase tracking-wide text-muted-foreground">
-                  <Icon className="h-3 w-3 text-primary" /> {tx(label)}
+              <div
+                key={label}
+                className="relative overflow-hidden rounded-xl border px-3 py-2.5"
+                style={{
+                  borderColor: `color-mix(in oklab, ${tint} 35%, transparent)`,
+                  background: `linear-gradient(150deg, color-mix(in oklab, ${tint} 16%, var(--card)) 0%, var(--card) 85%)`,
+                }}
+              >
+                <span className="absolute inset-y-0 start-0 w-1" style={{ background: tint }} />
+                <div className="flex items-center gap-1.5 text-[0.6rem] font-bold uppercase tracking-wide" style={{ color: `color-mix(in oklab, ${tint} 78%, var(--foreground))` }}>
+                  <Icon className="h-3 w-3" /> {tx(label)}
                 </div>
                 <div className="mt-1.5 truncate text-sm font-black tabular-nums sm:text-base">{tx(value)}</div>
               </div>
             );
           })}
         </div>
+
       </section>
 
       {featured && (
