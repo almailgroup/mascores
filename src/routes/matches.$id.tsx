@@ -147,9 +147,9 @@ function MatchPage() {
   };
 
   return (
-    <AppShell padded={false}>
+    <AppShell>
       {/* Hero tinted with the home club's own badge colour. */}
-      <div className="relative -mx-4 -mt-4 mb-4 overflow-hidden px-4 pb-1 pt-[calc(0.75rem+env(safe-area-inset-top))] text-white sm:-mx-6 sm:px-6"
+      <div className="relative -mx-4 -mt-6 mb-4 overflow-hidden px-4 pb-1 pt-4 text-white sm:-mx-6 sm:px-6"
         style={{ background: heroAccent?.hero ?? "linear-gradient(150deg, #16224a 0%, #070a12 100%)" }}>
         <div className="flex items-center justify-between">
           <BackButton className="mb-0 border-white/20 bg-white/10 text-white hover:text-white" />
