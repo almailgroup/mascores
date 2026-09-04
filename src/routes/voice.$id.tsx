@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Mic, MicOff, Loader2, Lock, Globe2, Hand, LogOut, Copy, Check, UserPlus, UserCheck, PhoneOff, Radio, EyeOff, Trash2, UserMinus } from "lucide-react";
 import { AppShell, BackButton } from "@/components/app-shell";
@@ -144,17 +144,15 @@ function VoiceRoomPage() {
   };
 
   const endRoom = async () => {
-    await supabase.rpc("voice_end_room", { _room_id: id });
+    const { error } = await supabase.rpc("voice_end_room", { _room_id: id });
+    if (error) { setActionError(error.message); return; }
     setJoined(false);
     void navigate({ to: "/voice" });
   };
 
   const deleteRoom = async () => {
     if (!window.confirm(tx("Delete this voice room permanently?"))) return;
-    // Ended rooms delete cleanly; a live room is ended first so listeners drop out.
-    if (live) await supabase.rpc("voice_end_room", { _room_id: id });
-    await supabase.from("voice_room_participants").delete().eq("room_id", id);
-    const { error } = await supabase.from("voice_rooms").delete().eq("id", id);
+    const { error } = await supabase.rpc("voice_delete_room", { _room_id: id });
     if (error) { setActionError(error.message); return; }
     setJoined(false);
     void qc.invalidateQueries({ queryKey: ["voice-rooms"] });
@@ -162,7 +160,8 @@ function VoiceRoomPage() {
   };
 
   const manage = async (userId: string, action: "promote" | "demote" | "mute" | "remove") => {
-    await supabase.rpc("voice_manage_participant", { _room_id: id, _user_id: userId, _action: action });
+    const { error } = await supabase.rpc("voice_manage_participant", { _room_id: id, _user_id: userId, _action: action });
+    if (error) { setActionError(error.message); return; }
     await qc.invalidateQueries({ queryKey: ["voice-membership", id] });
     await qc.invalidateQueries({ queryKey: ["voice-participants", id] });
   };
