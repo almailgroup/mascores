@@ -7,7 +7,7 @@ import {
 } from "@/lib/db";
 import { Field, Modal, inputCls, btnPrimary, btnGhost, btnDanger } from "./ui";
 import { VenueSelect } from "./venue-select";
-import { Play, Pause, Plus, Trash2, RotateCcw, Check, Info, ListChecks, Radio, BarChart3 } from "lucide-react";
+import { Play, Pause, Plus, Trash2, RotateCcw, Check, Info, ListChecks, Radio, BarChart3, Pencil } from "lucide-react";
 import { TeamCrest } from "@/components/team-crest";
 import { EventIcon, hasEventArt } from "@/components/event-icon";
 import { PlayerAvatar } from "@/components/player-avatar";
