@@ -171,7 +171,7 @@ function SettingsPage() {
 
       {user && (
         <section className="mt-10">
-          <h2 className="text-sm font-bold">{t("settings.myReplays") === "settings.myReplays" ? "My voice replays" : t("settings.myReplays")}</h2>
+          <h2 className="text-sm font-bold">My voice replays</h2>
           <p className="mb-3 text-xs text-muted-foreground">Voice chats you recorded. Play them again or delete them.</p>
           <VoiceReplays mine />
         </section>
