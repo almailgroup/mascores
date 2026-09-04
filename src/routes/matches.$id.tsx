@@ -170,14 +170,15 @@ function MatchPage() {
     homeScorers, awayScorers,
     homeLineup: starters(match.home_team_id),
     awayLineup: starters(match.away_team_id),
-    accent: heroAccent?.color ?? "#12275c",
+    accent: homeColor,
+    accentAway: awayColor,
   };
 
   return (
     <AppShell>
-      {/* Hero tinted with the home club's own badge colour. */}
+      {/* Hero split between both clubs' badge colours. */}
       <div className="relative -mx-4 -mt-6 mb-4 overflow-hidden px-4 pb-1 pt-4 text-white sm:-mx-6 sm:px-6"
-        style={{ background: heroAccent?.hero ?? "linear-gradient(150deg, #16224a 0%, #070a12 100%)" }}>
+        style={{ background: heroBackground }}>
         <div className="flex items-center justify-between">
           <BackButton className="mb-0 border-white/20 bg-white/10 text-white hover:text-white" />
           <div className="flex items-center gap-2 [&_button]:border-white/25 [&_button]:bg-white/10 [&_button]:text-white">
