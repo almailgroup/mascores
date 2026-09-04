@@ -254,8 +254,8 @@ export function SwipeTabs({ children, className = "" }: { children: ReactNode; c
       </div>
       {/* Only a forward hint: it exists to say "there are more tabs", never to go back. */}
       <button
-        type="button" aria-label="More tabs" tabIndex={edge.end ? 0 : -1} onClick={() => nudge(1)}
-        className={`${arrowCls} end-0 ${edge.end ? "opacity-70" : "pointer-events-none opacity-0"}`}
+        type="button" aria-label="More tabs" tabIndex={edge.end && !swiping ? 0 : -1} onClick={() => nudge(1)}
+        className={`${arrowCls} end-0 ${edge.end && !swiping ? "opacity-70" : "pointer-events-none opacity-0"}`}
       >
         <ChevronRight className="h-4 w-4 rtl:rotate-180" />
       </button>
