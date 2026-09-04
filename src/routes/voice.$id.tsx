@@ -382,12 +382,25 @@ function PeerTile({ peer, small = false, canManage = false, onPromote, onDemote,
 }
 
 function RemoteAudio({ stream }: { stream: MediaStream }) {
-  return (
-    <audio
-      autoPlay
-      playsInline
-      className="hidden"
-      ref={(node) => { if (node && node.srcObject !== stream) node.srcObject = stream; }}
-    />
-  );
+  const ref = useRef<HTMLAudioElement | null>(null);
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+    if (node.srcObject !== stream) node.srcObject = stream;
+    node.muted = false;
+    node.volume = 1;
+    const play = () => { void node.play().catch(() => undefined); };
+    play();
+    // Mobile browsers block autoplay until the listener interacts with the page.
+    document.addEventListener("click", play);
+    document.addEventListener("touchstart", play);
+    const timer = window.setInterval(() => { if (node.paused) play(); }, 1500);
+    return () => {
+      document.removeEventListener("click", play);
+      document.removeEventListener("touchstart", play);
+      window.clearInterval(timer);
+    };
+  }, [stream]);
+  return <audio ref={ref} autoPlay playsInline className="hidden" />;
 }
+
