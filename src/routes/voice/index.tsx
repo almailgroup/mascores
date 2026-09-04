@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Mic, Loader2, Lock, Globe2, Users, Plus, Radio, UserPlus, UserCheck, ImagePlus, Link2 } from "lucide-react";
+import { VoiceReplays } from "@/components/voice-replays";
 import { AppShell, BackButton, EmptyState, SectionHeader } from "@/components/app-shell";
 import { ImageCropper } from "@/components/image-cropper";
 import { uploadMedia } from "@/components/admin/upload";
@@ -151,6 +152,11 @@ function VoicePage() {
               isSelf={room.host_id === user?.id} />
           ))}
         </div>
+      </section>
+
+      <section className="mt-8">
+        <SectionHeader title={tx("Replays")} />
+        <VoiceReplays />
       </section>
 
       {creating && <CreateRoom matchId={match ?? null} onClose={() => setCreating(false)} onCreated={(id) => navigate({ to: "/voice/$id", params: { id } })} />}
