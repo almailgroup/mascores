@@ -1,4 +1,6 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import logoLight from "@/assets/logo-mark-v2.png.asset.json";
+import logoDark from "@/assets/logo-mark-dark.png";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, EmptyState } from "@/components/app-shell";

@@ -396,8 +396,6 @@ function PreviousMatchesInner({ home, away, currentId, competitionId, competitio
   const num = useNum();
   const dates = useDates();
   const [mode, setMode] = useState<"home" | "h2h" | "away">("h2h");
-  const [atHome, setAtHome] = useState(false);
-  const [sameComp, setSameComp] = useState(false);
   const homeId = home?.id ?? null;
   const awayId = away?.id ?? null;
 
@@ -425,8 +423,6 @@ function PreviousMatchesInner({ home, away, currentId, competitionId, competitio
       const pair = [m.home_team_id, m.away_team_id];
       if (!(pair.includes(homeId) && pair.includes(awayId))) return false;
     } else if (!focusId || (m.home_team_id !== focusId && m.away_team_id !== focusId)) return false;
-    if (atHome && m.home_team_id !== (mode === "h2h" ? homeId : focusId)) return false;
-    if (sameComp && m.competition_id !== competitionId) return false;
     return true;
   });
 
@@ -449,7 +445,6 @@ function PreviousMatchesInner({ home, away, currentId, competitionId, competitio
     else groups.push({ key, comp: m.competition, list: [m] });
   }
 
-  const atHomeName = tx((mode === "away" ? away?.name : home?.name) ?? "") ?? "";
 
   return (
     <div className="grid gap-4">
@@ -480,10 +475,6 @@ function PreviousMatchesInner({ home, away, currentId, competitionId, competitio
               {key === "h2h" ? tx("H2H") : <span className="truncate">{tx(team?.name) ?? "TBD"}</span>}
             </button>
           ))}
-        </div>
-        <div className="mt-3 flex flex-wrap gap-4 text-xs font-semibold">
-          <label className="flex items-center gap-2"><input type="checkbox" className="h-4 w-4 accent-[var(--primary)]" checked={atHome} onChange={(e) => setAtHome(e.target.checked)} />{tx("At")} {atHomeName}</label>
-          <label className="flex items-center gap-2"><input type="checkbox" className="h-4 w-4 accent-[var(--primary)]" checked={sameComp} onChange={(e) => setSameComp(e.target.checked)} />{tx("This competition")}{competitionName ? "" : ""}</label>
         </div>
       </div>
 
