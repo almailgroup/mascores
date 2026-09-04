@@ -25,8 +25,11 @@ function HeroTeam({ team }: { team: Team | null }) {
   const tx = useTx();
   const body = (
     <>
-      <span className="grid h-16 w-16 place-items-center rounded-2xl bg-white/95 p-1.5">
-        <TeamCrest name={team?.name} logo={team?.logo_url} className="h-full w-full" rounded="rounded-xl" />
+      {/* No plate behind the crest: the badge sits straight on the hero colour. */}
+      <span className="grid h-16 w-16 place-items-center">
+        {team?.logo_url
+          ? <img src={team.logo_url} alt="" className="h-full w-full object-contain drop-shadow-[0_2px_6px_rgba(0,0,0,0.35)]" />
+          : <TeamCrest name={team?.name} logo={null} className="h-14 w-14" />}
       </span>
       <span className="mt-2 line-clamp-2 min-h-9 text-balance text-sm font-bold leading-4.5 sm:text-base">{tx(team?.name) ?? "TBD"}</span>
     </>
@@ -123,8 +126,12 @@ function MatchPage() {
   const broadcasts = useQuery({ queryKey: ["match-broadcasts", id], queryFn: async () => (await supabase.from("match_broadcasts").select("channel:broadcast_channels(id,name,logo_url,country_code)").eq("match_id", id)).data ?? [] });
   const media = useQuery({ queryKey: ["match-media", id], queryFn: async () => (await supabase.from("media_items").select("*").eq("owner_type", "match").eq("owner_id", id).order("sort_order")).data ?? [] });
   const ratings = useQuery({ queryKey: ["match-ratings", id], queryFn: async () => (await supabase.from("player_ratings").select("player_id,rating").eq("match_id", id)).data ?? [] });
-  // The hero takes its colour from the home badge (away badge as fallback).
-  const heroAccent = useLogoAccent(m.data?.home?.logo_url ?? m.data?.away?.logo_url ?? null);
+  // The hero blends both badges: home colour on the left, away colour on the right.
+  const homeAccent = useLogoAccent(m.data?.home?.logo_url ?? null);
+  const awayAccent = useLogoAccent(m.data?.away?.logo_url ?? null);
+  const homeColor = homeAccent?.color ?? awayAccent?.color ?? "#16224a";
+  const awayColor = awayAccent?.color ?? homeAccent?.color ?? "#070a12";
+  const heroBackground = `linear-gradient(100deg, ${homeColor} 0%, ${homeColor} 26%, color-mix(in oklab, ${homeColor}, ${awayColor}) 50%, ${awayColor} 74%, ${awayColor} 100%)`;
   const [, tickClock] = useState(0);
   useEffect(() => {
     if (!m.data?.timer_running) return;
@@ -163,14 +170,15 @@ function MatchPage() {
     homeScorers, awayScorers,
     homeLineup: starters(match.home_team_id),
     awayLineup: starters(match.away_team_id),
-    accent: heroAccent?.color ?? "#12275c",
+    accent: homeColor,
+    accentAway: awayColor,
   };
 
   return (
     <AppShell>
-      {/* Hero tinted with the home club's own badge colour. */}
+      {/* Hero split between both clubs' badge colours. */}
       <div className="relative -mx-4 -mt-6 mb-4 overflow-hidden px-4 pb-1 pt-4 text-white sm:-mx-6 sm:px-6"
-        style={{ background: heroAccent?.hero ?? "linear-gradient(150deg, #16224a 0%, #070a12 100%)" }}>
+        style={{ background: heroBackground }}>
         <div className="flex items-center justify-between">
           <BackButton className="mb-0 border-white/20 bg-white/10 text-white hover:text-white" />
           <div className="flex items-center gap-2 [&_button]:border-white/25 [&_button]:bg-white/10 [&_button]:text-white">

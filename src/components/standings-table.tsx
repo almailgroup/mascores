@@ -32,7 +32,7 @@ function useForm(rows: PublicStandingRow[], enabled: boolean) {
         .from("matches")
         .select("home_team_id,away_team_id,home_score,away_score,kickoff_at,status")
         .eq("competition_id", competitionId!)
-        .in("status", ["finished", "awarded"])
+        .in("status", ["ft", "aet", "pen", "awarded"])
         .order("kickoff_at", { ascending: false })
         .limit(400);
       if (season) query = query.eq("season", season);
