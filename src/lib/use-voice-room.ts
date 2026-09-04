@@ -40,11 +40,14 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
   /** Retry microphone capture after the listener fixes browser permissions. */
   const retryMic = useCallback(() => { setMicError(null); setMicNonce((n) => n + 1); }, []);
   const [connected, setConnected] = useState(false);
+  const [audioReady, setAudioReady] = useState(false);
   const [speaking, setSpeaking] = useState<Record<string, boolean>>({});
 
   const channelRef = useRef<RealtimeChannel | null>(null);
   const pcsRef = useRef<Map<string, RTCPeerConnection>>(new Map());
   const localRef = useRef<MediaStream | null>(null);
+  const pendingIceRef = useRef<Map<string, RTCIceCandidateInit[]>>(new Map());
+  const makingOfferRef = useRef<Set<string>>(new Set());
   const meRef = useRef<Me | null>(me);
   const mutedRef = useRef(true);
   const handRef = useRef(false);
@@ -75,6 +78,7 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
   const closePeer = useCallback((userId: string) => {
     pcsRef.current.get(userId)?.close();
     pcsRef.current.delete(userId);
+    pendingIceRef.current.delete(userId);
     setRemote((prev) => prev.filter((entry) => entry.userId !== userId));
   }, []);
 
@@ -89,7 +93,8 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
 
     const pc = new RTCPeerConnection({ iceServers: ICE });
     pcsRef.current.set(otherId, pc);
-    if (localRef.current) localRef.current.getTracks().forEach((t) => pc.addTrack(t, localRef.current!));
+    const localStream = localRef.current;
+    if (localStream) localStream.getTracks().forEach((t) => pc.addTrack(t, localStream));
     else if (publishes(current.role)) pc.addTransceiver("audio", { direction: "sendrecv" });
     else pc.addTransceiver("audio", { direction: "recvonly" });
 
@@ -102,7 +107,11 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
       track(otherId, stream);
     };
     pc.onconnectionstatechange = () => {
-      if (pc.connectionState === "failed" || pc.connectionState === "closed") closePeer(otherId);
+      if (pc.connectionState === "failed") {
+        pc.restartIce();
+        void negotiateRef.current(otherId, otherRole, true);
+      }
+      if (pc.connectionState === "closed") closePeer(otherId);
     };
     return pc;
   }, [closePeer, track]);
@@ -113,55 +122,69 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
     if (!current || !channel) return;
     if (!force && current.userId >= otherId) return; // lower id initiates initially, avoiding glare
     const pc = ensurePeer(otherId, otherRole);
-    if (!pc || pc.signalingState !== "stable" || pc.currentRemoteDescription) return;
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-    await channel.send({ type: "broadcast", event: "signal", payload: { from: current.userId, to: otherId, kind: "offer", data: offer } satisfies SignalPayload });
+    if (!pc || pc.signalingState !== "stable" || makingOfferRef.current.has(otherId)) return;
+    makingOfferRef.current.add(otherId);
+    try {
+      const offer = await pc.createOffer({ iceRestart: force });
+      await pc.setLocalDescription(offer);
+      await channel.send({ type: "broadcast", event: "signal", payload: { from: current.userId, to: otherId, kind: "offer", data: pc.localDescription ?? offer } satisfies SignalPayload });
+    } finally {
+      makingOfferRef.current.delete(otherId);
+    }
   }, [ensurePeer]);
+  const negotiateRef = useRef(negotiate);
+  negotiateRef.current = negotiate;
 
-  // Mic capture for hosts and speakers.
-  useEffect(() => {
-    if (!enabled || !me || !publishes(me.role)) return;
+  const startMicrophone = useCallback(async () => {
+    if (localRef.current?.getAudioTracks().length) return true;
     if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
       setMicError("This browser cannot capture the microphone here. Open the site over https and try again.");
-      return;
+      return false;
     }
-    let cancelled = false;
-    (async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true }, video: false });
-        if (cancelled) { stream.getTracks().forEach((t) => t.stop()); return; }
-        stream.getAudioTracks().forEach((t) => { t.enabled = false; });
-        localRef.current = stream;
-        setMicError(null);
-        // Rebuild peer connections so the fresh mic track is actually published.
-        pcsRef.current.forEach((pc) => pc.close());
-        pcsRef.current.clear();
-        setRemote([]);
-        await sendPresence();
-        peersRef.current.forEach((peer) => {
-          if (peer.userId !== me.userId) void negotiate(peer.userId, peer.role, true);
-        });
-      } catch (error) {
-        const name = (error as { name?: string } | null)?.name ?? "";
-        if (cancelled) return;
-        if (name === "NotAllowedError" || name === "SecurityError") {
-          setMicError("Microphone access is blocked. Allow the microphone for this site — inside an embedded preview you may need to open the site in its own browser tab first.");
-        } else if (name === "NotFoundError" || name === "OverconstrainedError") {
-          setMicError("No microphone was found on this device.");
-        } else if (name === "NotReadableError") {
-          setMicError("Your microphone is already in use by another app. Close it and tap Retry.");
-        } else {
-          setMicError("The microphone could not be started. Tap Retry to try again.");
-        }
-      }
-    })();
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, video: false });
+      stream.getAudioTracks().forEach((track) => { track.enabled = false; });
+      localRef.current = stream;
+      setAudioReady(true);
+      setMicError(null);
+      pcsRef.current.forEach((pc) => pc.close());
+      pcsRef.current.clear();
+      setRemote([]);
+      await sendPresence();
+      peersRef.current.forEach((peer) => {
+        if (peer.userId !== meRef.current?.userId) void negotiateRef.current(peer.userId, peer.role, true);
+      });
+      return true;
+    } catch (error) {
+      const name = (error as { name?: string } | null)?.name ?? "";
+      if (name === "NotAllowedError" || name === "SecurityError") setMicError("Microphone access is blocked. Allow the microphone for this site, then tap Retry microphone.");
+      else if (name === "NotFoundError" || name === "OverconstrainedError") setMicError("No microphone was found on this device.");
+      else if (name === "NotReadableError") setMicError("Your microphone is already in use by another app. Close it and tap Retry microphone.");
+      else setMicError("The microphone could not be started. Tap Retry microphone to try again.");
+      return false;
+    }
+  }, [sendPresence]);
+
+  // Stop the microphone when leaving or becoming a listener. Capture starts from
+  // the user's Unmute gesture, which is required by Safari and embedded browsers.
+  useEffect(() => {
+    if (enabled && me && publishes(me.role)) return;
+    localRef.current?.getTracks().forEach((track) => track.stop());
+    localRef.current = null;
+    setAudioReady(false);
+    setMuted(true);
+  }, [enabled, me?.role, me?.userId]);
+
+  useEffect(() => {
     return () => {
-      cancelled = true;
       localRef.current?.getTracks().forEach((t) => t.stop());
       localRef.current = null;
     };
-  }, [enabled, me?.role, me?.userId, negotiate, sendPresence, micNonce]);
+  }, []);
+
+  useEffect(() => {
+    if (micNonce > 0 && enabled && me && publishes(me.role)) void startMicrophone();
+  }, [micNonce, enabled, me?.role, me?.userId, startMicrophone]);
 
   // Presence + signalling channel.
   useEffect(() => {
@@ -190,16 +213,30 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
       if (!pc) return;
       try {
         if (signal.kind === "offer") {
+          if (pc.signalingState !== "stable") await pc.setLocalDescription({ type: "rollback" });
           await pc.setRemoteDescription(new RTCSessionDescription(signal.data as RTCSessionDescriptionInit));
           const answer = await pc.createAnswer();
           await pc.setLocalDescription(answer);
-          await channel.send({ type: "broadcast", event: "signal", payload: { from: me.userId, to: signal.from, kind: "answer", data: answer } satisfies SignalPayload });
+          await channel.send({ type: "broadcast", event: "signal", payload: { from: me.userId, to: signal.from, kind: "answer", data: pc.localDescription ?? answer } satisfies SignalPayload });
+          const waiting = pendingIceRef.current.get(signal.from) ?? [];
+          for (const candidate of waiting) await pc.addIceCandidate(new RTCIceCandidate(candidate));
+          pendingIceRef.current.delete(signal.from);
         } else if (signal.kind === "answer") {
-          if (!pc.currentRemoteDescription) await pc.setRemoteDescription(new RTCSessionDescription(signal.data as RTCSessionDescriptionInit));
+          if (pc.signalingState === "have-local-offer") {
+            await pc.setRemoteDescription(new RTCSessionDescription(signal.data as RTCSessionDescriptionInit));
+            const waiting = pendingIceRef.current.get(signal.from) ?? [];
+            for (const candidate of waiting) await pc.addIceCandidate(new RTCIceCandidate(candidate));
+            pendingIceRef.current.delete(signal.from);
+          }
         } else {
-          await pc.addIceCandidate(new RTCIceCandidate(signal.data as RTCIceCandidateInit));
+          const candidate = signal.data as RTCIceCandidateInit;
+          if (pc.remoteDescription) await pc.addIceCandidate(new RTCIceCandidate(candidate));
+          else pendingIceRef.current.set(signal.from, [...(pendingIceRef.current.get(signal.from) ?? []), candidate]);
         }
-      } catch { /* transient negotiation races are recovered by the next presence sync */ }
+      } catch (error) {
+        console.warn("Voice negotiation retry", error);
+        window.setTimeout(() => void negotiateRef.current(signal.from, otherRole, true), 700);
+      }
     });
 
     channel.subscribe((status) => {
@@ -219,15 +256,17 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
 
   useEffect(() => { void sendPresence(); }, [muted, hand, me?.role, sendPresence]);
 
-  const toggleMute = useCallback(() => {
-    setMuted((prev) => {
-      const next = !prev;
-      const tracks = localRef.current?.getAudioTracks() ?? [];
-      if (!next && tracks.length === 0) setMicError("Microphone is not ready yet. Allow access and try again.");
-      tracks.forEach((t) => { t.enabled = !next; });
-      return next;
-    });
-  }, []);
+  const toggleMute = useCallback(async () => {
+    if (!mutedRef.current) {
+      localRef.current?.getAudioTracks().forEach((track) => { track.enabled = false; });
+      setMuted(true);
+      return;
+    }
+    const ready = await startMicrophone();
+    if (!ready) return;
+    localRef.current?.getAudioTracks().forEach((track) => { track.enabled = true; });
+    setMuted(false);
+  }, [startMicrophone]);
 
   const forceMute = useCallback(() => {
     localRef.current?.getAudioTracks().forEach((track) => { track.enabled = false; });
@@ -285,5 +324,5 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
 
   const speakerCount = roster.filter((p) => p.role !== "listener").length;
   const listenerCount = roster.length - speakerCount;
-  return { roster, remote, muted, toggleMute, forceMute, hand, setHand, micError, retryMic, connected, speakerCount, listenerCount };
+  return { roster, remote, muted, toggleMute, forceMute, hand, setHand, micError, retryMic, connected, audioReady, speakerCount, listenerCount };
 }
