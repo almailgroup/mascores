@@ -2,7 +2,7 @@ import { TeamCrest } from "@/components/team-crest";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { AppShell, BackButton, EmptyState, LoadingSkeleton, SectionHeader } from "@/components/app-shell";
+import { AppShell, BackButton, EmptyState, LoadingSkeleton, SectionHeader, ScrollHint } from "@/components/app-shell";
 import { supabase, formatKickoff, type Competition, type Team, type Match, type StandingRow } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 import { FlagIcon } from "@/components/flag";
@@ -143,6 +143,7 @@ function CompetitionPage() {
 
   return (
     <AppShell>
+      <ScrollHint />
       {theme && <CompetitionIntro theme={theme} name={tx(c.name)} season={activeSeason ? num(activeSeason) : null} logoUrl={c.logo_url} />}
       {theme && (
         <div aria-hidden className="pointer-events-none fixed inset-0 z-0" style={{ background: theme.backdrop }}>
