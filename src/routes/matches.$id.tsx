@@ -164,7 +164,7 @@ function MatchPage() {
           <div className="border-b border-border bg-muted/40 px-4 py-2.5 text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Timeline")}</div>
           {events.data && events.data.length > 0 ? (
             <ul className="divide-y divide-border">
-              {timelineWithBreaks(events.data, match.status, match.home_team_id).map((entry) => entry.kind === "divider" ? (
+              {timelineWithBreaks(events.data, match.status, match.home_team_id).slice().reverse().map((entry) => entry.kind === "divider" ? (
                 <li key={entry.key} className="flex items-center justify-center gap-2 bg-muted/40 px-4 py-1.5 text-[0.6rem] font-bold uppercase tracking-widest text-muted-foreground">
                   {tx(entry.label)}{entry.score ? <span className="tabular-nums">{num(entry.score)}</span> : null}
                 </li>

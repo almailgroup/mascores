@@ -5,7 +5,7 @@ import { supabase, type NewsPost } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 import { useAutoTranslate, useDates, useNum } from "@/lib/auto-translate";
 import { useI18n } from "@/lib/i18n";
-import { PenLine, ArrowRight } from "lucide-react";
+import { PenLine } from "lucide-react";
 
 export const Route = createFileRoute("/news/")({
   head: () => ({ meta: [{ title: "News — MansourAlmailScores" }, { name: "description", content: "Latest football news from MansourAlmailScores." }] }),
@@ -27,14 +27,14 @@ function NewsPage() {
     <AppShell>
        <SectionHeader title={t("nav.news")} />
 
-      <Link to="/contribute" className="mb-5 flex items-center gap-4 overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-r from-primary/20 via-card to-card p-4 transition hover:border-primary">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary"><PenLine className="h-5 w-5" /></span>
+      <div className="mb-5 flex items-center gap-4 overflow-hidden rounded-2xl border border-border bg-card p-4 opacity-80">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground"><PenLine className="h-5 w-5" /></span>
         <span className="min-w-0 flex-1">
-          <span className="block text-sm font-bold">{tx("Publish news")}</span>
-          <span className="block text-xs text-muted-foreground">{tx("Join the reporter programme — $2.99 / month, every article reviewed by the main admin.")}</span>
+          <span className="block text-sm font-bold">{tx("Publishing news — coming soon")}</span>
+          <span className="block text-xs text-muted-foreground">{tx("The reporter news desk is not open yet.")}</span>
         </span>
-        <ArrowRight className="h-4 w-4 shrink-0 text-primary rtl:rotate-180" />
-      </Link>
+      </div>
+
 
       {q.isLoading ? <LoadingSkeleton /> : !q.data || q.data.length === 0 ? (
         <EmptyState title={tx("No news yet")} />

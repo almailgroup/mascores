@@ -9,7 +9,7 @@ import { DateWheel } from "@/components/date-wheel";
 import { TransfersEditor } from "./transfers-editor";
 import { PlayerEditor } from "./player-editor";
 import { PlayerAvatar } from "@/components/player-avatar";
-import { releasePlayerToFreeAgent, transferPlayerToClub, deletePlayerForever } from "@/lib/player-moves";
+import { releasePlayerToFreeAgent, transferPlayerToClub } from "@/lib/player-moves";
 import { TeamCrest } from "@/components/team-crest";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import { VenueSelect } from "./venue-select";
@@ -254,7 +254,6 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
   const [batchOpen, setBatchOpen] = useState(false);
   const [pick, setPick] = useState("");
   const [poolSearch, setPoolSearch] = useState("");
-  const [confirmPlayer, setConfirmPlayer] = useState<Player | null>(null);
 
   const key = ["admin", "players", team.id];
   const q = useQuery({
@@ -336,7 +335,7 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
                     </div>
                     <button className={btnGhost} onClick={() => setEditing(p)}><Pencil className="h-3 w-3" /> Edit</button>
                     <button className={btnGhost} onClick={async () => { if (!confirm(`Release ${p.name} to free agents?`)) return; await releasePlayerToFreeAgent(p, team.name); invalidate(); }}><UserMinus className="h-3 w-3" /> Release</button>
-                    <button className={btnDanger} onClick={() => setConfirmPlayer(p)}><Trash2 className="h-3 w-3" /></button>
+
                   </div>
                 ))}
                 {players.length === 0 && <div className="rounded border border-dashed border-border p-3 text-center text-xs text-muted-foreground">No {position.toLowerCase()}s</div>}
@@ -346,17 +345,11 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
         })}
       </div>
 
+      <p className="mt-4 text-[0.65rem] text-muted-foreground">Releasing a player keeps him in the database as a free agent. To delete a player for good, use the Players section.</p>
+
       <PlayerBatchImport open={batchOpen} onClose={() => setBatchOpen(false)} teamId={team.id} onSaved={invalidate} />
       {editing && <PlayerEditor player={editing} teamId={team.id} teamName={team.name} onClose={() => { setEditing(null); invalidate(); }} />}
-      <ConfirmDelete
-        open={!!confirmPlayer}
-        title={`Delete ${confirmPlayer?.name ?? ""}`}
-        description="This permanently removes the player from the database, including their squad entry and history. This cannot be undone."
-        confirmWord="DELETE"
-        actionLabel="Delete player"
-        onCancel={() => setConfirmPlayer(null)}
-        onConfirm={async () => { await deletePlayerForever(confirmPlayer!.id); setConfirmPlayer(null); invalidate(); }}
-      />
+
     </Modal>
   );
 }
