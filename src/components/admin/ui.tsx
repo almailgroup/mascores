@@ -1,4 +1,5 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { ImageCropper } from "@/components/image-cropper";
 
 export function Field({ label, children }: { label: string; children: ReactNode }) {
