@@ -900,6 +900,55 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
   );
 }
 
+/** Squad-style player picker: avatars, shirt numbers, grouped by position — same feel as lineups. */
+function PlayerPickField({ label, players, value, onChange }: { label: string; players: Player[]; value: string | null | undefined; onChange: (id: string | null) => void }) {
+  const [open, setOpen] = useState(false);
+  const chosen = players.find((p) => p.id === value) ?? null;
+  const groups = ["Goalkeeper", "Defender", "Midfielder", "Forward", "Unknown"];
+  return (
+    <div>
+      <span className="mb-1 block text-[0.6rem] font-bold uppercase tracking-widest text-muted-foreground">{label}</span>
+      <button type="button" onClick={() => setOpen(true)}
+        className="flex w-full items-center gap-2 rounded-lg border border-border bg-background p-2 text-left">
+        {chosen ? <PlayerAvatar src={chosen.photo_url} name={chosen.name} size="sm" /> : <span className="flex h-9 w-9 items-center justify-center rounded-full border border-dashed border-border text-muted-foreground"><Plus className="h-3.5 w-3.5" /></span>}
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-xs font-semibold">{chosen?.name ?? "Choose player"}</span>
+          {chosen && <span className="block text-[0.6rem] text-muted-foreground">{chosen.shirt_number != null ? `#${chosen.shirt_number} · ` : ""}{chosen.position ?? "Unknown"}</span>}
+        </span>
+        {chosen && <span role="button" tabIndex={0} className="shrink-0 text-destructive"
+          onClick={(e) => { e.stopPropagation(); onChange(null); }}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); onChange(null); } }}><Trash2 className="h-3.5 w-3.5" /></span>}
+      </button>
+      <Modal open={open} onClose={() => setOpen(false)} title={label}>
+        <div className="max-h-[70vh] space-y-4 overflow-y-auto">
+          {groups.map((position) => {
+            const pool = players.filter((p) => (p.position ?? "Unknown") === position)
+              .sort((a, b) => (a.shirt_number ?? 999) - (b.shirt_number ?? 999) || a.name.localeCompare(b.name));
+            if (pool.length === 0) return null;
+            return (
+              <section key={position}>
+                <h4 className="mb-2 text-xs font-bold uppercase text-muted-foreground">{position}</h4>
+                <div className="grid gap-2">
+                  {pool.map((player) => (
+                    <button key={player.id} type="button" onClick={() => { onChange(player.id); setOpen(false); }}
+                      className={`flex items-center gap-3 rounded-lg border p-2 text-left ${player.id === value ? "border-primary bg-primary/10" : "border-border bg-background hover:border-primary"}`}>
+                      <PlayerAvatar src={player.photo_url} name={player.name} size="sm" />
+                      <span className="w-8 text-center text-sm font-bold">{player.shirt_number ?? "—"}</span>
+                      <span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{player.name}</span><span className="block text-xs text-muted-foreground">{player.position ?? "Unknown"}</span></span>
+                      {player.id === value && <Check className="h-4 w-4 text-primary" />}
+                    </button>
+                  ))}
+                </div>
+              </section>
+            );
+          })}
+          {players.length === 0 && <p className="text-xs text-muted-foreground">Pick a team first to see its squad.</p>}
+        </div>
+      </Modal>
+    </div>
+  );
+}
+
 function EventForm({
   title, initial, teamIds, teams, players, onSubmit, onCancel,
 }: {
@@ -912,53 +961,49 @@ function EventForm({
   onCancel: () => void;
 }) {
   const [ev, setEv] = useState<Partial<MatchEvent>>(initial);
+  const [busy, setBusy] = useState(false);
   const isGoal = ev.type === "goal" || ev.type === "penalty_goal" || ev.type === "own_goal";
   const isSub = ev.type === "substitution" || ev.type === "injury_sub";
   const teamName = (id: string) => teams.find((t) => t.id === id)?.name ?? "";
   const pool = players.filter((p) => !ev.team_id || p.team_id === ev.team_id);
 
   return (
-    <div className="mt-4 grid gap-2 rounded-xl border border-primary/40 bg-background/60 p-3">
-      <div className="text-xs font-bold">{title}</div>
-      {isGoal && (
-        <div className="flex gap-2">
-          {GOAL_KINDS.map((g) => (
-            <button key={g.v} type="button" onClick={() => setEv({ ...ev, type: g.v })}
-              className={`rounded-full border px-3 py-1 text-[0.65rem] font-semibold ${ev.type === g.v ? "border-primary bg-primary/10 text-primary" : "border-border"}`}>{g.l}</button>
-          ))}
+    <Modal open onClose={onCancel} title={title}>
+      <div className="grid gap-3">
+        {isGoal && (
+          <div className="flex flex-wrap gap-2">
+            {GOAL_KINDS.map((g) => (
+              <button key={g.v} type="button" onClick={() => setEv({ ...ev, type: g.v })}
+                className={`rounded-full border px-3 py-1 text-[0.65rem] font-semibold ${ev.type === g.v ? "border-primary bg-primary/10 text-primary" : "border-border"}`}>{g.l}</button>
+            ))}
+          </div>
+        )}
+        <div className="grid grid-cols-2 gap-2">
+          <Field label="Minute"><input type="number" placeholder="Minute" className={inputCls} value={ev.minute ?? ""} onChange={(e) => setEv({ ...ev, minute: e.target.value ? Number(e.target.value) : null })} /></Field>
+          <Field label="Added time"><input type="number" placeholder="+" className={inputCls} value={ev.extra ?? ""} onChange={(e) => setEv({ ...ev, extra: e.target.value ? Number(e.target.value) : null })} /></Field>
         </div>
-      )}
-      <div className="grid grid-cols-2 gap-2">
-        <input type="number" placeholder="Minute" className={inputCls} value={ev.minute ?? ""} onChange={(e) => setEv({ ...ev, minute: e.target.value ? Number(e.target.value) : null })} />
-        <input type="number" placeholder="Added time (+)" className={inputCls} value={ev.extra ?? ""} onChange={(e) => setEv({ ...ev, extra: e.target.value ? Number(e.target.value) : null })} />
-        <select className={inputCls} value={ev.team_id ?? ""} onChange={(e) => setEv({ ...ev, team_id: e.target.value || null, player_id: null })}>
-          <option value="">Team</option>
-          {teamIds.map((id) => <option key={id} value={id}>{teamName(id)}</option>)}
-        </select>
-        <select className={inputCls} value={ev.player_id ?? ""} onChange={(e) => setEv({ ...ev, player_id: e.target.value || null })}>
-          <option value="">{isSub ? "Player coming on" : "Player"}</option>
-          {pool.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-        </select>
-        {ev.type === "goal" && (
-          <select className={inputCls} value={ev.assist_player_id ?? ""} onChange={(e) => setEv({ ...ev, assist_player_id: e.target.value || null })}>
-            <option value="">Assist (optional)</option>
-            {pool.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+        <Field label="Team">
+          <select className={inputCls} value={ev.team_id ?? ""} onChange={(e) => setEv({ ...ev, team_id: e.target.value || null, player_id: null, assist_player_id: null, sub_out_player_id: null })}>
+            <option value="">Team</option>
+            {teamIds.map((id) => <option key={id} value={id}>{teamName(id)}</option>)}
           </select>
+        </Field>
+        <PlayerPickField label={isSub ? "Player coming on" : "Player"} players={pool} value={ev.player_id} onChange={(id) => setEv({ ...ev, player_id: id })} />
+        {ev.type === "goal" && (
+          <PlayerPickField label="Assist (optional)" players={pool} value={ev.assist_player_id} onChange={(id) => setEv({ ...ev, assist_player_id: id })} />
         )}
         {isSub && (
-          <select className={inputCls} value={ev.sub_out_player_id ?? ""} onChange={(e) => setEv({ ...ev, sub_out_player_id: e.target.value || null })}>
-            <option value="">Player going off</option>
-            {pool.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-          </select>
+          <PlayerPickField label="Player going off" players={pool} value={ev.sub_out_player_id} onChange={(id) => setEv({ ...ev, sub_out_player_id: id })} />
         )}
+        <Field label="Description (optional)"><input className={inputCls} placeholder="Description" value={ev.description ?? ""} onChange={(e) => setEv({ ...ev, description: e.target.value })} /></Field>
+        <div className="flex justify-end gap-2">
+          <button className={btnGhost} onClick={onCancel}>Cancel</button>
+          <button className={btnPrimary} disabled={busy} onClick={async () => { setBusy(true); try { await onSubmit(ev); } finally { setBusy(false); } }}><Check className="h-3.5 w-3.5" /> Save event</button>
+        </div>
       </div>
-      <input className={inputCls} placeholder="Description (optional)" value={ev.description ?? ""} onChange={(e) => setEv({ ...ev, description: e.target.value })} />
-      <div className="flex justify-end gap-2">
-        <button className={btnGhost} onClick={onCancel}>Cancel</button>
-        <button className={btnPrimary} onClick={() => onSubmit(ev)}><Plus className="h-3.5 w-3.5" /> Save event</button>
-      </div>
-    </div>
+    </Modal>
   );
 }
+
 
 export { btnDanger };
