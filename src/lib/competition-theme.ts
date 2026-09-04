@@ -49,9 +49,15 @@ const ZAIN: CompetitionTheme = {
   glow: "oklch(0.66 0.15 230)",
 };
 
-/** Returns the theme for a competition, or null when it uses the default look. */
+/**
+ * Returns the theme for a competition, or null when it uses the default look.
+ * Only the Zain Premier League is themed — lower Zain divisions keep the
+ * standard look, so the sponsor identity stays tied to the top tier.
+ */
 export function competitionTheme(input: { slug?: string | null; name?: string | null }): CompetitionTheme | null {
   const haystack = `${input.slug ?? ""} ${input.name ?? ""}`.toLowerCase();
-  if (haystack.includes("zain")) return ZAIN;
+  if (!haystack.includes("zain")) return null;
+  if (/(first|second|third|1st|2nd|division|div\b|u\d{2}|youth|reserve)/.test(haystack)) return null;
+  if (haystack.includes("premier")) return ZAIN;
   return null;
 }
