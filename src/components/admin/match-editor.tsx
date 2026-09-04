@@ -881,15 +881,26 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
 
       <div>
         <h4 className="mb-2 text-sm font-bold">Match events</h4>
-        <div className="grid gap-1">
+        <p className="mb-2 text-[0.65rem] text-muted-foreground">Tap any event to edit it.</p>
+        <div className="grid gap-1.5">
           {(eventsQ.data ?? []).map((e) => (
-            <div key={e.id} className="flex items-center gap-2 rounded-lg border border-border bg-background/60 p-2 text-xs">
-              <span className="w-10 font-mono text-muted-foreground">{e.minute ?? "?"}{e.extra ? `+${e.extra}` : ""}′</span>
-              <span className="flex w-28 shrink-0 items-center gap-1 text-[0.65rem] font-semibold uppercase tracking-widest"><EventIcon type={e.type} className="h-4 w-4" />{(EVENT_TYPES.find((t) => t.v === e.type)?.l ?? e.type)}</span>
-              <span className="flex-1 truncate">{playerName(e.player_id)}{e.assist_player_id ? ` (assist ${playerName(e.assist_player_id)})` : ""} {e.description ? `— ${e.description}` : ""}</span>
-              <span className="shrink-0 text-[0.6rem] text-muted-foreground">{teamName(e.team_id)}</span>
-              <button onClick={() => setEditing(e)} className="text-primary">Edit</button>
-              <button onClick={async () => { await supabase.from("match_events").delete().eq("id", e.id); qc.invalidateQueries({ queryKey: ["admin", "events", match.id] }); }} className="text-destructive"><Trash2 className="h-3 w-3" /></button>
+            <div key={e.id} className="flex items-center gap-2 rounded-xl border border-border bg-background/60 p-2 text-xs">
+              <button type="button" onClick={() => setEditing(e)} className="flex min-w-0 flex-1 items-center gap-2 text-left">
+                <span className="w-9 shrink-0 font-mono text-muted-foreground">{e.minute ?? "?"}{e.extra ? `+${e.extra}` : ""}′</span>
+                <EventIcon type={e.type} className="h-5 w-5 shrink-0" />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-semibold">{playerName(e.player_id) || (EVENT_TYPES.find((t) => t.v === e.type)?.l ?? e.type)}</span>
+                  <span className="block truncate text-[0.6rem] text-muted-foreground">
+                    {(EVENT_TYPES.find((t) => t.v === e.type)?.l ?? e.type)}{e.assist_player_id ? ` · assist ${playerName(e.assist_player_id)}` : ""}{teamName(e.team_id) ? ` · ${teamName(e.team_id)}` : ""}
+                  </span>
+                </span>
+                <Pencil className="h-3.5 w-3.5 shrink-0 text-primary" />
+              </button>
+              <button
+                onClick={async () => { await supabase.from("match_events").delete().eq("id", e.id); qc.invalidateQueries({ queryKey: ["admin", "events", match.id] }); }}
+                aria-label="Delete event"
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-destructive hover:bg-destructive/10"
+              ><Trash2 className="h-4 w-4" /></button>
             </div>
           ))}
           {eventsQ.data && eventsQ.data.length === 0 && <div className="rounded border border-dashed border-border p-3 text-center text-[0.65rem] text-muted-foreground">No events yet.</div>}
@@ -913,8 +924,11 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
                 assist_player_id: ev.assist_player_id ?? null, sub_out_player_id: ev.sub_out_player_id ?? null,
                 description: ev.description ?? null,
               };
-              const { error } = await supabase.from("match_events").update(patch as never).eq("id", editing.id);
+              // select() returns the saved row, so a silent no-op (blocked write)
+              // surfaces as an error instead of looking like nothing happened.
+              const { data, error } = await supabase.from("match_events").update(patch as never).eq("id", editing.id).select("id");
               if (error) { toast.error(error.message); return; }
+              if (!data || data.length === 0) { toast.error("Could not save this event — please try again."); return; }
               setEditing(null);
               toast.success("Event updated");
               qc.invalidateQueries({ queryKey: ["admin", "events", match.id] });
