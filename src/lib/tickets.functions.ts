@@ -72,6 +72,8 @@ export const claimTicket = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => claimTicketSchema.parse(input))
   .handler(async ({ data, context }) => {
+    const { data: restricted } = await context.supabase.rpc("is_suspended", { _uid: context.userId });
+    if (restricted === true) throw new Error("Your account is restricted, so tickets cannot be issued right now.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: offer } = await supabaseAdmin
       .from("ticket_offers")
