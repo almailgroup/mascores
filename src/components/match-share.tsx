@@ -220,7 +220,7 @@ export function MatchShare({ data, mode }: { data: MatchShareData; mode: "result
       </button>
       {open && (
         <div className="fixed inset-0 z-[120] flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-6" onClick={() => setOpen(false)}>
-          <div className="w-full max-w-md rounded-t-3xl border border-border bg-card p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-2xl sm:rounded-3xl" onClick={(event) => event.stopPropagation()}>
+          <div className="max-h-[88vh] w-full max-w-md overflow-y-auto rounded-t-3xl border border-border bg-card p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-2xl sm:rounded-3xl" onClick={(event) => event.stopPropagation()}>
             <div className="mb-3 flex items-center justify-between">
               <div>
                 <div className="text-sm font-bold">{label("Share this match?", "مشاركة هذه المباراة؟")}</div>
@@ -233,7 +233,7 @@ export function MatchShare({ data, mode }: { data: MatchShareData; mode: "result
             <div className="overflow-hidden rounded-2xl border border-border bg-muted">
               {busy || !preview
                 ? <div className="grid h-56 place-items-center text-xs text-muted-foreground">{label("Creating image…", "جارٍ إنشاء الصورة…")}</div>
-                : <img src={preview} alt="" className="w-full" />}
+                : <img src={preview} alt="" className="mx-auto max-h-[42vh] w-full object-contain" />}
             </div>
             <button type="button" disabled={busy || !preview} onClick={saveToPhotos}
               className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-bold text-primary-foreground disabled:opacity-50">
