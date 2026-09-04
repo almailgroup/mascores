@@ -1,6 +1,6 @@
 import { Link, useLocation, useRouter } from "@tanstack/react-router";
-import { Home, Search, Trophy, Newspaper, ArrowLeftRight, Ticket, Settings, LogIn, ArrowLeft, MoreHorizontal, Radio, X, ChevronDown } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { Home, Search, Trophy, Newspaper, ArrowLeftRight, Ticket, Settings, LogIn, ArrowLeft, MoreHorizontal, Radio, X, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -230,5 +230,60 @@ export function ScrollHint({ label }: { label?: string }) {
       {label ?? (lang === "ar" ? "اسحب للأسفل للمزيد" : "Scroll for more")}
       <ChevronDown className="h-3.5 w-3.5" />
     </button>
+  );
+}
+
+/**
+ * Wraps a horizontally scrollable tab row and tells the reader there is more to
+ * the side: soft fades, tappable arrows, and a "Swipe for more" pill that fades
+ * out once the row has been swiped to the end.
+ */
+export function SwipeTabs({ children, className = "" }: { children: ReactNode; className?: string }) {
+  const { lang } = useI18n();
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [edge, setEdge] = useState({ start: false, end: false });
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+    const update = () => {
+      const max = node.scrollWidth - node.clientWidth;
+      const pos = Math.abs(node.scrollLeft);
+      setEdge({ start: max > 8 && pos > 8, end: max > 8 && pos < max - 8 });
+    };
+    update();
+    const timer = window.setTimeout(update, 400);
+    node.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    return () => { window.clearTimeout(timer); node.removeEventListener("scroll", update); window.removeEventListener("resize", update); };
+  }, [children]);
+
+  const nudge = (dir: 1 | -1) => ref.current?.scrollBy({ left: dir * 160 * (lang === "ar" ? -1 : 1), behavior: "smooth" });
+
+  return (
+    <div className="relative">
+      <div ref={ref} className={`flex max-w-full overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${className}`}>
+        {children}
+      </div>
+      {edge.start && (
+        <>
+          <span className="pointer-events-none absolute inset-y-0 start-0 w-10 bg-gradient-to-r from-background to-transparent" />
+          <button type="button" aria-label="Previous tabs" onClick={() => nudge(-1)}
+            className="absolute start-0 top-1/2 z-10 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card/95 text-muted-foreground shadow">
+            <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
+          </button>
+        </>
+      )}
+      {edge.end && (
+        <>
+          <span className="pointer-events-none absolute inset-y-0 end-0 w-14 bg-gradient-to-l from-background to-transparent" />
+          <button type="button" onClick={() => nudge(1)}
+            className="absolute end-0 top-1/2 z-10 inline-flex -translate-y-1/2 animate-pulse items-center gap-1 rounded-full border border-border bg-card/95 px-2 py-1 text-[0.6rem] font-bold text-muted-foreground shadow">
+            {lang === "ar" ? "اسحب للمزيد" : "Swipe for more"}
+            <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" />
+          </button>
+        </>
+      )}
+    </div>
   );
 }

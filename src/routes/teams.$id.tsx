@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { MediaGallery } from "@/components/media-gallery";
-import { AppShell, BackButton, EmptyState, LoadingSkeleton } from "@/components/app-shell";
+import { AppShell, BackButton, EmptyState, LoadingSkeleton, SwipeTabs } from "@/components/app-shell";
 import { supabase, formatKickoff, type Team, type Player, type Match, type StandingRow, type Coach, type Transfer } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 import { FavoriteButton } from "@/hooks/use-favorites";
@@ -145,14 +145,15 @@ function TeamPage() {
         <FavoriteButton kind="team" id={t.id} size="md" />
       </div>
 
-      <div className="mb-5 flex gap-1 overflow-x-auto rounded-full border border-border bg-card p-1 text-xs">
+      <SwipeTabs className="mb-5 gap-1 rounded-full border border-border bg-card p-1 text-xs">
         {TABS.map((k) => (
           <button key={k} onClick={() => setTab(k)}
             className={`whitespace-nowrap rounded-full px-4 py-1.5 font-semibold ${tab === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
             {tr(`tab.${k}`)}
           </button>
         ))}
-      </div>
+      </SwipeTabs>
+
 
       {tab === "matches" && (
         matches.data && matches.data.length > 0 ? (
