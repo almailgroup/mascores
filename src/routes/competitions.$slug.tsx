@@ -165,8 +165,8 @@ function CompetitionPage() {
            <div className={`mt-0.5 flex min-w-0 flex-wrap items-center gap-1.5 text-[0.7rem] sm:text-xs ${theme ? "text-primary-foreground/85" : "text-muted-foreground"}`}>
             {!friendly && <FlagIcon value={c.country_code ?? c.country} />}
              <span className="truncate">{(friendly ? [tx(c.category)] : [tx(c.country), tx(c.category)]).filter(Boolean).join(" · ")}</span>
-              {(c.seasons?.length ?? 0) > 0 && <SeasonMenu seasons={c.seasons} value={activeSeason} onChange={setSeason} />}
           </div>
+          {(c.seasons?.length ?? 0) > 0 && <div className="mt-2"><SeasonMenu seasons={c.seasons} value={activeSeason} onChange={setSeason} onHero={!!theme} /></div>}
         </div>
         <div className="col-span-2"><DurationBar startsOn={c.starts_on} endsOn={c.ends_on} onHero={!!theme} /></div>
       </div>
