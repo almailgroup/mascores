@@ -122,21 +122,25 @@ function MatchPage() {
   return (
     <AppShell>
       <BackButton />
+      {match.competition && (
+        <Link to="/competitions/$slug" params={{ slug: match.competition.slug }}
+          className="mb-3 flex items-center gap-3 rounded-3xl border border-border bg-card px-4 py-3 shadow-sm transition hover:border-primary">
+          {match.competition.logo_url
+            ? <img src={match.competition.logo_url} alt="" className="h-9 w-9 shrink-0 object-contain" />
+            : <span className="h-9 w-9 shrink-0 rounded-full bg-muted" />}
+          <span className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 text-sm font-bold sm:text-base">
+            <span className="capitalize">{tx(match.competition.sport)},</span>
+            {match.competition.country && <><FlagIcon value={match.competition.country_code ?? match.competition.country} /><span>{tx(match.competition.country)},</span></>}
+            <span className="truncate">{tx(match.competition.name)}</span>
+            {roundLabel(match.round_number, match.round) ? <span className="text-muted-foreground">, {tx(roundLabel(match.round_number, match.round))}</span> : null}
+          </span>
+          <ChevronRight className="h-5 w-5 shrink-0 text-primary" />
+        </Link>
+      )}
       <div className="mb-6 rounded-3xl border border-border bg-card p-6">
-        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          {match.competition ? (
-            <Link to="/competitions/$slug" params={{ slug: match.competition.slug }} className="flex min-w-0 flex-wrap items-center gap-2 font-semibold hover:text-primary">
-              {match.competition.logo_url && <img src={match.competition.logo_url} alt="" className="h-7 w-7 shrink-0 object-contain" />}
-              <span className="capitalize">{tx(match.competition.sport)}</span>
-              {match.competition.country && <><span>·</span><FlagIcon value={match.competition.country_code ?? match.competition.country} /><span>{tx(match.competition.country)}</span></>}
-              <span>·</span><span>{tx(match.competition.name)}</span>
-            </Link>
-          ) : null}
-          {roundLabel(match.round_number, match.round) ? <span>· {roundLabel(match.round_number, match.round)}</span> : null}
-        </div>
-        <div className="mt-4 grid items-center gap-4" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
-          <TeamHeadline team={match.home} align="right" />
-          <div className="text-center">
+        <div className="grid items-start gap-3" style={{ gridTemplateColumns: "minmax(0,1fr) auto minmax(0,1fr)" }}>
+          <TeamHeadline team={match.home} />
+          <div className="pt-2 text-center">
             {["scheduled", "postponed", "cancelled"].includes(match.status) ? (
               <div className="text-sm font-medium text-muted-foreground">{num(dates.kickoff(match.kickoff_at))}</div>
             ) : (
@@ -152,8 +156,9 @@ function MatchPage() {
               {match.status === "live" ? num(formatClock(clock)) : tx(STATUS_LABELS[match.status] ?? match.status)}
             </div>
           </div>
-          <TeamHeadline team={match.away} align="left" />
+          <TeamHeadline team={match.away} />
         </div>
+
         {match.venue && <div className="mt-4 text-center text-xs text-muted-foreground">{tx(match.venue)}{match.city ? ` · ${tx(match.city)}` : ""}</div>}
       </div>
 
