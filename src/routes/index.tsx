@@ -147,6 +147,30 @@ function Home() {
 }
 
 /** Sofascore-style control bar: scope tabs, date stepper and status chips. */
+/**
+ * Prominent home entry point to the ticket shop, so fans do not have to dig
+ * through the More menu to buy a match pass.
+ */
+function TicketsBanner() {
+  const tx = useTx();
+  const count = useQuery({
+    queryKey: ["tickets-on-sale"],
+    queryFn: async () => (await supabase.from("ticket_offers").select("id", { count: "exact", head: true }).eq("is_active", true)).count ?? 0,
+  });
+  if ((count.data ?? 0) === 0) return null;
+  return (
+    <Link to="/tickets" className="mb-6 flex items-center gap-4 overflow-hidden rounded-3xl border border-primary/30 bg-gradient-to-r from-primary/20 via-card to-card p-4 transition hover:border-primary/60 hover:shadow-lg">
+      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-md"><TicketIcon className="h-6 w-6" /></span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-[0.65rem] font-black uppercase tracking-[0.2em] text-primary">{tx("Tickets")}</span>
+        <span className="block truncate text-base font-black tracking-tight">{tx("Buy match tickets")}</span>
+        <span className="block truncate text-xs text-muted-foreground">{tx("Instant QR entry passes for upcoming fixtures")}</span>
+      </span>
+      <ArrowRight className="h-5 w-5 shrink-0 text-primary" />
+    </Link>
+  );
+}
+
 function ScoreBoard({ liveCount }: { liveCount: number }) {
   const tx = useTx();
   const { t, lang } = useI18n();
