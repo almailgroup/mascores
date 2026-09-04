@@ -9,7 +9,7 @@ import { DateWheel } from "@/components/date-wheel";
 import { TransfersEditor } from "./transfers-editor";
 import { PlayerEditor } from "./player-editor";
 import { PlayerAvatar } from "@/components/player-avatar";
-import { releasePlayerToFreeAgent, transferPlayerToClub, deletePlayerForever } from "@/lib/player-moves";
+import { releasePlayerToFreeAgent, transferPlayerToClub } from "@/lib/player-moves";
 import { TeamCrest } from "@/components/team-crest";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import { VenueSelect } from "./venue-select";
@@ -254,7 +254,6 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
   const [batchOpen, setBatchOpen] = useState(false);
   const [pick, setPick] = useState("");
   const [poolSearch, setPoolSearch] = useState("");
-  const [confirmPlayer, setConfirmPlayer] = useState<Player | null>(null);
 
   const key = ["admin", "players", team.id];
   const q = useQuery({
