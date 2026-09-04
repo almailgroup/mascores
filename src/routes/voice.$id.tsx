@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Mic, MicOff, Loader2, Lock, Globe2, Hand, LogOut, Copy, Check, UserPlus, UserCheck, PhoneOff, Radio, EyeOff, Trash2, UserMinus } from "lucide-react";
+import { Mic, MicOff, Loader2, Lock, Globe2, Hand, LogOut, Copy, Check, UserPlus, UserCheck, PhoneOff, Radio, EyeOff, Trash2, UserMinus, Volume2 } from "lucide-react";
 import { AppShell, BackButton } from "@/components/app-shell";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -9,6 +9,7 @@ import { useI18n } from "@/lib/i18n";
 import { useTx } from "@/lib/auto-translate";
 import { inviteLink, liveFor, roomCover, type VoiceHost, type VoiceRoom } from "@/lib/voice";
 import { useVoiceRoom, type VoiceRole } from "@/lib/use-voice-room";
+import { suspensionMessage, useMySuspension } from "@/lib/suspension";
 
 export const Route = createFileRoute("/voice/$id")({
   head: () => ({
@@ -35,6 +36,8 @@ function VoiceRoomPage() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [joined, setJoined] = useState(false);
   const [anon, setAnon] = useState(false);
+  const [joining, setJoining] = useState(false);
+  const [audioUnlocked, setAudioUnlocked] = useState(false);
 
   const room = useQuery({
     queryKey: ["voice-room", id],
@@ -103,6 +106,7 @@ function VoiceRoomPage() {
   });
 
   const isHost = !!user && room.data?.host_id === user.id;
+  const suspension = useMySuspension(user?.id);
   const role: VoiceRole = isHost ? "host" : (membership.data?.role ?? "listener");
 
   const profile = useQuery({
@@ -124,17 +128,27 @@ function VoiceRoomPage() {
       }
     : null;
 
-  const { roster, remote, muted, toggleMute, forceMute, hand, setHand, micError, retryMic, connected, speakerCount, listenerCount } = useVoiceRoom({ roomId: id, me, enabled: !!me && live, storedPeers: participants.data ?? [] });
+  const { roster, remote, muted, toggleMute, forceMute, hand, setHand, micError, retryMic, connected, audioReady, speakerCount, listenerCount } = useVoiceRoom({ roomId: id, me, enabled: !!me && live, storedPeers: participants.data ?? [] });
 
   // Join the room roster (host joins automatically when the room is created).
   const join = async (anonymous = false) => {
     if (!user) { void navigate({ to: "/auth" }); return; }
+    if (suspension.data) { setActionError(tx(suspensionMessage(suspension.data))); return; }
+    setJoining(true);
+    setActionError(null);
     setAnon(anonymous);
     const existingRole = membership.data?.role;
-    await supabase.from("voice_room_participants")
+    const { error } = await supabase.from("voice_room_participants")
       .upsert({ room_id: id, user_id: user.id, role: isHost ? "host" : (existingRole ?? "listener"), is_muted: true, left_at: null }, { onConflict: "room_id,user_id" });
+    if (error) {
+      setActionError(tx("Could not join this room. Please try again."));
+      setJoining(false);
+      return;
+    }
     await qc.invalidateQueries({ queryKey: ["voice-membership", id] });
     setJoined(true);
+    setJoining(false);
+    window.dispatchEvent(new Event("voice-audio-unlock"));
   };
 
   const leave = async () => {
@@ -164,6 +178,17 @@ function VoiceRoomPage() {
     if (error) { setActionError(error.message); return; }
     await qc.invalidateQueries({ queryKey: ["voice-membership", id] });
     await qc.invalidateQueries({ queryKey: ["voice-participants", id] });
+  };
+
+  const unlockAudio = async () => {
+    const AudioCtx = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (AudioCtx) {
+      const context = new AudioCtx();
+      await context.resume().catch(() => undefined);
+      await context.close().catch(() => undefined);
+    }
+    window.dispatchEvent(new Event("voice-audio-unlock"));
+    setAudioUnlocked(true);
   };
 
   const toggleFollow = async () => {
@@ -264,10 +289,10 @@ function VoiceRoomPage() {
           {!live && <p className="text-sm text-muted-foreground">{tx("This room has ended.")}</p>}
           {live && !joined && (
             <div className="flex flex-wrap gap-2">
-              <button onClick={() => join(false)} className="inline-flex h-11 items-center gap-2 rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground shadow">
-                <Radio className="h-4 w-4" /> {tx("Join to listen")}
+              <button disabled={joining} onClick={() => join(false)} className="inline-flex h-11 items-center gap-2 rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground shadow disabled:opacity-60">
+                {joining ? <Loader2 className="h-4 w-4 animate-spin" /> : <Radio className="h-4 w-4" />} {tx("Join to listen")}
               </button>
-              <button onClick={() => join(true)} className="inline-flex h-11 items-center gap-2 rounded-full border border-border bg-card px-5 text-sm font-bold">
+              <button disabled={joining} onClick={() => join(true)} className="inline-flex h-11 items-center gap-2 rounded-full border border-border bg-card px-5 text-sm font-bold disabled:opacity-60">
                 <EyeOff className="h-4 w-4" /> {tx("Listen anonymously")}
               </button>
             </div>
@@ -281,6 +306,11 @@ function VoiceRoomPage() {
                 <span>· {speakerCount} {tx("speaking")}</span>
                 <span>· {listenerCount} {tx("listening")}</span>
               </div>
+              {!audioUnlocked && (
+                <button onClick={unlockAudio} className="mb-3 flex w-full items-center justify-center gap-2 rounded-xl border border-primary/40 bg-primary/10 px-4 py-3 text-sm font-bold text-primary">
+                  <Volume2 className="h-4 w-4" /> {tx("Tap to enable room audio")}
+                </button>
+              )}
               {micError && (
                 <div className="mb-3 rounded-xl bg-destructive/10 p-3 text-xs font-semibold text-destructive">
                   {tx(micError)}
@@ -331,8 +361,8 @@ function VoiceRoomPage() {
                 <Hand className="h-4 w-4" /> {hand ? tx("Hand raised") : tx("Raise hand")}
               </button>
             ) : (
-              <button onClick={toggleMute} className={`inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full text-sm font-bold ${muted ? "bg-muted text-foreground" : "bg-primary text-primary-foreground"}`}>
-                {muted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />} {muted ? tx("Unmute") : tx("Mute")}
+              <button onClick={() => void toggleMute()} className={`inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full text-sm font-bold ${muted ? "bg-muted text-foreground" : "bg-primary text-primary-foreground"}`}>
+                 {muted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />} {muted ? tx(audioReady ? "Unmute" : "Start microphone") : tx("Mute")}
               </button>
             )}
             {isHost ? (
@@ -391,10 +421,12 @@ function RemoteAudio({ stream }: { stream: MediaStream }) {
     const play = () => { void node.play().catch(() => undefined); };
     play();
     // Mobile browsers block autoplay until the listener interacts with the page.
-    document.addEventListener("click", play);
-    document.addEventListener("touchstart", play);
+    window.addEventListener("voice-audio-unlock", play);
+    document.addEventListener("click", play, { passive: true });
+    document.addEventListener("touchstart", play, { passive: true });
     const timer = window.setInterval(() => { if (node.paused) play(); }, 1500);
     return () => {
+      window.removeEventListener("voice-audio-unlock", play);
       document.removeEventListener("click", play);
       document.removeEventListener("touchstart", play);
       window.clearInterval(timer);

@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import { useTx } from "@/lib/auto-translate";
 import { generatedCover, liveFor, roomCover, type VoiceHost, type VoiceRoom } from "@/lib/voice";
+import { suspensionMessage, useMySuspension } from "@/lib/suspension";
 
 export const Route = createFileRoute("/voice")({
   head: () => ({
@@ -41,6 +42,7 @@ function VoicePage() {
   const [creating, setCreating] = useState(!!match);
   const [joinCode, setJoinCode] = useState(code ?? "");
   const [codeError, setCodeError] = useState<string | null>(null);
+  const suspension = useMySuspension(user?.id);
 
   const rooms = useQuery({
     queryKey: ["voice-rooms"],
@@ -112,7 +114,7 @@ function VoicePage() {
         <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">{tx("Live football talk")}</h1>
         <p className="mt-1 max-w-xl text-sm text-muted-foreground">{tx("Join a room to listen, raise your hand to speak, or start your own room. Follow hosts to know when they go live.")}</p>
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          <button onClick={() => (user ? setCreating(true) : navigate({ to: "/auth" }))} className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-4 text-sm font-bold text-primary-foreground shadow">
+          <button onClick={() => (user ? (suspension.data ? setCodeError(tx(suspensionMessage(suspension.data))) : setCreating(true)) : navigate({ to: "/auth" }))} className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-4 text-sm font-bold text-primary-foreground shadow">
             <Plus className="h-4 w-4" /> {tx("Start a room")}
           </button>
           <div className="flex items-center gap-2">
@@ -209,13 +211,21 @@ function CreateRoom({ onClose, onCreated, matchId = null }: { onClose: () => voi
   const create = async () => {
     if (!user || !title.trim()) return;
     setBusy(true); setError(null);
+    const { data: restricted } = await supabase.rpc("is_suspended", { _uid: user.id });
+    if (restricted) { setError(tx("This account cannot start a voice room right now.")); setBusy(false); return; }
     const { data, error: insertError } = await supabase
       .from("voice_rooms")
       .insert({ host_id: user.id, title: title.trim(), description: description.trim() || null, photo_url: photo, visibility, match_id: matchId })
       .select("id")
       .maybeSingle();
     if (insertError || !data) { setError(tx("Could not start the room. Please try again.")); setBusy(false); return; }
-    await supabase.from("voice_room_participants").insert({ room_id: data.id, user_id: user.id, role: "host", is_muted: false });
+    const { error: participantError } = await supabase.from("voice_room_participants").insert({ room_id: data.id, user_id: user.id, role: "host", is_muted: true });
+    if (participantError) {
+      await supabase.from("voice_rooms").delete().eq("id", data.id);
+      setError(tx("The room was not started. Please try again."));
+      setBusy(false);
+      return;
+    }
     setBusy(false);
     onCreated(data.id);
   };

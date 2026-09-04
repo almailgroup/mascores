@@ -64,4 +64,7 @@ Still open (frontend polish):
 - Professional awards board and premium competition key-numbers strip
 
 ## Still open
-- Voice audio (WebRTC speaking) needs live browser verification on a real device
+- [x] Voice entry now reports failed joins instead of opening a broken room
+- [x] X-style listen-first flow with hand raising, host promotion, participant counts and explicit mobile audio unlock
+- [x] Microphone starts from the user's tap, reconnects peers with ICE restart, and queues early connection candidates
+- Voice audio still needs final two-account verification on physical devices
