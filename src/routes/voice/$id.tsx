@@ -70,8 +70,8 @@ function VoiceRoomPage() {
     queryKey: ["voice-membership", id, user?.id],
     refetchInterval: 5000,
     queryFn: async () => {
-      const { data } = await supabase.from("voice_room_participants").select("id, role, is_muted, hand_raised").eq("room_id", id).eq("user_id", user!.id).maybeSingle();
-      return data as { id: string; role: VoiceRole; is_muted: boolean; hand_raised: boolean } | null;
+      const { data } = await supabase.from("voice_room_participants").select("id, role, is_muted, hand_raised, anonymous").eq("room_id", id).eq("user_id", user!.id).maybeSingle();
+      return data as { id: string; role: VoiceRole; is_muted: boolean; hand_raised: boolean; anonymous: boolean } | null;
     },
   });
 
@@ -80,14 +80,14 @@ function VoiceRoomPage() {
     queryKey: ["voice-participants", id],
     refetchInterval: 3000,
     queryFn: async () => {
-      const { data } = await supabase.from("voice_room_participants").select("user_id,role,is_muted,hand_raised").eq("room_id", id).is("left_at", null);
-      const ids = (data ?? []).map((row) => row.user_id);
+      const { data } = await supabase.from("voice_room_participants").select("user_id,role,is_muted,hand_raised,anonymous").eq("room_id", id).is("left_at", null);
+      const ids = (data ?? []).filter((row) => !row.anonymous).map((row) => row.user_id);
       const { data: profiles } = ids.length ? await supabase.rpc("chat_author_profiles", { _ids: ids }) : { data: [] };
       const byId = new Map((profiles ?? []).map((profile) => [profile.id, profile]));
       return (data ?? []).map((row) => ({
         userId: row.user_id,
-        name: byId.get(row.user_id)?.display_name ?? "Listener",
-        avatar: byId.get(row.user_id)?.avatar_url ?? null,
+        name: row.anonymous ? "Anonymous listener" : (byId.get(row.user_id)?.display_name ?? "Listener"),
+        avatar: row.anonymous ? null : (byId.get(row.user_id)?.avatar_url ?? null),
         role: row.role as VoiceRole,
         muted: row.is_muted,
         hand: row.hand_raised,
@@ -128,7 +128,7 @@ function VoiceRoomPage() {
       }
     : null;
 
-  const { roster, remote, muted, toggleMute, forceMute, hand, setHand, micError, retryMic, connected, audioReady, speakerCount, listenerCount } = useVoiceRoom({ roomId: id, me, enabled: !!me && live, storedPeers: participants.data ?? [] });
+  const { roster, remote, muted, toggleMute, forceMute, hand, setHand, micError, retryMic, connected, audioReady, speakerCount, listenerCount, recording, startRecording, stopRecording } = useVoiceRoom({ roomId: id, me, enabled: !!me && live, storedPeers: participants.data ?? [] });
 
   // Join the room roster (host joins automatically when the room is created).
   const join = async (anonymous = false) => {
@@ -139,7 +139,7 @@ function VoiceRoomPage() {
     setAnon(anonymous);
     const existingRole = membership.data?.role;
     const { error } = await supabase.from("voice_room_participants")
-      .upsert({ room_id: id, user_id: user.id, role: isHost ? "host" : (existingRole ?? "listener"), is_muted: true, left_at: null }, { onConflict: "room_id,user_id" });
+      .upsert({ room_id: id, user_id: user.id, role: isHost ? "host" : (anonymous ? "listener" : (existingRole ?? "listener")), is_muted: true, left_at: null, anonymous: anonymous }, { onConflict: "room_id,user_id" });
     if (error) {
       setActionError(tx("Could not join this room. Please try again."));
       setJoining(false);
@@ -209,6 +209,8 @@ function VoiceRoomPage() {
   // action). Including local `muted` here caused the initial stored `true`
   // value to immediately undo a speaker's own Unmute gesture.
   useEffect(() => { if (membership.data?.is_muted) forceMute(); }, [membership.data?.is_muted, forceMute]);
+
+  useEffect(() => { if (membership.data?.anonymous) setAnon(true); }, [membership.data?.anonymous]);
 
   useEffect(() => { if (isHost && live && !joined) setJoined(true); }, [isHost, live, joined]);
 
