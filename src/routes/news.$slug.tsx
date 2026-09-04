@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { AppShell, BackButton, EmptyState, LoadingSkeleton } from "@/components/app-shell";
+import { AppShell, EmptyState, LoadingSkeleton } from "@/components/app-shell";
 import { supabase, type NewsPost } from "@/lib/db";
 import { useAutoTranslate, useDates, useNum } from "@/lib/auto-translate";
 import { ArrowLeft } from "lucide-react";
