@@ -137,8 +137,8 @@ export function MatchesPanel({ competitionId, season = null, friendly = false }:
             <div className="grid gap-2">
               {list.map((m) => (
                 <div key={m.id} className="rounded-xl border border-border bg-card p-3">
+                  <div className="mb-2 inline-flex rounded-full bg-muted px-2.5 py-1 text-[0.6rem] font-bold uppercase tracking-wide text-muted-foreground">{(STATUS_LABELS[m.status] ?? m.status)}</div>
                   <div className="flex min-w-0 items-start gap-2">
-                    <div className="w-9 shrink-0 pt-0.5 text-[0.6rem] font-bold uppercase tracking-wide text-muted-foreground">{(STATUS_LABELS[m.status] ?? m.status)}</div>
                     <div className="min-w-0 flex-1 space-y-1">
                       <div className="flex min-w-0 items-center gap-2 text-xs font-semibold sm:text-sm">
                         <TeamCrest name={teamName(m.home_team_id)} logo={teamLogo(m.home_team_id)} className="h-5 w-5 shrink-0" />
@@ -153,6 +153,7 @@ export function MatchesPanel({ competitionId, season = null, friendly = false }:
                       <div className="truncate text-[0.65rem] text-muted-foreground">{formatKickoff(m.kickoff_at)}{m.venue ? ` · ${m.venue}` : ""}</div>
                     </div>
                   </div>
+
                   <div className="mt-2 flex flex-wrap gap-2">
                     {(isPast(m) && noResult(m) || m.status === "awarded") && <button className={btnPrimary} onClick={() => setResultOf(m)}><Flag className="h-3.5 w-3.5" /> {m.status === "awarded" ? "Set awarded score" : "End result"}</button>}
                     <button className={btnGhost} onClick={() => setEditingMatch(m)}><SlidersHorizontal className="h-3.5 w-3.5" /> Manage</button>
