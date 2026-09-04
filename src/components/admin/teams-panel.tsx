@@ -336,7 +336,7 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
                     </div>
                     <button className={btnGhost} onClick={() => setEditing(p)}><Pencil className="h-3 w-3" /> Edit</button>
                     <button className={btnGhost} onClick={async () => { if (!confirm(`Release ${p.name} to free agents?`)) return; await releasePlayerToFreeAgent(p, team.name); invalidate(); }}><UserMinus className="h-3 w-3" /> Release</button>
-                    <button className={btnDanger} onClick={() => setConfirmPlayer(p)}><Trash2 className="h-3 w-3" /></button>
+
                   </div>
                 ))}
                 {players.length === 0 && <div className="rounded border border-dashed border-border p-3 text-center text-xs text-muted-foreground">No {position.toLowerCase()}s</div>}
