@@ -246,6 +246,8 @@ export function SwipeTabs({ children, className = "" }: { children: ReactNode; c
     node.scrollBy({ left: dir * Math.max(160, node.clientWidth * 0.8) * (lang === "ar" ? -1 : 1), behavior: "smooth" });
   };
   const arrowCls = "absolute top-1/2 z-10 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-current/10 text-current opacity-70 transition-opacity duration-300";
+  // The arrow is only a first-time hint: once the row has been moved at all it stays away.
+  const hint = edge.end && !edge.start && !swiping;
 
   return (
     <div className="relative">
