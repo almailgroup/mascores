@@ -97,9 +97,13 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
 
       {!bare && <LiveVoiceAlert />}
 
-      <main className="relative z-10 mx-auto max-w-7xl px-4 pb-28 pt-6 sm:px-6">{children}</main>
+      {/* Extra bottom room so the iPhone home bar never covers page actions. */}
+      <main
+        className="relative z-10 mx-auto max-w-7xl px-4 pt-6 sm:px-6"
+        style={{ paddingBottom: "calc(7rem + env(safe-area-inset-bottom))" }}
+      >{children}</main>
 
-      {!bare && <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/60 bg-background/95 backdrop-blur-xl md:hidden">
+      {!bare && <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/60 bg-background/95 backdrop-blur-xl md:hidden" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
         <div className="mx-auto flex max-w-7xl items-center justify-around px-2 py-2">
           {PRIMARY_NAV.map((item) => {
             const active = item.exact ? location.pathname === item.to : location.pathname.startsWith(item.to);
