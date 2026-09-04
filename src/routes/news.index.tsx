@@ -5,7 +5,7 @@ import { supabase, type NewsPost } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 import { useAutoTranslate, useDates, useNum } from "@/lib/auto-translate";
 import { useI18n } from "@/lib/i18n";
-import { PenLine, ArrowRight } from "lucide-react";
+import { PenLine } from "lucide-react";
 
 export const Route = createFileRoute("/news/")({
   head: () => ({ meta: [{ title: "News — MansourAlmailScores" }, { name: "description", content: "Latest football news from MansourAlmailScores." }] }),
