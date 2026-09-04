@@ -121,12 +121,87 @@ function MatchPage() {
   const tabs: ("details" | "lineups" | "stats" | "standings" | "previous" | "media")[] = ["details", ...(lineupsVisible ? ["lineups" as const] : []), "stats", "standings", "previous", "media"];
   const clock = matchClockSeconds(match);
 
+  const scorerList = (teamId: string | null | undefined) => (events.data ?? [])
+    .filter((event) => ["goal", "penalty", "own_goal"].includes(event.type) && event.team?.id === teamId)
+    .map((event) => ({
+      name: tx(event.player?.name) ?? tx(event.description ?? "Goal"),
+      minute: `${event.minute ?? ""}${event.extra ? `+${event.extra}` : ""}'${event.type === "own_goal" ? " (OG)" : event.type === "penalty" ? " (P)" : ""}`,
+    }));
+  const homeScorers = scorerList(match.home_team_id);
+  const awayScorers = scorerList(match.away_team_id);
+  const starters = (teamId: string | null | undefined) => (lineups.data ?? [])
+    .filter((row) => row.team_id === teamId && row.is_starting)
+    .map((row) => ({ number: row.shirt_number ? String(row.shirt_number) : "", name: tx(row.player?.short_name || row.player?.name) ?? "" }));
+  const shareData = {
+    competition: [tx(match.competition?.name) ?? "", roundLabel(match.round_number, match.round) ? tx(roundLabel(match.round_number, match.round)) : ""].filter(Boolean).join(" · "),
+    kickoff: dates.kickoff(match.kickoff_at),
+    status: match.status === "live" ? formatClock(clock) : tx(STATUS_LABELS[match.status] ?? match.status) ?? match.status,
+    home: { name: tx(match.home?.name) ?? "TBD", logo_url: match.home?.logo_url ?? null },
+    away: { name: tx(match.away?.name) ?? "TBD", logo_url: match.away?.logo_url ?? null },
+    homeScore: String(match.home_score ?? 0),
+    awayScore: String(match.away_score ?? 0),
+    homeScorers, awayScorers,
+    homeLineup: starters(match.home_team_id),
+    awayLineup: starters(match.away_team_id),
+    accent: heroAccent?.color ?? "#12275c",
+  };
+
   return (
-    <AppShell>
-      <BackButton />
+    <AppShell padded={false}>
+      {/* Hero tinted with the home club's own badge colour. */}
+      <div className="relative -mx-4 -mt-4 mb-4 overflow-hidden px-4 pb-1 pt-[calc(0.75rem+env(safe-area-inset-top))] text-white sm:-mx-6 sm:px-6"
+        style={{ background: heroAccent?.hero ?? "linear-gradient(150deg, #16224a 0%, #070a12 100%)" }}>
+        <div className="flex items-center justify-between">
+          <BackButton className="mb-0 border-white/20 bg-white/10 text-white hover:text-white" />
+          <div className="flex items-center gap-2">
+            <MatchShare data={shareData} mode={tab === "lineups" ? "lineups" : "result"} />
+          </div>
+        </div>
+
+        <div className="mt-3 flex justify-center">
+          <span className="rounded-full bg-black/25 px-3 py-1 text-xs font-semibold">{num(dates.kickoff(match.kickoff_at))}</span>
+        </div>
+
+        <div className="mt-3 grid items-start gap-2" style={{ gridTemplateColumns: "minmax(0,1fr) auto minmax(0,1fr)" }}>
+          <HeroTeam team={match.home} />
+          <div className="pt-3 text-center">
+            {["scheduled", "postponed", "cancelled"].includes(match.status)
+              ? <div className="text-lg font-bold">{tx(STATUS_LABELS[match.status] ?? match.status)}</div>
+              : <>
+                <div className="text-4xl font-black tabular-nums">{num(match.home_score ?? 0)} <span className="text-white/60">-</span> {num(match.away_score ?? 0)}</div>
+                {match.status === "pen" && match.home_pen != null && match.away_pen != null && (
+                  <div className="text-xs text-white/70">({num(match.home_pen)}–{num(match.away_pen)} {tx("pens")})</div>
+                )}
+                <div className="mt-1 flex items-center justify-center gap-1 text-sm text-white/80">
+                  {isLive && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />}
+                  {match.status === "live" ? num(formatClock(clock)) : tx(STATUS_LABELS[match.status] ?? match.status)}
+                </div>
+              </>}
+          </div>
+          <HeroTeam team={match.away} />
+        </div>
+
+        {(homeScorers.length > 0 || awayScorers.length > 0) && (
+          <div className="mt-4 grid items-start gap-3 text-[0.8rem] text-white/85" style={{ gridTemplateColumns: "minmax(0,1fr) auto minmax(0,1fr)" }}>
+            <div className="space-y-0.5 text-end">{homeScorers.map((scorer, index) => <div key={index} className="truncate">{scorer.name} {num(scorer.minute)}</div>)}</div>
+            <div className="pt-0.5"><EventIcon type="goal" /></div>
+            <div className="space-y-0.5">{awayScorers.map((scorer, index) => <div key={index} className="truncate">{scorer.name} {num(scorer.minute)}</div>)}</div>
+          </div>
+        )}
+
+        {match.venue && <div className="mt-3 text-center text-xs text-white/70">{tx(match.venue)}{match.city ? ` · ${tx(match.city)}` : ""}</div>}
+
+        <div className="mt-4">
+          <SwipeTabs className="gap-1 text-sm">
+            {tabs.map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 py-2 font-semibold capitalize ${tab === item ? "border-b-2 border-white text-white" : "text-white/65"}`}>{tx(item === "media" ? "Media" : item === "previous" ? "Matches" : item === "details" ? "Details" : item === "lineups" ? "Lineups" : item === "standings" ? "Standings" : "Stats")}</button>)}
+          </SwipeTabs>
+        </div>
+      </div>
+
+      <div className="px-4 pb-6 sm:px-6">
       {match.competition && (
         <Link to="/competitions/$slug" params={{ slug: match.competition.slug }}
-          className="mb-3 flex items-center gap-3 rounded-3xl border border-border bg-card px-4 py-3 shadow-sm transition hover:border-primary">
+          className="mb-4 flex items-center gap-3 rounded-3xl border border-border bg-card px-4 py-3 shadow-sm transition hover:border-primary">
           {match.competition.logo_url
             ? <img src={match.competition.logo_url} alt="" className="h-9 w-9 shrink-0 object-contain" />
             : <span className="h-9 w-9 shrink-0 rounded-full bg-muted" />}
@@ -139,36 +214,6 @@ function MatchPage() {
           <ChevronRight className="h-5 w-5 shrink-0 text-primary" />
         </Link>
       )}
-      <div className="mb-6 rounded-3xl border border-border bg-card p-6">
-        <div className="grid items-start gap-3" style={{ gridTemplateColumns: "minmax(0,1fr) auto minmax(0,1fr)" }}>
-          <TeamHeadline team={match.home} />
-          <div className="pt-2 text-center">
-            {["scheduled", "postponed", "cancelled"].includes(match.status) ? (
-              <div className="text-sm font-medium text-muted-foreground">{num(dates.kickoff(match.kickoff_at))}</div>
-            ) : (
-              <div>
-                <div className="text-4xl font-black tabular-nums">{num(match.home_score ?? 0)} – {num(match.away_score ?? 0)}</div>
-                {match.status === "pen" && match.home_pen != null && match.away_pen != null && (
-                  <div className="text-xs text-muted-foreground">({num(match.home_pen)}–{num(match.away_pen)} {tx("pens")})</div>
-                )}
-              </div>
-            )}
-            <div className={`mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs ${isLive ? "bg-primary/15 text-primary" : "bg-muted"}`}>
-              {isLive && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />}
-              {match.status === "live" ? num(formatClock(clock)) : tx(STATUS_LABELS[match.status] ?? match.status)}
-            </div>
-          </div>
-          <TeamHeadline team={match.away} />
-        </div>
-
-        {match.venue && <div className="mt-4 text-center text-xs text-muted-foreground">{tx(match.venue)}{match.city ? ` · ${tx(match.city)}` : ""}</div>}
-      </div>
-
-      <div className="mb-6 border-b border-border pb-2">
-        <SwipeTabs className="gap-1 text-sm">
-          {tabs.map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 py-2 font-semibold capitalize ${tab === item ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>{tx(item === "media" ? "Media" : item === "previous" ? "Matches" : item === "details" ? "Details" : item === "lineups" ? "Lineups" : item === "standings" ? "Standings" : "Stats")}</button>)}
-        </SwipeTabs>
-      </div>
 
 
       {tab === "details" && <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
