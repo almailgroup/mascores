@@ -209,9 +209,19 @@
     border-color: var(--color-border);
   }
 
+  html {
+    /* Keep iPhone Safari from inflating text in landscape and from letting a
+       stray wide element create a sideways scroll. */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    overflow-x: hidden;
+  }
+
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
