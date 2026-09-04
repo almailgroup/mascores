@@ -124,7 +124,7 @@ function VoiceRoomPage() {
       }
     : null;
 
-  const { roster, remote, muted, toggleMute, forceMute, hand, setHand, micError, connected, speakerCount, listenerCount } = useVoiceRoom({ roomId: id, me, enabled: !!me && live, storedPeers: participants.data ?? [] });
+  const { roster, remote, muted, toggleMute, forceMute, hand, setHand, micError, retryMic, connected, speakerCount, listenerCount } = useVoiceRoom({ roomId: id, me, enabled: !!me && live, storedPeers: participants.data ?? [] });
 
   // Join the room roster (host joins automatically when the room is created).
   const join = async (anonymous = false) => {
@@ -282,7 +282,12 @@ function VoiceRoomPage() {
                 <span>· {speakerCount} {tx("speaking")}</span>
                 <span>· {listenerCount} {tx("listening")}</span>
               </div>
-              {micError && <p className="mb-3 rounded-xl bg-destructive/10 p-3 text-xs font-semibold text-destructive">{tx(micError)}</p>}
+              {micError && (
+                <div className="mb-3 rounded-xl bg-destructive/10 p-3 text-xs font-semibold text-destructive">
+                  {tx(micError)}
+                  <button onClick={retryMic} className="mt-2 inline-flex h-8 items-center rounded-full bg-destructive px-3 text-[0.7rem] font-bold text-destructive-foreground">{tx("Retry microphone")}</button>
+                </div>
+              )}
               {actionError && <p className="mb-3 rounded-xl bg-destructive/10 p-3 text-xs font-semibold text-destructive">{actionError}</p>}
 
               <h2 className="text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Speakers")} ({speakerCount})</h2>
