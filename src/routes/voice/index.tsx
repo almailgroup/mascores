@@ -12,7 +12,7 @@ import { useTx } from "@/lib/auto-translate";
 import { generatedCover, liveFor, roomCover, type VoiceHost, type VoiceRoom } from "@/lib/voice";
 import { suspensionMessage, useMySuspension } from "@/lib/suspension";
 
-export const Route = createFileRoute("/voice")({
+export const Route = createFileRoute("/voice/")({
   head: () => ({
     meta: [
       { title: "Voice rooms — MansourAlmailScores" },
