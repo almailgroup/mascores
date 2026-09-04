@@ -1,9 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { AppShell, EmptyState, LoadingSkeleton } from "@/components/app-shell";
+import { AppShell, BackButton, EmptyState, LoadingSkeleton } from "@/components/app-shell";
 import { supabase, type NewsPost } from "@/lib/db";
 import { useAutoTranslate, useDates, useNum } from "@/lib/auto-translate";
-import { ArrowLeft } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/news/$slug")({
@@ -38,7 +37,7 @@ function ArticlePage() {
   if (!n) return <AppShell><EmptyState title={tx("Article not found")} /></AppShell>;
   return (
     <AppShell>
-       <Link to="/news" className="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> {t("nav.news")}</Link>
+       <BackButton />
       <article className="overflow-hidden rounded-3xl border border-border bg-card">
         {n.cover_url && (
           <div className="flex w-full items-center justify-center bg-gradient-to-br from-primary/25 via-card to-background">
