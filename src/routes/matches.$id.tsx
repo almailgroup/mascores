@@ -25,8 +25,11 @@ function HeroTeam({ team }: { team: Team | null }) {
   const tx = useTx();
   const body = (
     <>
-      <span className="grid h-16 w-16 place-items-center rounded-2xl bg-white/95 p-1.5">
-        <TeamCrest name={team?.name} logo={team?.logo_url} className="h-full w-full" rounded="rounded-xl" />
+      {/* No plate behind the crest: the badge sits straight on the hero colour. */}
+      <span className="grid h-16 w-16 place-items-center">
+        {team?.logo_url
+          ? <img src={team.logo_url} alt="" className="h-full w-full object-contain drop-shadow-[0_2px_6px_rgba(0,0,0,0.35)]" />
+          : <TeamCrest name={team?.name} logo={null} className="h-14 w-14" />}
       </span>
       <span className="mt-2 line-clamp-2 min-h-9 text-balance text-sm font-bold leading-4.5 sm:text-base">{tx(team?.name) ?? "TBD"}</span>
     </>
