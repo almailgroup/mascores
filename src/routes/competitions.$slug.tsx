@@ -1,5 +1,5 @@
 import { TeamCrest } from "@/components/team-crest";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { AppShell, EmptyState, LoadingSkeleton, SectionHeader, SwipeTabs } from "@/components/app-shell";
@@ -12,7 +12,7 @@ import { MatchRow, type MatchWithTeams } from "@/components/match-list";
 import { CompetitionStats } from "@/components/competition-stats";
 import { useI18n } from "@/lib/i18n";
 import type { Database } from "@/integrations/supabase/types";
-import { CalendarDays, ChevronRight, Play, Trophy, Bell, Medal, Star, Users, Shapes, Globe2, Flag as FlagIco, ListOrdered } from "lucide-react";
+import { ArrowLeft, CalendarDays, ChevronRight, Play, Trophy, Bell, Medal, Star, Users, Shapes, Globe2, Flag as FlagIco, ListOrdered } from "lucide-react";
 import { competitionTheme, DEFAULT_HERO } from "@/lib/competition-theme";
 import { useFavorites } from "@/hooks/use-favorites";
 import { SeasonMenu } from "@/components/season-menu";
@@ -253,12 +253,20 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
     try { window.localStorage.setItem(COMP_ALERT_KEY, JSON.stringify(next)); } catch { /* ignore */ }
   };
 
+  const router = useRouter();
   const fg = onLight ? "oklch(0.2 0.04 260)" : "oklch(1 0 0)";
   const chip = onLight ? "bg-black/10" : "bg-white/15";
 
   return (
     <div className="-mx-4 -mt-6 mb-4 px-4 pb-0 pt-3 sm:-mx-6 sm:px-6" style={{ background, color: fg }}>
-      <div className="flex items-center justify-end gap-1">
+      <div className="flex items-center gap-1">
+        <button
+          onClick={() => { if (router.history.canGoBack()) router.history.back(); else router.navigate({ to: "/competitions" }); }}
+          aria-label={tx("Back")}
+          className={`-ms-2 me-auto inline-flex h-10 w-10 items-center justify-center rounded-full ${chip.replace("bg-", "hover:bg-")}`}
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </button>
         <button
           onClick={toggleAlert}
           aria-label={tx("Notifications")}
