@@ -1,0 +1,2 @@
+CREATE POLICY "Published replays are public" ON public.voice_recordings FOR SELECT USING (is_public = true);
+CREATE POLICY "Public profiles are viewable" ON public.profiles FOR SELECT USING (is_public = true);
