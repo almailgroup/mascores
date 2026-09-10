@@ -252,7 +252,7 @@ function ContributePage() {
                 <label className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-full border border-border bg-background px-4 text-xs font-semibold">
                   <ImagePlus className="h-3.5 w-3.5" /> Add photos for the draft
                   <input type="file" accept="image/*" multiple className="hidden"
-                    onChange={async (e) => setAiImages(await readAiImages(e.target.files))} />
+                    onChange={async (e) => setAiImages(await readAiImages(e.target.files ?? []))} />
                 </label>
                 {aiImages.length > 0 && <span className="text-xs text-muted-foreground">{aiImages.length} photo(s) attached</span>}
                 <button disabled={busy || (!aiNotes.trim() && aiImages.length === 0)} onClick={generate}
@@ -282,7 +282,7 @@ function ContributePage() {
                   <label className="mt-1 flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-border bg-background px-4 text-sm">
                     <ImagePlus className="h-4 w-4 text-muted-foreground" /> {cover ? "Change photo" : "Choose photo"}
                     <input type="file" accept="image/*" className="hidden"
-                      onChange={async (e) => { const f = e.target.files?.[0]; if (f) setCover(await uploadMedia(f)); }} />
+                      onChange={async (e) => { const f = e.target.files?.[0]; if (f) setCover(await uploadMedia("news", f)); }} />
                   </label>
                 </div>
                 <div>
@@ -290,7 +290,7 @@ function ContributePage() {
                   <label className="mt-1 flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-border bg-background px-4 text-sm">
                     <ImagePlus className="h-4 w-4 text-muted-foreground" /> {proofUrl ? "Change file" : "Choose file"}
                     <input type="file" className="hidden"
-                      onChange={async (e) => { const f = e.target.files?.[0]; if (f) setProofUrl(await uploadMedia(f)); }} />
+                      onChange={async (e) => { const f = e.target.files?.[0]; if (f) setProofUrl(await uploadMedia("news", f)); }} />
                   </label>
                 </div>
               </div>
@@ -298,7 +298,7 @@ function ContributePage() {
 
               <div>
                 <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Where does it belong?</label>
-                <div className="mt-1"><NewsLinkPicker value={links} onChange={setLinks} /></div>
+                <div className="mt-1"><NewsLinkPicker teamId={links.team_id} competitionId={links.competition_id} playerId={links.player_id} onChange={setLinks} /></div>
               </div>
               <div>
                 <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Note about your proof</label>
