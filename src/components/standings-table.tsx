@@ -5,7 +5,8 @@ import { TeamCrest } from "@/components/team-crest";
 import { supabase } from "@/integrations/supabase/client";
 import type { Team, StandingRow } from "@/lib/db";
 import type { Database } from "@/integrations/supabase/types";
-import { ShareImageButton } from "@/components/share-image";
+import { ShareCardButton } from "@/components/share-image";
+import { drawStandingsCard } from "@/lib/share-cards";
 import { useNum, useTx } from "@/lib/auto-translate";
 
 type Label = Database["public"]["Tables"]["standings_position_labels"]["Row"];
@@ -95,7 +96,27 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
         </button>
       ))}
     </div>
-    <ShareImageButton target={shotRef} title={tx("Standings")} />
+    <ShareCardButton
+      title={tx("Standings")}
+      render={() => drawStandingsCard({
+        title: tx("Standings"),
+        subtitle: rows[0]?.season ?? null,
+        withForm: view === "form",
+        groups: grouped(rows).map(([group, groupRows]) => ({
+          label: group ? tx(group) : null,
+          rows: groupRows.map((row, index) => ({
+            position: index + 1,
+            name: tx(row.team?.name) ?? "",
+            logo: row.team?.logo_url ?? null,
+            played: row.played,
+            goalDifference: row.gf - row.ga,
+            points: row.points + (row.points_adjust ?? 0),
+            form: (form.data?.[row.team_id] ?? []) as ("W" | "D" | "L")[],
+            highlight: highlights.includes(row.team_id),
+          })),
+        })),
+      })}
+    />
     </div>
     {grouped(rows).map(([group, groupRows]) => {
       const groupLabels = labels.filter((label) => (label.group_label ?? null) === group);
