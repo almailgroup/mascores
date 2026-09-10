@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import { unlockAdmin } from "@/lib/admin.functions";
-import { Loader2, ShieldCheck, ArrowLeft, Bot, CalendarDays, Newspaper, Radio, Repeat2, Trophy, Landmark, Shield, Users, LogOut, Flag, Globe, Ticket, UserCog, Mic, Megaphone, KeyRound, CheckCheck } from "lucide-react";
+import { Loader2, ShieldCheck, ArrowLeft, Bot, CalendarDays, Newspaper, Radio, Repeat2, Trophy, Landmark, Shield, Users, LogOut, Flag, Globe, Ticket, UserCog, Mic, Megaphone, KeyRound, CheckCheck, LifeBuoy, ClipboardList } from "lucide-react";
 import type { Competition } from "@/lib/db";
 import { CompetitionsPanel } from "@/components/admin/competitions-panel";
 import { TeamsPanel } from "@/components/admin/teams-panel";
@@ -26,6 +26,8 @@ import { ManagePanel } from "@/components/admin/manage-panel";
 import { myAccess, OWNER_EMAIL } from "@/lib/owner.functions";
 import { UltrasPanel } from "@/components/admin/ultras-panel";
 import { ApprovalsPanel } from "@/components/admin/approvals-panel";
+import { AppealsPanel } from "@/components/admin/appeals-panel";
+import { MyRequestsPanel } from "@/components/admin/my-requests-panel";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import { AdminAbilityProvider } from "@/lib/admin-ability";
 import { SeasonMenu } from "@/components/season-menu";
@@ -44,7 +46,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [tab, setTab] = useState<"competitions" | "teams" | "countries" | "players" | "news" | "ai" | "venues" | "channels" | "transfers" | "reports" | "tickets" | "users" | "voice" | "rabta" | "approvals" | "manage">("competitions");
+  const [tab, setTab] = useState<"competitions" | "teams" | "countries" | "players" | "news" | "ai" | "venues" | "channels" | "transfers" | "reports" | "tickets" | "users" | "voice" | "rabta" | "approvals" | "appeals" | "manage" | "requests">("competitions");
   const [openComp, setOpenComp] = useState<Competition | null>(null);
   const [adminSeason, setAdminSeason] = useState<string | null>(null);
   const [compTab, setCompTab] = useState<"overview" | "teams" | "matches" | "standings" | "awards" | "media">("overview");
@@ -62,7 +64,8 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
   const allowed = (key: string) => {
     // The owner keeps people, approvals, Manage and the reporter desk to himself,
     // even for someone given "everything".
-    if (key === "users" || key === "approvals" || key === "manage" || key === "rabta") return isOwner || (key === "rabta" && scopes.has("rabta"));
+    if (key === "requests") return !isOwner;
+    if (key === "users" || key === "approvals" || key === "appeals" || key === "manage" || key === "rabta") return isOwner || (key === "rabta" && scopes.has("rabta"));
     if (everything) return true;
     switch (key) {
       case "competitions": return scopes.has("competitions") || scopes.has("matches") || scopes.has("standings");
@@ -189,7 +192,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
           </div>
           <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
             {([
-              ["competitions", Trophy], ["teams", Shield], ["countries", Globe], ["players", Users], ["news", Newspaper], ["ai", Bot], ["venues", Landmark], ["channels", Radio], ["transfers", Repeat2], ["tickets", Ticket], ["reports", Flag], ["voice", Mic], ...(canRabta ? [["rabta", Megaphone] as const] : []), ...(isOwner ? [["users", UserCog] as const, ["approvals", CheckCheck] as const] : []), ...(isOwner ? [["manage", KeyRound] as const] : []),
+              ["competitions", Trophy], ["teams", Shield], ["countries", Globe], ["players", Users], ["news", Newspaper], ["ai", Bot], ["venues", Landmark], ["channels", Radio], ["transfers", Repeat2], ["tickets", Ticket], ["reports", Flag], ["voice", Mic], ...(canRabta ? [["rabta", Megaphone] as const] : []), ...(isOwner ? [["users", UserCog] as const, ["approvals", CheckCheck] as const, ["appeals", LifeBuoy] as const] : []), ...(!isOwner ? [["requests", ClipboardList] as const] : []), ...(isOwner ? [["manage", KeyRound] as const] : []),
             ] as const)
               .filter(([k]) => allowed(k))
               .map(([k, Icon]) => (
@@ -228,6 +231,8 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
             {tab === "users" && isOwner && <UsersPanel />}
            {tab === "voice" && allowed("voice") && <VoicePanel />}
             {tab === "approvals" && isOwner && <ApprovalsPanel />}
+            {tab === "appeals" && isOwner && <AppealsPanel />}
+            {tab === "requests" && !isOwner && <MyRequestsPanel />}
             {tab === "rabta" && canRabta && <UltrasPanel isOwner={isOwner} />}
             {tab === "manage" && isOwner && <ManagePanel />}
 
