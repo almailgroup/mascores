@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, KeyRound, Trash2, UserPlus, LogOut, Copy } from "lucide-react";
+import { Loader2, KeyRound, Trash2, UserPlus, LogOut, Copy, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  addManagedUser, listManagedUsers, removeManagedGrant, resetManagedPassword, setGrantApproval,
+  addManagedUser, listManagedUsers, removeManagedGrant, resetManagedPassword, resendAccessEmail, setGrantApproval,
   signOutEveryoneElse, GRANT_SCOPES, type GrantScope,
 } from "@/lib/owner.functions";
+
 import { Field, inputCls, btnPrimary, btnGhost, btnDanger, Modal } from "./ui";
 
 const SCOPE_LABEL: Record<GrantScope, string> = {
@@ -32,12 +33,15 @@ const SCOPE_LABEL: Record<GrantScope, string> = {
 export function ManagePanel() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [secret, setSecret] = useState<{ email: string; password: string } | null>(null);
+  const [secret, setSecret] = useState<{ email: string; password: string; emailed: boolean } | null>(null);
+  const [note, setNote] = useState<string | null>(null);
   const load = useServerFn(listManagedUsers);
   const removeGrant = useServerFn(removeManagedGrant);
   const approval = useServerFn(setGrantApproval);
   const resetPassword = useServerFn(resetManagedPassword);
+  const resendEmail = useServerFn(resendAccessEmail);
   const signOutOthers = useServerFn(signOutEveryoneElse);
+
 
   const users = useQuery({ queryKey: ["owner-managed"], queryFn: () => load() });
   const refresh = () => qc.invalidateQueries({ queryKey: ["owner-managed"] });
