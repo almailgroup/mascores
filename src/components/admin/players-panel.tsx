@@ -84,6 +84,7 @@ export function PlayersPanel() {
 
   return (
     <div>
+      {reviewNote && <div className="mb-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm font-semibold text-amber-700 dark:text-amber-300">{reviewNote}</div>}
       <PlayerBatchImport open={batchOpen} onClose={() => setBatchOpen(false)} teamId={teamFilter?.id ?? null} onSaved={invalidate} />
       <div className="mb-4 flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary"><Users className="h-5 w-5" /></div>

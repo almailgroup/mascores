@@ -118,6 +118,7 @@ export function MatchesPanel({ competitionId, season = null, friendly = false }:
 
   return (
     <div>
+      {reviewNote && <div className="mb-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm font-semibold text-amber-700 dark:text-amber-300">{reviewNote}</div>}
       <div className="mb-3 grid gap-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-base font-bold">Matches <span className="text-xs font-medium text-muted-foreground">({allMatches.length})</span></h3>
