@@ -6,6 +6,8 @@ import { uploadMedia } from "./upload";
 import { Plus, Pencil, Trash2, ChevronRight } from "lucide-react";
 import { CountrySelect } from "@/components/country-select";
 import { ArabicNameField } from "./arabic-name-field";
+import { useAdminAbility } from "@/lib/admin-ability";
+import { ConfirmDelete } from "@/components/confirm-delete";
 
 type Form = Partial<Competition>;
 const empty: Form = { name: "", slug: "", sport: "football", format: "league", featured: false, sort_order: 0 };
@@ -16,6 +18,8 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
   const [form, setForm] = useState<Form>(empty);
   const [search, setSearch] = useState("");
   const [scope, setScope] = useState<"all" | "national" | "continental" | "regional" | "international">("all");
+  const { isOwner } = useAdminAbility();
+  const [deleteComp, setDeleteComp] = useState<Competition | null>(null);
 
   const q = useQuery({
     queryKey: ["admin", "competitions"],
@@ -48,9 +52,10 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
     qc.invalidateQueries({ queryKey: ["admin", "competitions"] });
   };
 
+  // Only the site owner may wipe a competition, and only after typing the word twice.
   const remove = async (id: string) => {
-    if (!confirm("Delete this competition and everything inside?")) return;
     await supabase.from("competitions").delete().eq("id", id);
+    setDeleteComp(null);
     qc.invalidateQueries({ queryKey: ["admin", "competitions"] });
   };
 
@@ -92,11 +97,22 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
             </div>
             <button className={btnGhost} onClick={() => onOpen(c)}>Manage <ChevronRight className="h-3.5 w-3.5" /></button>
             <button className={btnGhost} onClick={() => { setForm(c); setOpen(true); }}><Pencil className="h-3.5 w-3.5" /></button>
-            <button className={btnDanger} onClick={() => remove(c.id)}><Trash2 className="h-3.5 w-3.5" /></button>
+            {isOwner && <button className={btnDanger} onClick={() => setDeleteComp(c)}><Trash2 className="h-3.5 w-3.5" /></button>}
           </div>
         ))}
         {q.data && q.data.length === 0 && <div className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">No competitions yet. Create one to get started.</div>}
       </div>
+
+      <ConfirmDelete
+        open={!!deleteComp}
+        twice
+        title={`Delete ${deleteComp?.name ?? "competition"}`}
+        description="This removes the competition and everything inside it — matches, standings and team links. It cannot be undone, so you are asked to type the word twice."
+        confirmWord="delete"
+        actionLabel="Delete competition"
+        onCancel={() => setDeleteComp(null)}
+        onConfirm={() => remove(deleteComp!.id)}
+      />
 
       <Modal open={open} onClose={() => setOpen(false)} title={form.id ? "Edit competition" : "New competition"} wide>
         <div className="grid gap-3 sm:grid-cols-2">

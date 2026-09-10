@@ -18,6 +18,8 @@ import { ArabicNameField } from "./arabic-name-field";
 import { SocialLinksField } from "./social-links-field";
 import { MediaUrls } from "./media-urls";
 import { NationalSquadModal } from "./national-squad-modal";
+import { useAdminAbility } from "@/lib/admin-ability";
+import { requestReview } from "@/lib/review";
 import { SeasonSquadModal } from "./season-squad-modal";
 import { PlayerBatchImport } from "./player-batch-import";
 import { Plus, Pencil, Trash2, Users, UserCog, UserMinus, ImagePlus, Library, Flag, Sparkles } from "lucide-react";
@@ -39,6 +41,8 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
   const activeKind = lockKind ?? kind;
   const [search, setSearch] = useState("");
   const [deleteTeam, setDeleteTeam] = useState<Team | null>(null);
+  const { needsApproval } = useAdminAbility();
+  const [reviewNote, setReviewNote] = useState<string | null>(null);
   /** A past season keeps its own frozen squad instead of the club's live squad. */
   const pastSeason = !!(season && competition?.season && season !== competition.season) ? season : null;
 
@@ -92,6 +96,13 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
       base.country_code = match?.code ?? base.country_code ?? null;
     }
     const payload = competitionId ? { ...base, competition_id: competitionId } : { ...base };
+    // Editing a club is fine; adding a brand new one waits for the owner.
+    if (!form.id && needsApproval) {
+      await requestReview({ entity: "team", action: "create", label: `Add team ${form.name}`, payload: payload as Record<string, unknown> });
+      setOpen(false); setForm({});
+      setReviewNote(`${form.name} was sent to the site owner for approval.`);
+      return;
+    }
     if (form.id) await supabase.from("teams").update(payload).eq("id", form.id);
     else {
       const { data } = await supabase.from("teams").insert(payload as never).select("id").single();
@@ -117,6 +128,12 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
 
   /** Only available in the global Teams library: wipes the club from the database. */
   const deleteForever = async (id: string) => {
+    if (needsApproval) {
+      await requestReview({ entity: "team", action: "delete", label: `Remove team ${deleteTeam?.name ?? ""}`, targetId: id });
+      setDeleteTeam(null);
+      setReviewNote("That removal was sent to the site owner for approval.");
+      return;
+    }
     await supabase.from("teams").delete().eq("id", id);
     setDeleteTeam(null);
     qc.invalidateQueries({ queryKey: ["admin", "teams", competitionId] });
@@ -126,6 +143,7 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
 
   return (
     <div>
+      {reviewNote && <div className="mb-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm font-semibold text-amber-700 dark:text-amber-300">{reviewNote}</div>}
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-base font-bold">Teams</h3>
         <div className="flex flex-wrap gap-2">{competitionId && <button className={btnGhost} onClick={() => setLibraryOpen(true)}><Library className="h-3.5 w-3.5" /> Add existing</button>}<button className={btnPrimary} onClick={() => { setForm(competition ? { country: competition.country ?? null, country_code: competition.country_code ?? null, is_national: !!competition.is_national } : lockKind ? { is_national: lockKind === "national" } : {}); setOpen(true); }}><Plus className="h-3.5 w-3.5" /> New team</button></div>

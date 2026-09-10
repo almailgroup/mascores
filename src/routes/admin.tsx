@@ -27,6 +27,7 @@ import { myAccess, OWNER_EMAIL } from "@/lib/owner.functions";
 import { UltrasPanel } from "@/components/admin/ultras-panel";
 import { ApprovalsPanel } from "@/components/admin/approvals-panel";
 import { ConfirmDelete } from "@/components/confirm-delete";
+import { AdminAbilityProvider } from "@/lib/admin-ability";
 import { SeasonMenu } from "@/components/season-menu";
 
 export const Route = createFileRoute("/admin")({
@@ -132,6 +133,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
   }
 
   return (
+    <AdminAbilityProvider value={{ isOwner, needsApproval: ticketsNeedApproval }}>
     <AppShell bare={!!openComp}>
       {openComp ? (
         <div>
@@ -229,6 +231,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
         </div>
       )}
     </AppShell>
+    </AdminAbilityProvider>
   );
 }
 

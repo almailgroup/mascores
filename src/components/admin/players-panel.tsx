@@ -9,6 +9,8 @@ import { FlagIcon } from "@/components/flag";
 import { TeamCrest } from "@/components/team-crest";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import { PlayerBatchImport } from "./player-batch-import";
+import { useAdminAbility } from "@/lib/admin-ability";
+import { requestReview } from "@/lib/review";
 import { Plus, Sparkles, Pencil, Trash2, UserMinus, Users, ChevronRight, ChevronDown, X } from "lucide-react";
 
 type Row = Player & { team: Pick<Team, "id" | "name"> | null };
@@ -27,6 +29,8 @@ export function PlayersPanel() {
   const [countryFilter, setCountryFilter] = useState<string | null>(null);
   const [position, setPosition] = useState<string>("");
   const [batchOpen, setBatchOpen] = useState(false);
+  const { needsApproval } = useAdminAbility();
+  const [reviewNote, setReviewNote] = useState<string | null>(null);
 
   const tree = useQuery({
     queryKey: ["admin", "player-tree"],
@@ -80,6 +84,7 @@ export function PlayersPanel() {
 
   return (
     <div>
+      {reviewNote && <div className="mb-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm font-semibold text-amber-700 dark:text-amber-300">{reviewNote}</div>}
       <PlayerBatchImport open={batchOpen} onClose={() => setBatchOpen(false)} teamId={teamFilter?.id ?? null} onSaved={invalidate} />
       <div className="mb-4 flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary"><Users className="h-5 w-5" /></div>
@@ -185,7 +190,16 @@ export function PlayersPanel() {
         confirmWord="DELETE"
         actionLabel="Delete player"
         onCancel={() => setConfirmPlayer(null)}
-        onConfirm={async () => { await deletePlayerForever(confirmPlayer!.id); setConfirmPlayer(null); invalidate(); }}
+        onConfirm={async () => {
+          if (needsApproval) {
+            await requestReview({ entity: "player", action: "delete", label: `Remove player ${confirmPlayer!.name}`, targetId: confirmPlayer!.id });
+            setReviewNote(`${confirmPlayer!.name} was sent to the site owner for approval.`);
+          } else {
+            await deletePlayerForever(confirmPlayer!.id);
+          }
+          setConfirmPlayer(null);
+          invalidate();
+        }}
       />
     </div>
   );
