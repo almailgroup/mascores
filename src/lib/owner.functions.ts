@@ -64,7 +64,7 @@ export const listManagedUsers = createServerFn({ method: "GET" })
 
 const grantSchema = z.object({
   email: z.string().email(),
-  scope: z.enum(GRANT_SCOPES),
+  scopes: z.array(z.enum(GRANT_SCOPES)).min(1),
   teamId: z.string().uuid().nullish(),
   requiresApproval: z.boolean().default(true),
 });
