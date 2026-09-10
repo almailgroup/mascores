@@ -392,22 +392,24 @@ function VoiceRoomPage() {
       </div>
 
       {/* Written messages sit under the speakers so listeners can join in silently. */}
-      <div className="mt-4 pb-28 md:pb-6">
+      <div className="mt-4 pb-40 md:pb-6">
         <VoiceRoomChat roomId={id} />
       </div>
 
       {live && joined && (
-        <div className="fixed inset-x-0 bottom-16 z-40 mx-auto flex max-w-md items-center justify-center gap-2 px-4 md:bottom-6">
-          <div className="flex w-full items-center gap-2 rounded-full border border-border bg-background/95 p-2 shadow-lg backdrop-blur">
+        <div className="fixed inset-x-0 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-40 mx-auto flex max-w-md items-center justify-center gap-2 px-4 md:bottom-6">
+          <div className="flex w-full flex-wrap items-center justify-center gap-2 rounded-3xl border border-border bg-background/95 p-2 shadow-lg backdrop-blur">
+
             {role === "listener" ? (
-              <button onClick={() => setHand(!hand)} className={`inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full text-sm font-bold ${hand ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}`}>
+              <button onClick={() => setHand(!hand)} className={`inline-flex h-11 min-w-[9rem] flex-1 items-center justify-center gap-2 rounded-full px-4 text-sm font-bold ${hand ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}`}>
                 <Hand className="h-4 w-4" /> {hand ? tx("Hand raised") : tx("Raise hand")}
               </button>
             ) : (
-              <button onClick={() => void toggleMute()} className={`inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full text-sm font-bold ${muted ? "bg-muted text-foreground" : "bg-primary text-primary-foreground"}`}>
+              <button onClick={() => void toggleMute()} className={`inline-flex h-11 min-w-[9rem] flex-1 items-center justify-center gap-2 rounded-full px-4 text-sm font-bold ${muted ? "bg-muted text-foreground" : "bg-primary text-primary-foreground"}`}>
                  {muted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />} {muted ? tx(audioReady ? "Unmute" : "Start microphone") : tx("Mute")}
               </button>
             )}
+
             {isHost ? (
               <>
                 <button onClick={() => void toggleRecording()} disabled={saving}
