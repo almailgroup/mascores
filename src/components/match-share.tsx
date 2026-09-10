@@ -1,10 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Share2, X, Download, ImageDown, Mail } from "lucide-react";
+import { Share2, X, Download, ImageDown } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 export type ShareTeam = { name?: string | null; logo_url?: string | null };
 export type ShareScorer = { name: string; minute: string };
 export type ShareLineupPlayer = { number: string; name: string };
+
+/** One club's starting eleven laid out by formation row, plus coach and bench. */
+export type ShareLineup = {
+  teamName: string;
+  logo?: string | null;
+  formation: string;
+  coach?: string | null;
+  rows: ShareLineupPlayer[][];
+  bench: ShareLineupPlayer[];
+};
 
 export type MatchShareData = {
   competition: string;
@@ -18,6 +28,7 @@ export type MatchShareData = {
   awayScorers: ShareScorer[];
   homeLineup: ShareLineupPlayer[];
   awayLineup: ShareLineupPlayer[];
+  lineup?: ShareLineup | null;
   accent: string;
   accentAway?: string;
 };
@@ -43,27 +54,149 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
   ctx.closePath();
 }
 
-/** Draws the branded share card: match result, or the two starting elevens. */
+/** Canvas cannot parse color-mix()/oklab, so anything unusual falls back. */
+function safeColor(value: string | undefined, fallback: string) {
+  if (!value) return fallback;
+  return /^(#|rgb|hsl)/i.test(value.trim()) ? value : fallback;
+}
+
+const BRAND = "Mansour Almail Scores";
+
+/** Draws the branded share card: match result, or one club's line-up on a pitch. */
 async function drawCard(data: MatchShareData, mode: "result" | "lineups"): Promise<Blob | null> {
   const W = 1080;
-  const H = mode === "lineups" ? 1350 : 1080;
+  const lineup = data.lineup ?? null;
+  const benchCount = Math.min(lineup?.bench.length ?? 0, 10);
+  const H = mode === "lineups" ? 1180 + benchCount * 48 : 1080;
   const canvas = document.createElement("canvas");
   canvas.width = W;
   canvas.height = H;
   const ctx = canvas.getContext("2d");
   if (!ctx) return null;
 
-  const accent = data.accent || "#123a8a";
-  const accentAway = data.accentAway || accent;
+  const accent = safeColor(data.accent, "#16224a");
+  const accentAway = safeColor(data.accentAway, accent);
+
+  if (mode === "lineups" && lineup) {
+    ctx.fillStyle = accent;
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = "rgba(0,0,0,0.4)";
+    ctx.fillRect(0, 0, W, H);
+
+    const logo = await loadImage(lineup.logo);
+    if (logo) {
+      const size = 96;
+      const scale = Math.min(size / logo.width, size / logo.height);
+      ctx.drawImage(logo, 60, 56, logo.width * scale, logo.height * scale);
+    }
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "800 46px system-ui, -apple-system, sans-serif";
+    ctx.fillText(lineup.teamName.slice(0, 24), 176, 104);
+    ctx.font = "600 28px system-ui, sans-serif";
+    ctx.fillStyle = "rgba(255,255,255,0.7)";
+    ctx.fillText(`${data.competition.slice(0, 40)}`, 176, 144);
+
+    // Formation pill
+    ctx.textAlign = "right";
+    ctx.font = "800 40px system-ui, sans-serif";
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(lineup.formation, W - 60, 116);
+
+    // Pitch
+    const px = 60, py = 200, pw = W - 120, ph = 900;
+    ctx.save();
+    roundRect(ctx, px, py, pw, ph, 32);
+    ctx.clip();
+    for (let i = 0; i * 60 < ph; i += 1) {
+      ctx.fillStyle = i % 2 === 0 ? "#1b7a3f" : "#17703a";
+      ctx.fillRect(px, py + i * 60, pw, 60);
+    }
+    ctx.strokeStyle = "rgba(255,255,255,0.35)";
+    ctx.lineWidth = 4;
+    ctx.strokeRect(px + 16, py + 16, pw - 32, ph - 32);
+    ctx.beginPath();
+    ctx.moveTo(px + 16, py + ph / 2);
+    ctx.lineTo(px + pw - 16, py + ph / 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(px + pw / 2, py + ph / 2, 90, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.strokeRect(px + pw / 2 - 150, py + 16, 300, 110);
+    ctx.strokeRect(px + pw / 2 - 150, py + ph - 126, 300, 110);
+    ctx.restore();
+
+    // Players by formation row (goalkeeper row last, closest to the near goal)
+    const rows = lineup.rows.filter((row) => row.length > 0);
+    const rowHeight = (ph - 120) / Math.max(rows.length, 1);
+    rows.forEach((row, ri) => {
+      const cy = py + 70 + rowHeight * ri + rowHeight / 2;
+      const step = pw / (row.length + 1);
+      row.forEach((player, ci) => {
+        const cx = px + step * (ci + 1);
+        ctx.beginPath();
+        ctx.arc(cx, cy, 34, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(0,0,0,0.55)";
+        ctx.fill();
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = "rgba(255,255,255,0.85)";
+        ctx.stroke();
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "800 30px system-ui, sans-serif";
+        ctx.fillText(player.number || "-", cx, cy + 1);
+        ctx.textBaseline = "alphabetic";
+        ctx.font = "700 24px system-ui, sans-serif";
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(player.name.slice(0, 16), cx, cy + 66);
+      });
+    });
+
+    let y = py + ph + 60;
+    if (lineup.coach) {
+      ctx.textAlign = "left";
+      ctx.font = "600 26px system-ui, sans-serif";
+      ctx.fillStyle = "rgba(255,255,255,0.6)";
+      ctx.fillText("COACH", 60, y);
+      ctx.font = "700 32px system-ui, sans-serif";
+      ctx.fillStyle = "#ffffff";
+      ctx.fillText(lineup.coach.slice(0, 30), 200, y + 2);
+      y += 56;
+    }
+    if (benchCount > 0) {
+      ctx.textAlign = "left";
+      ctx.font = "600 26px system-ui, sans-serif";
+      ctx.fillStyle = "rgba(255,255,255,0.6)";
+      ctx.fillText("BENCH", 60, y);
+      y += 44;
+      ctx.font = "600 28px system-ui, sans-serif";
+      ctx.fillStyle = "rgba(255,255,255,0.92)";
+      lineup.bench.slice(0, benchCount).forEach((player, index) => {
+        const column = index % 2;
+        const line = Math.floor(index / 2);
+        ctx.fillText(`${player.number ? player.number + "  " : ""}${player.name}`.slice(0, 24), 60 + column * (W / 2 - 40), y + line * 44);
+      });
+    }
+
+    ctx.textAlign = "center";
+    ctx.font = "700 28px system-ui, sans-serif";
+    ctx.fillStyle = "rgba(255,255,255,0.7)";
+    ctx.fillText(BRAND, W / 2, H - 34);
+    return new Promise((resolve) => canvas.toBlob((blob) => resolve(blob), "image/png", 0.95));
+  }
+
+  const H2 = H;
   // Two solid halves that meet at a thin seam - the colours never blend together.
   ctx.fillStyle = accent;
-  ctx.fillRect(0, 0, W / 2, H);
+  ctx.fillRect(0, 0, W / 2, H2);
   ctx.fillStyle = accentAway;
-  ctx.fillRect(W / 2, 0, W / 2, H);
+  ctx.fillRect(W / 2, 0, W / 2, H2);
   ctx.fillStyle = "rgba(0,0,0,0.35)";
-  ctx.fillRect(W / 2 - 4, 0, 8, H);
+  ctx.fillRect(W / 2 - 4, 0, 8, H2);
   ctx.fillStyle = "rgba(0,0,0,0.25)";
-  ctx.fillRect(0, 0, W, H);
+  ctx.fillRect(0, 0, W, H2);
 
   ctx.textAlign = "center";
   ctx.fillStyle = "rgba(255,255,255,0.85)";
@@ -110,37 +243,17 @@ async function drawCard(data: MatchShareData, mode: "result" | "lineups"): Promi
   ctx.fillText((data.home.name ?? "TBD").slice(0, 22), 220, 440);
   ctx.fillText((data.away.name ?? "TBD").slice(0, 22), W - 220, 440);
 
-  if (mode === "result") {
-    ctx.font = "500 30px system-ui, sans-serif";
-    ctx.fillStyle = "rgba(255,255,255,0.85)";
-    ctx.textAlign = "right";
-    data.homeScorers.slice(0, 8).forEach((scorer, index) => ctx.fillText(`${scorer.name} ${scorer.minute}`, W / 2 - 60, 540 + index * 46));
-    ctx.textAlign = "left";
-    data.awayScorers.slice(0, 8).forEach((scorer, index) => ctx.fillText(`${scorer.name} ${scorer.minute}`, W / 2 + 60, 540 + index * 46));
-  } else {
-    const columns: [ShareLineupPlayer[], number, CanvasTextAlign][] = [
-      [data.homeLineup.slice(0, 11), 90, "left"],
-      [data.awayLineup.slice(0, 11), W - 90, "right"],
-    ];
-    ctx.save();
-    ctx.fillStyle = "rgba(255,255,255,0.08)";
-    roundRect(ctx, 50, 500, W - 100, 760, 36);
-    ctx.fill();
-    ctx.restore();
-    for (const [list, x, align] of columns) {
-      ctx.textAlign = align;
-      list.forEach((player, index) => {
-        ctx.font = "500 30px system-ui, sans-serif";
-        ctx.fillStyle = "rgba(255,255,255,0.9)";
-        ctx.fillText(`${player.number ? player.number + ". " : ""}${player.name}`.slice(0, 24), x, 560 + index * 64);
-      });
-    }
-  }
+  ctx.font = "500 30px system-ui, sans-serif";
+  ctx.fillStyle = "rgba(255,255,255,0.85)";
+  ctx.textAlign = "right";
+  data.homeScorers.slice(0, 8).forEach((scorer, index) => ctx.fillText(`${scorer.name} ${scorer.minute}`, W / 2 - 60, 540 + index * 46));
+  ctx.textAlign = "left";
+  data.awayScorers.slice(0, 8).forEach((scorer, index) => ctx.fillText(`${scorer.name} ${scorer.minute}`, W / 2 + 60, 540 + index * 46));
 
   ctx.textAlign = "center";
   ctx.font = "700 28px system-ui, sans-serif";
   ctx.fillStyle = "rgba(255,255,255,0.7)";
-  ctx.fillText("Mansour Almail Scores", W / 2, H - 50);
+  ctx.fillText(BRAND, W / 2, H2 - 50);
 
   return new Promise((resolve) => canvas.toBlob((blob) => resolve(blob), "image/png", 0.95));
 }
@@ -206,12 +319,8 @@ export function MatchShare({ data, mode }: { data: MatchShareData; mode: "result
     saveToFile();
   };
 
-  /** Opens a mail draft; the image is saved alongside so it can be attached. */
-  const sendByEmail = () => {
-    saveToFile();
-    const body = `${title}\n${data.competition}\n${data.kickoff}\n\n${label("The match image has been saved to your device - attach it to this email.", "تم حفظ صورة المباراة على جهازك - أضفها كمرفق لهذه الرسالة.")}`;
-    window.location.href = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
-  };
+
+
 
   return (
     <>
@@ -247,16 +356,10 @@ export function MatchShare({ data, mode }: { data: MatchShareData; mode: "result
               className="sticky bottom-0 mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-bold text-primary-foreground disabled:opacity-50">
               <ImageDown className="h-4 w-4" /> {label("Save to photos", "حفظ في الصور")}
             </button>
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              <button type="button" disabled={busy || !preview} onClick={sendByEmail}
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-border px-4 py-2.5 text-sm font-semibold disabled:opacity-50">
-                <Mail className="h-4 w-4" /> {label("Email image", "إرسال بالبريد")}
-              </button>
-              <button type="button" disabled={busy || !preview} onClick={saveToFile}
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-border px-4 py-2.5 text-sm font-semibold disabled:opacity-50">
-                <Download className="h-4 w-4" /> {label("Save file", "حفظ الملف")}
-              </button>
-            </div>
+            <button type="button" disabled={busy || !preview} onClick={saveToFile}
+              className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full border border-border px-4 py-2.5 text-sm font-semibold disabled:opacity-50">
+              <Download className="h-4 w-4" /> {label("Save file", "حفظ الملف")}
+            </button>
             {/* Clears the bottom navigation bar so the actions stay tappable. */}
             <div className="h-24 sm:h-0" style={{ paddingBottom: "env(safe-area-inset-bottom)" }} />
           </div>

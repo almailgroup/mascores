@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -81,6 +81,13 @@ export function useLiveEventAlerts() {
   const teamIds = favorites.team.join(",");
   const matchIds = favorites.match.join(",");
   const seen = useRef<Set<string>>(new Set());
+  // Re-subscribes as soon as someone switches alerts on for a match.
+  const [revision, setRevision] = useState(0);
+  useEffect(() => {
+    const bump = () => setRevision((value) => value + 1);
+    window.addEventListener("mas:alerts-changed", bump);
+    return () => window.removeEventListener("mas:alerts-changed", bump);
+  }, []);
 
   useEffect(() => {
     if (!ready) return;
@@ -182,7 +189,7 @@ export function useLiveEventAlerts() {
     channel.subscribe();
 
     return () => { cancelled = true; supabase.removeChannel(channel); };
-  }, [user, ready, teamIds, matchIds]);
+  }, [user, ready, teamIds, matchIds, revision]);
 }
 
 /** Asks once, politely, so alerts can appear even when the tab is in the background. */

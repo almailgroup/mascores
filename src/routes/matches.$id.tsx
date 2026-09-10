@@ -128,6 +128,22 @@ function MatchPage() {
   const broadcasts = useQuery({ queryKey: ["match-broadcasts", id], queryFn: async () => (await supabase.from("match_broadcasts").select("channel:broadcast_channels(id,name,logo_url,country_code)").eq("match_id", id)).data ?? [] });
   const media = useQuery({ queryKey: ["match-media", id], queryFn: async () => (await supabase.from("media_items").select("*").eq("owner_type", "match").eq("owner_id", id).order("sort_order")).data ?? [] });
   const ratings = useQuery({ queryKey: ["match-ratings", id], queryFn: async () => (await supabase.from("player_ratings").select("player_id,rating").eq("match_id", id)).data ?? [] });
+  // Coach names for the shareable line-up card.
+  const coachNames = useQuery({
+    queryKey: ["share-coaches", m.data?.home_team_id, m.data?.away_team_id, m.data?.home_coach_id, m.data?.away_coach_id],
+    enabled: !!m.data,
+    queryFn: async () => {
+      const pick = async (coachId: string | null | undefined, teamId: string | null | undefined) => {
+        if (coachId) return (await supabase.from("coaches").select("name").eq("id", coachId).maybeSingle()).data?.name ?? null;
+        if (teamId) return (await supabase.from("coaches").select("name").eq("team_id", teamId).limit(1).maybeSingle()).data?.name ?? null;
+        return null;
+      };
+      return {
+        home: await pick(m.data?.home_coach_id, m.data?.home_team_id),
+        away: await pick(m.data?.away_coach_id, m.data?.away_team_id),
+      };
+    },
+  });
   // The hero blends both badges: home colour on the left, away colour on the right.
   const homeAccent = useLogoAccent(m.data?.home?.logo_url ?? null);
   const awayAccent = useLogoAccent(m.data?.away?.logo_url ?? null);
@@ -175,8 +191,9 @@ function MatchPage() {
     homeScorers, awayScorers,
     homeLineup: starters(match.home_team_id),
     awayLineup: starters(match.away_team_id),
-    accent: homeColor,
-    accentAway: awayColor,
+    // Canvas needs plain colours; the CSS colour-mix hero values cannot be parsed there.
+    accent: homeAccent?.color ?? awayAccent?.color ?? "#16224a",
+    accentAway: awayAccent?.color ?? homeAccent?.color ?? "#0b1020",
   };
 
   return (
@@ -317,7 +334,6 @@ function MatchPage() {
       </div>}
 
       {tab === "lineups" && lineupsVisible && <div className="space-y-4">
-      <div className="flex justify-end"><MatchShare data={shareData} mode="lineups" /></div>
       <div className="relative grid grid-cols-2 gap-1 rounded-full border border-border bg-muted/60 p-1">
         <span
           className="absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-full bg-primary shadow-sm transition-transform duration-300 ease-out"
@@ -349,9 +365,29 @@ function MatchPage() {
             return "";
           })
           .filter((type) => type && hasEventArt(type));
+        const shortOf = (lu: (typeof rows)[number]) => ({
+          number: String(lu.shirt_number ?? lu.player?.shirt_number ?? ""),
+          name: tx(displayShortName(lu.player?.short_name, lu.player?.name)) ?? "",
+        });
+        // The shareable card mirrors what is on screen: formation, pitch, coach and bench.
+        const lineupShare = {
+          ...shareData,
+          lineup: {
+            teamName: tx(team?.name) ?? "TBD",
+            logo: team?.logo_url ?? null,
+            formation: activeFormation,
+            coach: (side === "home" ? coachNames.data?.home : coachNames.data?.away) ?? null,
+            rows: formationRows(activeFormation).map((row) =>
+              row.map((slot) => starters.find((s) => s.position_code === slot)).filter(Boolean).map((lu) => shortOf(lu!))),
+            bench: bench.map(shortOf),
+          },
+        };
         return (
           <div key={side} className="rounded-2xl border border-border bg-card p-4">
-            {showPitch && <div className="mb-3 flex items-center justify-end"><span className="rounded bg-muted px-2 py-0.5 text-[0.65rem] font-semibold">{num(activeFormation)}</span></div>}
+            {showPitch && <div className="mb-3 flex items-center justify-between gap-2">
+              <MatchShare data={lineupShare} mode="lineups" />
+              <span className="rounded bg-muted px-2 py-0.5 text-[0.65rem] font-semibold">{num(activeFormation)}</span>
+            </div>}
             {showPitch && (
               // Turf and markings live on a clipped layer so player cards (and the
               // goalkeeper's rating on the bottom row) are never cut off.
