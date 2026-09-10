@@ -22,9 +22,31 @@ async function ownerAdmin(claims: Record<string, unknown> | null | undefined) {
 function makePassword() {
   const words = ["Match", "Goal", "Kick", "Score", "Pitch", "Corner", "Assist", "Keeper"];
   const word = words[Math.floor(Math.random() * words.length)];
-  const digits = String(Math.floor(1000 + Math.random() * 9000));
-  return `${word}-${digits}-MAS`;
+  const digits = String(Math.floor(100000 + Math.random() * 899999));
+  return `${word}-${digits}-Mas`;
 }
+
+/** Sends the person a sign-in email so they can get in even without the password. */
+async function emailSignInLink(email: string) {
+  const url = process.env["SUPABASE_URL"];
+  const key = process.env["SUPABASE_PUBLISHABLE_KEY"];
+  if (!url || !key) return false;
+  const { createClient } = await import("@supabase/supabase-js");
+  const client = createClient(url, key, {
+    auth: { persistSession: false },
+    global: {
+      fetch: (input: RequestInfo | URL, init?: RequestInit) => {
+        const headers = new Headers(init?.headers);
+        if (key.startsWith("sb_") && headers.get("Authorization") === `Bearer ${key}`) headers.delete("Authorization");
+        headers.set("apikey", key);
+        return fetch(input, { ...init, headers });
+      },
+    },
+  });
+  const { error } = await client.auth.resetPasswordForEmail(email);
+  return !error;
+}
+
 
 export type ManagedUser = {
   id: string;
