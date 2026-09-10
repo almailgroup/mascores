@@ -390,6 +390,11 @@ function VoiceRoomPage() {
         </div>
       </div>
 
+      {/* Written messages sit under the speakers so listeners can join in silently. */}
+      <div className="mt-4 pb-28 md:pb-6">
+        <VoiceRoomChat roomId={id} />
+      </div>
+
       {live && joined && (
         <div className="fixed inset-x-0 bottom-16 z-40 mx-auto flex max-w-md items-center justify-center gap-2 px-4 md:bottom-6">
           <div className="flex w-full items-center gap-2 rounded-full border border-border bg-background/95 p-2 shadow-lg backdrop-blur">
