@@ -290,6 +290,8 @@ function MatchPage() {
             </dl>
           </div>
 
+          <MatchVenueCard venueId={match.venue_id} venueName={match.venue} />
+
           <div className="overflow-hidden rounded-2xl border border-border bg-card">
               <div className="flex items-center gap-2 border-b border-border bg-muted/40 px-4 py-2.5 text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground"><Radio className="h-3.5 w-3.5" /> {tx("Where to watch")}</div>
               <div className="flex flex-wrap gap-2 p-4">
