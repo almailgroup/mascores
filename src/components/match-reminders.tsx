@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { BellRing, Bell } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { useTx } from "@/lib/translate";
+import { useTx } from "@/lib/auto-translate";
 import { toast } from "sonner";
 
 const PRESETS = [45, 30, 15];
