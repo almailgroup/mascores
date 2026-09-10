@@ -17,6 +17,15 @@ const SCOPE_LABEL: Record<GrantScope, string> = {
   tickets: "Tickets",
   matches: "Matches & live",
   voice: "Voice rooms",
+  teams: "Clubs & squads",
+  players: "Players",
+  standings: "Standings",
+  transfers: "Transfers",
+  venues: "Stadiums",
+  competitions: "Competitions",
+  channels: "TV channels",
+  ai: "Almail AI tools",
+  chat: "Chat moderation",
 };
 
 /** Owner-only area: hand out limited access and decide who needs approval. */
