@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Share2, X, Download, ImageDown, Mail } from "lucide-react";
+import { Share2, X, Download, ImageDown } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 export type ShareTeam = { name?: string | null; logo_url?: string | null };
