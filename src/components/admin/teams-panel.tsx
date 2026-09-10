@@ -11,6 +11,7 @@ import { PlayerEditor } from "./player-editor";
 import { PlayerAvatar } from "@/components/player-avatar";
 import { releasePlayerToFreeAgent, transferPlayerToClub } from "@/lib/player-moves";
 import { TeamCrest } from "@/components/team-crest";
+import { StaffManager } from "./staff-manager";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import { VenueSelect } from "./venue-select";
 import { ArabicNameField } from "./arabic-name-field";
@@ -228,6 +229,7 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
           <input type="checkbox" className="mt-0.5 h-4 w-4" checked={!!form.is_national} onChange={(e) => setForm({ ...form, is_national: e.target.checked })} />
           <span><strong className="block">National team</strong>Players are called up instead of transferred, so their club never changes.</span>
         </label>
+        {form.id && <StaffManager teamId={form.id} />}
         <p className="mt-3 text-[0.65rem] text-muted-foreground">Groups are managed from the Standings tab. Coaches are added from the Coaches button.</p>
         <div className="mt-5 flex justify-end gap-2">
           <button className={btnGhost} onClick={() => setOpen(false)}>Cancel</button>
