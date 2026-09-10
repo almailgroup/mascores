@@ -133,6 +133,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
   }
 
   return (
+    <AdminAbilityProvider value={{ isOwner, needsApproval: ticketsNeedApproval }}>
     <AppShell bare={!!openComp}>
       {openComp ? (
         <div>
@@ -230,6 +231,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
         </div>
       )}
     </AppShell>
+    </AdminAbilityProvider>
   );
 }
 
