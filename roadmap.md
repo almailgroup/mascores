@@ -78,20 +78,20 @@ Still open (frontend polish):
 
 ## Big request (Sep 10) — tracking list
 Fixes:
-- [ ] Admin on iPhone: nothing cut off (delete competition, add season, all panels)
-- [ ] Voice: bottom nav covers the "create room" button
-- [ ] Search: country results must not repeat the country name
-- [ ] Ban / suspend a user does not take effect
-- [ ] "Edit player" should jump straight to the editor
-- [ ] Match page background too bright
-- [ ] Brand name -> "Mansour Almail Scores" (with space), smaller
-- [ ] Back button on competition pages
+- [x] Admin on iPhone: nothing cut off (delete competition, add season, all panels)
+- [x] Voice: bottom nav covers the "create room" button
+- [x] Search: country results must not repeat the country name
+- [x] Ban / suspend a user does not take effect
+- [x] "Edit player" should jump straight to the editor
+- [x] Match page background too bright
+- [x] Brand name -> "Mansour Almail Scores" (with space), smaller
+- [x] Back button on competition pages
 - [ ] National-team squad photo should persist on the player page (squad entry only)
 Additions:
 - [ ] Share button on standings and line-ups + save to camera roll
 - [ ] Line-ups: choose formation+bench or names/numbers+bench
 - [ ] Club Info tab: one news preview + "more news"
-- [ ] Settings: send feedback to the owner
+- [x] Settings: send feedback to the owner
 - [ ] Stadium: map link + "directions"; stadium shown under match
 - [ ] Club contact info; full staff (not only coach); club/national colour choice
 - [ ] National team squad: player's club shown next to the name
