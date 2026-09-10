@@ -41,7 +41,7 @@ function Wordmark({ className }: { className?: string }) {
           <span className="text-[0.7rem] font-bold tracking-[0.2em] text-primary">سكورز</span>
         </span>
       ) : (
-        <span className="text-base font-black tracking-tight">MansourAlmailScores</span>
+        <span className="text-[0.8rem] font-black leading-tight tracking-tight sm:text-sm">Mansour Almail Scores</span>
       )}
     </span>
   );

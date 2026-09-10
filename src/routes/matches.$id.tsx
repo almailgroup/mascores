@@ -130,10 +130,11 @@ function MatchPage() {
   // The hero blends both badges: home colour on the left, away colour on the right.
   const homeAccent = useLogoAccent(m.data?.home?.logo_url ?? null);
   const awayAccent = useLogoAccent(m.data?.away?.logo_url ?? null);
-  const homeColor = homeAccent?.color ?? awayAccent?.color ?? "#16224a";
-  const awayColor = awayAccent?.color ?? homeAccent?.color ?? "#070a12";
+  // Both halves are deepened so the header never glares on a phone screen.
+  const homeColor = `color-mix(in oklab, ${homeAccent?.color ?? awayAccent?.color ?? "#16224a"} 68%, #05070d 32%)`;
+  const awayColor = `color-mix(in oklab, ${awayAccent?.color ?? homeAccent?.color ?? "#070a12"} 68%, #05070d 32%)`;
   // Two solid halves joined by a thin seam in a slightly shifted tone - never a blend of both colours.
-  const seamColor = `color-mix(in oklab, ${homeColor} 50%, #000 12%)`;
+  const seamColor = `color-mix(in oklab, ${homeColor} 50%, #000 25%)`;
   const heroBackground = `linear-gradient(100deg, ${homeColor} 0%, ${homeColor} 49.4%, ${seamColor} 49.4%, ${seamColor} 50.6%, ${awayColor} 50.6%, ${awayColor} 100%)`;
   const [, tickClock] = useState(0);
   useEffect(() => {
