@@ -175,8 +175,9 @@ function MatchPage() {
     homeScorers, awayScorers,
     homeLineup: starters(match.home_team_id),
     awayLineup: starters(match.away_team_id),
-    accent: homeColor,
-    accentAway: awayColor,
+    // Canvas needs plain colours; the CSS colour-mix hero values cannot be parsed there.
+    accent: homeAccent?.color ?? awayAccent?.color ?? "#16224a",
+    accentAway: awayAccent?.color ?? homeAccent?.color ?? "#0b1020",
   };
 
   return (
