@@ -82,6 +82,17 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
   const [view, setView] = useState<View>("short");
   const shotRef = useRef<HTMLDivElement>(null);
   const form = useForm(rows, view === "form");
+  // The shared picture carries the league name, so it makes sense on its own.
+  const competitionId = rows[0]?.competition_id ?? null;
+  const competition = useQuery({
+    enabled: !!competitionId,
+    queryKey: ["standings-competition-name", competitionId],
+    queryFn: async () => {
+      const { data } = await supabase.from("competitions").select("name").eq("id", competitionId!).maybeSingle();
+      return data?.name ?? null;
+    },
+  });
+  const shareTitle = competition.data ? tx(competition.data) : tx("Standings");
   const highlights = [...(highlightTeamIds ?? []), ...(highlightTeamId ? [highlightTeamId] : [])];
   const views: View[] = ["full", "form", "short"];
   const viewName: Record<View, string> = { full: tx("Full"), form: tx("Form"), short: tx("Short") };
