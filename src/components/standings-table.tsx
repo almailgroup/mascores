@@ -108,10 +108,10 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
       ))}
     </div>
     <ShareCardButton
-      title={tx("Standings")}
+      title={shareTitle}
       render={() => drawStandingsCard({
-        title: tx("Standings"),
-        subtitle: rows[0]?.season ?? null,
+        title: shareTitle,
+        subtitle: [tx("Standings"), rows[0]?.season ?? null].filter(Boolean).join(" · "),
         withForm: view === "form",
         groups: grouped(rows).map(([group, groupRows]) => ({
           label: group ? tx(group) : null,
