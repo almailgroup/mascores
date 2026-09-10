@@ -189,7 +189,7 @@ function MatchPage() {
         <div className="flex items-center justify-between">
           <BackButton className="mb-0 border-white/20 bg-white/10 text-white hover:text-white" />
           <div className="flex items-center gap-2 [&_button]:border-white/25 [&_button]:bg-white/10 [&_button]:text-white">
-            <MatchShare data={shareData} mode={tab === "lineups" ? "lineups" : "result"} />
+            <MatchShare data={shareData} mode="result" />
             <MatchNotificationButton matchId={match.id} teamIds={[match.home_team_id, match.away_team_id]} />
             <FavoriteButton kind="match" id={match.id} />
           </div>
@@ -335,37 +335,8 @@ function MatchPage() {
           </button>
         ))}
       </div>
-      <div className="flex items-center justify-end gap-2">
-        <ShareCardButton
-          title={tx("Line-ups")}
-          render={() => {
-            const team = lineupSide === "home" ? match.home : match.away;
-            const formation = (lineupSide === "home" ? match.home_formation : match.away_formation) ?? "4-3-3";
-            const all = lineups.data?.filter((item) => item.team_id === team?.id) ?? [];
-            const starters = all.filter((r) => r.is_starting);
-            return drawLineupCard({
-              team: tx(team?.name) ?? "",
-              logo: team?.logo_url ?? null,
-              competition: tx(match.competition?.name) ?? null,
-              formation,
-              rows: formationRows(formation).map((row) =>
-                row
-                  .map((slot) => starters.find((s) => s.position_code === slot))
-                  .filter((lu): lu is NonNullable<typeof lu> => !!lu)
-                  .map((lu) => ({
-                    number: lu.shirt_number ?? lu.player?.shirt_number ?? "",
-                    name: tx(displayShortName(lu.player?.short_name, lu.player?.name)) ?? "",
-                  })),
-              ),
-              bench: all.filter((r) => !r.is_starting).map((lu) => ({
-                number: lu.shirt_number ?? lu.player?.shirt_number ?? "",
-                name: tx(lu.player?.name) ?? "",
-              })),
-            });
-          }}
-        />
-      </div>
       <div>
+
       {([["home", match.home, match.home_formation], ["away", match.away, match.away_formation]] as const).filter(([side]) => side === lineupSide).map(([side, team, formation]) => {
         const rows = lineups.data?.filter((item) => item.team_id === team?.id) ?? [];
         const starters = rows.filter((r) => r.is_starting);
