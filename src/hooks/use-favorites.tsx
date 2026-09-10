@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./use-auth";
 import { Bell } from "lucide-react";
+import { toast } from "sonner";
 
 export type FavoriteKind = "team" | "player" | "competition" | "match";
 
