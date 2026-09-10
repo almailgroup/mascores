@@ -30,7 +30,7 @@ export function ManagePanel() {
   const resetPassword = useServerFn(resetManagedPassword);
   const signOutOthers = useServerFn(signOutEveryoneElse);
 
-  const users = useQuery({ queryKey: ["owner-managed"], queryFn: () => load({ data: {} }) });
+  const users = useQuery({ queryKey: ["owner-managed"], queryFn: () => load() });
   const refresh = () => qc.invalidateQueries({ queryKey: ["owner-managed"] });
   const withAccess = (users.data ?? []).filter((u) => u.grants.length > 0);
 
@@ -49,7 +49,7 @@ export function ManagePanel() {
           className={btnGhost}
           onClick={async () => {
             if (!confirm("Sign every other account out of every device?")) return;
-            const res = await signOutOthers({ data: {} });
+            const res = await signOutOthers();
             alert(`Signed out ${res.count} accounts.`);
           }}
         >
