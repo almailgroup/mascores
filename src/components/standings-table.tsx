@@ -5,6 +5,7 @@ import { TeamCrest } from "@/components/team-crest";
 import { supabase } from "@/integrations/supabase/client";
 import type { Team, StandingRow } from "@/lib/db";
 import type { Database } from "@/integrations/supabase/types";
+import { ShareImageButton } from "@/components/share-image";
 import { useNum, useTx } from "@/lib/auto-translate";
 
 type Label = Database["public"]["Tables"]["standings_position_labels"]["Row"];
