@@ -41,6 +41,8 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
   const activeKind = lockKind ?? kind;
   const [search, setSearch] = useState("");
   const [deleteTeam, setDeleteTeam] = useState<Team | null>(null);
+  const { needsApproval } = useAdminAbility();
+  const [reviewNote, setReviewNote] = useState<string | null>(null);
   /** A past season keeps its own frozen squad instead of the club's live squad. */
   const pastSeason = !!(season && competition?.season && season !== competition.season) ? season : null;
 
