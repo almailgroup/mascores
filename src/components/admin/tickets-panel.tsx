@@ -115,12 +115,15 @@ function OffersView({ needsApproval }: { needsApproval: boolean }) {
       show_row: form.show_row,
       show_seat: form.show_seat,
       notes: form.notes.trim() || null,
-      is_active: form.is_active,
+      // A ticket that still needs a yes never goes on sale on its own.
+      is_active: needsApproval ? false : form.is_active,
+      approval_status: needsApproval ? "pending" : "approved",
     };
     let offerId = editing?.id ?? null;
     if (editing) await supabase.from("ticket_offers").update(payload).eq("id", editing.id);
     else {
-      const { data } = await supabase.from("ticket_offers").insert(payload).select("id").maybeSingle();
+      const { data: me } = await supabase.auth.getUser();
+      const { data } = await supabase.from("ticket_offers").insert({ ...payload, created_by: me.user?.id ?? null }).select("id").maybeSingle();
       offerId = data?.id ?? null;
     }
     if (offerId) {
