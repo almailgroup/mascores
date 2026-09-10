@@ -30,7 +30,8 @@ export const Route = createFileRoute("/players/$id")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  validateSearch: (search: Record<string, unknown>) => ({ nt: typeof search.nt === "string" ? search.nt : undefined }),
+  validateSearch: (search: Record<string, unknown>): { nt?: string } =>
+    typeof search.nt === "string" ? { nt: search.nt } : {},
   component: PlayerPage,
 });
 
