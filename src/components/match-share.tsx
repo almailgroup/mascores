@@ -215,10 +215,17 @@ export function MatchShare({ data, mode }: { data: MatchShareData; mode: "result
 
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} aria-label={label("Share match", "مشاركة المباراة")}
-        className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-white transition hover:bg-white/25">
-        <Share2 className="h-4 w-4" />
-      </button>
+      {mode === "lineups" ? (
+        <button type="button" onClick={() => setOpen(true)}
+          className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3.5 py-2 text-xs font-bold text-foreground transition hover:border-primary hover:text-primary">
+          <Share2 className="h-4 w-4" /> {label("Share line-ups", "مشاركة التشكيلة")}
+        </button>
+      ) : (
+        <button type="button" onClick={() => setOpen(true)} aria-label={label("Share match", "مشاركة المباراة")}
+          className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-white transition hover:bg-white/25">
+          <Share2 className="h-4 w-4" />
+        </button>
+      )}
       {open && (
         <div className="fixed inset-0 z-[120] flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-6" onClick={() => setOpen(false)}>
           <div className="max-h-[88vh] w-full max-w-md overflow-y-auto rounded-t-3xl border border-border bg-card p-5 shadow-2xl sm:rounded-3xl" onClick={(event) => event.stopPropagation()}>
