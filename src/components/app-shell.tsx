@@ -101,6 +101,7 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
   const [moreOpen, setMoreOpen] = useState(false);
   useEffect(() => { void user; }, [user]);
   useReminderAlerts();
+  const suspension = useMySuspension(user?.id);
 
   const profile = useQuery({
     enabled: !!user,
@@ -172,7 +173,6 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
         className="relative z-10 mx-auto max-w-7xl px-4 pt-6 sm:px-6"
         style={{ paddingBottom: "calc(7rem + env(safe-area-inset-bottom))" }}
       >
-        <RestrictionNotice />
         {children}
       </main>
 
