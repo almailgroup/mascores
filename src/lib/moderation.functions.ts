@@ -49,19 +49,14 @@ export const listModeratedUsers = createServerFn({ method: "POST" })
       .map((user) => {
         const profile = profileById.get(user.id);
         const suspension = suspensionById.get(user.id);
-        // The account lock in the auth system is the truth, so a restriction still
-        // shows here even if the note row was removed by hand.
-        const authBan = (user as { banned_until?: string | null }).banned_until ?? null;
-        const authBanned = !!authBan && new Date(authBan).getTime() > Date.now();
-        const permanent = !!authBan && new Date(authBan).getTime() > Date.now() + 3650 * 86400000;
         return {
           id: user.id,
           email: user.email ?? null,
           displayName: profile?.display_name ?? null,
           avatarUrl: profile?.avatar_url ?? null,
           createdAt: user.created_at ?? null,
-          banned: !!suspension?.banned || permanent,
-          suspendedUntil: suspension?.suspended_until ?? (authBanned && !permanent ? authBan : null),
+          banned: !!suspension?.banned,
+          suspendedUntil: suspension?.suspended_until ?? null,
           reason: suspension?.reason ?? null,
         };
       })
