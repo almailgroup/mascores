@@ -6,7 +6,7 @@ import { AppShell } from "@/components/app-shell";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { VoiceReplays } from "@/components/voice-replays";
-import { BackButton } from "@/components/back-button";
+import { BackButton } from "@/components/app-shell";
 
 export const Route = createFileRoute("/u/$username")({
   head: ({ params }) => ({
