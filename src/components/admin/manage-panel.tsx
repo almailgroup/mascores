@@ -125,18 +125,27 @@ export function ManagePanel() {
       </div>
 
       {open && <AddPersonModal onClose={() => setOpen(false)} onDone={(s) => { setOpen(false); setSecret(s); refresh(); }} />}
+      {note && (
+        <Modal open onClose={() => setNote(null)} title="Email">
+          <p className="text-sm">{note}</p>
+        </Modal>
+      )}
       {secret && (
         <Modal open onClose={() => setSecret(null)} title="Share these details">
-          <p className="text-sm text-muted-foreground">Copy this now — it is shown once.</p>
+          <p className="text-sm text-muted-foreground">Copy this now — it is shown once. It is a one-time password; they can change it after signing in.</p>
           <div className="mt-3 space-y-2 rounded-2xl border border-border bg-muted/50 p-3 text-sm">
             <div><span className="text-muted-foreground">Email:</span> <b>{secret.email}</b></div>
-            <div><span className="text-muted-foreground">Password:</span> <b>{secret.password}</b></div>
+            <div><span className="text-muted-foreground">One-time password:</span> <b>{secret.password}</b></div>
           </div>
+          <p className="mt-2 text-xs text-muted-foreground">
+            {secret.emailed ? "A sign-in email was sent to them as well." : "We could not email them — pass these details on yourself."}
+          </p>
           <button className={`${btnGhost} mt-3`} onClick={() => navigator.clipboard?.writeText(`${secret.email} / ${secret.password}`)}>
             <Copy className="h-3.5 w-3.5" /> Copy
           </button>
         </Modal>
       )}
+
     </div>
   );
 }
