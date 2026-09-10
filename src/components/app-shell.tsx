@@ -8,6 +8,20 @@ import { useI18n } from "@/lib/i18n";
 import { BrandLogo } from "@/components/brand-logo";
 import { LiveVoiceAlert } from "@/components/live-voice-alert";
 import { useReminderAlerts } from "@/components/match-reminders";
+import { suspensionMessage, useMySuspension } from "@/lib/suspension";
+
+/** Tells a restricted person, on every page, that they are banned or suspended and why. */
+function RestrictionNotice() {
+  const { user } = useAuth();
+  const suspension = useMySuspension(user?.id);
+  if (!suspension.data) return null;
+  return (
+    <div className="mb-4 rounded-2xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm font-semibold text-destructive">
+      {suspensionMessage(suspension.data)}
+    </div>
+  );
+}
+
 
 type NavItem = { to: "/" | "/search" | "/competitions" | "/news" | "/transfers" | "/tickets" | "/voice" | "/settings"; labelKey: string; icon: typeof Home; exact?: boolean };
 /** Shown in the mobile tab bar. */
