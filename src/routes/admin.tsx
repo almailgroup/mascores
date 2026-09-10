@@ -19,6 +19,7 @@ import { NewsPanel } from "@/components/admin/news-panel";
 import { AlmailAiPanel, ChannelsPanel, TransfersAdminPanel, VenuesPanel } from "@/components/admin/content-panels";
 import { CompetitionAwardsManager, MediaManager } from "@/components/admin/media-manager";
 import { ChatReportsPanel } from "@/components/admin/chat-reports-panel";
+import { ChatManagerPanel } from "@/components/admin/chat-manager-panel";
 import { TicketsPanel } from "@/components/admin/tickets-panel";
 import { UsersPanel } from "@/components/admin/users-panel";
 import { VoicePanel } from "@/components/admin/voice-panel";
