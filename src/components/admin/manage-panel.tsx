@@ -129,7 +129,7 @@ export function ManagePanel() {
 
 function AddPersonModal({ onClose, onDone }: { onClose: () => void; onDone: (secret: { email: string; password: string } | null) => void }) {
   const [email, setEmail] = useState("");
-  const [scope, setScope] = useState<GrantScope>("news");
+  const [scopes, setScopes] = useState<GrantScope[]>(["news"]);
   const [teamId, setTeamId] = useState("");
   const [requiresApproval, setRequiresApproval] = useState(true);
   const [busy, setBusy] = useState(false);
