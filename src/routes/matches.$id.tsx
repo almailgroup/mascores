@@ -334,7 +334,6 @@ function MatchPage() {
       </div>}
 
       {tab === "lineups" && lineupsVisible && <div className="space-y-4">
-      <div className="flex justify-end"><MatchShare data={shareData} mode="lineups" /></div>
       <div className="relative grid grid-cols-2 gap-1 rounded-full border border-border bg-muted/60 p-1">
         <span
           className="absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-full bg-primary shadow-sm transition-transform duration-300 ease-out"
