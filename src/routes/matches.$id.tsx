@@ -365,9 +365,29 @@ function MatchPage() {
             return "";
           })
           .filter((type) => type && hasEventArt(type));
+        const shortOf = (lu: (typeof rows)[number]) => ({
+          number: String(lu.shirt_number ?? lu.player?.shirt_number ?? ""),
+          name: tx(displayShortName(lu.player?.short_name, lu.player?.name)) ?? "",
+        });
+        // The shareable card mirrors what is on screen: formation, pitch, coach and bench.
+        const lineupShare = {
+          ...shareData,
+          lineup: {
+            teamName: tx(team?.name) ?? "TBD",
+            logo: team?.logo_url ?? null,
+            formation: activeFormation,
+            coach: (side === "home" ? coachNames.data?.home : coachNames.data?.away) ?? null,
+            rows: formationRows(activeFormation).map((row) =>
+              row.map((slot) => starters.find((s) => s.position_code === slot)).filter(Boolean).map((lu) => shortOf(lu!))),
+            bench: bench.map(shortOf),
+          },
+        };
         return (
           <div key={side} className="rounded-2xl border border-border bg-card p-4">
-            {showPitch && <div className="mb-3 flex items-center justify-end"><span className="rounded bg-muted px-2 py-0.5 text-[0.65rem] font-semibold">{num(activeFormation)}</span></div>}
+            {showPitch && <div className="mb-3 flex items-center justify-between gap-2">
+              <MatchShare data={lineupShare} mode="lineups" />
+              <span className="rounded bg-muted px-2 py-0.5 text-[0.65rem] font-semibold">{num(activeFormation)}</span>
+            </div>}
             {showPitch && (
               // Turf and markings live on a clipped layer so player cards (and the
               // goalkeeper's rating on the bottom row) are never cut off.
