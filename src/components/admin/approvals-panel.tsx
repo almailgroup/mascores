@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Loader2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { NewsSubmissionsPanel } from "./news-submissions-panel";
 import { btnGhost } from "./ui";
+import { useServerFn } from "@tanstack/react-start";
+import { listChangeRequests, decideChangeRequest } from "@/lib/review.functions";
 
 type PendingPost = { id: string; team_id: string; title: string; body: string; photo_url: string | null; meeting_place: string | null; created_at: string };
 
@@ -58,6 +61,8 @@ export function ApprovalsPanel() {
           {!posts.isLoading && (posts.data ?? []).length === 0 && <p className="text-sm text-muted-foreground">No Rabta posts are waiting.</p>}
         </div>
       </div>
+
+      <PendingChanges />
 
       <PendingTickets />
 
@@ -125,6 +130,53 @@ function PendingTickets() {
           </div>
         ))}
         {!offers.isLoading && (offers.data ?? []).length === 0 && <p className="text-sm text-muted-foreground">No tickets are waiting.</p>}
+      </div>
+    </div>
+  );
+}
+
+
+const ENTITY_LABEL: Record<string, string> = { player: "Player", team: "Team", match: "Match", competition_team: "Team in competition" };
+
+/** Additions and removals a limited admin asked for: players, teams and matches. */
+function PendingChanges() {
+  const qc = useQueryClient();
+  const list = useServerFn(listChangeRequests);
+  const decideFn = useServerFn(decideChangeRequest);
+  const [error, setError] = useState<string | null>(null);
+  const requests = useQuery({ queryKey: ["approval-changes"], queryFn: () => list({}) });
+
+  const decide = async (id: string, approve: boolean) => {
+    setError(null);
+    try {
+      await decideFn({ data: { id, approve } });
+      qc.invalidateQueries({ queryKey: ["approval-changes"] });
+      qc.invalidateQueries({ queryKey: ["admin"] });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not save that.");
+    }
+  };
+
+  return (
+    <div>
+      <h3 className="mb-3 text-sm font-bold uppercase tracking-widest text-muted-foreground">Players, teams and matches</h3>
+      {error && <p className="mb-2 text-xs font-semibold text-destructive">{error}</p>}
+      <div className="space-y-3">
+        {requests.isLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+        {(requests.data ?? []).map((row) => (
+          <div key={row.id} className="rounded-2xl border border-border bg-card p-4">
+            <div className="text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">
+              {ENTITY_LABEL[row.entity] ?? row.entity} · {row.action === "create" ? "Add" : "Remove"}
+            </div>
+            <div className="mt-1 font-semibold">{row.label}</div>
+            <div className="mt-0.5 text-xs text-muted-foreground">{row.requester_email ?? "an admin"} · {new Date(row.created_at).toLocaleString()}</div>
+            <div className="mt-3 flex gap-2">
+              <button className={btnGhost} onClick={() => decide(row.id, true)}><Check className="h-3.5 w-3.5" /> Approve</button>
+              <button className={btnGhost} onClick={() => decide(row.id, false)}><X className="h-3.5 w-3.5" /> Reject</button>
+            </div>
+          </div>
+        ))}
+        {!requests.isLoading && (requests.data ?? []).length === 0 && <p className="text-sm text-muted-foreground">Nothing is waiting.</p>}
       </div>
     </div>
   );
