@@ -15,7 +15,10 @@ export function VoiceRoomChat({ roomId }: { roomId: string }) {
   const [authors, setAuthors] = useState<Record<string, Author>>({});
   const [body, setBody] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const reload = useRef<() => void>(() => undefined);
   const listRef = useRef<HTMLDivElement | null>(null);
+
 
   useEffect(() => {
     let alive = true;
