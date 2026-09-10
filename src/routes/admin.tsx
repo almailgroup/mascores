@@ -53,6 +53,29 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
   const isOwner = (user?.email ?? "").toLowerCase() === OWNER_EMAIL;
   const scopes = new Set((access.data?.grants ?? []).map((g) => g.scope));
   const canRabta = isOwner || scopes.has("all") || scopes.has("rabta");
+  const everything = isOwner || scopes.has("all");
+  /** Which sections this account may open, based on what the owner handed out. */
+  const allowed = (key: string) => {
+    if (everything) return true;
+    switch (key) {
+      case "competitions": return scopes.has("competitions") || scopes.has("matches") || scopes.has("standings");
+      case "teams": return scopes.has("teams");
+      case "countries": return scopes.has("teams");
+      case "players": return scopes.has("players");
+      case "news": return scopes.has("news") || scopes.has("club_news");
+      case "ai": return scopes.has("ai");
+      case "venues": return scopes.has("venues");
+      case "channels": return scopes.has("channels");
+      case "transfers": return scopes.has("transfers");
+      case "tickets": return scopes.has("tickets");
+      case "reports": return scopes.has("chat");
+      case "voice": return scopes.has("voice");
+      case "rabta": return scopes.has("rabta");
+      case "users": case "approvals": case "manage": return false;
+      default: return false;
+    }
+  };
+
 
   useEffect(() => {
     if (loading) return;
