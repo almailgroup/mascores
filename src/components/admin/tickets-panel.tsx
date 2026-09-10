@@ -43,12 +43,12 @@ export function TicketsPanel({ needsApproval = false }: { needsApproval?: boolea
           </button>
         ))}
       </div>
-      {view === "offers" ? <OffersView /> : <ScanView />}
+      {view === "offers" ? <OffersView needsApproval={needsApproval} /> : <ScanView />}
     </div>
   );
 }
 
-function OffersView() {
+function OffersView({ needsApproval }: { needsApproval: boolean }) {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [matchId, setMatchId] = useState<string | null>(null);
