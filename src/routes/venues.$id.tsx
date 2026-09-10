@@ -6,7 +6,7 @@ import { FlagIcon } from "@/components/flag";
 import { TeamCrest } from "@/components/team-crest";
 import { MatchRow, type MatchWithTeams } from "@/components/match-list";
 import { useNum, useTx } from "@/lib/auto-translate";
-import { Landmark } from "lucide-react";
+import { Landmark, Navigation } from "lucide-react";
 
 export const Route = createFileRoute("/venues/$id")({
   head: () => ({
