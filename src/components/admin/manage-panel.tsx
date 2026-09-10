@@ -17,6 +17,15 @@ const SCOPE_LABEL: Record<GrantScope, string> = {
   tickets: "Tickets",
   matches: "Matches & live",
   voice: "Voice rooms",
+  teams: "Clubs & squads",
+  players: "Players",
+  standings: "Standings",
+  transfers: "Transfers",
+  venues: "Stadiums",
+  competitions: "Competitions",
+  channels: "TV channels",
+  ai: "Almail AI tools",
+  chat: "Chat moderation",
 };
 
 /** Owner-only area: hand out limited access and decide who needs approval. */
@@ -120,7 +129,7 @@ export function ManagePanel() {
 
 function AddPersonModal({ onClose, onDone }: { onClose: () => void; onDone: (secret: { email: string; password: string } | null) => void }) {
   const [email, setEmail] = useState("");
-  const [scope, setScope] = useState<GrantScope>("news");
+  const [scopes, setScopes] = useState<GrantScope[]>(["news"]);
   const [teamId, setTeamId] = useState("");
   const [requiresApproval, setRequiresApproval] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -132,12 +141,14 @@ function AddPersonModal({ onClose, onDone }: { onClose: () => void; onDone: (sec
     queryFn: async () => (await supabase.from("teams").select("id,name").order("name")).data ?? [],
   });
 
-  const needsTeam = scope === "club_news" || scope === "rabta";
+  const needsTeam = scopes.includes("club_news") || scopes.includes("rabta");
+  const toggle = (scope: GrantScope) =>
+    setScopes((list) => (list.includes(scope) ? list.filter((item) => item !== scope) : [...list, scope]));
 
   const submit = async () => {
     setBusy(true); setError(null);
     try {
-      const res = await add({ data: { email, scope, teamId: needsTeam ? (teamId || null) : null, requiresApproval } });
+      const res = await add({ data: { email, scopes, teamId: needsTeam ? (teamId || null) : null, requiresApproval } });
       onDone(res.password ? { email: email.trim().toLowerCase(), password: res.password } : null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not save that.");
@@ -148,10 +159,18 @@ function AddPersonModal({ onClose, onDone }: { onClose: () => void; onDone: (sec
     <Modal open onClose={onClose} title="Add person">
       <div className="space-y-3">
         <Field label="Their email"><input className={inputCls} inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@example.com" /></Field>
-        <Field label="What can they reach?">
-          <select className={inputCls} value={scope} onChange={(e) => setScope(e.target.value as GrantScope)}>
-            {GRANT_SCOPES.map((s) => <option key={s} value={s}>{SCOPE_LABEL[s]}</option>)}
-          </select>
+        <Field label="What can they reach? (pick as many as you like)">
+          <div className="grid grid-cols-2 gap-1.5">
+            {GRANT_SCOPES.map((s) => {
+              const on = scopes.includes(s);
+              return (
+                <button key={s} type="button" onClick={() => toggle(s)}
+                  className={`rounded-xl border px-3 py-2 text-start text-xs font-semibold ${on ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground"}`}>
+                  {SCOPE_LABEL[s]}
+                </button>
+              );
+            })}
+          </div>
         </Field>
         {needsTeam && (
           <Field label="Which club?">
@@ -167,7 +186,7 @@ function AddPersonModal({ onClose, onDone }: { onClose: () => void; onDone: (sec
         </label>
         {error && <p className="text-xs text-destructive">{error}</p>}
         <div className="flex gap-2">
-          <button className={btnPrimary} disabled={busy || !email || (needsTeam && !teamId)} onClick={submit}>
+          <button className={btnPrimary} disabled={busy || !email || scopes.length === 0 || (needsTeam && !teamId)} onClick={submit}>
             {busy && <Loader2 className="h-3.5 w-3.5 animate-spin" />} Save access
           </button>
           <button className={btnGhost} onClick={onClose}>Cancel</button>

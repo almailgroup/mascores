@@ -191,7 +191,8 @@ function SearchPage() {
                   <div key={tm.id} className="space-y-2">
                     <ResultRow to="/teams/$id" params={{ id: tm.id }}
                       logo={tm.logo_url} fallback={<Shield className="h-4 w-4 text-muted-foreground" />}
-                      title={tx(tm.name)} country={tm.country_code ?? tm.country} sub={tm.is_national ? tx("National team") ?? "" : tx(tm.country) ?? tm.short_name ?? ""}
+                      title={tx(tm.name)} country={tm.is_national ? null : tm.country_code ?? tm.country}
+                      sub={tm.is_national ? tx("National team") ?? "" : tx(tm.country) ?? tm.short_name ?? ""}
                       onOpen={() => remember({ key: `team:${tm.id}`, label: tm.name, kind: "clubs", to: "/teams/$id", params: { id: tm.id }, logo: tm.logo_url })} />
                     <TeamSquadResults teamId={tm.id} />
                   </div>

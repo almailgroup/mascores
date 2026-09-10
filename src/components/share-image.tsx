@@ -1,11 +1,13 @@
-import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Share2, X, ImageDown, Download, Mail } from "lucide-react";
-import { toBlob } from "html-to-image";
 import { useI18n } from "@/lib/i18n";
 
-/** Turns any part of the page into an image the visitor can keep or send. */
-export function ShareImageButton({ target, title, label: buttonLabel }: {
-  target: RefObject<HTMLElement | null>;
+/**
+ * Share sheet for a purpose-built picture. The caller draws the picture, so the
+ * result is a designed card - never a screenshot of the page.
+ */
+export function ShareCardButton({ render, title, label: buttonLabel }: {
+  render: () => Promise<Blob | null>;
   title: string;
   label?: string;
 }) {
@@ -18,15 +20,13 @@ export function ShareImageButton({ target, title, label: buttonLabel }: {
   const fileName = `${title.replace(/[^\w\u0600-\u06FF -]/g, "").replace(/\s+/g, "-") || "image"}.png`;
 
   const build = useCallback(async () => {
-    if (!target.current) return;
     setBusy(true);
     try {
-      const bg = getComputedStyle(document.body).backgroundColor;
-      const blob = await toBlob(target.current, { pixelRatio: 2, backgroundColor: bg, cacheBust: true });
-      blobRef.current = blob ?? null;
+      const blob = await render();
+      blobRef.current = blob;
       setPreview(blob ? URL.createObjectURL(blob) : null);
     } finally { setBusy(false); }
-  }, [target]);
+  }, [render]);
 
   useEffect(() => { if (open) void build(); }, [open, build]);
 

@@ -13,7 +13,8 @@ import { MatchPrediction } from "@/components/match-prediction";
 import { MatchMomentum } from "@/components/match-momentum";
 import { MapPin, Users, Navigation } from "lucide-react";
 import { MatchReminders } from "@/components/match-reminders";
-import { ShareImageButton } from "@/components/share-image";
+import { ShareCardButton } from "@/components/share-image";
+import { drawLineupCard } from "@/lib/share-cards";
 import { FlagIcon } from "@/components/flag";
 import { EventIcon as EventArt, hasEventArt } from "@/components/event-icon";
 import { nationalOverrideMap, applyCallUp } from "@/lib/national";
@@ -88,8 +89,6 @@ function MatchPage() {
   const { id } = Route.useParams();
   const [tab, setTab] = useState<"details" | "lineups" | "stats" | "standings" | "previous" | "media">("details");
   const [lineupSide, setLineupSide] = useState<"home" | "away">("home");
-  const [lineupView, setLineupView] = useState<"pitch" | "list">("pitch");
-  const lineupShotRef = useRef<HTMLDivElement>(null);
   useRealtime(["matches", "match_events", "match_lineups", "player_ratings", "match_stats", "match_chat_messages", "media_items", "standings_rows"]);
   const m = useQuery({
     queryKey: ["match", id],
@@ -336,24 +335,43 @@ function MatchPage() {
           </button>
         ))}
       </div>
-      <div className="flex items-center justify-between gap-2">
-        <div className="inline-flex rounded-full border border-border bg-card p-1 text-xs font-semibold">
-          {(["pitch", "list"] as const).map((item) => (
-            <button key={item} type="button" onClick={() => setLineupView(item)}
-              className={`rounded-full px-3 py-1.5 ${lineupView === item ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
-              {tx(item === "pitch" ? "Formation" : "Names & numbers")}
-            </button>
-          ))}
-        </div>
-        <ShareImageButton target={lineupShotRef} title={tx("Line-ups")} />
+      <div className="flex items-center justify-end gap-2">
+        <ShareCardButton
+          title={tx("Line-ups")}
+          render={() => {
+            const team = lineupSide === "home" ? match.home : match.away;
+            const formation = (lineupSide === "home" ? match.home_formation : match.away_formation) ?? "4-3-3";
+            const all = lineups.data?.filter((item) => item.team_id === team?.id) ?? [];
+            const starters = all.filter((r) => r.is_starting);
+            return drawLineupCard({
+              team: tx(team?.name) ?? "",
+              logo: team?.logo_url ?? null,
+              competition: tx(match.competition?.name) ?? null,
+              formation,
+              rows: formationRows(formation).map((row) =>
+                row
+                  .map((slot) => starters.find((s) => s.position_code === slot))
+                  .filter((lu): lu is NonNullable<typeof lu> => !!lu)
+                  .map((lu) => ({
+                    number: lu.shirt_number ?? lu.player?.shirt_number ?? "",
+                    name: tx(displayShortName(lu.player?.short_name, lu.player?.name)) ?? "",
+                  })),
+              ),
+              bench: all.filter((r) => !r.is_starting).map((lu) => ({
+                number: lu.shirt_number ?? lu.player?.shirt_number ?? "",
+                name: tx(lu.player?.name) ?? "",
+              })),
+            });
+          }}
+        />
       </div>
-      <div ref={lineupShotRef}>
+      <div>
       {([["home", match.home, match.home_formation], ["away", match.away, match.away_formation]] as const).filter(([side]) => side === lineupSide).map(([side, team, formation]) => {
         const rows = lineups.data?.filter((item) => item.team_id === team?.id) ?? [];
         const starters = rows.filter((r) => r.is_starting);
         const bench = rows.filter((r) => !r.is_starting);
         const activeFormation = formation ?? "4-3-3";
-        const showPitch = lineupView === "pitch" && starters.length > 0;
+        const showPitch = starters.length > 0;
         const marksFor = (playerId: string) => (events.data ?? [])
           .map((e) => {
             if (e.player_id === playerId || e.player?.id === playerId) return e.type;
