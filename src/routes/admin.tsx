@@ -181,13 +181,19 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
           </div>
           <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
             {([
-              ["competitions", Trophy], ["teams", Shield], ["countries", Globe], ["players", Users], ["news", Newspaper], ["ai", Bot], ["venues", Landmark], ["channels", Radio], ["transfers", Repeat2], ["tickets", Ticket], ["reports", Flag], ["users", UserCog], ["voice", Mic], ["approvals", CheckCheck], ...(canRabta ? [["rabta", Megaphone] as const] : []), ...(owner ? [["manage", KeyRound] as const] : []),
-            ] as const).map(([k, Icon]) => (
+              ["competitions", Trophy], ["teams", Shield], ["countries", Globe], ["players", Users], ["news", Newspaper], ["ai", Bot], ["venues", Landmark], ["channels", Radio], ["transfers", Repeat2], ["tickets", Ticket], ["reports", Flag], ["voice", Mic], ...(canRabta ? [["rabta", Megaphone] as const] : []), ...(everything ? [["users", UserCog] as const, ["approvals", CheckCheck] as const] : []), ...(owner && isOwner ? [["manage", KeyRound] as const] : []),
+            ] as const)
+              .filter(([k]) => k === "manage" || k === "users" || k === "approvals" || k === "rabta" || allowed(k))
+              .map(([k, Icon]) => (
               <button key={k} onClick={() => setTab(k)} className={`flex min-h-20 flex-col items-start justify-between rounded-lg border p-3 text-left font-semibold capitalize ${tab === k ? "border-primary bg-primary/10 text-primary" : "border-border bg-card hover:border-primary/50"}`}><Icon className="h-4 w-4" />{k === "ai" ? "Almail AI" : k}</button>
             ))}
           </div>
+          {!everything && !canRabta && !access.isLoading && (access.data?.grants ?? []).length === 0 && (
+            <p className="mt-6 rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">You do not have access to any sections yet. The site owner decides what you can manage.</p>
+          )}
           <div className="mt-6">
-            {tab === "competitions" && <CompetitionsPanel onOpen={setOpenComp} />}
+            {tab === "competitions" && allowed("competitions") && <CompetitionsPanel onOpen={setOpenComp} />}
+
             {tab === "teams" && (
               <div>
                 <p className="mb-4 text-sm text-muted-foreground">Every saved club in one place — create and edit clubs, squads and coaches without opening a competition.</p>
