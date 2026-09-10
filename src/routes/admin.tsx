@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import { unlockAdmin } from "@/lib/admin.functions";
-import { Loader2, ShieldCheck, ArrowLeft, Bot, CalendarDays, Newspaper, Radio, Repeat2, Trophy, Landmark, Shield, Users, LogOut, Flag, Globe, Ticket, UserCog, Mic } from "lucide-react";
+import { Loader2, ShieldCheck, ArrowLeft, Bot, CalendarDays, Newspaper, Radio, Repeat2, Trophy, Landmark, Shield, Users, LogOut, Flag, Globe, Ticket, UserCog, Mic, Megaphone, KeyRound } from "lucide-react";
 import type { Competition } from "@/lib/db";
 import { CompetitionsPanel } from "@/components/admin/competitions-panel";
 import { TeamsPanel } from "@/components/admin/teams-panel";
@@ -21,6 +21,8 @@ import { ChatReportsPanel } from "@/components/admin/chat-reports-panel";
 import { TicketsPanel } from "@/components/admin/tickets-panel";
 import { UsersPanel } from "@/components/admin/users-panel";
 import { VoicePanel } from "@/components/admin/voice-panel";
+import { ManagePanel } from "@/components/admin/manage-panel";
+import { UltrasPanel } from "@/components/admin/ultras-panel";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import { SeasonMenu } from "@/components/season-menu";
 
@@ -38,7 +40,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [tab, setTab] = useState<"competitions" | "teams" | "countries" | "players" | "news" | "ai" | "venues" | "channels" | "transfers" | "reports" | "tickets" | "users" | "voice">("competitions");
+  const [tab, setTab] = useState<"competitions" | "teams" | "countries" | "players" | "news" | "ai" | "venues" | "channels" | "transfers" | "reports" | "tickets" | "users" | "voice" | "rabta" | "manage">("competitions");
   const [openComp, setOpenComp] = useState<Competition | null>(null);
   const [adminSeason, setAdminSeason] = useState<string | null>(null);
   const [compTab, setCompTab] = useState<"overview" | "teams" | "matches" | "standings" | "awards" | "media">("overview");
@@ -125,7 +127,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
         <div>
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 sm:flex sm:flex-wrap sm:justify-between">
             <div className="min-w-0">
-              <h1 className="text-xl font-bold tracking-tight sm:text-3xl">Admin control centre</h1>
+              <h1 className="text-xl font-bold tracking-tight sm:text-3xl">{owner ? "Owner control centre" : "Admin control centre"}</h1>
               <p className="mt-1 text-xs text-muted-foreground sm:text-sm">Pick a section below. Everything is grouped, so nothing needs sideways scrolling.</p>
             </div>
             <button
@@ -137,7 +139,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
           </div>
           <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
             {([
-              ["competitions", Trophy], ["teams", Shield], ["countries", Globe], ["players", Users], ["news", Newspaper], ["ai", Bot], ["venues", Landmark], ["channels", Radio], ["transfers", Repeat2], ["tickets", Ticket], ["reports", Flag], ["users", UserCog], ["voice", Mic],
+              ["competitions", Trophy], ["teams", Shield], ["countries", Globe], ["players", Users], ["news", Newspaper], ["ai", Bot], ["venues", Landmark], ["channels", Radio], ["transfers", Repeat2], ["tickets", Ticket], ["reports", Flag], ["users", UserCog], ["voice", Mic], ["rabta", Megaphone], ...(owner ? [["manage", KeyRound] as const] : []),
             ] as const).map(([k, Icon]) => (
               <button key={k} onClick={() => setTab(k)} className={`flex min-h-20 flex-col items-start justify-between rounded-lg border p-3 text-left font-semibold capitalize ${tab === k ? "border-primary bg-primary/10 text-primary" : "border-border bg-card hover:border-primary/50"}`}><Icon className="h-4 w-4" />{k === "ai" ? "Almail AI" : k}</button>
             ))}
@@ -169,6 +171,8 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
             {tab === "reports" && <ChatReportsPanel />}
             {tab === "users" && <UsersPanel />}
            {tab === "voice" && <VoicePanel />}
+            {tab === "rabta" && <UltrasPanel />}
+            {tab === "manage" && owner && <ManagePanel />}
           </div>
         </div>
       )}
