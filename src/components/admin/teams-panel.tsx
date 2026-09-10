@@ -200,6 +200,15 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
           </Field>
           <Field label="Founded on"><input type="date" className={inputCls} value={form.founded_on ?? ""} onChange={(e) => setForm({ ...form, founded_on: e.target.value || null })} /></Field>
           <Field label="Total trophies"><input type="number" min={0} className={inputCls} value={form.trophies ?? 0} onChange={(e) => setForm({ ...form, trophies: Math.max(0, Number(e.target.value) || 0) })} /></Field>
+          <Field label="Contact phone"><input className={inputCls} inputMode="tel" value={form.contact_phone ?? ""} onChange={(e) => setForm({ ...form, contact_phone: e.target.value || null })} /></Field>
+          <Field label="Contact email"><input className={inputCls} inputMode="email" value={form.contact_email ?? ""} onChange={(e) => setForm({ ...form, contact_email: e.target.value || null })} /></Field>
+          <Field label="Website"><input className={inputCls} value={form.contact_website ?? ""} onChange={(e) => setForm({ ...form, contact_website: e.target.value || null })} /></Field>
+          <Field label="Club colour (used across the club pages)">
+            <div className="flex items-center gap-2">
+              <input type="color" className="h-10 w-14 rounded-lg border border-border bg-background" value={form.accent_color ?? "#1d4ed8"} onChange={(e) => setForm({ ...form, accent_color: e.target.value })} />
+              <input className={inputCls} placeholder="#1d4ed8" value={form.accent_color ?? ""} onChange={(e) => setForm({ ...form, accent_color: e.target.value || null })} />
+            </div>
+          </Field>
            <Field label="Chairman"><input className={inputCls} value={form.chairman ?? ""} onChange={(e) => setForm({ ...form, chairman: e.target.value || null })} /></Field>
           <div className="sm:col-span-2"><Field label="Team logo">
             <ImageInput value={form.logo_url ?? null} onChange={(v) => setForm({ ...form, logo_url: v })} onFile={async (f) => { const url = await uploadMedia("team-logos", f); if (url) setForm({ ...form, logo_url: url }); }} />
