@@ -175,6 +175,15 @@ export function useLiveEventAlerts() {
     };
 
     loadAlerts();
+    // Picks up a newly switched-on match without re-subscribing.
+    const refreshExplicit = () => {
+      try {
+        const local = JSON.parse(localStorage.getItem(ALERT_KEY) ?? "[]");
+        if (Array.isArray(local)) for (const id of local) explicit.add(String(id));
+      } catch { /* nothing saved yet */ }
+      void loadAlerts();
+    };
+    window.addEventListener("mas:alerts-changed", refreshExplicit);
     const channel = supabase.channel("mas-live-alerts");
     channel.on("postgres_changes" as never, { event: "INSERT", schema: "public", table: "match_events" },
       (payload: { new: EventRow }) => { void onEvent(payload.new); });
@@ -182,8 +191,13 @@ export function useLiveEventAlerts() {
       (payload: { new: { id: string; status: string; home_score: number | null; away_score: number | null } }) => { void onMatch(payload.new); });
     channel.subscribe();
 
-    return () => { cancelled = true; supabase.removeChannel(channel); };
-  }, [user, ready, teamIds, matchIds, revision]);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("mas:alerts-changed", refreshExplicit);
+      supabase.removeChannel(channel);
+    };
+  }, [user, ready, teamIds, matchIds]);
+
 }
 
 /** Asks once, politely, so alerts can appear even when the tab is in the background. */
