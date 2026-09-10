@@ -230,7 +230,12 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
             {tab === "channels" && allowed("channels") && <ChannelsPanel />}
             {tab === "transfers" && allowed("transfers") && <TransfersAdminPanel />}
             {tab === "tickets" && allowed("tickets") && <TicketsPanel needsApproval={ticketsNeedApproval} />}
-            {tab === "reports" && allowed("reports") && <ChatReportsPanel />}
+            {tab === "reports" && allowed("reports") && (
+              <div className="space-y-8">
+                {isOwner && <ChatManagerPanel />}
+                <ChatReportsPanel />
+              </div>
+            )}
             {tab === "users" && isOwner && <UsersPanel />}
            {tab === "voice" && allowed("voice") && <VoicePanel />}
             {tab === "approvals" && isOwner && <ApprovalsPanel />}
