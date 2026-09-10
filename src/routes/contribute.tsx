@@ -282,7 +282,7 @@ function ContributePage() {
                   <label className="mt-1 flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-border bg-background px-4 text-sm">
                     <ImagePlus className="h-4 w-4 text-muted-foreground" /> {cover ? "Change photo" : "Choose photo"}
                     <input type="file" accept="image/*" className="hidden"
-                      onChange={async (e) => { const f = e.target.files?.[0]; if (f) setCover(await uploadMedia("news", f)); }} />
+                      onChange={async (e) => { const f = e.target.files?.[0]; if (f) setCover(await uploadMedia("news-covers", f)); }} />
                   </label>
                 </div>
                 <div>
@@ -290,7 +290,7 @@ function ContributePage() {
                   <label className="mt-1 flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-border bg-background px-4 text-sm">
                     <ImagePlus className="h-4 w-4 text-muted-foreground" /> {proofUrl ? "Change file" : "Choose file"}
                     <input type="file" className="hidden"
-                      onChange={async (e) => { const f = e.target.files?.[0]; if (f) setProofUrl(await uploadMedia("news", f)); }} />
+                      onChange={async (e) => { const f = e.target.files?.[0]; if (f) setProofUrl(await uploadMedia("news-covers", f)); }} />
                   </label>
                 </div>
               </div>
