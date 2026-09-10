@@ -182,7 +182,7 @@ export function useLiveEventAlerts() {
     channel.subscribe();
 
     return () => { cancelled = true; supabase.removeChannel(channel); };
-  }, [user, ready, teamIds, matchIds]);
+  }, [user, ready, teamIds, matchIds, revision]);
 }
 
 /** Asks once, politely, so alerts can appear even when the tab is in the background. */
