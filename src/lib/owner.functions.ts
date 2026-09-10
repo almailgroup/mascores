@@ -86,14 +86,16 @@ export const addManagedUser = createServerFn({ method: "POST" })
       user = created.data.user;
     }
     if (!user) throw new Error("Could not create that account.");
+    const teamId = data.teamId ?? null;
     const { error } = await admin.from("admin_grants").upsert(
-      {
-        user_id: user.id,
-        scope: data.scope,
-        team_id: data.teamId ?? null,
+      data.scopes.map((scope) => ({
+        user_id: user!.id,
+        scope,
+        // Only club-bound areas keep a club; the rest are site-wide.
+        team_id: scope === "club_news" || scope === "rabta" ? teamId : null,
         requires_approval: data.requiresApproval,
         created_by: context.userId,
-      },
+      })),
       { onConflict: "user_id,scope,team_id" },
     );
     if (error) throw new Error(error.message);
