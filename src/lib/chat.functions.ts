@@ -74,3 +74,42 @@ export const reportChatMessage = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+/** Admin-only: is the signed-in account an admin? Used to reveal moderation controls. */
+export const amIAdmin = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin.from("admins").select("user_id").eq("user_id", context.userId).maybeSingle();
+    return { admin: !!data };
+  });
+
+/** Admin-only: remove any supporter message from a match chat. */
+export const adminDeleteChatMessage = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { messageId: string }) => input)
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: admin } = await supabaseAdmin.from("admins").select("user_id").eq("user_id", context.userId).maybeSingle();
+    if (!admin) throw new Error("Admins only.");
+    const { error } = await supabaseAdmin.from("match_chat_messages").delete().eq("id", data.messageId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+/** Admin-only: stop an account from chatting for a number of days. */
+export const adminRestrictChatAuthor = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { userId: string; days: number }) => input)
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: admin } = await supabaseAdmin.from("admins").select("user_id").eq("user_id", context.userId).maybeSingle();
+    if (!admin) throw new Error("Admins only.");
+    if (data.userId === context.userId) throw new Error("You cannot restrict your own account.");
+    const days = Math.min(3650, Math.max(1, Math.round(data.days)));
+    const { error } = await supabaseAdmin.from("user_suspensions").upsert(
+      { user_id: data.userId, banned: false, suspended_until: new Date(Date.now() + days * 86400000).toISOString(), reason: "Chat restriction", created_by: context.userId, updated_at: new Date().toISOString() },
+      { onConflict: "user_id" },
+    );
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
