@@ -153,16 +153,16 @@ export const setGrantApproval = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
-/** Makes a one-time password for a managed account, shows it once and emails the person. */
+/** Shows the account's steady password again (or sets a custom one the owner types). */
 export const resetManagedPassword = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ userId: z.string().uuid(), password: z.string().min(8).optional() }).parse(input))
+  .inputValidator((input: unknown) => z.object({ userId: z.string().uuid(), password: z.string().min(8).optional(), email: z.boolean().optional() }).parse(input))
   .handler(async ({ data, context }) => {
     const admin = await ownerAdmin(context.claims as Record<string, unknown>);
-    const password = data.password ?? makePassword();
+    const password = data.password ?? (await accountPassword(data.userId));
     const { data: updated, error } = await admin.auth.admin.updateUserById(data.userId, { password });
     if (error) throw new Error(error.message);
-    const emailed = updated.user?.email ? await emailSignInLink(updated.user.email) : false;
+    const emailed = data.email && updated.user?.email ? await emailSignInLink(updated.user.email) : false;
     return { ok: true as const, password, emailed };
   });
 
