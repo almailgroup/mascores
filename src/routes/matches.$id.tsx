@@ -13,8 +13,6 @@ import { MatchPrediction } from "@/components/match-prediction";
 import { MatchMomentum } from "@/components/match-momentum";
 import { MapPin, Users, Navigation } from "lucide-react";
 import { MatchReminders } from "@/components/match-reminders";
-import { ShareCardButton } from "@/components/share-image";
-import { drawLineupCard } from "@/lib/share-cards";
 import { FlagIcon } from "@/components/flag";
 import { EventIcon as EventArt, hasEventArt } from "@/components/event-icon";
 import { nationalOverrideMap, applyCallUp } from "@/lib/national";
