@@ -68,3 +68,64 @@ export function ApprovalsPanel() {
     </div>
   );
 }
+
+type PendingOffer = {
+  id: string; name: string; stand: string | null; price: number; currency: string; is_free: boolean;
+  capacity: number | null; match_id: string; created_at: string;
+};
+
+/** Tickets a limited admin created — they stay off sale until the owner says yes. */
+function PendingTickets() {
+  const qc = useQueryClient();
+  const offers = useQuery({
+    queryKey: ["approval-tickets"],
+    queryFn: async () =>
+      ((await supabase
+        .from("ticket_offers")
+        .select("id,name,stand,price,currency,is_free,capacity,match_id,created_at")
+        .eq("approval_status", "pending")
+        .order("created_at", { ascending: false })).data ?? []) as PendingOffer[],
+  });
+  const matches = useQuery({
+    queryKey: ["approval-ticket-matches"],
+    queryFn: async () =>
+      (await supabase.from("matches").select("id, kickoff_at, home:home_team_id(name), away:away_team_id(name)").limit(500)).data ?? [],
+  });
+  const matchLabel = (id: string) => {
+    const m = (matches.data ?? []).find((row) => row.id === id) as { home?: { name?: string } | null; away?: { name?: string } | null; kickoff_at?: string | null } | undefined;
+    if (!m) return "Match";
+    return `${m.home?.name ?? "TBD"} vs ${m.away?.name ?? "TBD"}${m.kickoff_at ? ` · ${new Date(m.kickoff_at).toLocaleString()}` : ""}`;
+  };
+
+  const decide = async (id: string, approve: boolean) => {
+    await supabase
+      .from("ticket_offers")
+      .update(approve ? { approval_status: "approved", is_active: true } : { approval_status: "rejected", is_active: false })
+      .eq("id", id);
+    qc.invalidateQueries({ queryKey: ["approval-tickets"] });
+    qc.invalidateQueries({ queryKey: ["admin-ticket-offers"] });
+  };
+
+  return (
+    <div>
+      <h3 className="mb-3 text-sm font-bold uppercase tracking-widest text-muted-foreground">Tickets</h3>
+      {offers.isLoading && <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>}
+      <div className="space-y-2">
+        {(offers.data ?? []).map((offer) => (
+          <div key={offer.id} className="flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card p-3">
+            <div className="min-w-0 flex-1 basis-[55%]">
+              <div className="truncate text-sm font-bold">
+                {offer.name}{offer.stand ? ` · ${offer.stand}` : ""} <span className="text-muted-foreground">{offer.is_free ? "· Free" : `· ${offer.price} ${offer.currency}`}</span>
+              </div>
+              <div className="truncate text-[0.7rem] text-muted-foreground">{matchLabel(offer.match_id)}</div>
+              {offer.capacity ? <div className="text-[0.65rem] text-muted-foreground">{offer.capacity} places</div> : null}
+            </div>
+            <button className={btnGhost} onClick={() => decide(offer.id, true)}><Check className="h-3.5 w-3.5" /> Approve</button>
+            <button className={btnGhost} onClick={() => decide(offer.id, false)}><X className="h-3.5 w-3.5" /> Reject</button>
+          </div>
+        ))}
+        {!offers.isLoading && (offers.data ?? []).length === 0 && <p className="text-sm text-muted-foreground">No tickets are waiting.</p>}
+      </div>
+    </div>
+  );
+}
