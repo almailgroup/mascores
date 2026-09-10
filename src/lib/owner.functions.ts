@@ -151,17 +151,33 @@ export const setGrantApproval = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
-/** Makes a new password for a managed account and shows it to the owner once. */
+/** Makes a one-time password for a managed account, shows it once and emails the person. */
 export const resetManagedPassword = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ userId: z.string().uuid(), password: z.string().min(8).optional() }).parse(input))
   .handler(async ({ data, context }) => {
     const admin = await ownerAdmin(context.claims as Record<string, unknown>);
     const password = data.password ?? makePassword();
-    const { error } = await admin.auth.admin.updateUserById(data.userId, { password });
+    const { data: updated, error } = await admin.auth.admin.updateUserById(data.userId, { password });
     if (error) throw new Error(error.message);
-    return { ok: true as const, password };
+    const emailed = updated.user?.email ? await emailSignInLink(updated.user.email) : false;
+    return { ok: true as const, password, emailed };
   });
+
+/** Sends the sign-in email again without changing the one-time password. */
+export const resendAccessEmail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ userId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const admin = await ownerAdmin(context.claims as Record<string, unknown>);
+    const { data: found, error } = await admin.auth.admin.getUserById(data.userId);
+    if (error) throw new Error(error.message);
+    const email = found.user?.email;
+    if (!email) throw new Error("That account has no email address.");
+    const emailed = await emailSignInLink(email);
+    return { ok: true as const, emailed };
+  });
+
 
 /** Signs every other account out of every device. The owner's own session stays. */
 export const signOutEveryoneElse = createServerFn({ method: "POST" })
