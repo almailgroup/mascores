@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -81,13 +81,6 @@ export function useLiveEventAlerts() {
   const teamIds = favorites.team.join(",");
   const matchIds = favorites.match.join(",");
   const seen = useRef<Set<string>>(new Set());
-  // Re-subscribes as soon as someone switches alerts on for a match.
-  const [revision, setRevision] = useState(0);
-  useEffect(() => {
-    const bump = () => setRevision((value) => value + 1);
-    window.addEventListener("mas:alerts-changed", bump);
-    return () => window.removeEventListener("mas:alerts-changed", bump);
-  }, []);
 
   useEffect(() => {
     if (!ready) return;
@@ -95,6 +88,7 @@ export function useLiveEventAlerts() {
     const info = new Map<string, Info>();
     const followedTeams = new Set(teamIds ? teamIds.split(",") : []);
     let explicit = new Set<string>(matchIds ? matchIds.split(",") : []);
+
     try {
       const local = JSON.parse(localStorage.getItem(ALERT_KEY) ?? "[]");
       if (Array.isArray(local)) explicit = new Set([...explicit, ...local.map(String)]);
@@ -181,6 +175,15 @@ export function useLiveEventAlerts() {
     };
 
     loadAlerts();
+    // Picks up a newly switched-on match without re-subscribing.
+    const refreshExplicit = () => {
+      try {
+        const local = JSON.parse(localStorage.getItem(ALERT_KEY) ?? "[]");
+        if (Array.isArray(local)) for (const id of local) explicit.add(String(id));
+      } catch { /* nothing saved yet */ }
+      void loadAlerts();
+    };
+    window.addEventListener("mas:alerts-changed", refreshExplicit);
     const channel = supabase.channel("mas-live-alerts");
     channel.on("postgres_changes" as never, { event: "INSERT", schema: "public", table: "match_events" },
       (payload: { new: EventRow }) => { void onEvent(payload.new); });
@@ -188,8 +191,13 @@ export function useLiveEventAlerts() {
       (payload: { new: { id: string; status: string; home_score: number | null; away_score: number | null } }) => { void onMatch(payload.new); });
     channel.subscribe();
 
-    return () => { cancelled = true; supabase.removeChannel(channel); };
-  }, [user, ready, teamIds, matchIds, revision]);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("mas:alerts-changed", refreshExplicit);
+      supabase.removeChannel(channel);
+    };
+  }, [user, ready, teamIds, matchIds]);
+
 }
 
 /** Asks once, politely, so alerts can appear even when the tab is in the background. */
