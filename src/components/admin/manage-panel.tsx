@@ -129,6 +129,7 @@ export function ManagePanel() {
       </div>
 
       {open && <AddPersonModal onClose={() => setOpen(false)} onDone={(s) => { setOpen(false); setSecret(s); refresh(); }} />}
+      {editUser && <EditAccessModal user={editUser} onClose={() => setEditUser(null)} onSaved={() => { setEditUser(null); refresh(); }} />}
       {note && (
         <Modal open onClose={() => setNote(null)} title="Email">
           <p className="text-sm">{note}</p>
