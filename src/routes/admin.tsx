@@ -53,12 +53,16 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
   const access = useQuery({ enabled: !!user, queryKey: ["my-access", user?.id], queryFn: () => accessFn({}) });
   const isOwner = (user?.email ?? "").toLowerCase() === OWNER_EMAIL;
   const scopes = new Set((access.data?.grants ?? []).map((g) => g.scope));
-  const canRabta = isOwner || scopes.has("all") || scopes.has("rabta");
+  /** Rabta stays with the owner unless he hands that one section out on purpose. */
+  const canRabta = isOwner || scopes.has("rabta");
   const everything = isOwner || scopes.has("all");
   /** A limited admin whose access is marked "needs my approval" cannot publish tickets straight away. */
   const ticketsNeedApproval = !everything && (access.data?.grants ?? []).some((g) => g.requiresApproval);
   /** Which sections this account may open, based on what the owner handed out. */
   const allowed = (key: string) => {
+    // The owner keeps people, approvals, Manage and the reporter desk to himself,
+    // even for someone given "everything".
+    if (key === "users" || key === "approvals" || key === "manage" || key === "rabta") return isOwner || (key === "rabta" && scopes.has("rabta"));
     if (everything) return true;
     switch (key) {
       case "competitions": return scopes.has("competitions") || scopes.has("matches") || scopes.has("standings");
@@ -185,9 +189,9 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
           </div>
           <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
             {([
-              ["competitions", Trophy], ["teams", Shield], ["countries", Globe], ["players", Users], ["news", Newspaper], ["ai", Bot], ["venues", Landmark], ["channels", Radio], ["transfers", Repeat2], ["tickets", Ticket], ["reports", Flag], ["voice", Mic], ...(canRabta ? [["rabta", Megaphone] as const] : []), ...(everything ? [["users", UserCog] as const, ["approvals", CheckCheck] as const] : []), ...(owner && isOwner ? [["manage", KeyRound] as const] : []),
+              ["competitions", Trophy], ["teams", Shield], ["countries", Globe], ["players", Users], ["news", Newspaper], ["ai", Bot], ["venues", Landmark], ["channels", Radio], ["transfers", Repeat2], ["tickets", Ticket], ["reports", Flag], ["voice", Mic], ...(canRabta ? [["rabta", Megaphone] as const] : []), ...(isOwner ? [["users", UserCog] as const, ["approvals", CheckCheck] as const] : []), ...(isOwner ? [["manage", KeyRound] as const] : []),
             ] as const)
-              .filter(([k]) => k === "manage" || k === "users" || k === "approvals" || k === "rabta" || allowed(k))
+              .filter(([k]) => allowed(k))
               .map(([k, Icon]) => (
               <button key={k} onClick={() => setTab(k)} className={`flex min-h-20 flex-col items-start justify-between rounded-lg border p-3 text-left font-semibold capitalize ${tab === k ? "border-primary bg-primary/10 text-primary" : "border-border bg-card hover:border-primary/50"}`}><Icon className="h-4 w-4" />{k === "ai" ? "Almail AI" : k}</button>
             ))}
@@ -221,11 +225,11 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
             {tab === "transfers" && allowed("transfers") && <TransfersAdminPanel />}
             {tab === "tickets" && allowed("tickets") && <TicketsPanel needsApproval={ticketsNeedApproval} />}
             {tab === "reports" && allowed("reports") && <ChatReportsPanel />}
-            {tab === "users" && everything && <UsersPanel />}
+            {tab === "users" && isOwner && <UsersPanel />}
            {tab === "voice" && allowed("voice") && <VoicePanel />}
-            {tab === "approvals" && everything && <ApprovalsPanel />}
+            {tab === "approvals" && isOwner && <ApprovalsPanel />}
             {tab === "rabta" && canRabta && <UltrasPanel isOwner={isOwner} />}
-            {tab === "manage" && owner && isOwner && <ManagePanel />}
+            {tab === "manage" && isOwner && <ManagePanel />}
 
           </div>
         </div>

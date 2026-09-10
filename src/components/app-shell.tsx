@@ -8,6 +8,7 @@ import { useI18n } from "@/lib/i18n";
 import { BrandLogo } from "@/components/brand-logo";
 import { LiveVoiceAlert } from "@/components/live-voice-alert";
 import { useReminderAlerts } from "@/components/match-reminders";
+import { useAskForAlerts, useLiveEventAlerts } from "@/lib/live-alerts";
 import { suspensionMessage, useMySuspension } from "@/lib/suspension";
 
 /**
@@ -101,6 +102,8 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
   const [moreOpen, setMoreOpen] = useState(false);
   useEffect(() => { void user; }, [user]);
   useReminderAlerts();
+  useLiveEventAlerts();
+  useAskForAlerts();
   const suspension = useMySuspension(user?.id);
 
   const profile = useQuery({

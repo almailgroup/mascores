@@ -2,7 +2,9 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase, slugify } from "@/lib/db";
 import { Modal, inputCls, btnPrimary, btnGhost, btnDanger } from "./ui";
-import { Check, X, FileText, ExternalLink, KeyRound } from "lucide-react";
+import { Check, X, FileText, ExternalLink, KeyRound, Trash2 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { deleteReporter } from "@/lib/reporter-admin.functions";
 
 type Submission = {
   id: string;
@@ -26,6 +28,8 @@ export function NewsSubmissionsPanel() {
   const qc = useQueryClient();
   const [open, setOpen] = useState<Submission | null>(null);
   const [note, setNote] = useState("");
+  const [reporterError, setReporterError] = useState<string | null>(null);
+  const removeReporter = useServerFn(deleteReporter);
 
   const q = useQuery({
     queryKey: ["admin", "news-submissions"],
@@ -44,7 +48,9 @@ export function NewsSubmissionsPanel() {
   });
 
   const approve = async (s: Submission) => {
+    const author = (reporters.data ?? []).find((r) => r.user_id === s.author_id);
     await supabase.from("news_posts").insert({
+      author_display: author?.handle ? `@${author.handle}` : null,
       title: s.title,
       slug: slugify(s.title),
       body_markdown: s.body_markdown,
@@ -72,6 +78,18 @@ export function NewsSubmissionsPanel() {
     qc.invalidateQueries({ queryKey: ["admin", "news-reporters"] });
   };
 
+  /** Turning a reporter down removes the account entirely. */
+  const rejectReporter = async (id: string) => {
+    setReporterError(null);
+    try {
+      await removeReporter({ data: { id } });
+      qc.invalidateQueries({ queryKey: ["admin", "news-reporters"] });
+      qc.invalidateQueries({ queryKey: ["admin", "news-submissions"] });
+    } catch (e) {
+      setReporterError(e instanceof Error ? e.message : "Could not remove that reporter.");
+    }
+  };
+
   /** Generate an access code to send the reporter manually — they redeem it themselves. */
   const generateCode = async (id: string) => {
     const code = `MAS-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
@@ -97,6 +115,7 @@ export function NewsSubmissionsPanel() {
       </div>
 
       <h3 className="mb-3 mt-8 text-base font-bold">Reporter accounts</h3>
+      {reporterError && <p className="mb-2 text-xs font-semibold text-destructive">{reporterError}</p>}
       <div className="grid gap-2">
         {(reporters.data ?? []).map((r) => (
           <div key={r.id} className="flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card p-3 text-sm">
@@ -108,7 +127,7 @@ export function NewsSubmissionsPanel() {
             <span className="shrink-0 text-xs font-semibold uppercase text-muted-foreground">{r.status}</span>
             <button className={btnGhost} onClick={() => generateCode(r.id)}><KeyRound className="h-3.5 w-3.5" /> Generate code</button>
             <button className={btnGhost} onClick={() => setReporter(r.id, "active")}><Check className="h-3.5 w-3.5" /> Activate</button>
-            <button className={btnDanger} onClick={() => setReporter(r.id, "rejected")}><X className="h-3.5 w-3.5" /> Reject</button>
+            <button className={btnDanger} onClick={() => rejectReporter(r.id)}><Trash2 className="h-3.5 w-3.5" /> Reject &amp; delete</button>
           </div>
         ))}
         {reporters.data && reporters.data.length === 0 && <div className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">No reporter applications yet.</div>}

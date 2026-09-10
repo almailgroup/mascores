@@ -232,15 +232,86 @@ function ContributePage() {
         </section>
       ) : (
         <section className="mt-6 grid gap-4">
-          {/* News writing is intentionally disabled: the whole desk is a
-              coming-soon placeholder until publishing opens. */}
-          <div className="rounded-3xl border border-dashed border-primary/40 bg-primary/5 p-8 text-center">
-            <Sparkles className="mx-auto h-6 w-6 text-primary" />
-            <div className="mt-3 text-lg font-black">Publishing news — coming soon</div>
-            <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              The news desk is not open yet. Your reporter access is saved and you will be able to write and publish
-              articles here as soon as the feature launches.
-            </p>
+          <div className="rounded-3xl border border-border bg-card p-6">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <div className="text-sm font-bold">Write an article</div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Everything you send is read by the main admin before it goes live. Your username
+                  <strong className="text-foreground"> @{reporter.data.handle}</strong> is shown on your published articles.
+                </p>
+              </div>
+              {sent && <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-500">Sent for review</span>}
+            </div>
+
+            <div className="mt-5 rounded-2xl border border-dashed border-primary/40 bg-primary/5 p-4">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary"><Sparkles className="h-3.5 w-3.5" /> Almail AI draft</div>
+              <textarea className={`${inputCls} mt-2`} rows={3} placeholder="Write your notes, or paste what happened — Almail AI turns it into an article."
+                value={aiNotes} onChange={(e) => setAiNotes(e.target.value)} />
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <label className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-full border border-border bg-background px-4 text-xs font-semibold">
+                  <ImagePlus className="h-3.5 w-3.5" /> Add photos for the draft
+                  <input type="file" accept="image/*" multiple className="hidden"
+                    onChange={async (e) => setAiImages(await readAiImages(e.target.files ?? []))} />
+                </label>
+                {aiImages.length > 0 && <span className="text-xs text-muted-foreground">{aiImages.length} photo(s) attached</span>}
+                <button disabled={busy || (!aiNotes.trim() && aiImages.length === 0)} onClick={generate}
+                  className="inline-flex h-9 items-center gap-2 rounded-full bg-primary px-4 text-xs font-bold text-primary-foreground disabled:opacity-60">
+                  {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />} Draft it for me
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-5 grid gap-3">
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Headline</label>
+                <input className={`${inputCls} mt-1`} maxLength={180} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Headline" />
+              </div>
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Short summary</label>
+                <input className={`${inputCls} mt-1`} maxLength={280} value={excerpt} onChange={(e) => setExcerpt(e.target.value)} placeholder="One line that appears on the news card" />
+              </div>
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Article</label>
+                <textarea className={`${inputCls} mt-1`} rows={10} value={body} onChange={(e) => setBody(e.target.value)} placeholder="Write the full story here" />
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Cover photo</label>
+                  <label className="mt-1 flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-border bg-background px-4 text-sm">
+                    <ImagePlus className="h-4 w-4 text-muted-foreground" /> {cover ? "Change photo" : "Choose photo"}
+                    <input type="file" accept="image/*" className="hidden"
+                      onChange={async (e) => { const f = e.target.files?.[0]; if (f) setCover(await uploadMedia("news-covers", f)); }} />
+                  </label>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Proof (photo or document)</label>
+                  <label className="mt-1 flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-border bg-background px-4 text-sm">
+                    <ImagePlus className="h-4 w-4 text-muted-foreground" /> {proofUrl ? "Change file" : "Choose file"}
+                    <input type="file" className="hidden"
+                      onChange={async (e) => { const f = e.target.files?.[0]; if (f) setProofUrl(await uploadMedia("news-covers", f)); }} />
+                  </label>
+                </div>
+              </div>
+              {cover && <img src={cover} alt="" className="max-h-60 w-full rounded-2xl bg-muted/60 object-contain" />}
+
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Where does it belong?</label>
+                <div className="mt-1"><NewsLinkPicker teamId={links.team_id} competitionId={links.competition_id} playerId={links.player_id} onChange={setLinks} /></div>
+              </div>
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Note about your proof</label>
+                <textarea className={`${inputCls} mt-1`} rows={2} value={proofNote} onChange={(e) => setProofNote(e.target.value)}
+                  placeholder="Where did this come from? Add your social media post link too." />
+              </div>
+
+              {error && <p className="text-xs text-destructive">{error}</p>}
+              <button disabled={busy || !title.trim() || !body.trim()} onClick={submit}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground disabled:opacity-60">
+                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} Send for review
+              </button>
+            </div>
           </div>
 
 

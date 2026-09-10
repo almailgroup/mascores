@@ -35,8 +35,8 @@ export const Route = createFileRoute("/teams/$id")({
   component: TeamPage,
 });
 
-type Tab = "info" | "matches" | "standings" | "squad" | "stats" | "media" | "transfers" | "news";
-const TABS: Tab[] = ["info", "matches", "standings", "squad", "stats", "media", "transfers", "news"];
+type Tab = "info" | "matches" | "standings" | "squad" | "stats" | "media" | "transfers" | "news" | "rabta";
+const TABS: Tab[] = ["info", "matches", "standings", "squad", "stats", "media", "transfers", "news", "rabta"];
 
 function TeamPage() {
   const tx = useTx();
@@ -303,6 +303,8 @@ function TeamPage() {
         </div>
       )}
 
+      {tab === "rabta" && <TeamUltras teamId={t.id} full />}
+
       {tab === "stats" && (
         <div className="space-y-4">
           <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
@@ -486,15 +488,17 @@ function TeamStaff({ teamId }: { teamId: string }) {
 }
 
 /** Rabta: where the club's ultras will gather. */
-function TeamUltras({ teamId }: { teamId: string }) {
+function TeamUltras({ teamId, full = false }: { teamId: string; full?: boolean }) {
   const tx = useTx();
   const posts = useQuery({
-    queryKey: ["team-ultras", teamId],
+    queryKey: ["team-ultras", teamId, full],
     queryFn: async () =>
       (await supabase.from("ultras_posts").select("id,title,body,photo_url,meeting_place,created_at")
-        .eq("team_id", teamId).eq("status", "approved").order("created_at", { ascending: false }).limit(5)).data ?? [],
+        .eq("team_id", teamId).eq("status", "approved").order("created_at", { ascending: false }).limit(full ? 50 : 5)).data ?? [],
   });
-  if (!posts.data?.length) return null;
+  if (!posts.data?.length) {
+    return full ? <EmptyState title={tx("No Rabta posts yet")} /> : null;
+  }
   return (
     <section>
       <h2 className="mb-3 text-sm font-bold uppercase text-muted-foreground">{tx("Rabta")}</h2>
