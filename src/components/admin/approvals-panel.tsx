@@ -59,6 +59,8 @@ export function ApprovalsPanel() {
         </div>
       </div>
 
+      <PendingTickets />
+
       <div>
         <h3 className="mb-3 text-sm font-bold uppercase tracking-widest text-muted-foreground">News sent in</h3>
         <NewsSubmissionsPanel />
