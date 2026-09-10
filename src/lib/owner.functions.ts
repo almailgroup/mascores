@@ -106,6 +106,11 @@ export const addManagedUser = createServerFn({ method: "POST" })
       const created = await admin.auth.admin.createUser({ email, password, email_confirm: true });
       if (created.error) throw new Error(created.error.message);
       user = created.data.user;
+    } else {
+      // Existing account: give it a fresh one-time password so it can be handed over.
+      password = makePassword();
+      const updated = await admin.auth.admin.updateUserById(user.id, { password });
+      if (updated.error) throw new Error(updated.error.message);
     }
     if (!user) throw new Error("Could not create that account.");
     const teamId = data.teamId ?? null;
@@ -121,8 +126,10 @@ export const addManagedUser = createServerFn({ method: "POST" })
       { onConflict: "user_id,scope,team_id" },
     );
     if (error) throw new Error(error.message);
-    return { ok: true as const, userId: user.id, password };
+    const emailed = await emailSignInLink(email);
+    return { ok: true as const, userId: user.id, password, emailed };
   });
+
 
 export const removeManagedGrant = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
