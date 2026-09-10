@@ -5,7 +5,7 @@ import { Loader2, KeyRound, Trash2, UserPlus, LogOut, Copy, Mail } from "lucide-
 import { supabase } from "@/integrations/supabase/client";
 import {
   addManagedUser, listManagedUsers, removeManagedGrant, resetManagedPassword, resendAccessEmail, setGrantApproval,
-  signOutEveryoneElse, GRANT_SCOPES, type GrantScope,
+  setManagedScopes, signOutEveryoneElse, GRANT_SCOPES, type GrantScope, type ManagedUser,
 } from "@/lib/owner.functions";
 
 import { Field, inputCls, btnPrimary, btnGhost, btnDanger, Modal } from "./ui";
