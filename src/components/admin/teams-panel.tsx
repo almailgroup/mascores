@@ -251,7 +251,7 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
         <p className="mt-3 text-[0.65rem] text-muted-foreground">Groups are managed from the Standings tab. Coaches are added from the Coaches button.</p>
         <div className="mt-5 flex justify-end gap-2">
           <button className={btnGhost} onClick={() => setOpen(false)}>Cancel</button>
-          <button className={btnPrimary} onClick={save}>Save</button>
+          <button className={btnPrimary} onClick={save}>{!form.id && needsApproval ? "Send for review" : "Save"}</button>
         </div>
       </Modal>
 
