@@ -2,11 +2,11 @@ import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Copy, Flag, MessageCircle, MoreHorizontal, Pencil, Trash2, Loader2 } from "lucide-react";
+import { Ban, Copy, Flag, MessageCircle, MoreHorizontal, Pencil, Trash2, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
-import { getChatAuthorProfiles, postChatMessage, editChatMessage, reportChatMessage } from "@/lib/chat.functions";
+import { getChatAuthorProfiles, postChatMessage, editChatMessage, reportChatMessage, amIAdmin, adminDeleteChatMessage, adminRestrictChatAuthor } from "@/lib/chat.functions";
 
 type ChatMessage = { id: string; user_id: string; body: string; created_at: string; edited_at: string | null };
 
@@ -27,6 +27,11 @@ export function MatchChat({ matchId }: { matchId: string }) {
   const edit = useServerFn(editChatMessage);
   const report = useServerFn(reportChatMessage);
   const getAuthors = useServerFn(getChatAuthorProfiles);
+  const checkAdmin = useServerFn(amIAdmin);
+  const adminDelete = useServerFn(adminDeleteChatMessage);
+  const adminRestrict = useServerFn(adminRestrictChatAuthor);
+  const admin = useQuery({ enabled: !!user, queryKey: ["am-i-admin", user?.id], queryFn: () => checkAdmin({}) });
+  const isAdmin = admin.data?.admin === true;
 
   const chat = useQuery({
     queryKey: ["match-chat", matchId],
@@ -91,6 +96,22 @@ export function MatchChat({ matchId }: { matchId: string }) {
                             </button>
                           </>
                         ) : user ? (
+                          <>
+                          {isAdmin && (
+                            <>
+                              <button type="button" className="flex w-full items-center gap-2 px-3 py-2 text-destructive hover:bg-accent" onClick={async () => { setMenuFor(null); await run(() => adminDelete({ data: { messageId: message.id } }), tx("Message removed")); }}>
+                                <Trash2 className="h-3.5 w-3.5" /> {tx("Delete message")}
+                              </button>
+                              <button type="button" className="flex w-full items-center gap-2 px-3 py-2 hover:bg-accent" onClick={async () => {
+                                setMenuFor(null);
+                                const answer = window.prompt(tx("Restrict this supporter for how many days?") ?? "", "7");
+                                if (!answer) return;
+                                await run(() => adminRestrict({ data: { userId: message.user_id, days: Number(answer) || 7 } }), tx("Supporter restricted"));
+                              }}>
+                                <Ban className="h-3.5 w-3.5" /> {tx("Restrict supporter")}
+                              </button>
+                            </>
+                          )}
                           <button type="button" className="flex w-full items-center gap-2 px-3 py-2 hover:bg-accent" onClick={async () => {
                             setMenuFor(null);
                             const reason = window.prompt(tx("Tell the admin what is wrong with this message (optional)") ?? "") ?? "";
@@ -98,6 +119,7 @@ export function MatchChat({ matchId }: { matchId: string }) {
                           }}>
                             <Flag className="h-3.5 w-3.5" /> {tx("Report")}
                           </button>
+                          </>
                         ) : null}
                       </div>
                     )}

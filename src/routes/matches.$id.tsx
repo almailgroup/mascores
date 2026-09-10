@@ -1,7 +1,7 @@
 import { TeamCrest } from "@/components/team-crest";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AppShell, BackButton, EmptyState, LoadingSkeleton, SwipeTabs } from "@/components/app-shell";
 import { supabase, STATUS_LABELS, roundLabel, matchClockSeconds, formatClock, eventLabel, ratingClass, formatRating, type Match, type Team, type MatchEvent, type Lineup, type Player, type StandingRow } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
@@ -13,6 +13,7 @@ import { MatchPrediction } from "@/components/match-prediction";
 import { MatchMomentum } from "@/components/match-momentum";
 import { MapPin, Users, Navigation } from "lucide-react";
 import { MatchReminders } from "@/components/match-reminders";
+import { ShareImageButton } from "@/components/share-image";
 import { FlagIcon } from "@/components/flag";
 import { EventIcon as EventArt, hasEventArt } from "@/components/event-icon";
 import { nationalOverrideMap, applyCallUp } from "@/lib/national";
@@ -87,6 +88,8 @@ function MatchPage() {
   const { id } = Route.useParams();
   const [tab, setTab] = useState<"details" | "lineups" | "stats" | "standings" | "previous" | "media">("details");
   const [lineupSide, setLineupSide] = useState<"home" | "away">("home");
+  const [lineupView, setLineupView] = useState<"pitch" | "list">("pitch");
+  const lineupShotRef = useRef<HTMLDivElement>(null);
   useRealtime(["matches", "match_events", "match_lineups", "player_ratings", "match_stats", "match_chat_messages", "media_items", "standings_rows"]);
   const m = useQuery({
     queryKey: ["match", id],
@@ -333,12 +336,24 @@ function MatchPage() {
           </button>
         ))}
       </div>
+      <div className="flex items-center justify-between gap-2">
+        <div className="inline-flex rounded-full border border-border bg-card p-1 text-xs font-semibold">
+          {(["pitch", "list"] as const).map((item) => (
+            <button key={item} type="button" onClick={() => setLineupView(item)}
+              className={`rounded-full px-3 py-1.5 ${lineupView === item ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
+              {tx(item === "pitch" ? "Formation" : "Names & numbers")}
+            </button>
+          ))}
+        </div>
+        <ShareImageButton target={lineupShotRef} title={tx("Line-ups")} />
+      </div>
+      <div ref={lineupShotRef}>
       {([["home", match.home, match.home_formation], ["away", match.away, match.away_formation]] as const).filter(([side]) => side === lineupSide).map(([side, team, formation]) => {
         const rows = lineups.data?.filter((item) => item.team_id === team?.id) ?? [];
         const starters = rows.filter((r) => r.is_starting);
         const bench = rows.filter((r) => !r.is_starting);
         const activeFormation = formation ?? "4-3-3";
-        const showPitch = match.lineup_mode === "formation" && starters.length > 0;
+        const showPitch = lineupView === "pitch" && starters.length > 0;
         const marksFor = (playerId: string) => (events.data ?? [])
           .map((e) => {
             if (e.player_id === playerId || e.player?.id === playerId) return e.type;
@@ -423,6 +438,7 @@ function MatchPage() {
           </div>
         );
       })}
+      </div>
       <MatchMomentum matchId={id} home={match.home} away={match.away} minutes={match.momentum_minutes ?? 90} events={(events.data ?? []).map((e) => ({ minute: e.minute, type: e.type, team_id: e.team_id }))} />
       </div>}
       {tab === "stats" && <MatchStatsPanel rows={stats.data ?? []} home={match.home} away={match.away} />}

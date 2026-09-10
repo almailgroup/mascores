@@ -7,7 +7,7 @@ import { AppShell, BackButton } from "@/components/app-shell";
 import { QrCode } from "@/components/qr-code";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { claimTicket, ticketAvailability } from "@/lib/tickets.functions";
+import { claimTicket, ticketAvailability, listTicketForSale, unlistTicket, listResaleTickets, buyResaleTicket } from "@/lib/tickets.functions";
 import { formatKickoff } from "@/lib/db";
 import { useTx } from "@/lib/auto-translate";
 
@@ -37,12 +37,13 @@ type OfferRow = {
 type MyTicket = {
   id: string; code: string; status: string; row_label: string | null; seat_label: string | null;
   holder_name: string | null; price_paid: number; currency: string; used_at: string | null;
+  for_sale: boolean; sale_price: number | null; match_id: string;
   offer: { name: string; stand: string | null } | null;
   match: { kickoff_at: string | null; venue: string | null; home: { name: string } | null; away: { name: string } | null; competition: { name: string } | null } | null;
 };
 
 const TICKET_SELECT =
-  "id, code, status, row_label, seat_label, holder_name, price_paid, currency, used_at, created_at, offer:offer_id(name, stand), match:match_id(kickoff_at, venue, home:home_team_id(name), away:away_team_id(name), competition:competition_id(name))";
+  "id, code, status, row_label, seat_label, holder_name, price_paid, currency, used_at, created_at, for_sale, sale_price, match_id, offer:offer_id(name, stand), match:match_id(kickoff_at, venue, home:home_team_id(name), away:away_team_id(name), competition:competition_id(name))";
 
 /** A pass stops working three hours after kickoff. */
 function isExpired(kickoff: string | null | undefined): boolean {
@@ -172,6 +173,8 @@ function TicketsPage() {
         </div>
       )}
 
+      <ResaleMarket />
+
       {checkout && (
         <CheckoutModal
           offer={checkout}
@@ -213,6 +216,7 @@ function TicketCard({ ticket }: { ticket: MyTicket }) {
             {used ? <Clock className="h-3 w-3" /> : <CheckCircle2 className="h-3 w-3" />}
             {used ? tx("Scanned") : tx("Valid — scan once at the gate")}
           </div>
+          <TicketActions ticket={ticket} />
         </div>
       </div>
       <div className="relative flex w-[122px] shrink-0 flex-col items-center justify-center gap-2 border-s border-dashed border-border bg-muted/30 p-3">
@@ -221,6 +225,114 @@ function TicketCard({ ticket }: { ticket: MyTicket }) {
         <span className="absolute -start-2 -top-2 h-4 w-4 rounded-full bg-background" />
         <span className="absolute -bottom-2 -start-2 h-4 w-4 rounded-full bg-background" />
       </div>
+    </div>
+  );
+}
+
+/** Supporter-to-supporter resale list. Buying issues a fresh QR code. */
+function ResaleMarket() {
+  const tx = useTx();
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const load = useServerFn(listResaleTickets);
+  const buy = useServerFn(buyResaleTicket);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const list = useQuery({ queryKey: ["resale-tickets"], queryFn: () => load({}) });
+
+  return (
+    <section className="mt-8">
+      <h2 className="mb-3 text-sm font-bold uppercase tracking-widest text-muted-foreground">{tx("Tickets from supporters")}</h2>
+      {error && <p className="mb-2 text-xs font-semibold text-destructive">{tx(error)}</p>}
+      {(list.data ?? []).length === 0 ? (
+        <div className="rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground">{tx("Nobody is reselling a ticket right now.")}</div>
+      ) : (
+        <div className="space-y-2">
+          {(list.data ?? []).map((item) => (
+            <div key={item.id} className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-4">
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-bold">{tx(item.match?.home?.name ?? "TBD")} <span className="text-muted-foreground">{tx("vs")}</span> {tx(item.match?.away?.name ?? "TBD")}</div>
+                <div className="truncate text-[0.7rem] text-muted-foreground">
+                  {[item.offer ? tx(item.offer.name) : null, item.offer?.stand ? tx(item.offer.stand) : null, formatKickoff(item.match?.kickoff_at ?? null)].filter(Boolean).join(" · ")}
+                </div>
+                <div className="mt-0.5 text-[0.7rem] text-muted-foreground">
+                  {tx("Seller")}: {[item.seller_phone, item.seller_email].filter(Boolean).join(" · ") || tx("no contact given")}
+                </div>
+              </div>
+              <div className="text-sm font-black tabular-nums">{Number(item.sale_price ?? 0)} {item.currency}</div>
+              <button
+                disabled={!user || busy === item.id}
+                className="inline-flex h-9 items-center gap-1.5 rounded-full bg-primary px-4 text-xs font-bold text-primary-foreground disabled:opacity-50"
+                onClick={async () => {
+                  setBusy(item.id); setError(null);
+                  try {
+                    await buy({ data: { ticketId: item.id } });
+                    await Promise.all([list.refetch(), qc.invalidateQueries({ queryKey: ["my-tickets"] })]);
+                  } catch (err) { setError(err instanceof Error ? err.message : "Could not buy this ticket."); }
+                  finally { setBusy(null); }
+                }}>
+                {busy === item.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}{user ? tx("Buy") : tx("Sign in to buy")}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+/** Sell / stop selling, plus saving the match to the phone's wallet-style calendar. */
+function TicketActions({ ticket }: { ticket: MyTicket }) {
+  const tx = useTx();
+  const qc = useQueryClient();
+  const sell = useServerFn(listTicketForSale);
+  const unlist = useServerFn(unlistTicket);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const refresh = () => qc.invalidateQueries({ queryKey: ["my-tickets"] });
+
+  const addToWallet = () => {
+    const start = ticket.match?.kickoff_at ? new Date(ticket.match.kickoff_at) : new Date();
+    const stamp = (d: Date) => d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+    const title = `${ticket.match?.home?.name ?? "Match"} vs ${ticket.match?.away?.name ?? ""}`;
+    const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Mansour Almail Scores//Tickets//EN", "BEGIN:VEVENT",
+      `UID:${ticket.id}`, `DTSTAMP:${stamp(new Date())}`, `DTSTART:${stamp(start)}`,
+      `DTEND:${stamp(new Date(start.getTime() + 2 * 3600000))}`, `SUMMARY:${title}`,
+      `LOCATION:${ticket.match?.venue ?? ""}`, `DESCRIPTION:Ticket code ${ticket.code}`, "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+    const url = URL.createObjectURL(new Blob([ics], { type: "text/calendar" }));
+    const a = document.createElement("a");
+    a.href = url; a.download = `${ticket.code}.ics`; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  };
+
+  if (ticket.status !== "valid") return null;
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2">
+      {ticket.for_sale ? (
+        <>
+          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[0.65rem] font-bold text-primary">{tx("For sale")} · {Number(ticket.sale_price ?? 0)} {ticket.currency}</span>
+          <button disabled={busy} className="rounded-full border border-border px-3 py-1 text-[0.7rem] font-bold"
+            onClick={async () => { setBusy(true); try { await unlist({ data: { ticketId: ticket.id } }); refresh(); } finally { setBusy(false); } }}>
+            {tx("Stop selling")}
+          </button>
+        </>
+      ) : (
+        <button disabled={busy} className="rounded-full border border-border px-3 py-1 text-[0.7rem] font-bold"
+          onClick={async () => {
+            const price = window.prompt(tx("Sell for how much?") ?? "", String(ticket.price_paid || 0));
+            if (price === null) return;
+            const phone = window.prompt(tx("Your phone number for buyers (optional)") ?? "") ?? "";
+            const email = window.prompt(tx("Your email for buyers (optional)") ?? "") ?? "";
+            setBusy(true); setError(null);
+            try { await sell({ data: { ticketId: ticket.id, price: Number(price) || 0, phone, email } }); refresh(); }
+            catch (err) { setError(err instanceof Error ? err.message : "Could not list this ticket."); }
+            finally { setBusy(false); }
+          }}>
+          {tx("Sell this ticket")}
+        </button>
+      )}
+      <button className="rounded-full border border-border px-3 py-1 text-[0.7rem] font-bold" onClick={addToWallet}>{tx("Add to wallet")}</button>
+      {error && <span className="text-[0.7rem] font-semibold text-destructive">{tx(error)}</span>}
     </div>
   );
 }

@@ -150,3 +150,92 @@ export const scanTicket = createServerFn({ method: "POST" })
     if (!updated) return { result: "already_used" as const, ticket };
     return { result: "valid" as const, ticket: updated };
   });
+
+/** Owner lists their pass for resale. The admin's price cap on the offer is enforced. */
+export const listTicketForSale = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { ticketId: string; price: number; phone?: string; email?: string }) => input)
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: ticket } = await supabaseAdmin
+      .from("tickets")
+      .select("id, user_id, status, offer_id, price_paid, currency")
+      .eq("id", data.ticketId)
+      .maybeSingle();
+    if (!ticket || ticket.user_id !== context.userId) throw new Error("This is not your ticket.");
+    if (ticket.status !== "valid") throw new Error("Only a valid, unused ticket can be sold.");
+    const { data: offer } = await supabaseAdmin.from("ticket_offers").select("resale_max_price, price").eq("id", ticket.offer_id ?? "").maybeSingle();
+    const cap = offer?.resale_max_price != null ? Number(offer.resale_max_price) : Number(offer?.price ?? ticket.price_paid);
+    const price = Math.max(0, Number(data.price) || 0);
+    if (cap > 0 && price > cap) throw new Error(`The highest allowed resale price is ${cap} ${ticket.currency}.`);
+    const { error } = await supabaseAdmin
+      .from("tickets")
+      .update({ for_sale: true, sale_price: price, seller_phone: data.phone?.trim() || null, seller_email: data.email?.trim() || null })
+      .eq("id", ticket.id);
+    if (error) throw new Error(error.message);
+    return { ok: true, cap };
+  });
+
+/** Owner takes their pass off the resale list. */
+export const unlistTicket = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { ticketId: string }) => input)
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("tickets")
+      .update({ for_sale: false, sale_price: null })
+      .eq("id", data.ticketId)
+      .eq("user_id", context.userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+/** Every pass currently offered by supporters, with the seller's contact details. */
+export const listResaleTickets = createServerFn({ method: "GET" }).handler(async () => {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data } = await supabaseAdmin
+    .from("tickets")
+    .select("id, sale_price, currency, row_label, seat_label, seller_phone, seller_email, offer:offer_id(name, stand), match:match_id(kickoff_at, venue, home:home_team_id(name), away:away_team_id(name), competition:competition_id(name))")
+    .eq("for_sale", true)
+    .eq("status", "valid")
+    .order("sale_price", { ascending: true })
+    .limit(100);
+  return data ?? [];
+});
+
+/** Buying a resold pass moves it to the buyer and issues a brand new QR code. */
+export const buyResaleTicket = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { ticketId: string }) => input)
+  .handler(async ({ data, context }) => {
+    const { data: restricted } = await context.supabase.rpc("is_suspended", { _uid: context.userId });
+    if (restricted === true) throw new Error("Your account is restricted right now.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: ticket } = await supabaseAdmin
+      .from("tickets")
+      .select("id, user_id, sale_price")
+      .eq("id", data.ticketId)
+      .eq("for_sale", true)
+      .eq("status", "valid")
+      .maybeSingle();
+    if (!ticket) throw new Error("That ticket is no longer for sale.");
+    if (ticket.user_id === context.userId) throw new Error("This ticket is already yours.");
+    const { data: updated } = await supabaseAdmin
+      .from("tickets")
+      .update({
+        user_id: context.userId,
+        code: makeCode(),
+        for_sale: false,
+        sale_price: null,
+        holder_name: null, holder_email: null, holder_phone: null,
+        price_paid: Number(ticket.sale_price ?? 0),
+        resold_at: new Date().toISOString(),
+      })
+      .eq("id", ticket.id)
+      .eq("for_sale", true)
+      .select("id, code")
+      .maybeSingle();
+    if (!updated) throw new Error("That ticket was just taken.");
+    return { ok: true, code: updated.code };
+  });

@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { TeamCrest } from "@/components/team-crest";
 import { supabase } from "@/integrations/supabase/client";
 import type { Team, StandingRow } from "@/lib/db";
 import type { Database } from "@/integrations/supabase/types";
+import { ShareImageButton } from "@/components/share-image";
 import { useNum, useTx } from "@/lib/auto-translate";
 
 type Label = Database["public"]["Tables"]["standings_position_labels"]["Row"];
@@ -78,12 +79,14 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
   const tx = useTx();
   const num = useNum();
   const [view, setView] = useState<View>("short");
+  const shotRef = useRef<HTMLDivElement>(null);
   const form = useForm(rows, view === "form");
   const highlights = [...(highlightTeamIds ?? []), ...(highlightTeamId ? [highlightTeamId] : [])];
   const views: View[] = ["full", "form", "short"];
   const viewName: Record<View, string> = { full: tx("Full"), form: tx("Form"), short: tx("Short") };
 
-  return <div className="space-y-4">
+  return <div ref={shotRef} className="space-y-4">
+    <div className="flex items-center justify-between gap-2">
     <div className="inline-flex rounded-full border border-border bg-card p-1 text-xs font-semibold">
       {views.map((item) => (
         <button key={item} type="button" onClick={() => setView(item)}
@@ -91,6 +94,8 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
           {viewName[item]}
         </button>
       ))}
+    </div>
+    <ShareImageButton target={shotRef} title={tx("Standings")} />
     </div>
     {grouped(rows).map(([group, groupRows]) => {
       const groupLabels = labels.filter((label) => (label.group_label ?? null) === group);

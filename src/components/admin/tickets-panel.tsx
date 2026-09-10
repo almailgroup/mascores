@@ -15,12 +15,12 @@ type MatchOption = {
 };
 
 type Offer = {
-  id: string; match_id: string; name: string; stand: string | null; price: number; currency: string;
+  id: string; match_id: string; name: string; stand: string | null; price: number; currency: string; resale_max_price: number | null;
   is_free: boolean; capacity: number | null; show_row: boolean; show_seat: boolean; notes: string | null; is_active: boolean;
 };
 
 const emptyOffer = {
-  name: "General admission", stand: "", price: "3", currency: "KWD", is_free: false,
+  name: "General admission", stand: "", price: "3", currency: "KWD", is_free: false, resale_max_price: "",
   capacity: "100", show_row: true, show_seat: true, notes: "", is_active: true,
 };
 
@@ -104,6 +104,7 @@ function OffersView() {
       name: form.name.trim() || "General admission",
       stand: form.stand.trim() || null,
       price: form.is_free ? 0 : Number(form.price || 0),
+      resale_max_price: form.resale_max_price ? Number(form.resale_max_price) : null,
       currency: form.currency.trim() || "KWD",
       is_free: form.is_free,
       capacity,
@@ -154,6 +155,7 @@ function OffersView() {
           <Field label="Price"><input className={inputCls} inputMode="decimal" disabled={form.is_free} value={form.is_free ? "0" : form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} /></Field>
           <Field label="Currency"><input className={inputCls} value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })} /></Field>
           <Field label="Capacity (required)"><input className={inputCls} inputMode="numeric" value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })} placeholder="100" /></Field>
+          <Field label="Max resale price (optional)"><input className={inputCls} inputMode="decimal" value={form.resale_max_price} onChange={(e) => setForm({ ...form, resale_max_price: e.target.value })} placeholder="Same as price" /></Field>
           <Field label="Note (optional)"><input className={inputCls} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Gate A opens 2h before" /></Field>
         </div>
         <div className="mt-3 flex flex-wrap gap-4 text-xs font-semibold">
@@ -196,7 +198,7 @@ function OffersView() {
               <button className={btnGhost} onClick={() => setIssueOffer(offer)}><QrIcon className="h-3.5 w-3.5" /> Passes</button>
               <button className={btnGhost} onClick={async () => { await supabase.from("ticket_offers").update({ is_active: !offer.is_active }).eq("id", offer.id); await qc.invalidateQueries({ queryKey: ["admin-ticket-offers"] }); }}>{offer.is_active ? "Hide" : "Show"}</button>
               <button className={btnGhost} onClick={() => setBuyersOffer(offer)}>Buyers</button>
-              <button className={btnGhost} onClick={() => { setEditing(offer); setForm({ name: offer.name, stand: offer.stand ?? "", price: String(offer.price), currency: offer.currency, is_free: offer.is_free, capacity: offer.capacity ? String(offer.capacity) : "", show_row: offer.show_row, show_seat: offer.show_seat, notes: offer.notes ?? "", is_active: offer.is_active }); }}>Edit</button>
+              <button className={btnGhost} onClick={() => { setEditing(offer); setForm({ name: offer.name, stand: offer.stand ?? "", price: String(offer.price), currency: offer.currency, is_free: offer.is_free, capacity: offer.capacity ? String(offer.capacity) : "", show_row: offer.show_row, show_seat: offer.show_seat, notes: offer.notes ?? "", is_active: offer.is_active, resale_max_price: offer.resale_max_price != null ? String(offer.resale_max_price) : "" }); }}>Edit</button>
               <button className={btnDanger} onClick={() => setDeleteOffer(offer)}>Delete</button>
             </div>
           );
