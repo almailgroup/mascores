@@ -94,12 +94,9 @@ export const setUserSuspension = createServerFn({ method: "POST" })
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!saved) throw new Error("The restriction could not be saved. Please try again.");
-    // Also lock the account itself so a restricted user cannot simply sign in again.
-    const hours = data.banned ? 876000 : Math.max(1, data.days) * 24;
-    const { error: authError } = await admin.auth.admin.updateUserById(data.userId, { ban_duration: `${hours}h` });
-    if (authError) throw new Error(authError.message);
-    // Kick them out of every device they are already signed in on.
-    await admin.auth.admin.signOut(data.userId, "global").catch(() => null);
+    // They stay signed in on purpose: the app shows them the notice and the reason,
+    // and simply stops them posting, hosting and chatting.
+    await admin.auth.admin.updateUserById(data.userId, { ban_duration: "none" }).catch(() => null);
     return { ok: true };
   });
 

@@ -88,7 +88,7 @@ export function ManagePanel() {
                   setSecret({ email: user.email ?? "", password: res.password, emailed: res.emailed });
                 }}
               >
-                <KeyRound className="h-3.5 w-3.5" /> One-time password
+                <KeyRound className="h-3.5 w-3.5" /> Show password
               </button>
               <button
                 className={btnGhost}
@@ -132,10 +132,10 @@ export function ManagePanel() {
       )}
       {secret && (
         <Modal open onClose={() => setSecret(null)} title="Share these details">
-          <p className="text-sm text-muted-foreground">Copy this now — it is shown once. It is a one-time password; they can change it after signing in.</p>
+          <p className="text-sm text-muted-foreground">This is their password. It stays the same, so you can look it up here any time.</p>
           <div className="mt-3 space-y-2 rounded-2xl border border-border bg-muted/50 p-3 text-sm">
             <div><span className="text-muted-foreground">Email:</span> <b>{secret.email}</b></div>
-            <div><span className="text-muted-foreground">One-time password:</span> <b>{secret.password}</b></div>
+            <div><span className="text-muted-foreground">Password:</span> <b>{secret.password}</b></div>
           </div>
           <p className="mt-2 text-xs text-muted-foreground">
             {secret.emailed ? "A sign-in email was sent to them as well." : "We could not email them — pass these details on yourself."}
