@@ -1,0 +1,2 @@
+ALTER TABLE public.admin_grants DROP CONSTRAINT IF EXISTS admin_grants_scope_check;
+ALTER TABLE public.admin_grants ADD CONSTRAINT admin_grants_scope_check CHECK (scope IN ('all','news','club_news','rabta','tickets','matches','voice','teams','players','standings','transfers','venues','competitions','channels','ai','chat'));
