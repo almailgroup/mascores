@@ -81,11 +81,12 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
 
       <div className="grid gap-2">
         {visible.map((c) => (
-          <div key={c.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3">
+          
+          <div key={c.id} className="flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card p-3 sm:gap-3">
             <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg bg-primary/10">
               {c.logo_url ? <img src={c.logo_url} className="h-full w-full object-contain" alt="" /> : <span className="text-xs">🏆</span>}
             </div>
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0 flex-1 basis-[60%]">
               <div className="truncate font-semibold">{c.name}</div>
               <div className="truncate text-xs text-muted-foreground">{[c.scope && c.scope !== "national" ? c.region ?? c.scope : c.country, c.season, c.format].filter(Boolean).join(" · ")}</div>
             </div>

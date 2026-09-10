@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { ImageCropper } from "@/components/image-cropper";
 
@@ -23,10 +23,17 @@ export function Modal({ open, onClose, title, children, wide, fullPage }: { open
   // by the parent's scroll container or stacking context — that was why
   // "Edit event" appeared to do nothing on iPhone.
   const [mounted, setMounted] = useState(false);
+  const scroller = useRef<HTMLDivElement | null>(null);
   useEffect(() => setMounted(true), []);
+  // Opening a sheet always starts at the top, so the editor is right there
+  // instead of somewhere below the previous scroll position.
+  useEffect(() => {
+    if (open && scroller.current) scroller.current.scrollTop = 0;
+  }, [open]);
   if (!open || !mounted || typeof document === "undefined") return null;
   return createPortal(
     <div
+      ref={scroller}
       className={`fixed inset-0 z-[70] flex items-start justify-center overflow-y-auto overscroll-contain bg-foreground/60 ${fullPage ? "p-0" : "p-2 backdrop-blur-sm sm:p-4"}`}
       onClick={onClose}
       style={{ WebkitOverflowScrolling: "touch" }}

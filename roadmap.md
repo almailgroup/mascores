@@ -75,3 +75,33 @@ Still open (frontend polish):
 - [x] Admin voice tab: browse rooms/replays, end, delete
 - [x] Anonymous listening stored per participant and masked in the roster
 - [x] Optional match link when starting a room from the voice page
+
+## Big request (Sep 10) — tracking list
+Fixes:
+- [x] Admin on iPhone: nothing cut off (delete competition, add season, all panels)
+- [x] Voice: bottom nav covers the "create room" button
+- [x] Search: country results must not repeat the country name
+- [x] Ban / suspend a user does not take effect
+- [x] "Edit player" should jump straight to the editor
+- [x] Match page background too bright
+- [x] Brand name -> "Mansour Almail Scores" (with space), smaller
+- [x] Back button on competition pages
+- [ ] National-team squad photo should persist on the player page (squad entry only)
+Additions:
+- [ ] Share button on standings and line-ups + save to camera roll
+- [ ] Line-ups: choose formation+bench or names/numbers+bench
+- [ ] Club Info tab: one news preview + "more news"
+- [x] Settings: send feedback to the owner
+- [ ] Stadium: map link + "directions"; stadium shown under match
+- [ ] Club contact info; full staff (not only coach); club/national colour choice
+- [ ] National team squad: player's club shown next to the name
+Bigger builds (need database work):
+- [ ] Main admin (mansouralmailscores@gmail.com) at /secretadminsafha, everyone else signed out
+- [ ] Manage section: create users with limited access (news, club news, rabta), approval on/off, generated passwords
+- [ ] Ultras / Rabta section with per-club editors and approval
+- [ ] Public/private user profiles, usernames, followers; replays published to the host profile
+- [ ] Voice rooms: live text messages during the room
+- [ ] Admin moderation of match chat messages
+- [ ] Tickets: Apple Wallet, resale with price cap, new QR after resale, seller contact
+- [ ] Match reminders + 45/30/15 minute notifications
+- [ ] Reporter desk: contact mansouralmailscores@gmail.com, social accounts on published news

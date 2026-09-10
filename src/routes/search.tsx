@@ -77,7 +77,7 @@ function SearchPage() {
         return out;
       };
 
-      const teamCols = "id,name,short_name,country,country_code,logo_url";
+      const teamCols = "id,name,short_name,country,country_code,logo_url,is_national";
       const playerCols = "id,name,position,photo_url,nationality,nationality_code,team:team_id(id,name,logo_url)";
       const compCols = "id,slug,name,country,country_code,logo_url,season";
       const coachCols = "id,name,nationality,nationality_code,photo_url,team:team_id(id,name,logo_url)";
@@ -188,7 +188,7 @@ function SearchPage() {
                   <div key={tm.id} className="space-y-2">
                     <ResultRow to="/teams/$id" params={{ id: tm.id }}
                       logo={tm.logo_url} fallback={<Shield className="h-4 w-4 text-muted-foreground" />}
-                      title={tx(tm.name)} country={tm.country_code ?? tm.country} sub={tx(tm.country) ?? tm.short_name ?? ""}
+                      title={tx(tm.name)} country={tm.country_code ?? tm.country} sub={tm.is_national ? tx("National team") ?? "" : tx(tm.country) ?? tm.short_name ?? ""}
                       onOpen={() => remember({ key: `team:${tm.id}`, label: tm.name, kind: "clubs", to: "/teams/$id", params: { id: tm.id }, logo: tm.logo_url })} />
                     <TeamSquadResults teamId={tm.id} />
                   </div>

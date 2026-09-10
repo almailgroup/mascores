@@ -84,6 +84,10 @@ export const setUserSuspension = createServerFn({ method: "POST" })
       { onConflict: "user_id" },
     );
     if (error) throw new Error(error.message);
+    // Also lock the account itself so a restricted user cannot simply sign in again.
+    const hours = data.banned ? 876000 : Math.max(1, data.days) * 24;
+    const { error: authError } = await admin.auth.admin.updateUserById(data.userId, { ban_duration: `${hours}h` });
+    if (authError) throw new Error(authError.message);
     return { ok: true };
   });
 

@@ -254,8 +254,13 @@ function CreateRoom({ onClose, onCreated, matchId = null }: { onClose: () => voi
   const preview = photo ?? generatedCover(title || "Voice room");
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-6" onClick={onClose}>
-      <div className="w-full max-w-lg rounded-t-3xl border border-border bg-background p-5 sm:rounded-3xl" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-6" onClick={onClose}>
+      {/* Scrolls inside itself and clears the phone tab bar so "Go live" is always reachable. */}
+      <div
+        className="max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-t-3xl border border-border bg-background p-5 sm:max-h-[85vh] sm:rounded-3xl"
+        style={{ paddingBottom: "calc(6rem + env(safe-area-inset-bottom))" }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <h2 className="text-lg font-bold">{tx("Start a voice room")}</h2>
         {matchId && <p className="mt-1 text-xs font-semibold text-primary">{tx("This room will appear on the match page.")}</p>}
         <div className="mt-4 flex gap-3">
