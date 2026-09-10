@@ -247,16 +247,10 @@ export function MatchShare({ data, mode }: { data: MatchShareData; mode: "result
               className="sticky bottom-0 mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-bold text-primary-foreground disabled:opacity-50">
               <ImageDown className="h-4 w-4" /> {label("Save to photos", "حفظ في الصور")}
             </button>
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              <button type="button" disabled={busy || !preview} onClick={sendByEmail}
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-border px-4 py-2.5 text-sm font-semibold disabled:opacity-50">
-                <Mail className="h-4 w-4" /> {label("Email image", "إرسال بالبريد")}
-              </button>
-              <button type="button" disabled={busy || !preview} onClick={saveToFile}
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-border px-4 py-2.5 text-sm font-semibold disabled:opacity-50">
-                <Download className="h-4 w-4" /> {label("Save file", "حفظ الملف")}
-              </button>
-            </div>
+            <button type="button" disabled={busy || !preview} onClick={saveToFile}
+              className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full border border-border px-4 py-2.5 text-sm font-semibold disabled:opacity-50">
+              <Download className="h-4 w-4" /> {label("Save file", "حفظ الملف")}
+            </button>
             {/* Clears the bottom navigation bar so the actions stay tappable. */}
             <div className="h-24 sm:h-0" style={{ paddingBottom: "env(safe-area-inset-bottom)" }} />
           </div>
