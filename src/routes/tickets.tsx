@@ -64,6 +64,7 @@ function TicketsPage() {
         .from("ticket_offers")
         .select("id, match_id, name, stand, price, currency, is_free, capacity, notes, match:match_id(id, kickoff_at, status, venue, home:home_team_id(name, logo_url), away:away_team_id(name, logo_url), competition:competition_id(name, slug, logo_url))")
         .eq("is_active", true)
+        .eq("approval_status", "approved")
         .order("sort_order");
       if (error) throw error;
       return (data ?? []) as unknown as OfferRow[];
