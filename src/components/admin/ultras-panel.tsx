@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Check, X, Trash2, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { Field, inputCls, btnPrimary, btnGhost, btnDanger, Modal } from "./ui";
-import { ImageField } from "./media-urls";
+import { Field, inputCls, btnPrimary, btnGhost, btnDanger, Modal, ImageInput } from "./ui";
+import { uploadMedia } from "./upload";
 
 type Post = {
   id: string; team_id: string; title: string; body: string; photo_url: string | null;
@@ -117,7 +117,13 @@ function UltrasEditor({ post, teams, onClose, onSaved }: {
         <Field label="Title"><input className={inputCls} value={form.title ?? ""} onChange={(e) => set({ title: e.target.value })} /></Field>
         <Field label="Where will they meet?"><input className={inputCls} value={form.meeting_place ?? ""} onChange={(e) => set({ meeting_place: e.target.value })} placeholder="North stand, gate 4" /></Field>
         <Field label="Details"><textarea rows={5} className={inputCls} value={form.body ?? ""} onChange={(e) => set({ body: e.target.value })} /></Field>
-        <ImageField label="Photo" bucket="news-covers" value={form.photo_url ?? ""} onChange={(url) => set({ photo_url: url })} />
+        <Field label="Photo">
+          <ImageInput
+            value={form.photo_url ?? null}
+            onChange={(v) => set({ photo_url: v })}
+            onFile={async (f) => { const url = await uploadMedia("news-covers", f); if (url) set({ photo_url: url }); }}
+          />
+        </Field>
         <Field label="Status">
           <select className={inputCls} value={form.status ?? "approved"} onChange={(e) => set({ status: e.target.value })}>
             <option value="approved">Approved (visible)</option>
