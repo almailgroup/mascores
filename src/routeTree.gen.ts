@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TransfersRouteImport } from './routes/transfers'
 import { Route as TicketsRouteImport } from './routes/tickets'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as SecretadminsafhaRouteImport } from './routes/secretadminsafha'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as FavoritesRouteImport } from './routes/favorites'
@@ -45,6 +46,11 @@ const TicketsRoute = TicketsRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SecretadminsafhaRoute = SecretadminsafhaRouteImport.update({
+  id: '/secretadminsafha',
+  path: '/secretadminsafha',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SearchRoute = SearchRouteImport.update({
@@ -152,6 +158,7 @@ export interface FileRoutesByFullPath {
   '/favorites': typeof FavoritesRoute
   '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
+  '/secretadminsafha': typeof SecretadminsafhaRoute
   '/settings': typeof SettingsRoute
   '/tickets': typeof TicketsRoute
   '/transfers': typeof TransfersRoute
@@ -176,6 +183,7 @@ export interface FileRoutesByTo {
   '/favorites': typeof FavoritesRoute
   '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
+  '/secretadminsafha': typeof SecretadminsafhaRoute
   '/settings': typeof SettingsRoute
   '/tickets': typeof TicketsRoute
   '/transfers': typeof TransfersRoute
@@ -201,6 +209,7 @@ export interface FileRoutesById {
   '/favorites': typeof FavoritesRoute
   '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
+  '/secretadminsafha': typeof SecretadminsafhaRoute
   '/settings': typeof SettingsRoute
   '/tickets': typeof TicketsRoute
   '/transfers': typeof TransfersRoute
@@ -227,6 +236,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/reset-password'
     | '/search'
+    | '/secretadminsafha'
     | '/settings'
     | '/tickets'
     | '/transfers'
@@ -251,6 +261,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/reset-password'
     | '/search'
+    | '/secretadminsafha'
     | '/settings'
     | '/tickets'
     | '/transfers'
@@ -275,6 +286,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/reset-password'
     | '/search'
+    | '/secretadminsafha'
     | '/settings'
     | '/tickets'
     | '/transfers'
@@ -300,6 +312,7 @@ export interface RootRouteChildren {
   FavoritesRoute: typeof FavoritesRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SearchRoute: typeof SearchRoute
+  SecretadminsafhaRoute: typeof SecretadminsafhaRoute
   SettingsRoute: typeof SettingsRoute
   TicketsRoute: typeof TicketsRoute
   TransfersRoute: typeof TransfersRoute
@@ -337,6 +350,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/secretadminsafha': {
+      id: '/secretadminsafha'
+      path: '/secretadminsafha'
+      fullPath: '/secretadminsafha'
+      preLoaderRoute: typeof SecretadminsafhaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/search': {
@@ -484,6 +504,7 @@ const rootRouteChildren: RootRouteChildren = {
   FavoritesRoute: FavoritesRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SearchRoute: SearchRoute,
+  SecretadminsafhaRoute: SecretadminsafhaRoute,
   SettingsRoute: SettingsRoute,
   TicketsRoute: TicketsRoute,
   TransfersRoute: TransfersRoute,
