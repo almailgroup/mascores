@@ -210,3 +210,30 @@ function SettingsPage() {
     </AppShell>
   );
 }
+/** Sends the owner feedback about the app straight to his inbox. */
+function FeedbackBox() {
+  const [message, setMessage] = useState("");
+  const owner = "mansouralmailscores@gmail.com";
+  return (
+    <section className="mt-10 rounded-3xl border border-border bg-card p-6">
+      <h2 className="text-sm font-bold">Send feedback</h2>
+      <p className="mb-3 text-xs text-muted-foreground">Tell the owner what you like, what is missing, or what went wrong.</p>
+      <textarea
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        rows={4}
+        placeholder="Your feedback…"
+        className="w-full rounded-2xl border border-border bg-background p-3 text-sm outline-none focus:border-primary"
+      />
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <a
+          href={`mailto:${owner}?subject=${encodeURIComponent("Mansour Almail Scores feedback")}&body=${encodeURIComponent(message)}`}
+          className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-4 text-sm font-bold text-primary-foreground"
+        >
+          Send feedback
+        </a>
+        <span className="text-[0.7rem] text-muted-foreground">Goes to {owner}</span>
+      </div>
+    </section>
+  );
+}
