@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_change_requests: {
+        Row: {
+          action: string
+          created_at: string
+          entity: string
+          id: string
+          label: string
+          payload: Json
+          requester_id: string
+          review_note: string | null
+          status: string
+          target_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          entity: string
+          id?: string
+          label: string
+          payload?: Json
+          requester_id: string
+          review_note?: string | null
+          status?: string
+          target_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          entity?: string
+          id?: string
+          label?: string
+          payload?: Json
+          requester_id?: string
+          review_note?: string | null
+          status?: string
+          target_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       admin_grants: {
         Row: {
           created_at: string
