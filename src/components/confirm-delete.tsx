@@ -11,6 +11,7 @@ export function ConfirmDelete({
   description,
   confirmWord,
   actionLabel = "Delete",
+  twice = false,
   onCancel,
   onConfirm,
 }: {
@@ -19,16 +20,21 @@ export function ConfirmDelete({
   description?: string;
   confirmWord: string;
   actionLabel?: string;
+  /** Asks for the word twice — used for things that can never be brought back. */
+  twice?: boolean;
   onCancel: () => void;
   onConfirm: () => Promise<void> | void;
 }) {
   const [value, setValue] = useState("");
+  const [second, setSecond] = useState("");
+  const [step, setStep] = useState(1);
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => { if (open) { setValue(""); setBusy(false); } }, [open]);
+  useEffect(() => { if (open) { setValue(""); setSecond(""); setStep(1); setBusy(false); } }, [open]);
   if (!open) return null;
 
-  const ready = value.trim().toLowerCase() === confirmWord.trim().toLowerCase();
+  const matches = (text: string) => text.trim().toLowerCase() === confirmWord.trim().toLowerCase();
+  const ready = twice && step === 2 ? matches(second) : matches(value);
 
   return (
     <div className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-foreground/60 p-3 backdrop-blur-sm sm:p-6" onClick={onCancel}>
