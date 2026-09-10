@@ -128,6 +128,22 @@ function MatchPage() {
   const broadcasts = useQuery({ queryKey: ["match-broadcasts", id], queryFn: async () => (await supabase.from("match_broadcasts").select("channel:broadcast_channels(id,name,logo_url,country_code)").eq("match_id", id)).data ?? [] });
   const media = useQuery({ queryKey: ["match-media", id], queryFn: async () => (await supabase.from("media_items").select("*").eq("owner_type", "match").eq("owner_id", id).order("sort_order")).data ?? [] });
   const ratings = useQuery({ queryKey: ["match-ratings", id], queryFn: async () => (await supabase.from("player_ratings").select("player_id,rating").eq("match_id", id)).data ?? [] });
+  // Coach names for the shareable line-up card.
+  const coachNames = useQuery({
+    queryKey: ["share-coaches", m.data?.home_team_id, m.data?.away_team_id, m.data?.home_coach_id, m.data?.away_coach_id],
+    enabled: !!m.data,
+    queryFn: async () => {
+      const pick = async (coachId: string | null | undefined, teamId: string | null | undefined) => {
+        if (coachId) return (await supabase.from("coaches").select("name").eq("id", coachId).maybeSingle()).data?.name ?? null;
+        if (teamId) return (await supabase.from("coaches").select("name").eq("team_id", teamId).limit(1).maybeSingle()).data?.name ?? null;
+        return null;
+      };
+      return {
+        home: await pick(m.data?.home_coach_id, m.data?.home_team_id),
+        away: await pick(m.data?.away_coach_id, m.data?.away_team_id),
+      };
+    },
+  });
   // The hero blends both badges: home colour on the left, away colour on the right.
   const homeAccent = useLogoAccent(m.data?.home?.logo_url ?? null);
   const awayAccent = useLogoAccent(m.data?.away?.logo_url ?? null);
