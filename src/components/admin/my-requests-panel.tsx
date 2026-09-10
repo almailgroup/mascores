@@ -73,6 +73,7 @@ export function MyRequestsPanel() {
   });
 
   const loading = changes.isLoading || tickets.isLoading || ultras.isLoading;
+  const refreshing = changes.isFetching || tickets.isFetching || ultras.isFetching;
   const empty = !loading && !changes.data?.length && !tickets.data?.length && !ultras.data?.length;
   const when = (iso: string) => new Date(iso).toLocaleString();
 
@@ -85,9 +86,10 @@ export function MyRequestsPanel() {
         </div>
         <button
           onClick={() => { changes.refetch(); tickets.refetch(); ultras.refetch(); }}
-          className="inline-flex h-9 items-center gap-2 rounded-full border border-border bg-card px-4 text-xs font-semibold hover:bg-accent"
+          disabled={refreshing}
+          className="inline-flex h-9 items-center gap-2 rounded-full border border-border bg-card px-4 text-xs font-semibold hover:bg-accent disabled:opacity-70"
         >
-          <RefreshCw className="h-3.5 w-3.5" /> Refresh
+          <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} /> Refresh
         </button>
       </div>
 

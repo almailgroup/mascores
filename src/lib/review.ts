@@ -14,8 +14,19 @@ export async function requestReview(input: {
   payload?: Record<string, unknown>;
   targetId?: string | null;
 }) {
-  const { data } = await supabase.auth.getUser();
-  const userId = data.user?.id;
+  // Read the stored session first: asking the server who you are can fail on a flaky
+  // connection, and that must never look like being signed out.
+  let userId: string | undefined;
+  try {
+    const { data } = await supabase.auth.getSession();
+    userId = data.session?.user?.id;
+  } catch { /* fall through to the server check */ }
+  if (!userId) {
+    try {
+      const { data } = await supabase.auth.getUser();
+      userId = data.user?.id;
+    } catch { /* handled below */ }
+  }
   if (!userId) throw new Error("Please sign in again.");
   const { error } = await supabase.from("admin_change_requests").insert({
     requester_id: userId,

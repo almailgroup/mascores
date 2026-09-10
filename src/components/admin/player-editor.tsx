@@ -87,7 +87,7 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
         <div className="flex flex-wrap items-center gap-3">
           <button className={btnGhost} onClick={onClose}><ArrowLeft className="h-3.5 w-3.5" /> Back</button>
           <button className={btnPrimary} disabled={busy || !form.name?.trim()} onClick={save}>
-            {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />} {form.id ? "Save" : "Create"}
+            {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />} {form.id ? "Save" : needsApproval ? "Send for review" : "Create"}
           </button>
           <div className="min-w-0 flex-1 truncate text-sm font-bold">{form.name || "New player"}{clubName ? ` · ${clubName}` : " · Free agent"}</div>
         </div>
@@ -184,7 +184,7 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
         {sentForReview && <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm font-semibold text-amber-700 dark:text-amber-300">Sent to the site owner. This player appears once he approves it.</div>}
         <div className="flex flex-wrap items-center gap-3 border-t border-border pt-4">
           <button className={btnPrimary} disabled={busy || !form.name?.trim()} onClick={save}>
-            {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />} {form.id ? "Save" : "Create"}
+            {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />} {form.id ? "Save" : needsApproval ? "Send for review" : "Create"}
           </button>
           <button className={btnGhost} onClick={onClose}><ArrowLeft className="h-3.5 w-3.5" /> Back</button>
         </div>
