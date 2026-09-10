@@ -19,6 +19,7 @@ import { NewsPanel } from "@/components/admin/news-panel";
 import { AlmailAiPanel, ChannelsPanel, TransfersAdminPanel, VenuesPanel } from "@/components/admin/content-panels";
 import { CompetitionAwardsManager, MediaManager } from "@/components/admin/media-manager";
 import { ChatReportsPanel } from "@/components/admin/chat-reports-panel";
+import { ChatManagerPanel } from "@/components/admin/chat-manager-panel";
 import { TicketsPanel } from "@/components/admin/tickets-panel";
 import { UsersPanel } from "@/components/admin/users-panel";
 import { VoicePanel } from "@/components/admin/voice-panel";
@@ -230,7 +231,12 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
             {tab === "channels" && allowed("channels") && <ChannelsPanel />}
             {tab === "transfers" && allowed("transfers") && <TransfersAdminPanel />}
             {tab === "tickets" && allowed("tickets") && <TicketsPanel needsApproval={ticketsNeedApproval} />}
-            {tab === "reports" && allowed("reports") && <ChatReportsPanel />}
+            {tab === "reports" && allowed("reports") && (
+              <div className="space-y-8">
+                {isOwner && <ChatManagerPanel />}
+                <ChatReportsPanel />
+              </div>
+            )}
             {tab === "users" && isOwner && <UsersPanel />}
            {tab === "voice" && allowed("voice") && <VoicePanel />}
             {tab === "approvals" && isOwner && <ApprovalsPanel />}
