@@ -140,7 +140,7 @@ async function drawCard(data: MatchShareData, mode: "result" | "lineups"): Promi
   ctx.textAlign = "center";
   ctx.font = "700 28px system-ui, sans-serif";
   ctx.fillStyle = "rgba(255,255,255,0.7)";
-  ctx.fillText("MansourAlmailScores", W / 2, H - 50);
+  ctx.fillText("Mansour Almail Scores", W / 2, H - 50);
 
   return new Promise((resolve) => canvas.toBlob((blob) => resolve(blob), "image/png", 0.95));
 }
