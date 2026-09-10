@@ -6,6 +6,16 @@ export type ShareTeam = { name?: string | null; logo_url?: string | null };
 export type ShareScorer = { name: string; minute: string };
 export type ShareLineupPlayer = { number: string; name: string };
 
+/** One club's starting eleven laid out by formation row, plus coach and bench. */
+export type ShareLineup = {
+  teamName: string;
+  logo?: string | null;
+  formation: string;
+  coach?: string | null;
+  rows: ShareLineupPlayer[][];
+  bench: ShareLineupPlayer[];
+};
+
 export type MatchShareData = {
   competition: string;
   kickoff: string;
@@ -18,6 +28,7 @@ export type MatchShareData = {
   awayScorers: ShareScorer[];
   homeLineup: ShareLineupPlayer[];
   awayLineup: ShareLineupPlayer[];
+  lineup?: ShareLineup | null;
   accent: string;
   accentAway?: string;
 };
