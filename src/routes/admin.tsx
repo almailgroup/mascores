@@ -58,8 +58,11 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
   /** Rabta stays with the owner unless he hands that one section out on purpose. */
   const canRabta = isOwner || scopes.has("rabta");
   const everything = isOwner || scopes.has("all");
-  /** A limited admin whose access is marked "needs my approval" cannot publish tickets straight away. */
-  const ticketsNeedApproval = !everything && (access.data?.grants ?? []).some((g) => g.requiresApproval);
+  /** Anyone who is not the owner has their additions and removals reviewed, unless the owner
+   *  explicitly gave them free access (a grant with approval turned off). */
+  const grantList = access.data?.grants ?? [];
+  const ticketsNeedApproval = !isOwner && (grantList.length === 0 || grantList.some((g) => g.requiresApproval));
+
   /** Which sections this account may open, based on what the owner handed out. */
   const allowed = (key: string) => {
     // The owner keeps people, approvals, Manage and the reporter desk to himself,
