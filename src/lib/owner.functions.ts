@@ -133,6 +133,40 @@ export const addManagedUser = createServerFn({ method: "POST" })
   });
 
 
+/** Changes what an existing person can reach, without removing and adding them again. */
+export const setManagedScopes = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({
+      userId: z.string().uuid(),
+      scopes: z.array(z.enum(GRANT_SCOPES)).min(1),
+      teamId: z.string().uuid().nullish(),
+      requiresApproval: z.boolean().default(true),
+    }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const admin = await ownerAdmin(context.claims as Record<string, unknown>);
+    const teamId = data.teamId ?? null;
+    const { error } = await admin.from("admin_grants").upsert(
+      data.scopes.map((scope) => ({
+        user_id: data.userId,
+        scope,
+        team_id: scope === "club_news" || scope === "rabta" ? teamId : null,
+        requires_approval: data.requiresApproval,
+        created_by: context.userId,
+      })),
+      { onConflict: "user_id,scope,team_id" },
+    );
+    if (error) throw new Error(error.message);
+    // Anything the owner unticked goes away, so the list always matches the ticks.
+    const { data: rows } = await admin.from("admin_grants").select("id,scope").eq("user_id", data.userId);
+    const stale = (rows ?? []).filter((row) => !data.scopes.includes(row.scope as GrantScope)).map((row) => row.id);
+    if (stale.length) await admin.from("admin_grants").delete().in("id", stale);
+    // Keep the approval setting the same across everything they hold.
+    await admin.from("admin_grants").update({ requires_approval: data.requiresApproval }).eq("user_id", data.userId);
+    return { ok: true as const };
+  });
+
 export const removeManagedGrant = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ grantId: z.string().uuid() }).parse(input))

@@ -10,14 +10,68 @@ import { LiveVoiceAlert } from "@/components/live-voice-alert";
 import { useReminderAlerts } from "@/components/match-reminders";
 import { suspensionMessage, useMySuspension } from "@/lib/suspension";
 
-/** Tells a restricted person, on every page, that they are banned or suspended and why. */
-function RestrictionNotice() {
-  const { user } = useAuth();
-  const suspension = useMySuspension(user?.id);
-  if (!suspension.data) return null;
+/**
+ * A restricted person cannot use the app at all: they only see why, and a box to
+ * write to the owner asking for it to be lifted.
+ */
+function SuspendedScreen({ text }: { text: string }) {
+  const { lang } = useI18n();
+  const label = (en: string, ar: string) => (lang === "ar" ? ar : en);
+  const [message, setMessage] = useState("");
+  const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const send = async () => {
+    if (!message.trim()) return;
+    setBusy(true);
+    const { data } = await supabase.auth.getUser();
+    await supabase.from("app_feedback").insert({
+      message: `APPEAL: ${message.trim()}`,
+      user_id: data.user?.id ?? null,
+      email: data.user?.email ?? null,
+    } as never);
+    setBusy(false);
+    setSent(true);
+    setMessage("");
+  };
+
   return (
-    <div className="mb-4 rounded-2xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm font-semibold text-destructive">
-      {suspensionMessage(suspension.data)}
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-10 text-foreground">
+      <div className="w-full max-w-md rounded-3xl border border-border bg-card p-6">
+        <div className="text-lg font-black">{label("Your account is restricted", "حسابك مقيّد")}</div>
+        <p className="mt-2 text-sm text-destructive">{text}</p>
+        <p className="mt-3 text-sm text-muted-foreground">
+          {label("You cannot use the app while this is in place. You can write to the owner below.", "لا يمكنك استخدام التطبيق أثناء ذلك. يمكنك مراسلة المالك أدناه.")}
+        </p>
+        {sent ? (
+          <p className="mt-4 rounded-2xl bg-muted p-3 text-sm font-semibold">{label("Your appeal was sent.", "تم إرسال طلبك.")}</p>
+        ) : (
+          <>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              rows={4}
+              placeholder={label("Write your appeal…", "اكتب طلبك…")}
+              className="mt-4 w-full rounded-2xl border border-border bg-background p-3 text-sm outline-none focus:border-primary"
+            />
+            <button
+              type="button"
+              disabled={busy || !message.trim()}
+              onClick={send}
+              className="mt-2 inline-flex h-10 w-full items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground disabled:opacity-50"
+            >
+              {label("Send appeal", "إرسال الطلب")}
+            </button>
+          </>
+        )}
+        <button
+          type="button"
+          onClick={async () => { await supabase.auth.signOut(); window.location.href = "/"; }}
+          className="mt-3 inline-flex h-10 w-full items-center justify-center rounded-full border border-border text-sm font-semibold"
+        >
+          {label("Sign out", "تسجيل الخروج")}
+        </button>
+      </div>
     </div>
   );
 }
@@ -47,6 +101,7 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
   const [moreOpen, setMoreOpen] = useState(false);
   useEffect(() => { void user; }, [user]);
   useReminderAlerts();
+  const suspension = useMySuspension(user?.id);
 
   const profile = useQuery({
     enabled: !!user,
@@ -57,6 +112,9 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
     },
   });
   const initials = (profile.data?.display_name ?? user?.email ?? "?").trim().slice(0, 1).toUpperCase();
+
+  // A banned or suspended person gets nothing but the reason and an appeal box.
+  if (suspension.data) return <SuspendedScreen text={suspensionMessage(suspension.data)} />;
 
   return (
     <div className="relative min-h-screen bg-background text-foreground">
@@ -118,7 +176,6 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
         className="relative z-10 mx-auto max-w-7xl px-4 pt-6 sm:px-6"
         style={{ paddingBottom: "calc(7rem + env(safe-area-inset-bottom))" }}
       >
-        <RestrictionNotice />
         {children}
       </main>
 

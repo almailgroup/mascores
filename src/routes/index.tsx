@@ -155,7 +155,7 @@ function TicketsBanner() {
   const tx = useTx();
   const count = useQuery({
     queryKey: ["tickets-on-sale"],
-    queryFn: async () => (await supabase.from("ticket_offers").select("id", { count: "exact", head: true }).eq("is_active", true)).count ?? 0,
+    queryFn: async () => (await supabase.from("ticket_offers").select("id", { count: "exact", head: true }).eq("is_active", true).eq("approval_status", "approved")).count ?? 0,
   });
   if ((count.data ?? 0) === 0) return null;
   return (

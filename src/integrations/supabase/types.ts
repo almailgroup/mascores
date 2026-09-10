@@ -1953,8 +1953,10 @@ export type Database = {
       }
       ticket_offers: {
         Row: {
+          approval_status: string
           capacity: number | null
           created_at: string
+          created_by: string | null
           currency: string
           id: string
           is_active: boolean
@@ -1964,6 +1966,7 @@ export type Database = {
           notes: string | null
           price: number
           resale_max_price: number | null
+          review_note: string | null
           show_row: boolean
           show_seat: boolean
           sort_order: number
@@ -1971,8 +1974,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          approval_status?: string
           capacity?: number | null
           created_at?: string
+          created_by?: string | null
           currency?: string
           id?: string
           is_active?: boolean
@@ -1982,6 +1987,7 @@ export type Database = {
           notes?: string | null
           price?: number
           resale_max_price?: number | null
+          review_note?: string | null
           show_row?: boolean
           show_seat?: boolean
           sort_order?: number
@@ -1989,8 +1995,10 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          approval_status?: string
           capacity?: number | null
           created_at?: string
+          created_by?: string | null
           currency?: string
           id?: string
           is_active?: boolean
@@ -2000,6 +2008,7 @@ export type Database = {
           notes?: string | null
           price?: number
           resale_max_price?: number | null
+          review_note?: string | null
           show_row?: boolean
           show_seat?: boolean
           sort_order?: number

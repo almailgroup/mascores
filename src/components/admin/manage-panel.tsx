@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, KeyRound, Trash2, UserPlus, LogOut, Copy, Mail } from "lucide-react";
+import { Loader2, KeyRound, Trash2, UserPlus, LogOut, Copy, Mail, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   addManagedUser, listManagedUsers, removeManagedGrant, resetManagedPassword, resendAccessEmail, setGrantApproval,
-  signOutEveryoneElse, GRANT_SCOPES, type GrantScope,
+  setManagedScopes, signOutEveryoneElse, GRANT_SCOPES, type GrantScope, type ManagedUser,
 } from "@/lib/owner.functions";
 
 import { Field, inputCls, btnPrimary, btnGhost, btnDanger, Modal } from "./ui";
@@ -34,6 +34,7 @@ export function ManagePanel() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [secret, setSecret] = useState<{ email: string; password: string; emailed: boolean } | null>(null);
+  const [editUser, setEditUser] = useState<ManagedUser | null>(null);
   const [note, setNote] = useState<string | null>(null);
   const load = useServerFn(listManagedUsers);
   const removeGrant = useServerFn(removeManagedGrant);
@@ -81,6 +82,9 @@ export function ManagePanel() {
                 <div className="truncate text-sm font-bold">{user.displayName ?? user.email}</div>
                 <div className="truncate text-[0.7rem] text-muted-foreground">{user.email}</div>
               </div>
+              <button className={btnGhost} onClick={() => setEditUser(user)}>
+                <Pencil className="h-3.5 w-3.5" /> Edit access
+              </button>
               <button
                 className={btnGhost}
                 onClick={async () => {
@@ -125,6 +129,7 @@ export function ManagePanel() {
       </div>
 
       {open && <AddPersonModal onClose={() => setOpen(false)} onDone={(s) => { setOpen(false); setSecret(s); refresh(); }} />}
+      {editUser && <EditAccessModal user={editUser} onClose={() => setEditUser(null)} onSaved={() => { setEditUser(null); refresh(); }} />}
       {note && (
         <Modal open onClose={() => setNote(null)} title="Email">
           <p className="text-sm">{note}</p>
@@ -210,6 +215,74 @@ function AddPersonModal({ onClose, onDone }: { onClose: () => void; onDone: (sec
         {error && <p className="text-xs text-destructive">{error}</p>}
         <div className="flex gap-2">
           <button className={btnPrimary} disabled={busy || !email || scopes.length === 0 || (needsTeam && !teamId)} onClick={submit}>
+            {busy && <Loader2 className="h-3.5 w-3.5 animate-spin" />} Save access
+          </button>
+          <button className={btnGhost} onClick={onClose}>Cancel</button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+/** Changes what an existing person can reach — ticks are added or removed, nobody is deleted. */
+function EditAccessModal({ user, onClose, onSaved }: { user: ManagedUser; onClose: () => void; onSaved: () => void }) {
+  const [scopes, setScopes] = useState<GrantScope[]>(user.grants.map((g) => g.scope));
+  const [teamId, setTeamId] = useState(user.grants.find((g) => g.teamId)?.teamId ?? "");
+  const [requiresApproval, setRequiresApproval] = useState(user.grants.some((g) => g.requiresApproval));
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const save = useServerFn(setManagedScopes);
+
+  const teams = useQuery({
+    queryKey: ["owner-teams"],
+    queryFn: async () => (await supabase.from("teams").select("id,name").order("name")).data ?? [],
+  });
+
+  const needsTeam = scopes.includes("club_news") || scopes.includes("rabta");
+  const toggle = (scope: GrantScope) =>
+    setScopes((list) => (list.includes(scope) ? list.filter((item) => item !== scope) : [...list, scope]));
+
+  const submit = async () => {
+    setBusy(true); setError(null);
+    try {
+      await save({ data: { userId: user.id, scopes, teamId: needsTeam ? (teamId || null) : null, requiresApproval } });
+      onSaved();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not save that.");
+    } finally { setBusy(false); }
+  };
+
+  return (
+    <Modal open onClose={onClose} title={`Access for ${user.displayName ?? user.email ?? "this person"}`}>
+      <div className="space-y-3">
+        <Field label="What can they reach? (pick as many as you like)">
+          <div className="grid grid-cols-2 gap-1.5">
+            {GRANT_SCOPES.map((s) => {
+              const on = scopes.includes(s);
+              return (
+                <button key={s} type="button" onClick={() => toggle(s)}
+                  className={`rounded-xl border px-3 py-2 text-start text-xs font-semibold ${on ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground"}`}>
+                  {SCOPE_LABEL[s]}
+                </button>
+              );
+            })}
+          </div>
+        </Field>
+        {needsTeam && (
+          <Field label="Which club?">
+            <select className={inputCls} value={teamId} onChange={(e) => setTeamId(e.target.value)}>
+              <option value="">Pick a club…</option>
+              {(teams.data ?? []).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+            </select>
+          </Field>
+        )}
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={requiresApproval} onChange={(e) => setRequiresApproval(e.target.checked)} />
+          Their new posts and tickets wait for my approval
+        </label>
+        {error && <p className="text-xs text-destructive">{error}</p>}
+        <div className="flex gap-2">
+          <button className={btnPrimary} disabled={busy || scopes.length === 0 || (needsTeam && !teamId)} onClick={submit}>
             {busy && <Loader2 className="h-3.5 w-3.5 animate-spin" />} Save access
           </button>
           <button className={btnGhost} onClick={onClose}>Cancel</button>

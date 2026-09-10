@@ -17,6 +17,7 @@ type MatchOption = {
 type Offer = {
   id: string; match_id: string; name: string; stand: string | null; price: number; currency: string; resale_max_price: number | null;
   is_free: boolean; capacity: number | null; show_row: boolean; show_seat: boolean; notes: string | null; is_active: boolean;
+  approval_status?: string | null;
 };
 
 const emptyOffer = {
@@ -25,8 +26,11 @@ const emptyOffer = {
 };
 
 
-/** Admin ticketing: create ticket types per match, issue passes and scan QR codes. */
-export function TicketsPanel() {
+/**
+ * Admin ticketing: create ticket types per match, issue passes and scan QR codes.
+ * When the owner asked for approval, new tickets are held back until he says yes.
+ */
+export function TicketsPanel({ needsApproval = false }: { needsApproval?: boolean }) {
   const [view, setView] = useState<"offers" | "scan">("offers");
   return (
     <div>
@@ -39,12 +43,12 @@ export function TicketsPanel() {
           </button>
         ))}
       </div>
-      {view === "offers" ? <OffersView /> : <ScanView />}
+      {view === "offers" ? <OffersView needsApproval={needsApproval} /> : <ScanView />}
     </div>
   );
 }
 
-function OffersView() {
+function OffersView({ needsApproval }: { needsApproval: boolean }) {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [matchId, setMatchId] = useState<string | null>(null);
@@ -111,12 +115,15 @@ function OffersView() {
       show_row: form.show_row,
       show_seat: form.show_seat,
       notes: form.notes.trim() || null,
-      is_active: form.is_active,
+      // A ticket that still needs a yes never goes on sale on its own.
+      is_active: needsApproval ? false : form.is_active,
+      approval_status: needsApproval ? "pending" : "approved",
     };
     let offerId = editing?.id ?? null;
     if (editing) await supabase.from("ticket_offers").update(payload).eq("id", editing.id);
     else {
-      const { data } = await supabase.from("ticket_offers").insert(payload).select("id").maybeSingle();
+      const { data: me } = await supabase.auth.getUser();
+      const { data } = await supabase.from("ticket_offers").insert({ ...payload, created_by: me.user?.id ?? null }).select("id").maybeSingle();
       offerId = data?.id ?? null;
     }
     if (offerId) {
@@ -167,6 +174,9 @@ function OffersView() {
           ))}
         </div>
         <p className="mt-3 text-xs text-muted-foreground">Saving generates one unique QR code per capacity slot. Fans receive codes from this pool when they purchase.</p>
+        {needsApproval && (
+          <p className="mt-1 text-xs font-semibold text-amber-600">This ticket is sent to the site owner first. It only goes on sale once he approves it.</p>
+        )}
         <div className="mt-4 flex gap-2">
           <button className={btnPrimary} disabled={busy || (!editing && !matchId) || !form.capacity.trim()} onClick={save}>
             {busy && <Loader2 className="h-3.5 w-3.5 animate-spin" />} {editing ? "Save ticket" : "Create ticket & codes"}
@@ -187,7 +197,7 @@ function OffersView() {
                 <div className="truncate text-[0.7rem] text-muted-foreground">{m ? label(m) : offer.match_id}</div>
                 <div className="mt-0.5 text-[0.65rem] text-muted-foreground">
                   {[
-                    offer.is_active ? "On sale" : "Hidden",
+                    offer.approval_status === "pending" ? "Waiting for approval" : offer.approval_status === "rejected" ? "Turned down" : offer.is_active ? "On sale" : "Hidden",
                     `${counts.data?.[offer.id]?.pool ?? 0} codes left`,
                     `${counts.data?.[offer.id]?.sold ?? 0} sold`,
                     offer.capacity ? `capacity ${offer.capacity}` : null,
