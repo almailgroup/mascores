@@ -5,7 +5,10 @@ import { z } from "zod";
 /** The single owner account that can hand out and take away access. */
 export const OWNER_EMAIL = "mansouralmailscores@gmail.com";
 
-export const GRANT_SCOPES = ["all", "news", "club_news", "rabta", "tickets", "matches", "voice"] as const;
+export const GRANT_SCOPES = [
+  "all", "news", "club_news", "rabta", "tickets", "matches", "voice",
+  "teams", "players", "standings", "transfers", "venues", "competitions", "channels", "ai", "chat",
+] as const;
 export type GrantScope = (typeof GRANT_SCOPES)[number];
 
 async function ownerAdmin(claims: Record<string, unknown> | null | undefined) {
