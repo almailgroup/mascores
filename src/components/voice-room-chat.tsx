@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Send, Trash2, MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -15,33 +15,36 @@ export function VoiceRoomChat({ roomId }: { roomId: string }) {
   const [authors, setAuthors] = useState<Record<string, Author>>({});
   const [body, setBody] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
   const listRef = useRef<HTMLDivElement | null>(null);
 
+  const load = useCallback(async () => {
+    const { data } = await supabase
+      .from("voice_room_messages")
+      .select("id,user_id,body,created_at")
+      .eq("room_id", roomId)
+      .order("created_at")
+      .limit(200);
+    const rows = (data ?? []) as Message[];
+    setMessages(rows);
+    const ids = [...new Set(rows.map((m) => m.user_id))];
+    if (ids.length) {
+      const { data: people } = await supabase.from("profiles").select("id,display_name,avatar_url,username").in("id", ids);
+      setAuthors(Object.fromEntries((people ?? []).map((p) => [p.id, p as Author])));
+    }
+  }, [roomId]);
+
   useEffect(() => {
-    let alive = true;
-    const load = async () => {
-      const { data } = await supabase
-        .from("voice_room_messages")
-        .select("id,user_id,body,created_at")
-        .eq("room_id", roomId)
-        .order("created_at")
-        .limit(200);
-      if (!alive) return;
-      const rows = (data ?? []) as Message[];
-      setMessages(rows);
-      const ids = [...new Set(rows.map((m) => m.user_id))];
-      if (ids.length) {
-        const { data: people } = await supabase.from("profiles").select("id,display_name,avatar_url,username").in("id", ids);
-        if (alive) setAuthors(Object.fromEntries((people ?? []).map((p) => [p.id, p as Author])));
-      }
-    };
     void load();
     const channel = supabase
       .channel(`voice-chat-${roomId}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "voice_room_messages", filter: `room_id=eq.${roomId}` }, () => void load())
       .subscribe();
-    return () => { alive = false; void supabase.removeChannel(channel); };
-  }, [roomId]);
+    // Gentle polling keeps messages flowing even where live updates are blocked.
+    const timer = window.setInterval(() => void load(), 5000);
+    return () => { window.clearInterval(timer); void supabase.removeChannel(channel); };
+  }, [roomId, load]);
 
   useEffect(() => {
     if (!user) return;
@@ -54,9 +57,17 @@ export function VoiceRoomChat({ roomId }: { roomId: string }) {
 
   const send = async () => {
     const text = body.trim();
-    if (!text || !user) return;
+    if (!text || !user || sending) return;
+    setSending(true);
+    setError(null);
+    const { error: sendError } = await supabase.from("voice_room_messages").insert({ room_id: roomId, user_id: user.id, body: text } as never);
+    setSending(false);
+    if (sendError) {
+      setError(tx("Your message could not be sent. You may be restricted from posting."));
+      return;
+    }
     setBody("");
-    await supabase.from("voice_room_messages").insert({ room_id: roomId, user_id: user.id, body: text } as never);
+    await load();
   };
 
   return (
@@ -80,7 +91,7 @@ export function VoiceRoomChat({ roomId }: { roomId: string }) {
                 <button
                   aria-label={tx("Delete message")}
                   className="shrink-0 text-destructive"
-                  onClick={async () => { await supabase.from("voice_room_messages").delete().eq("id", m.id); }}
+                  onClick={async () => { await supabase.from("voice_room_messages").delete().eq("id", m.id); await load(); }}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
@@ -90,11 +101,12 @@ export function VoiceRoomChat({ roomId }: { roomId: string }) {
         })}
         {messages.length === 0 && <p className="text-xs text-muted-foreground">{tx("No messages yet.")}</p>}
       </div>
+      {error && <p className="mt-2 text-xs font-semibold text-destructive">{error}</p>}
       {user ? (
         <form className="mt-3 flex items-center gap-2" onSubmit={(e) => { e.preventDefault(); void send(); }}>
           <input value={body} onChange={(e) => setBody(e.target.value)} placeholder={tx("Write a message") ?? ""}
             className="min-w-0 flex-1 rounded-full border border-border bg-background px-4 py-2 text-base outline-none focus:border-primary sm:text-sm" />
-          <button type="submit" aria-label={tx("Send")} className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+          <button type="submit" disabled={sending} aria-label={tx("Send")} className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground disabled:opacity-60">
             <Send className="h-4 w-4" />
           </button>
         </form>

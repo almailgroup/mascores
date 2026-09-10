@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, KeyRound, Trash2, UserPlus, LogOut, Copy } from "lucide-react";
+import { Loader2, KeyRound, Trash2, UserPlus, LogOut, Copy, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  addManagedUser, listManagedUsers, removeManagedGrant, resetManagedPassword, setGrantApproval,
+  addManagedUser, listManagedUsers, removeManagedGrant, resetManagedPassword, resendAccessEmail, setGrantApproval,
   signOutEveryoneElse, GRANT_SCOPES, type GrantScope,
 } from "@/lib/owner.functions";
+
 import { Field, inputCls, btnPrimary, btnGhost, btnDanger, Modal } from "./ui";
 
 const SCOPE_LABEL: Record<GrantScope, string> = {
@@ -32,12 +33,15 @@ const SCOPE_LABEL: Record<GrantScope, string> = {
 export function ManagePanel() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [secret, setSecret] = useState<{ email: string; password: string } | null>(null);
+  const [secret, setSecret] = useState<{ email: string; password: string; emailed: boolean } | null>(null);
+  const [note, setNote] = useState<string | null>(null);
   const load = useServerFn(listManagedUsers);
   const removeGrant = useServerFn(removeManagedGrant);
   const approval = useServerFn(setGrantApproval);
   const resetPassword = useServerFn(resetManagedPassword);
+  const resendEmail = useServerFn(resendAccessEmail);
   const signOutOthers = useServerFn(signOutEveryoneElse);
+
 
   const users = useQuery({ queryKey: ["owner-managed"], queryFn: () => load() });
   const refresh = () => qc.invalidateQueries({ queryKey: ["owner-managed"] });
@@ -81,11 +85,21 @@ export function ManagePanel() {
                 className={btnGhost}
                 onClick={async () => {
                   const res = await resetPassword({ data: { userId: user.id } });
-                  setSecret({ email: user.email ?? "", password: res.password });
+                  setSecret({ email: user.email ?? "", password: res.password, emailed: res.emailed });
                 }}
               >
-                <KeyRound className="h-3.5 w-3.5" /> New password
+                <KeyRound className="h-3.5 w-3.5" /> One-time password
               </button>
+              <button
+                className={btnGhost}
+                onClick={async () => {
+                  const res = await resendEmail({ data: { userId: user.id } });
+                  setNote(res.emailed ? `Sign-in email sent again to ${user.email}.` : `Could not email ${user.email} right now.`);
+                }}
+              >
+                <Mail className="h-3.5 w-3.5" /> Send email again
+              </button>
+
             </div>
             <div className="mt-2 space-y-1.5">
               {user.grants.map((g) => (
@@ -111,23 +125,32 @@ export function ManagePanel() {
       </div>
 
       {open && <AddPersonModal onClose={() => setOpen(false)} onDone={(s) => { setOpen(false); setSecret(s); refresh(); }} />}
+      {note && (
+        <Modal open onClose={() => setNote(null)} title="Email">
+          <p className="text-sm">{note}</p>
+        </Modal>
+      )}
       {secret && (
         <Modal open onClose={() => setSecret(null)} title="Share these details">
-          <p className="text-sm text-muted-foreground">Copy this now — it is shown once.</p>
+          <p className="text-sm text-muted-foreground">Copy this now — it is shown once. It is a one-time password; they can change it after signing in.</p>
           <div className="mt-3 space-y-2 rounded-2xl border border-border bg-muted/50 p-3 text-sm">
             <div><span className="text-muted-foreground">Email:</span> <b>{secret.email}</b></div>
-            <div><span className="text-muted-foreground">Password:</span> <b>{secret.password}</b></div>
+            <div><span className="text-muted-foreground">One-time password:</span> <b>{secret.password}</b></div>
           </div>
+          <p className="mt-2 text-xs text-muted-foreground">
+            {secret.emailed ? "A sign-in email was sent to them as well." : "We could not email them — pass these details on yourself."}
+          </p>
           <button className={`${btnGhost} mt-3`} onClick={() => navigator.clipboard?.writeText(`${secret.email} / ${secret.password}`)}>
             <Copy className="h-3.5 w-3.5" /> Copy
           </button>
         </Modal>
       )}
+
     </div>
   );
 }
 
-function AddPersonModal({ onClose, onDone }: { onClose: () => void; onDone: (secret: { email: string; password: string } | null) => void }) {
+function AddPersonModal({ onClose, onDone }: { onClose: () => void; onDone: (secret: { email: string; password: string; emailed: boolean } | null) => void }) {
   const [email, setEmail] = useState("");
   const [scopes, setScopes] = useState<GrantScope[]>(["news"]);
   const [teamId, setTeamId] = useState("");
@@ -149,7 +172,7 @@ function AddPersonModal({ onClose, onDone }: { onClose: () => void; onDone: (sec
     setBusy(true); setError(null);
     try {
       const res = await add({ data: { email, scopes, teamId: needsTeam ? (teamId || null) : null, requiresApproval } });
-      onDone(res.password ? { email: email.trim().toLowerCase(), password: res.password } : null);
+      onDone(res.password ? { email: email.trim().toLowerCase(), password: res.password, emailed: res.emailed } : null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not save that.");
     } finally { setBusy(false); }

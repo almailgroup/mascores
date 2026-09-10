@@ -53,6 +53,29 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
   const isOwner = (user?.email ?? "").toLowerCase() === OWNER_EMAIL;
   const scopes = new Set((access.data?.grants ?? []).map((g) => g.scope));
   const canRabta = isOwner || scopes.has("all") || scopes.has("rabta");
+  const everything = isOwner || scopes.has("all");
+  /** Which sections this account may open, based on what the owner handed out. */
+  const allowed = (key: string) => {
+    if (everything) return true;
+    switch (key) {
+      case "competitions": return scopes.has("competitions") || scopes.has("matches") || scopes.has("standings");
+      case "teams": return scopes.has("teams");
+      case "countries": return scopes.has("teams");
+      case "players": return scopes.has("players");
+      case "news": return scopes.has("news") || scopes.has("club_news");
+      case "ai": return scopes.has("ai");
+      case "venues": return scopes.has("venues");
+      case "channels": return scopes.has("channels");
+      case "transfers": return scopes.has("transfers");
+      case "tickets": return scopes.has("tickets");
+      case "reports": return scopes.has("chat");
+      case "voice": return scopes.has("voice");
+      case "rabta": return scopes.has("rabta");
+      case "users": case "approvals": case "manage": return false;
+      default: return false;
+    }
+  };
+
 
   useEffect(() => {
     if (loading) return;
@@ -158,20 +181,26 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
           </div>
           <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
             {([
-              ["competitions", Trophy], ["teams", Shield], ["countries", Globe], ["players", Users], ["news", Newspaper], ["ai", Bot], ["venues", Landmark], ["channels", Radio], ["transfers", Repeat2], ["tickets", Ticket], ["reports", Flag], ["users", UserCog], ["voice", Mic], ["approvals", CheckCheck], ...(canRabta ? [["rabta", Megaphone] as const] : []), ...(owner ? [["manage", KeyRound] as const] : []),
-            ] as const).map(([k, Icon]) => (
+              ["competitions", Trophy], ["teams", Shield], ["countries", Globe], ["players", Users], ["news", Newspaper], ["ai", Bot], ["venues", Landmark], ["channels", Radio], ["transfers", Repeat2], ["tickets", Ticket], ["reports", Flag], ["voice", Mic], ...(canRabta ? [["rabta", Megaphone] as const] : []), ...(everything ? [["users", UserCog] as const, ["approvals", CheckCheck] as const] : []), ...(owner && isOwner ? [["manage", KeyRound] as const] : []),
+            ] as const)
+              .filter(([k]) => k === "manage" || k === "users" || k === "approvals" || k === "rabta" || allowed(k))
+              .map(([k, Icon]) => (
               <button key={k} onClick={() => setTab(k)} className={`flex min-h-20 flex-col items-start justify-between rounded-lg border p-3 text-left font-semibold capitalize ${tab === k ? "border-primary bg-primary/10 text-primary" : "border-border bg-card hover:border-primary/50"}`}><Icon className="h-4 w-4" />{k === "ai" ? "Almail AI" : k}</button>
             ))}
           </div>
+          {!everything && !canRabta && !access.isLoading && (access.data?.grants ?? []).length === 0 && (
+            <p className="mt-6 rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">You do not have access to any sections yet. The site owner decides what you can manage.</p>
+          )}
           <div className="mt-6">
-            {tab === "competitions" && <CompetitionsPanel onOpen={setOpenComp} />}
-            {tab === "teams" && (
+            {tab === "competitions" && allowed("competitions") && <CompetitionsPanel onOpen={setOpenComp} />}
+
+            {tab === "teams" && allowed("teams") && (
               <div>
                 <p className="mb-4 text-sm text-muted-foreground">Every saved club in one place — create and edit clubs, squads and coaches without opening a competition.</p>
                 <TeamsPanel competitionId={null} lockKind="clubs" />
               </div>
             )}
-            {tab === "countries" && (
+            {tab === "countries" && allowed("countries") && (
               <div className="space-y-10">
                 <div>
                   <p className="mb-4 text-sm text-muted-foreground">National teams live here, separate from clubs — squads are call-ups, so players keep their club.</p>
@@ -180,19 +209,20 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
                 <FifaRankingsPanel />
               </div>
             )}
-            {tab === "players" && <PlayersPanel />}
-            {tab === "news" && <NewsPanel />}
-             {tab === "ai" && <AlmailAiPanel onNews={() => setTab("news")} onCompetitions={() => setTab("competitions")} onVenues={() => setTab("venues")} />}
-            {tab === "venues" && <VenuesPanel />}
-            {tab === "channels" && <ChannelsPanel />}
-            {tab === "transfers" && <TransfersAdminPanel />}
-            {tab === "tickets" && <TicketsPanel />}
-            {tab === "reports" && <ChatReportsPanel />}
-            {tab === "users" && <UsersPanel />}
-           {tab === "voice" && <VoicePanel />}
-            {tab === "approvals" && <ApprovalsPanel />}
+            {tab === "players" && allowed("players") && <PlayersPanel />}
+            {tab === "news" && allowed("news") && <NewsPanel />}
+             {tab === "ai" && allowed("ai") && <AlmailAiPanel onNews={() => setTab("news")} onCompetitions={() => setTab("competitions")} onVenues={() => setTab("venues")} />}
+            {tab === "venues" && allowed("venues") && <VenuesPanel />}
+            {tab === "channels" && allowed("channels") && <ChannelsPanel />}
+            {tab === "transfers" && allowed("transfers") && <TransfersAdminPanel />}
+            {tab === "tickets" && allowed("tickets") && <TicketsPanel />}
+            {tab === "reports" && allowed("reports") && <ChatReportsPanel />}
+            {tab === "users" && everything && <UsersPanel />}
+           {tab === "voice" && allowed("voice") && <VoicePanel />}
+            {tab === "approvals" && everything && <ApprovalsPanel />}
             {tab === "rabta" && canRabta && <UltrasPanel isOwner={isOwner} />}
-            {tab === "manage" && owner && <ManagePanel />}
+            {tab === "manage" && owner && isOwner && <ManagePanel />}
+
           </div>
         </div>
       )}

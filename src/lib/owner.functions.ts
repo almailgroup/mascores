@@ -22,9 +22,31 @@ async function ownerAdmin(claims: Record<string, unknown> | null | undefined) {
 function makePassword() {
   const words = ["Match", "Goal", "Kick", "Score", "Pitch", "Corner", "Assist", "Keeper"];
   const word = words[Math.floor(Math.random() * words.length)];
-  const digits = String(Math.floor(1000 + Math.random() * 9000));
-  return `${word}-${digits}-MAS`;
+  const digits = String(Math.floor(100000 + Math.random() * 899999));
+  return `${word}-${digits}-Mas`;
 }
+
+/** Sends the person a sign-in email so they can get in even without the password. */
+async function emailSignInLink(email: string) {
+  const url = process.env["SUPABASE_URL"];
+  const key = process.env["SUPABASE_PUBLISHABLE_KEY"];
+  if (!url || !key) return false;
+  const { createClient } = await import("@supabase/supabase-js");
+  const client = createClient(url, key, {
+    auth: { persistSession: false },
+    global: {
+      fetch: (input: RequestInfo | URL, init?: RequestInit) => {
+        const headers = new Headers(init?.headers);
+        if (key.startsWith("sb_") && headers.get("Authorization") === `Bearer ${key}`) headers.delete("Authorization");
+        headers.set("apikey", key);
+        return fetch(input, { ...init, headers });
+      },
+    },
+  });
+  const { error } = await client.auth.resetPasswordForEmail(email);
+  return !error;
+}
+
 
 export type ManagedUser = {
   id: string;
@@ -84,6 +106,11 @@ export const addManagedUser = createServerFn({ method: "POST" })
       const created = await admin.auth.admin.createUser({ email, password, email_confirm: true });
       if (created.error) throw new Error(created.error.message);
       user = created.data.user;
+    } else {
+      // Existing account: give it a fresh one-time password so it can be handed over.
+      password = makePassword();
+      const updated = await admin.auth.admin.updateUserById(user.id, { password });
+      if (updated.error) throw new Error(updated.error.message);
     }
     if (!user) throw new Error("Could not create that account.");
     const teamId = data.teamId ?? null;
@@ -99,8 +126,10 @@ export const addManagedUser = createServerFn({ method: "POST" })
       { onConflict: "user_id,scope,team_id" },
     );
     if (error) throw new Error(error.message);
-    return { ok: true as const, userId: user.id, password };
+    const emailed = await emailSignInLink(email);
+    return { ok: true as const, userId: user.id, password, emailed };
   });
+
 
 export const removeManagedGrant = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -122,17 +151,33 @@ export const setGrantApproval = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
-/** Makes a new password for a managed account and shows it to the owner once. */
+/** Makes a one-time password for a managed account, shows it once and emails the person. */
 export const resetManagedPassword = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ userId: z.string().uuid(), password: z.string().min(8).optional() }).parse(input))
   .handler(async ({ data, context }) => {
     const admin = await ownerAdmin(context.claims as Record<string, unknown>);
     const password = data.password ?? makePassword();
-    const { error } = await admin.auth.admin.updateUserById(data.userId, { password });
+    const { data: updated, error } = await admin.auth.admin.updateUserById(data.userId, { password });
     if (error) throw new Error(error.message);
-    return { ok: true as const, password };
+    const emailed = updated.user?.email ? await emailSignInLink(updated.user.email) : false;
+    return { ok: true as const, password, emailed };
   });
+
+/** Sends the sign-in email again without changing the one-time password. */
+export const resendAccessEmail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ userId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const admin = await ownerAdmin(context.claims as Record<string, unknown>);
+    const { data: found, error } = await admin.auth.admin.getUserById(data.userId);
+    if (error) throw new Error(error.message);
+    const email = found.user?.email;
+    if (!email) throw new Error("That account has no email address.");
+    const emailed = await emailSignInLink(email);
+    return { ok: true as const, emailed };
+  });
+
 
 /** Signs every other account out of every device. The owner's own session stays. */
 export const signOutEveryoneElse = createServerFn({ method: "POST" })
