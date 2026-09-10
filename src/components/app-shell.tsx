@@ -113,6 +113,9 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
   });
   const initials = (profile.data?.display_name ?? user?.email ?? "?").trim().slice(0, 1).toUpperCase();
 
+  // A banned or suspended person gets nothing but the reason and an appeal box.
+  if (suspension.data) return <SuspendedScreen text={suspensionMessage(suspension.data)} />;
+
   return (
     <div className="relative min-h-screen bg-background text-foreground">
       <div className="pointer-events-none fixed inset-0 opacity-40 [background:radial-gradient(circle_at_10%_-10%,color-mix(in_oklab,var(--primary)_25%,transparent),transparent_55%),radial-gradient(circle_at_100%_100%,color-mix(in_oklab,var(--primary)_15%,transparent),transparent_60%)]" />
