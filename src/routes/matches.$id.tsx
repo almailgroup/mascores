@@ -88,8 +88,6 @@ function MatchPage() {
   const { id } = Route.useParams();
   const [tab, setTab] = useState<"details" | "lineups" | "stats" | "standings" | "previous" | "media">("details");
   const [lineupSide, setLineupSide] = useState<"home" | "away">("home");
-  const [lineupView, setLineupView] = useState<"pitch" | "list">("pitch");
-  const lineupShotRef = useRef<HTMLDivElement>(null);
   useRealtime(["matches", "match_events", "match_lineups", "player_ratings", "match_stats", "match_chat_messages", "media_items", "standings_rows"]);
   const m = useQuery({
     queryKey: ["match", id],
