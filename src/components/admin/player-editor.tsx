@@ -3,6 +3,8 @@ import { useState } from "react";
 import { ArabicNameField } from "./arabic-name-field";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { useAdminAbility } from "@/lib/admin-ability";
+import { requestReview } from "@/lib/review";
 import { supabase, POSITIONS, type Player, type Team } from "@/lib/db";
 import { Field, ImageInput, inputCls, btnPrimary, btnGhost, btnDanger } from "./ui";
 import { uploadMedia } from "./upload";
@@ -32,6 +34,8 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
   const [aiError, setAiError] = useState<string | null>(null);
   const [moveTo, setMoveTo] = useState("");
   const createAiDraft = useServerFn(createPlayerDraftWithAlmail);
+  const { needsApproval } = useAdminAbility();
+  const [sentForReview, setSentForReview] = useState(false);
 
   const teams = useQuery({ queryKey: ["admin", "team-names"], queryFn: async () => ((await supabase.from("teams").select("id,name,logo_url,country").order("name")).data ?? []) as Pick<Team, "id" | "name" | "logo_url" | "country">[] });
   const currentTeam = useQuery({
@@ -50,6 +54,12 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
     if (!form.name?.trim()) return;
     setBusy(true);
     const payload = { ...form, team_id: form.team_id ?? teamId ?? null };
+    // A limited admin may fix existing players, but a brand new one is looked at first.
+    if (!form.id && needsApproval) {
+      await requestReview({ entity: "player", action: "create", label: `Add player ${form.name}`, payload: payload as Record<string, unknown> });
+      setBusy(false); setSentForReview(true);
+      return;
+    }
     if (form.id) await supabase.from("players").update(payload).eq("id", form.id);
     else {
       const { data } = await supabase.from("players").insert(payload as never).select("*").maybeSingle();

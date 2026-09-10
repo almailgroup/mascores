@@ -18,6 +18,8 @@ import { ArabicNameField } from "./arabic-name-field";
 import { SocialLinksField } from "./social-links-field";
 import { MediaUrls } from "./media-urls";
 import { NationalSquadModal } from "./national-squad-modal";
+import { useAdminAbility } from "@/lib/admin-ability";
+import { requestReview } from "@/lib/review";
 import { SeasonSquadModal } from "./season-squad-modal";
 import { PlayerBatchImport } from "./player-batch-import";
 import { Plus, Pencil, Trash2, Users, UserCog, UserMinus, ImagePlus, Library, Flag, Sparkles } from "lucide-react";
@@ -92,6 +94,13 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
       base.country_code = match?.code ?? base.country_code ?? null;
     }
     const payload = competitionId ? { ...base, competition_id: competitionId } : { ...base };
+    // Editing a club is fine; adding a brand new one waits for the owner.
+    if (!form.id && needsApproval) {
+      await requestReview({ entity: "team", action: "create", label: `Add team ${form.name}`, payload: payload as Record<string, unknown> });
+      setOpen(false); setForm({});
+      setReviewNote(`${form.name} was sent to the site owner for approval.`);
+      return;
+    }
     if (form.id) await supabase.from("teams").update(payload).eq("id", form.id);
     else {
       const { data } = await supabase.from("teams").insert(payload as never).select("id").single();
@@ -117,6 +126,12 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
 
   /** Only available in the global Teams library: wipes the club from the database. */
   const deleteForever = async (id: string) => {
+    if (needsApproval) {
+      await requestReview({ entity: "team", action: "delete", label: `Remove team ${deleteTeam?.name ?? ""}`, targetId: id });
+      setDeleteTeam(null);
+      setReviewNote("That removal was sent to the site owner for approval.");
+      return;
+    }
     await supabase.from("teams").delete().eq("id", id);
     setDeleteTeam(null);
     qc.invalidateQueries({ queryKey: ["admin", "teams", competitionId] });

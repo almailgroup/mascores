@@ -9,6 +9,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { createFixtureDraftsWithAlmail } from "@/lib/almail-ai.functions";
 import { readAiImages } from "@/lib/image-files";
 import { TeamCrest } from "@/components/team-crest";
+import { useAdminAbility } from "@/lib/admin-ability";
+import { requestReview } from "@/lib/review";
 
 export function MatchesPanel({ competitionId, season = null, friendly = false }: { competitionId: string; season?: string | null; friendly?: boolean }) {
   const qc = useQueryClient();
@@ -18,6 +20,8 @@ export function MatchesPanel({ competitionId, season = null, friendly = false }:
   const [resultOf, setResultOf] = useState<Match | null>(null);
   const [aiOpen, setAiOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const { needsApproval } = useAdminAbility();
+  const [reviewNote, setReviewNote] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "scheduled" | "live" | "finished" | "needs_result">("all");
 
   const teamsQ = useQuery({
@@ -75,7 +79,7 @@ export function MatchesPanel({ competitionId, season = null, friendly = false }:
 
   const create = async () => {
     if (!form.home_team_id || !form.away_team_id) { alert("Pick both teams first."); return; }
-    await supabase.from("matches").insert({
+    const row = {
       competition_id: competitionId,
       season,
       home_team_id: form.home_team_id,
@@ -86,13 +90,25 @@ export function MatchesPanel({ competitionId, season = null, friendly = false }:
       venue: form.venue ?? null,
       city: form.city ?? null,
       status: "scheduled",
-    } as never);
+    };
+    // A limited admin proposes the fixture; the owner adds it once he agrees.
+    if (needsApproval) {
+      await requestReview({ entity: "match", action: "create", label: "Add a match", payload: row as Record<string, unknown> });
+      setReviewNote("That match was sent to the site owner for approval.");
+    } else {
+      await supabase.from("matches").insert(row as never);
+    }
     setOpen(false); setForm({ status: "scheduled" });
     qc.invalidateQueries({ queryKey: ["admin", "matches", competitionId] });
   };
 
   const remove = async (id: string) => {
     if (!confirm("Delete this match?")) return;
+    if (needsApproval) {
+      await requestReview({ entity: "match", action: "delete", label: "Remove a match", targetId: id });
+      setReviewNote("That removal was sent to the site owner for approval.");
+      return;
+    }
     await supabase.from("matches").delete().eq("id", id);
     qc.invalidateQueries({ queryKey: ["admin", "matches", competitionId] });
   };

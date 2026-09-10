@@ -9,6 +9,8 @@ import { FlagIcon } from "@/components/flag";
 import { TeamCrest } from "@/components/team-crest";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import { PlayerBatchImport } from "./player-batch-import";
+import { useAdminAbility } from "@/lib/admin-ability";
+import { requestReview } from "@/lib/review";
 import { Plus, Sparkles, Pencil, Trash2, UserMinus, Users, ChevronRight, ChevronDown, X } from "lucide-react";
 
 type Row = Player & { team: Pick<Team, "id" | "name"> | null };
@@ -27,6 +29,8 @@ export function PlayersPanel() {
   const [countryFilter, setCountryFilter] = useState<string | null>(null);
   const [position, setPosition] = useState<string>("");
   const [batchOpen, setBatchOpen] = useState(false);
+  const { needsApproval } = useAdminAbility();
+  const [reviewNote, setReviewNote] = useState<string | null>(null);
 
   const tree = useQuery({
     queryKey: ["admin", "player-tree"],
@@ -185,7 +189,16 @@ export function PlayersPanel() {
         confirmWord="DELETE"
         actionLabel="Delete player"
         onCancel={() => setConfirmPlayer(null)}
-        onConfirm={async () => { await deletePlayerForever(confirmPlayer!.id); setConfirmPlayer(null); invalidate(); }}
+        onConfirm={async () => {
+          if (needsApproval) {
+            await requestReview({ entity: "player", action: "delete", label: `Remove player ${confirmPlayer!.name}`, targetId: confirmPlayer!.id });
+            setReviewNote(`${confirmPlayer!.name} was sent to the site owner for approval.`);
+          } else {
+            await deletePlayerForever(confirmPlayer!.id);
+          }
+          setConfirmPlayer(null);
+          invalidate();
+        }}
       />
     </div>
   );
