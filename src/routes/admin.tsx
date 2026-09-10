@@ -25,11 +25,12 @@ import { ConfirmDelete } from "@/components/confirm-delete";
 import { SeasonMenu } from "@/components/season-menu";
 
 export const Route = createFileRoute("/admin")({
-  head: () => ({ meta: [{ title: "Admin — MansourAlmailScores" }, { name: "robots", content: "noindex" }] }),
-  component: AdminPage,
+  head: () => ({ meta: [{ title: "Admin — Mansour Almail Scores" }, { name: "robots", content: "noindex" }] }),
+  component: () => <AdminConsole />,
 });
 
-function AdminPage() {
+/** Shared control centre. The owner area passes owner so the Manage section appears. */
+export function AdminConsole({ owner = false }: { owner?: boolean }) {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const { t } = useI18n();
