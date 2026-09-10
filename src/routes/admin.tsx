@@ -194,13 +194,13 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
           <div className="mt-6">
             {tab === "competitions" && allowed("competitions") && <CompetitionsPanel onOpen={setOpenComp} />}
 
-            {tab === "teams" && (
+            {tab === "teams" && allowed("teams") && (
               <div>
                 <p className="mb-4 text-sm text-muted-foreground">Every saved club in one place — create and edit clubs, squads and coaches without opening a competition.</p>
                 <TeamsPanel competitionId={null} lockKind="clubs" />
               </div>
             )}
-            {tab === "countries" && (
+            {tab === "countries" && allowed("countries") && (
               <div className="space-y-10">
                 <div>
                   <p className="mb-4 text-sm text-muted-foreground">National teams live here, separate from clubs — squads are call-ups, so players keep their club.</p>
@@ -209,19 +209,20 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
                 <FifaRankingsPanel />
               </div>
             )}
-            {tab === "players" && <PlayersPanel />}
-            {tab === "news" && <NewsPanel />}
-             {tab === "ai" && <AlmailAiPanel onNews={() => setTab("news")} onCompetitions={() => setTab("competitions")} onVenues={() => setTab("venues")} />}
-            {tab === "venues" && <VenuesPanel />}
-            {tab === "channels" && <ChannelsPanel />}
-            {tab === "transfers" && <TransfersAdminPanel />}
-            {tab === "tickets" && <TicketsPanel />}
-            {tab === "reports" && <ChatReportsPanel />}
-            {tab === "users" && <UsersPanel />}
-           {tab === "voice" && <VoicePanel />}
-            {tab === "approvals" && <ApprovalsPanel />}
+            {tab === "players" && allowed("players") && <PlayersPanel />}
+            {tab === "news" && allowed("news") && <NewsPanel />}
+             {tab === "ai" && allowed("ai") && <AlmailAiPanel onNews={() => setTab("news")} onCompetitions={() => setTab("competitions")} onVenues={() => setTab("venues")} />}
+            {tab === "venues" && allowed("venues") && <VenuesPanel />}
+            {tab === "channels" && allowed("channels") && <ChannelsPanel />}
+            {tab === "transfers" && allowed("transfers") && <TransfersAdminPanel />}
+            {tab === "tickets" && allowed("tickets") && <TicketsPanel />}
+            {tab === "reports" && allowed("reports") && <ChatReportsPanel />}
+            {tab === "users" && everything && <UsersPanel />}
+           {tab === "voice" && allowed("voice") && <VoicePanel />}
+            {tab === "approvals" && everything && <ApprovalsPanel />}
             {tab === "rabta" && canRabta && <UltrasPanel isOwner={isOwner} />}
-            {tab === "manage" && owner && <ManagePanel />}
+            {tab === "manage" && owner && isOwner && <ManagePanel />}
+
           </div>
         </div>
       )}
