@@ -158,9 +158,20 @@ export function MatchNotificationButton({ matchId, teamIds = [] }: { matchId: st
       onClick={async (event) => {
         event.preventDefault(); event.stopPropagation();
         const next = explicit ? alerts.filter((id) => id !== matchId) : [...alerts, matchId];
+        const turningOn = inherited ? explicit : !explicit;
         setAlerts(next);
         try { localStorage.setItem(ALERT_KEY, JSON.stringify(next)); } catch { /* optional */ }
         if (user) await supabase.from("profiles").update({ match_notification_ids: next }).eq("id", user.id);
+        // Tell the live alert listener to pick the new selection up straight away.
+        window.dispatchEvent(new Event("mas:alerts-changed"));
+        if (turningOn) {
+          if ("Notification" in window && Notification.permission === "default") {
+            try { await Notification.requestPermission(); } catch { /* declined */ }
+          }
+          toast.success("Match alerts on", { description: "Goals, cards and full time will be announced." });
+        } else {
+          toast("Match alerts off");
+        }
       }}
       className={`inline-flex h-8 w-8 items-center justify-center rounded-full border transition ${active ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground hover:text-primary"}`}
     >
