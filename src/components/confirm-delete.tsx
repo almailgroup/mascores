@@ -41,11 +41,16 @@ export function ConfirmDelete({
       <div className="my-8 w-full max-w-md rounded-3xl border border-destructive/40 bg-card p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-2 text-sm font-bold text-destructive"><AlertTriangle className="h-4 w-4" /> {title}</div>
         {description && <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{description}</p>}
-        <p className="mt-4 text-xs font-semibold">Type <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-destructive">{confirmWord}</span> to confirm</p>
+        <p className="mt-4 text-xs font-semibold">
+          {twice && step === 2 ? "Once more: type " : "Type "}
+          <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-destructive">{confirmWord}</span> to confirm
+          {twice ? <span className="ms-1 text-muted-foreground">(step {step} of 2)</span> : null}
+        </p>
         <input
+          key={step}
           autoFocus
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
+          value={twice && step === 2 ? second : value}
+          onChange={(e) => (twice && step === 2 ? setSecond(e.target.value) : setValue(e.target.value))}
           placeholder={confirmWord}
           className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2.5 text-base outline-none focus:border-destructive sm:py-2 sm:text-sm"
         />
@@ -53,10 +58,15 @@ export function ConfirmDelete({
           <button onClick={onCancel} className="inline-flex h-9 items-center rounded-full border border-border bg-background px-4 text-xs font-medium hover:bg-accent">Cancel</button>
           <button
             disabled={!ready || busy}
-            onClick={async () => { setBusy(true); try { await onConfirm(); } finally { setBusy(false); } }}
+            onClick={async () => {
+              if (twice && step === 1) { setStep(2); return; }
+              setBusy(true);
+              try { await onConfirm(); } finally { setBusy(false); }
+            }}
             className="inline-flex h-9 items-center gap-2 rounded-full bg-destructive px-4 text-xs font-semibold text-destructive-foreground disabled:opacity-50"
           >
-            {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />} {actionLabel}
+            {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+            {twice && step === 1 ? "Continue" : actionLabel}
           </button>
         </div>
       </div>
