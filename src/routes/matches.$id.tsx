@@ -11,7 +11,7 @@ import { MatchChat } from "@/components/match-chat";
 import { MatchVoice } from "@/components/match-voice";
 import { MatchPrediction } from "@/components/match-prediction";
 import { MatchMomentum } from "@/components/match-momentum";
-import { MapPin, Users } from "lucide-react";
+import { MapPin, Users, Navigation } from "lucide-react";
 import { FlagIcon } from "@/components/flag";
 import { EventIcon as EventArt, hasEventArt } from "@/components/event-icon";
 import { nationalOverrideMap, applyCallUp } from "@/lib/national";
