@@ -12,7 +12,7 @@ import { useI18n } from "@/lib/i18n";
 import { PlayerAvatar } from "@/components/player-avatar";
 import { SocialLinksSection } from "@/components/social-links";
 import { LinkedNews } from "@/components/linked-news";
-import { ArrowRight, Landmark, CalendarClock, Crown, Trophy, Users } from "lucide-react";
+import { ArrowRight, Landmark, CalendarClock, Crown, Trophy, Users, Phone, Mail, Globe } from "lucide-react";
 import { MatchRow, type MatchWithTeams } from "@/components/match-list";
 import { fetchNationalSquad } from "@/lib/national";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
