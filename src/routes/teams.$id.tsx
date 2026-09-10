@@ -200,12 +200,29 @@ function TeamPage() {
              const list: Player[] = t.is_national ? (nationalSquad.data ?? []) : (squad.data ?? []);
              const players = list.filter((player) => (player.position ?? "Unknown") === position);
              if (position === "Unknown" && players.length === 0) return null;
-             return <section key={position}><h2 className="mb-3 text-sm font-bold uppercase text-muted-foreground">{tx(position)}</h2>{players.length > 0 ? <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{players.map((p) => (
-              <Link key={p.id} to="/players/$id" params={{ id: p.id }} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 hover:border-primary/50">
+             return <section key={position}><h2 className="mb-3 text-sm font-bold uppercase text-muted-foreground">{tx(position)}</h2>{players.length > 0 ? <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{players.map((p) => {
+              // In a national squad his club is shown next to the position, and opening him
+              // keeps the national photo because he was tapped from here.
+              const club = t.is_national ? (p as NationalPlayer) : null;
+              return (
+              <Link key={p.id} to="/players/$id" params={{ id: p.id }} search={t.is_national ? { nt: id } : {}} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 hover:border-primary/50">
                 <PlayerAvatar src={p.photo_url} name={p.name} size="sm" />
-                <div className="min-w-0"><div className="truncate font-medium">{tx(p.name)}</div><div className="truncate text-xs text-muted-foreground">{[p.shirt_number != null ? `#${p.shirt_number}` : null, tx(p.position)].filter(Boolean).join(" · ") || "—"}</div></div>
+                <div className="min-w-0">
+                  <div className="truncate font-medium">{tx(p.name)}</div>
+                  <div className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
+                    <span className="truncate">{[p.shirt_number != null ? `#${p.shirt_number}` : null, tx(p.position)].filter(Boolean).join(" · ") || "—"}</span>
+                    {club?.club_name ? (
+                      <>
+                        <span aria-hidden>·</span>
+                        {club.club_logo ? <img src={club.club_logo} alt="" className="h-3.5 w-3.5 shrink-0 object-contain" /> : null}
+                        <span className="truncate font-semibold text-foreground/80">{tx(club.club_name)}</span>
+                      </>
+                    ) : null}
+                  </div>
+                </div>
               </Link>
-             ))}</div> : <EmptyState title={tx(`No ${position.toLowerCase()}s`)} />}</section>;
+              );
+             })}</div> : <EmptyState title={tx(`No ${position.toLowerCase()}s`)} />}</section>;
            })}
          </div>
       )}
