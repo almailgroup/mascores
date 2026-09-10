@@ -104,18 +104,16 @@ export const addManagedUser = createServerFn({ method: "POST" })
     const email = data.email.trim().toLowerCase();
     const { data: existing } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
     let user = existing?.users.find((u) => (u.email ?? "").toLowerCase() === email) ?? null;
-    let password: string | null = null;
     if (!user) {
-      password = makePassword();
-      const created = await admin.auth.admin.createUser({ email, password, email_confirm: true });
+      const created = await admin.auth.admin.createUser({ email, email_confirm: true });
       if (created.error) throw new Error(created.error.message);
       user = created.data.user;
-    } else {
-      // Existing account: give it a fresh one-time password so it can be handed over.
-      password = makePassword();
-      const updated = await admin.auth.admin.updateUserById(user.id, { password });
-      if (updated.error) throw new Error(updated.error.message);
     }
+    if (!user) throw new Error("Could not create that account.");
+    // Always the same steady password for this account.
+    const password = await accountPassword(user.id);
+    const updated = await admin.auth.admin.updateUserById(user.id, { password });
+    if (updated.error) throw new Error(updated.error.message);
     if (!user) throw new Error("Could not create that account.");
     const teamId = data.teamId ?? null;
     const { error } = await admin.from("admin_grants").upsert(
