@@ -73,6 +73,7 @@ export function MyRequestsPanel() {
   });
 
   const loading = changes.isLoading || tickets.isLoading || ultras.isLoading;
+  const refreshing = changes.isFetching || tickets.isFetching || ultras.isFetching;
   const empty = !loading && !changes.data?.length && !tickets.data?.length && !ultras.data?.length;
   const when = (iso: string) => new Date(iso).toLocaleString();
 
