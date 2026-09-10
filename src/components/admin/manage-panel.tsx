@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, KeyRound, Trash2, UserPlus, LogOut, Copy, Mail } from "lucide-react";
+import { Loader2, KeyRound, Trash2, UserPlus, LogOut, Copy, Mail, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   addManagedUser, listManagedUsers, removeManagedGrant, resetManagedPassword, resendAccessEmail, setGrantApproval,
@@ -34,6 +34,7 @@ export function ManagePanel() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [secret, setSecret] = useState<{ email: string; password: string; emailed: boolean } | null>(null);
+  const [editUser, setEditUser] = useState<ManagedUser | null>(null);
   const [note, setNote] = useState<string | null>(null);
   const load = useServerFn(listManagedUsers);
   const removeGrant = useServerFn(removeManagedGrant);
@@ -81,6 +82,9 @@ export function ManagePanel() {
                 <div className="truncate text-sm font-bold">{user.displayName ?? user.email}</div>
                 <div className="truncate text-[0.7rem] text-muted-foreground">{user.email}</div>
               </div>
+              <button className={btnGhost} onClick={() => setEditUser(user)}>
+                <Pencil className="h-3.5 w-3.5" /> Edit access
+              </button>
               <button
                 className={btnGhost}
                 onClick={async () => {
