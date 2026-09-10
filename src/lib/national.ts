@@ -10,7 +10,7 @@ export type CallUp = {
   position: string | null;
 };
 
-export type NationalPlayer = Player & { call_up: CallUp };
+export type NationalPlayer = Player & { call_up: CallUp; club_name?: string | null; club_logo?: string | null };
 
 /** Call-ups for one or more national teams. */
 export async function fetchCallUps(teamIds: string[]): Promise<CallUp[]> {
@@ -24,10 +24,11 @@ export async function fetchCallUps(teamIds: string[]): Promise<CallUp[]> {
 export async function fetchNationalSquad(teamId: string): Promise<NationalPlayer[]> {
   const calls = await fetchCallUps([teamId]);
   if (calls.length === 0) return [];
-  const { data } = await supabase.from("players").select("*").in("id", calls.map((c) => c.player_id));
-  return (data ?? []).map((player) => {
+  const { data } = await supabase.from("players").select("*, club:team_id(name,logo_url)").in("id", calls.map((c) => c.player_id));
+  return (data ?? []).map((row) => {
+    const { club, ...player } = row as Player & { club: { name: string; logo_url: string | null } | null };
     const call = calls.find((c) => c.player_id === player.id)!;
-    return { ...(player as Player), ...applyCallUp(player as Player, call), call_up: call };
+    return { ...(player as Player), ...applyCallUp(player as Player, call), call_up: call, club_name: club?.name ?? null, club_logo: club?.logo_url ?? null };
   }).sort((a, b) => (a.shirt_number ?? 99) - (b.shirt_number ?? 99));
 }
 
