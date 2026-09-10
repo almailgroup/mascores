@@ -81,7 +81,7 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
 
       <div className="grid gap-2">
         {visible.map((c) => (
-          {/* Wraps on phones so Manage / edit / delete are never pushed off the screen. */}
+          
           <div key={c.id} className="flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card p-3 sm:gap-3">
             <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg bg-primary/10">
               {c.logo_url ? <img src={c.logo_url} className="h-full w-full object-contain" alt="" /> : <span className="text-xs">🏆</span>}
