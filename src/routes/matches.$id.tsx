@@ -371,7 +371,7 @@ function MatchPage() {
         const starters = rows.filter((r) => r.is_starting);
         const bench = rows.filter((r) => !r.is_starting);
         const activeFormation = formation ?? "4-3-3";
-        const showPitch = lineupView === "pitch" && starters.length > 0;
+        const showPitch = starters.length > 0;
         const marksFor = (playerId: string) => (events.data ?? [])
           .map((e) => {
             if (e.player_id === playerId || e.player?.id === playerId) return e.type;
