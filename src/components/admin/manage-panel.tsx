@@ -85,11 +85,21 @@ export function ManagePanel() {
                 className={btnGhost}
                 onClick={async () => {
                   const res = await resetPassword({ data: { userId: user.id } });
-                  setSecret({ email: user.email ?? "", password: res.password });
+                  setSecret({ email: user.email ?? "", password: res.password, emailed: res.emailed });
                 }}
               >
-                <KeyRound className="h-3.5 w-3.5" /> New password
+                <KeyRound className="h-3.5 w-3.5" /> One-time password
               </button>
+              <button
+                className={btnGhost}
+                onClick={async () => {
+                  const res = await resendEmail({ data: { userId: user.id } });
+                  setNote(res.emailed ? `Sign-in email sent again to ${user.email}.` : `Could not email ${user.email} right now.`);
+                }}
+              >
+                <Mail className="h-3.5 w-3.5" /> Send email again
+              </button>
+
             </div>
             <div className="mt-2 space-y-1.5">
               {user.grants.map((g) => (
