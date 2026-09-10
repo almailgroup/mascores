@@ -206,12 +206,8 @@ export function MatchShare({ data, mode }: { data: MatchShareData; mode: "result
     saveToFile();
   };
 
-  /** Opens a mail draft; the image is saved alongside so it can be attached. */
-  const sendByEmail = () => {
-    saveToFile();
-    const body = `${title}\n${data.competition}\n${data.kickoff}\n\n${label("The match image has been saved to your device - attach it to this email.", "تم حفظ صورة المباراة على جهازك - أضفها كمرفق لهذه الرسالة.")}`;
-    window.location.href = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
-  };
+
+
 
   return (
     <>
