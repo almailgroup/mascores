@@ -177,6 +177,8 @@ function SettingsPage() {
         </section>
       )}
 
+      <FeedbackBox />
+
       {user && <section className="mt-10 rounded-2xl border border-destructive/30 bg-destructive/5 px-4 py-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="min-w-0">
