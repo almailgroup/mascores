@@ -48,7 +48,9 @@ export function NewsSubmissionsPanel() {
   });
 
   const approve = async (s: Submission) => {
+    const author = (reporters.data ?? []).find((r) => r.user_id === s.author_id);
     await supabase.from("news_posts").insert({
+      author_display: author?.handle ? `@${author.handle}` : null,
       title: s.title,
       slug: slugify(s.title),
       body_markdown: s.body_markdown,
