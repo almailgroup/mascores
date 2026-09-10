@@ -194,7 +194,7 @@ function OffersView({ needsApproval }: { needsApproval: boolean }) {
                 <div className="truncate text-[0.7rem] text-muted-foreground">{m ? label(m) : offer.match_id}</div>
                 <div className="mt-0.5 text-[0.65rem] text-muted-foreground">
                   {[
-                    offer.is_active ? "On sale" : "Hidden",
+                    offer.approval_status === "pending" ? "Waiting for approval" : offer.approval_status === "rejected" ? "Turned down" : offer.is_active ? "On sale" : "Hidden",
                     `${counts.data?.[offer.id]?.pool ?? 0} codes left`,
                     `${counts.data?.[offer.id]?.sold ?? 0} sold`,
                     offer.capacity ? `capacity ${offer.capacity}` : null,
