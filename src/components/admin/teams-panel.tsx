@@ -11,6 +11,7 @@ import { PlayerEditor } from "./player-editor";
 import { PlayerAvatar } from "@/components/player-avatar";
 import { releasePlayerToFreeAgent, transferPlayerToClub } from "@/lib/player-moves";
 import { TeamCrest } from "@/components/team-crest";
+import { StaffManager } from "./staff-manager";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import { VenueSelect } from "./venue-select";
 import { ArabicNameField } from "./arabic-name-field";
@@ -200,6 +201,15 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
           </Field>
           <Field label="Founded on"><input type="date" className={inputCls} value={form.founded_on ?? ""} onChange={(e) => setForm({ ...form, founded_on: e.target.value || null })} /></Field>
           <Field label="Total trophies"><input type="number" min={0} className={inputCls} value={form.trophies ?? 0} onChange={(e) => setForm({ ...form, trophies: Math.max(0, Number(e.target.value) || 0) })} /></Field>
+          <Field label="Contact phone"><input className={inputCls} inputMode="tel" value={form.contact_phone ?? ""} onChange={(e) => setForm({ ...form, contact_phone: e.target.value || null })} /></Field>
+          <Field label="Contact email"><input className={inputCls} inputMode="email" value={form.contact_email ?? ""} onChange={(e) => setForm({ ...form, contact_email: e.target.value || null })} /></Field>
+          <Field label="Website"><input className={inputCls} value={form.contact_website ?? ""} onChange={(e) => setForm({ ...form, contact_website: e.target.value || null })} /></Field>
+          <Field label="Club colour (used across the club pages)">
+            <div className="flex items-center gap-2">
+              <input type="color" className="h-10 w-14 rounded-lg border border-border bg-background" value={form.accent_color ?? "#1d4ed8"} onChange={(e) => setForm({ ...form, accent_color: e.target.value })} />
+              <input className={inputCls} placeholder="#1d4ed8" value={form.accent_color ?? ""} onChange={(e) => setForm({ ...form, accent_color: e.target.value || null })} />
+            </div>
+          </Field>
            <Field label="Chairman"><input className={inputCls} value={form.chairman ?? ""} onChange={(e) => setForm({ ...form, chairman: e.target.value || null })} /></Field>
           <div className="sm:col-span-2"><Field label="Team logo">
             <ImageInput value={form.logo_url ?? null} onChange={(v) => setForm({ ...form, logo_url: v })} onFile={async (f) => { const url = await uploadMedia("team-logos", f); if (url) setForm({ ...form, logo_url: url }); }} />
@@ -219,6 +229,7 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
           <input type="checkbox" className="mt-0.5 h-4 w-4" checked={!!form.is_national} onChange={(e) => setForm({ ...form, is_national: e.target.checked })} />
           <span><strong className="block">National team</strong>Players are called up instead of transferred, so their club never changes.</span>
         </label>
+        {form.id && <StaffManager teamId={form.id} />}
         <p className="mt-3 text-[0.65rem] text-muted-foreground">Groups are managed from the Standings tab. Coaches are added from the Coaches button.</p>
         <div className="mt-5 flex justify-end gap-2">
           <button className={btnGhost} onClick={() => setOpen(false)}>Cancel</button>

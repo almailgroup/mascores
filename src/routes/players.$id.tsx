@@ -30,6 +30,8 @@ export const Route = createFileRoute("/players/$id")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
+  validateSearch: (search: Record<string, unknown>): { nt?: string } =>
+    typeof search.nt === "string" ? { nt: search.nt } : {},
   component: PlayerPage,
 });
 
@@ -51,6 +53,7 @@ function PlayerPage() {
   const num = useNum();
   const dates = useDates();
   const { id } = Route.useParams();
+  const { nt } = Route.useSearch();
   const { t: tr } = useI18n();
   const { currency } = useCurrency();
   const { heightUnit } = useHeightUnit();
@@ -66,6 +69,8 @@ function PlayerPage() {
     return (data ?? []) as Transfer[];
   }});
   const national = useQuery({ queryKey: ["player-national", id], queryFn: () => fetchPlayerNationalTeams(id) });
+  /** Opened from a national squad: keep that squad's photo and shirt number. */
+  const callUp = nt ? national.data?.find((c) => c.team_id === nt) ?? null : null;
   const countryTeam = useQuery({
     enabled: !!q.data?.nationality || !!q.data?.nationality_code,
     queryKey: ["country-team", q.data?.nationality_code ?? q.data?.nationality],
@@ -109,7 +114,7 @@ function PlayerPage() {
       <BackButton />
        <div className="mb-4 overflow-hidden rounded-lg border border-border bg-card p-4 sm:p-5">
          <div className="flex items-center gap-4">
-           <PlayerAvatar src={p.photo_url} name={p.name} size="lg" className="border-2 border-border" />
+           <PlayerAvatar src={callUp?.photo_url ?? p.photo_url} name={p.name} size="lg" className="border-2 border-border" />
            <div className="min-w-0 flex-1">
              <h1 className="text-sm font-bold leading-snug break-words sm:text-xl">{tx(p.name)}</h1>
             {p.team && (

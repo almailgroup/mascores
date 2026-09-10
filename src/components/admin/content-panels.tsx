@@ -56,6 +56,7 @@ export function VenuesPanel() {
       <Field label="Capacity"><input type="number" className={inputCls} value={form.capacity ?? ""} onChange={(e) => setForm({ ...form, capacity: e.target.value ? Number(e.target.value) : null })} /></Field>
       <Field label="Image"><ImageInput value={form.image_url ?? null} onChange={(image_url) => setForm({ ...form, image_url })} onFile={async (file) => { const image_url = await uploadMedia("competition-logos", file); if (image_url) setForm({ ...form, image_url }); }} /></Field>
       <Field label="Description"><textarea className={inputCls} value={form.description ?? ""} onChange={(e) => setForm({ ...form, description: e.target.value })} /></Field>
+      <Field label="Map link (Google or Apple Maps)"><input className={inputCls} placeholder="https://maps.app.goo.gl/…" value={form.map_url ?? ""} onChange={(e) => setForm({ ...form, map_url: e.target.value || null })} /></Field>
       <button className={btnPrimary} onClick={save}><Plus className="h-3.5 w-3.5" /> {form.id ? "Save venue" : "Add venue"}</button>
     </div>
   </LibraryPanel>;

@@ -14,6 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_grants: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          note: string | null
+          requires_approval: boolean
+          scope: string
+          team_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          requires_approval?: boolean
+          scope: string
+          team_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          requires_approval?: boolean
+          scope?: string
+          team_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_grants_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_unlock_attempts: {
         Row: {
           attempted_at: string
@@ -47,6 +91,30 @@ export type Database = {
         Update: {
           created_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      app_feedback: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          message: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          message: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          message?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -746,6 +814,38 @@ export type Database = {
           },
         ]
       }
+      match_reminders: {
+        Row: {
+          created_at: string
+          id: string
+          match_id: string
+          minutes_before: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          match_id: string
+          minutes_before?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          match_id?: string
+          minutes_before?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_reminders_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       match_stats: {
         Row: {
           away_value: string | null
@@ -1405,6 +1505,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          bio: string | null
           created_at: string
           currency: string
           display_name: string | null
@@ -1414,14 +1515,17 @@ export type Database = {
           favorite_team_ids: string[]
           height_unit: string
           id: string
+          is_public: boolean
           language: string
           match_notification_ids: string[]
           notification_preferences: Json
           theme: string
           updated_at: string
+          username: string | null
         }
         Insert: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           currency?: string
           display_name?: string | null
@@ -1431,14 +1535,17 @@ export type Database = {
           favorite_team_ids?: string[]
           height_unit?: string
           id: string
+          is_public?: boolean
           language?: string
           match_notification_ids?: string[]
           notification_preferences?: Json
           theme?: string
           updated_at?: string
+          username?: string | null
         }
         Update: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           currency?: string
           display_name?: string | null
@@ -1448,11 +1555,13 @@ export type Database = {
           favorite_team_ids?: string[]
           height_unit?: string
           id?: string
+          is_public?: boolean
           language?: string
           match_notification_ids?: string[]
           notification_preferences?: Json
           theme?: string
           updated_at?: string
+          username?: string | null
         }
         Relationships: []
       }
@@ -1655,6 +1764,50 @@ export type Database = {
           },
         ]
       }
+      team_staff: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          nationality_code: string | null
+          photo_url: string | null
+          role: string
+          sort_order: number
+          team_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          nationality_code?: string | null
+          photo_url?: string | null
+          role: string
+          sort_order?: number
+          team_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          nationality_code?: string | null
+          photo_url?: string | null
+          role?: string
+          sort_order?: number
+          team_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_staff_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_titles: {
         Row: {
           competition_id: string | null
@@ -1705,10 +1858,14 @@ export type Database = {
       }
       teams: {
         Row: {
+          accent_color: string | null
           chairman: string | null
           coach_name: string | null
           coach_photo_url: string | null
           competition_id: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          contact_website: string | null
           country: string | null
           country_code: string | null
           created_at: string
@@ -1729,10 +1886,14 @@ export type Database = {
           venue_name: string | null
         }
         Insert: {
+          accent_color?: string | null
           chairman?: string | null
           coach_name?: string | null
           coach_photo_url?: string | null
           competition_id?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          contact_website?: string | null
           country?: string | null
           country_code?: string | null
           created_at?: string
@@ -1753,10 +1914,14 @@ export type Database = {
           venue_name?: string | null
         }
         Update: {
+          accent_color?: string | null
           chairman?: string | null
           coach_name?: string | null
           coach_photo_url?: string | null
           competition_id?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          contact_website?: string | null
           country?: string | null
           country_code?: string | null
           created_at?: string
@@ -1798,6 +1963,7 @@ export type Database = {
           name: string
           notes: string | null
           price: number
+          resale_max_price: number | null
           show_row: boolean
           show_seat: boolean
           sort_order: number
@@ -1815,6 +1981,7 @@ export type Database = {
           name?: string
           notes?: string | null
           price?: number
+          resale_max_price?: number | null
           show_row?: boolean
           show_seat?: boolean
           sort_order?: number
@@ -1832,6 +1999,7 @@ export type Database = {
           name?: string
           notes?: string | null
           price?: number
+          resale_max_price?: number | null
           show_row?: boolean
           show_seat?: boolean
           sort_order?: number
@@ -1853,6 +2021,7 @@ export type Database = {
           code: string
           created_at: string
           currency: string
+          for_sale: boolean
           holder_email: string | null
           holder_name: string | null
           holder_phone: string | null
@@ -1861,8 +2030,12 @@ export type Database = {
           match_id: string
           offer_id: string | null
           price_paid: number
+          resold_at: string | null
           row_label: string | null
+          sale_price: number | null
           seat_label: string | null
+          seller_email: string | null
+          seller_phone: string | null
           status: string
           updated_at: string
           used_at: string | null
@@ -1872,6 +2045,7 @@ export type Database = {
           code: string
           created_at?: string
           currency?: string
+          for_sale?: boolean
           holder_email?: string | null
           holder_name?: string | null
           holder_phone?: string | null
@@ -1880,8 +2054,12 @@ export type Database = {
           match_id: string
           offer_id?: string | null
           price_paid?: number
+          resold_at?: string | null
           row_label?: string | null
+          sale_price?: number | null
           seat_label?: string | null
+          seller_email?: string | null
+          seller_phone?: string | null
           status?: string
           updated_at?: string
           used_at?: string | null
@@ -1891,6 +2069,7 @@ export type Database = {
           code?: string
           created_at?: string
           currency?: string
+          for_sale?: boolean
           holder_email?: string | null
           holder_name?: string | null
           holder_phone?: string | null
@@ -1899,8 +2078,12 @@ export type Database = {
           match_id?: string
           offer_id?: string | null
           price_paid?: number
+          resold_at?: string | null
           row_label?: string | null
+          sale_price?: number | null
           seat_label?: string | null
+          seller_email?: string | null
+          seller_phone?: string | null
           status?: string
           updated_at?: string
           used_at?: string | null
@@ -1995,6 +2178,66 @@ export type Database = {
         }
         Relationships: []
       }
+      ultras_posts: {
+        Row: {
+          author_id: string | null
+          body: string
+          created_at: string
+          id: string
+          match_id: string | null
+          meeting_place: string | null
+          photo_url: string | null
+          review_note: string | null
+          status: string
+          team_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          match_id?: string | null
+          meeting_place?: string | null
+          photo_url?: string | null
+          review_note?: string | null
+          status?: string
+          team_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          match_id?: string | null
+          meeting_place?: string | null
+          photo_url?: string | null
+          review_note?: string | null
+          status?: string
+          team_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ultras_posts_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ultras_posts_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_suspensions: {
         Row: {
           banned: boolean
@@ -2038,6 +2281,7 @@ export type Database = {
           description: string | null
           id: string
           image_url: string | null
+          map_url: string | null
           name: string
           updated_at: string
         }
@@ -2050,6 +2294,7 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
+          map_url?: string | null
           name: string
           updated_at?: string
         }
@@ -2062,6 +2307,7 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
+          map_url?: string | null
           name?: string
           updated_at?: string
         }
@@ -2075,6 +2321,7 @@ export type Database = {
           duration_seconds: number
           host_id: string
           id: string
+          is_public: boolean
           match_id: string | null
           room_id: string | null
           title: string
@@ -2087,6 +2334,7 @@ export type Database = {
           duration_seconds?: number
           host_id: string
           id?: string
+          is_public?: boolean
           match_id?: string | null
           room_id?: string | null
           title: string
@@ -2099,6 +2347,7 @@ export type Database = {
           duration_seconds?: number
           host_id?: string
           id?: string
+          is_public?: boolean
           match_id?: string | null
           room_id?: string | null
           title?: string
@@ -2114,6 +2363,38 @@ export type Database = {
           },
           {
             foreignKeyName: "voice_recordings_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "voice_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      voice_room_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          room_id: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          room_id: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          room_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voice_room_messages_room_id_fkey"
             columns: ["room_id"]
             isOneToOne: false
             referencedRelation: "voice_rooms"
@@ -2257,14 +2538,42 @@ export type Database = {
         }[]
       }
       grant_admin: { Args: { _uid: string }; Returns: undefined }
+      has_grant: {
+        Args: { _scope: string; _team?: string; _uid: string }
+        Returns: boolean
+      }
       is_admin: { Args: { _uid: string }; Returns: boolean }
+      is_main_admin: { Args: { _uid: string }; Returns: boolean }
       is_suspended: { Args: { _uid: string }; Returns: boolean }
+      public_profile: {
+        Args: { _id: string }
+        Returns: {
+          avatar_url: string
+          bio: string
+          display_name: string
+          followers: number
+          following: number
+          id: string
+          is_public: boolean
+          username: string
+        }[]
+      }
       recompute_standings: { Args: { _comp: string }; Returns: undefined }
       record_admin_unlock_attempt: {
         Args: { _succeeded: boolean; _uid: string }
         Returns: undefined
       }
       revoke_admin: { Args: { _uid: string }; Returns: undefined }
+      search_profiles: {
+        Args: { _limit?: number; _q: string }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          followers: number
+          id: string
+          username: string
+        }[]
+      }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
       voice_delete_room: { Args: { _room_id: string }; Returns: undefined }

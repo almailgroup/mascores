@@ -11,7 +11,8 @@ import { MatchChat } from "@/components/match-chat";
 import { MatchVoice } from "@/components/match-voice";
 import { MatchPrediction } from "@/components/match-prediction";
 import { MatchMomentum } from "@/components/match-momentum";
-import { MapPin, Users } from "lucide-react";
+import { MapPin, Users, Navigation } from "lucide-react";
+import { MatchReminders } from "@/components/match-reminders";
 import { FlagIcon } from "@/components/flag";
 import { EventIcon as EventArt, hasEventArt } from "@/components/event-icon";
 import { nationalOverrideMap, applyCallUp } from "@/lib/national";
@@ -289,6 +290,10 @@ function MatchPage() {
               ))}
             </dl>
           </div>
+
+          <MatchReminders matchId={id} kickoffAt={match.kickoff_at} />
+
+          <MatchVenueCard venueId={match.venue_id} venueName={match.venue} />
 
           <div className="overflow-hidden rounded-2xl border border-border bg-card">
               <div className="flex items-center gap-2 border-b border-border bg-muted/40 px-4 py-2.5 text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground"><Radio className="h-3.5 w-3.5" /> {tx("Where to watch")}</div>
@@ -706,6 +711,40 @@ function MatchStatsPanel({ rows, home, away }: { rows: StatRow[]; home?: Partial
           );
         })}
       </div>
+    </div>
+  );
+}
+
+/** Stadium block on the match page, with a maps link when one is set. */
+function MatchVenueCard({ venueId, venueName }: { venueId: string | null; venueName: string | null }) {
+  const tx = useTx();
+  const venue = useQuery({
+    enabled: !!(venueId || venueName),
+    queryKey: ["match-venue", venueId, venueName],
+    queryFn: async () => {
+      const base = supabase.from("venues").select("id,name,city,country,capacity,image_url,map_url");
+      const { data } = venueId ? await base.eq("id", venueId).maybeSingle() : await base.eq("name", venueName!).maybeSingle();
+      return data;
+    },
+  });
+  const v = venue.data;
+  if (!v) return null;
+  return (
+    <div className="overflow-hidden rounded-2xl border border-border bg-card">
+      <div className="border-b border-border bg-muted/40 px-4 py-2.5 text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Stadium")}</div>
+      {v.image_url && <img src={v.image_url} alt="" className="h-40 w-full object-cover" />}
+      <Link to="/venues/$id" params={{ id: v.id }} className="flex items-center gap-3 px-4 py-3 hover:bg-accent">
+        <MapPin className="h-5 w-5 shrink-0 text-muted-foreground" />
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-sm font-bold">{tx(v.name)}</div>
+          <div className="truncate text-xs text-muted-foreground">{[tx(v.city), tx(v.country)].filter(Boolean).join(", ")}</div>
+        </div>
+      </Link>
+      {v.map_url && (
+        <a href={v.map_url} target="_blank" rel="noreferrer" className="flex items-center gap-3 border-t border-border px-4 py-3 text-sm font-bold text-primary hover:bg-accent">
+          <Navigation className="h-4 w-4" /> {tx("Directions to the stadium")}
+        </a>
+      )}
     </div>
   );
 }

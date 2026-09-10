@@ -31,6 +31,8 @@ function SettingsPage() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [username, setUsername] = useState("");
+  const [isPublic, setIsPublic] = useState(true);
   const { heightUnit, setHeightUnit } = useHeightUnit();
   const [uploading, setUploading] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -42,9 +44,11 @@ function SettingsPage() {
     if (authLoading) return;
     if (!user) return;
     (async () => {
-      const { data: prof } = await supabase.from("profiles").select("display_name,language,avatar_url,height_unit").eq("id", user.id).maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("display_name,language,avatar_url,height_unit,username,is_public").eq("id", user.id).maybeSingle();
       setDisplayName(prof?.display_name ?? "");
       setAvatarUrl(prof?.avatar_url ?? null);
+      setUsername(prof?.username ?? "");
+      setIsPublic(prof?.is_public ?? true);
       if (prof?.height_unit === "ft" || prof?.height_unit === "cm") setHeightUnit(prof.height_unit);
       if (prof?.language && (prof.language === "en" || prof.language === "ar")) setLang(prof.language as Lang);
     })();
@@ -53,8 +57,14 @@ function SettingsPage() {
   const save = async () => {
     if (!user) return;
     setSaving(true);
-    await supabase.from("profiles").update({ display_name: displayName, language: lang, theme, avatar_url: avatarUrl, height_unit: heightUnit }).eq("id", user.id);
+    const clean = username.trim().replace(/[^a-zA-Z0-9_.]/g, "").slice(0, 20);
+    const { error } = await supabase.from("profiles").update({
+      display_name: displayName, language: lang, theme, avatar_url: avatarUrl, height_unit: heightUnit,
+      username: clean || null, is_public: isPublic,
+    }).eq("id", user.id);
     setSaving(false);
+    if (error) { setNotice("That username is already taken."); setTimeout(() => setNotice(null), 2500); return; }
+    setUsername(clean);
     setNotice(t("settings.saved"));
     setTimeout(() => setNotice(null), 1500);
   };
@@ -90,9 +100,26 @@ function SettingsPage() {
               </button>
               <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) setAvatarFile(file); e.target.value = ""; }} />
             </div>
-            <div className="flex-1">
-              <label className="text-xs font-medium uppercase tracking-widest text-muted-foreground">{t("settings.displayName")}</label>
-              <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="mt-1 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
+            <div className="flex-1 space-y-3">
+              <div>
+                <label className="text-xs font-medium uppercase tracking-widest text-muted-foreground">{t("settings.displayName")}</label>
+                <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="mt-1 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
+              </div>
+              <div>
+                <label className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Username</label>
+                <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="username"
+                  className="mt-1 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
+                <p className="mt-1 text-[0.65rem] text-muted-foreground">People can find you by this name. Letters, numbers, dots and underscores.</p>
+              </div>
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} />
+                Public profile — others can find and follow me
+              </label>
+              {username && (
+                <Link to="/u/$username" params={{ username }} className="inline-block text-xs font-semibold text-primary">
+                  View my profile
+                </Link>
+              )}
             </div>
           </div>
         ) : (
@@ -213,6 +240,7 @@ function SettingsPage() {
 /** Sends the owner feedback about the app straight to his inbox. */
 function FeedbackBox() {
   const [message, setMessage] = useState("");
+  const [sent, setSent] = useState(false);
   const owner = "mansouralmailscores@gmail.com";
   return (
     <section className="mt-10 rounded-3xl border border-border bg-card p-6">
@@ -226,13 +254,19 @@ function FeedbackBox() {
         className="w-full rounded-2xl border border-border bg-background p-3 text-sm outline-none focus:border-primary"
       />
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        <a
-          href={`mailto:${owner}?subject=${encodeURIComponent("Mansour Almail Scores feedback")}&body=${encodeURIComponent(message)}`}
-          className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-4 text-sm font-bold text-primary-foreground"
+        <button
+          disabled={!message.trim() || sent}
+          onClick={async () => {
+            const { data } = await supabase.auth.getUser();
+            await supabase.from("app_feedback").insert({ message, user_id: data.user?.id ?? null, email: data.user?.email ?? null } as never);
+            setSent(true); setMessage("");
+          }}
+          className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-4 text-sm font-bold text-primary-foreground disabled:opacity-60"
         >
-          Send feedback
-        </a>
-        <span className="text-[0.7rem] text-muted-foreground">Goes to {owner}</span>
+          {sent ? "Thank you!" : "Send feedback"}
+        </button>
+        <a href={`mailto:${owner}?subject=${encodeURIComponent("Mansour Almail Scores feedback")}&body=${encodeURIComponent(message)}`}
+          className="text-[0.7rem] font-semibold text-primary">Email instead</a>
       </div>
     </section>
   );

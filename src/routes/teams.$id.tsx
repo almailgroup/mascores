@@ -12,9 +12,9 @@ import { useI18n } from "@/lib/i18n";
 import { PlayerAvatar } from "@/components/player-avatar";
 import { SocialLinksSection } from "@/components/social-links";
 import { LinkedNews } from "@/components/linked-news";
-import { ArrowRight, Landmark, CalendarClock, Crown, Trophy, Users } from "lucide-react";
+import { ArrowRight, Landmark, CalendarClock, Crown, Trophy, Users, Phone, Mail, Globe } from "lucide-react";
 import { MatchRow, type MatchWithTeams } from "@/components/match-list";
-import { fetchNationalSquad } from "@/lib/national";
+import { type NationalPlayer, fetchNationalSquad } from "@/lib/national";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
 import { TeamStats, type TeamComp } from "@/components/team-stats";
 import { SeasonMenu } from "@/components/season-menu";
@@ -247,6 +247,9 @@ function TeamPage() {
               ) : null}
               {t.is_national && fifaRank.data ? <DetailRow icon={<Trophy className="h-5 w-5 text-muted-foreground" />} label={tx("FIFA world ranking")} value={`#${num(String(fifaRank.data.rank))} · ${num(String(fifaRank.data.points))} ${tx("pts")}`} /> : null}
               {t.chairman ? <DetailRow icon={<Crown className="h-5 w-5 text-muted-foreground" />} label={tx("Chairman")} value={tx(t.chairman)} /> : null}
+              {t.contact_phone ? <a href={`tel:${t.contact_phone}`} className="block hover:bg-accent"><DetailRow icon={<Phone className="h-5 w-5 text-muted-foreground" />} label={tx("Phone")} value={t.contact_phone} chevron /></a> : null}
+              {t.contact_email ? <a href={`mailto:${t.contact_email}`} className="block hover:bg-accent"><DetailRow icon={<Mail className="h-5 w-5 text-muted-foreground" />} label={tx("Email")} value={t.contact_email} chevron /></a> : null}
+              {t.contact_website ? <a href={t.contact_website} target="_blank" rel="noreferrer" className="block hover:bg-accent"><DetailRow icon={<Globe className="h-5 w-5 text-muted-foreground" />} label={tx("Website")} value={t.contact_website.replace(/^https?:\/\//, "")} chevron /></a> : null}
               {t.country && !t.is_national ? <DetailRow icon={<FlagIcon value={t.country_code ?? t.country} size="md" />} label={tx("Country")} value={tx(t.country)} /> : null}
               {t.short_name ? <DetailRow icon={<Users className="h-5 w-5 text-muted-foreground" />} label={tx("Short name")} value={t.short_name} /> : null}
               {t.trophies ? <DetailRow icon={<Trophy className="h-5 w-5 text-muted-foreground" />} label={tx("Trophies")} value={num(String(t.trophies))} /> : null}
@@ -276,6 +279,9 @@ function TeamPage() {
               ) : null}
             </div>
           </section>
+          <TeamStaff teamId={t.id} />
+          <TeamUltras teamId={t.id} />
+          <TeamNewsTeaser teamId={t.id} onMore={() => setTab("news")} />
           {t.description ? <div className="rounded-2xl border border-border bg-card p-4 text-sm">{tx(t.description)}</div> : null}
         </div>
       )}
@@ -433,5 +439,88 @@ function StandingsTabs({ rows, labels, teamId, tx }: {
         <div className="p-3"><StandingsTable rows={list} labels={currentLabels} highlightTeamId={teamId} /></div>
       </div>
     </div>
+  );
+}
+
+/** The people around the team beyond the coach. */
+function TeamStaff({ teamId }: { teamId: string }) {
+  const tx = useTx();
+  const staff = useQuery({
+    queryKey: ["team-staff-public", teamId],
+    queryFn: async () => (await supabase.from("team_staff").select("id,name,role,photo_url").eq("team_id", teamId).order("sort_order")).data ?? [],
+  });
+  if (!staff.data?.length) return null;
+  return (
+    <section>
+      <h2 className="mb-3 text-sm font-bold uppercase text-muted-foreground">{tx("Staff")}</h2>
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {staff.data.map((person) => (
+          <div key={person.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3">
+            <PlayerAvatar src={person.photo_url} name={person.name} size="sm" />
+            <div className="min-w-0">
+              <div className="truncate font-medium">{tx(person.name)}</div>
+              <div className="truncate text-xs text-muted-foreground">{tx(person.role)}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/** Rabta: where the club's ultras will gather. */
+function TeamUltras({ teamId }: { teamId: string }) {
+  const tx = useTx();
+  const posts = useQuery({
+    queryKey: ["team-ultras", teamId],
+    queryFn: async () =>
+      (await supabase.from("ultras_posts").select("id,title,body,photo_url,meeting_place,created_at")
+        .eq("team_id", teamId).eq("status", "approved").order("created_at", { ascending: false }).limit(5)).data ?? [],
+  });
+  if (!posts.data?.length) return null;
+  return (
+    <section>
+      <h2 className="mb-3 text-sm font-bold uppercase text-muted-foreground">{tx("Rabta")}</h2>
+      <div className="space-y-2">
+        {posts.data.map((post) => (
+          <div key={post.id} className="overflow-hidden rounded-2xl border border-border bg-card">
+            {post.photo_url && <img src={post.photo_url} alt="" className="max-h-64 w-full object-cover" />}
+            <div className="p-4">
+              <div className="text-sm font-bold">{tx(post.title)}</div>
+              {post.meeting_place && <div className="mt-0.5 text-xs font-semibold text-primary">{tx(post.meeting_place)}</div>}
+              {post.body && <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">{tx(post.body)}</p>}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/** One headline on Info, with a link into the club's News tab. */
+function TeamNewsTeaser({ teamId, onMore }: { teamId: string; onMore: () => void }) {
+  const tx = useTx();
+  const news = useQuery({
+    queryKey: ["team-news-teaser", teamId],
+    queryFn: async () =>
+      (await supabase.from("news_posts").select("slug,title,excerpt,cover_url,published_at")
+        .eq("team_id", teamId).not("published_at", "is", null).order("published_at", { ascending: false }).limit(1)).data ?? [],
+  });
+  const post = news.data?.[0];
+  if (!post) return null;
+  return (
+    <section>
+      <h2 className="mb-3 text-sm font-bold uppercase text-muted-foreground">{tx("Latest news")}</h2>
+      <Link to="/news/$slug" params={{ slug: post.slug }} className="block overflow-hidden rounded-2xl border border-border bg-card hover:border-primary/50">
+        {post.cover_url && <img src={post.cover_url} alt="" className="max-h-56 w-full object-cover" />}
+        <div className="p-4">
+          <div className="text-sm font-bold">{tx(post.title)}</div>
+          {post.excerpt && <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{tx(post.excerpt)}</p>}
+        </div>
+      </Link>
+      <button onClick={onMore} className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-primary">
+        {tx("More news")} <ArrowRight className="h-3.5 w-3.5" />
+      </button>
+    </section>
   );
 }

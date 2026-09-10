@@ -6,7 +6,7 @@ import { FlagIcon } from "@/components/flag";
 import { TeamCrest } from "@/components/team-crest";
 import { MatchRow, type MatchWithTeams } from "@/components/match-list";
 import { useNum, useTx } from "@/lib/auto-translate";
-import { Landmark } from "lucide-react";
+import { Landmark, Navigation } from "lucide-react";
 
 export const Route = createFileRoute("/venues/$id")({
   head: () => ({
@@ -77,6 +77,13 @@ function VenuePage() {
           </div>
         ))}
       </div>
+
+      {v.map_url && (
+        <a href={v.map_url} target="_blank" rel="noreferrer" className="mt-4 flex items-center gap-3 rounded-2xl border border-border bg-card p-4 text-sm font-bold hover:border-primary/50">
+          <Navigation className="h-5 w-5 text-primary" />
+          <span className="flex-1">{tx("Directions to the stadium")}</span>
+        </a>
+      )}
 
       {v.description && <p className="mt-4 rounded-2xl border border-border bg-card p-4 text-sm">{tx(v.description)}</p>}
 

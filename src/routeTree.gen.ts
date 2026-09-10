@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TransfersRouteImport } from './routes/transfers'
 import { Route as TicketsRouteImport } from './routes/tickets'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as SecretadminsafhaRouteImport } from './routes/secretadminsafha'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as FavoritesRouteImport } from './routes/favorites'
@@ -25,6 +26,7 @@ import { Route as NewsIndexRouteImport } from './routes/news.index'
 import { Route as CompetitionsIndexRouteImport } from './routes/competitions.index'
 import { Route as VoiceIdRouteImport } from './routes/voice/$id'
 import { Route as VenuesIdRouteImport } from './routes/venues.$id'
+import { Route as UUsernameRouteImport } from './routes/u.$username'
 import { Route as TeamsIdRouteImport } from './routes/teams.$id'
 import { Route as PlayersIdRouteImport } from './routes/players.$id'
 import { Route as NewsSlugRouteImport } from './routes/news.$slug'
@@ -45,6 +47,11 @@ const TicketsRoute = TicketsRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SecretadminsafhaRoute = SecretadminsafhaRouteImport.update({
+  id: '/secretadminsafha',
+  path: '/secretadminsafha',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SearchRoute = SearchRouteImport.update({
@@ -112,6 +119,11 @@ const VenuesIdRoute = VenuesIdRouteImport.update({
   path: '/venues/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UUsernameRoute = UUsernameRouteImport.update({
+  id: '/u/$username',
+  path: '/u/$username',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TeamsIdRoute = TeamsIdRouteImport.update({
   id: '/teams/$id',
   path: '/teams/$id',
@@ -152,6 +164,7 @@ export interface FileRoutesByFullPath {
   '/favorites': typeof FavoritesRoute
   '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
+  '/secretadminsafha': typeof SecretadminsafhaRoute
   '/settings': typeof SettingsRoute
   '/tickets': typeof TicketsRoute
   '/transfers': typeof TransfersRoute
@@ -161,6 +174,7 @@ export interface FileRoutesByFullPath {
   '/news/$slug': typeof NewsSlugRoute
   '/players/$id': typeof PlayersIdRoute
   '/teams/$id': typeof TeamsIdRoute
+  '/u/$username': typeof UUsernameRoute
   '/venues/$id': typeof VenuesIdRoute
   '/voice/$id': typeof VoiceIdRoute
   '/competitions/': typeof CompetitionsIndexRoute
@@ -176,6 +190,7 @@ export interface FileRoutesByTo {
   '/favorites': typeof FavoritesRoute
   '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
+  '/secretadminsafha': typeof SecretadminsafhaRoute
   '/settings': typeof SettingsRoute
   '/tickets': typeof TicketsRoute
   '/transfers': typeof TransfersRoute
@@ -185,6 +200,7 @@ export interface FileRoutesByTo {
   '/news/$slug': typeof NewsSlugRoute
   '/players/$id': typeof PlayersIdRoute
   '/teams/$id': typeof TeamsIdRoute
+  '/u/$username': typeof UUsernameRoute
   '/venues/$id': typeof VenuesIdRoute
   '/voice/$id': typeof VoiceIdRoute
   '/competitions': typeof CompetitionsIndexRoute
@@ -201,6 +217,7 @@ export interface FileRoutesById {
   '/favorites': typeof FavoritesRoute
   '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
+  '/secretadminsafha': typeof SecretadminsafhaRoute
   '/settings': typeof SettingsRoute
   '/tickets': typeof TicketsRoute
   '/transfers': typeof TransfersRoute
@@ -210,6 +227,7 @@ export interface FileRoutesById {
   '/news/$slug': typeof NewsSlugRoute
   '/players/$id': typeof PlayersIdRoute
   '/teams/$id': typeof TeamsIdRoute
+  '/u/$username': typeof UUsernameRoute
   '/venues/$id': typeof VenuesIdRoute
   '/voice/$id': typeof VoiceIdRoute
   '/competitions/': typeof CompetitionsIndexRoute
@@ -227,6 +245,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/reset-password'
     | '/search'
+    | '/secretadminsafha'
     | '/settings'
     | '/tickets'
     | '/transfers'
@@ -236,6 +255,7 @@ export interface FileRouteTypes {
     | '/news/$slug'
     | '/players/$id'
     | '/teams/$id'
+    | '/u/$username'
     | '/venues/$id'
     | '/voice/$id'
     | '/competitions/'
@@ -251,6 +271,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/reset-password'
     | '/search'
+    | '/secretadminsafha'
     | '/settings'
     | '/tickets'
     | '/transfers'
@@ -260,6 +281,7 @@ export interface FileRouteTypes {
     | '/news/$slug'
     | '/players/$id'
     | '/teams/$id'
+    | '/u/$username'
     | '/venues/$id'
     | '/voice/$id'
     | '/competitions'
@@ -275,6 +297,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/reset-password'
     | '/search'
+    | '/secretadminsafha'
     | '/settings'
     | '/tickets'
     | '/transfers'
@@ -284,6 +307,7 @@ export interface FileRouteTypes {
     | '/news/$slug'
     | '/players/$id'
     | '/teams/$id'
+    | '/u/$username'
     | '/venues/$id'
     | '/voice/$id'
     | '/competitions/'
@@ -300,6 +324,7 @@ export interface RootRouteChildren {
   FavoritesRoute: typeof FavoritesRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SearchRoute: typeof SearchRoute
+  SecretadminsafhaRoute: typeof SecretadminsafhaRoute
   SettingsRoute: typeof SettingsRoute
   TicketsRoute: typeof TicketsRoute
   TransfersRoute: typeof TransfersRoute
@@ -309,6 +334,7 @@ export interface RootRouteChildren {
   NewsSlugRoute: typeof NewsSlugRoute
   PlayersIdRoute: typeof PlayersIdRoute
   TeamsIdRoute: typeof TeamsIdRoute
+  UUsernameRoute: typeof UUsernameRoute
   VenuesIdRoute: typeof VenuesIdRoute
   VoiceIdRoute: typeof VoiceIdRoute
   CompetitionsIndexRoute: typeof CompetitionsIndexRoute
@@ -337,6 +363,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/secretadminsafha': {
+      id: '/secretadminsafha'
+      path: '/secretadminsafha'
+      fullPath: '/secretadminsafha'
+      preLoaderRoute: typeof SecretadminsafhaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/search': {
@@ -430,6 +463,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VenuesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/u/$username': {
+      id: '/u/$username'
+      path: '/u/$username'
+      fullPath: '/u/$username'
+      preLoaderRoute: typeof UUsernameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/teams/$id': {
       id: '/teams/$id'
       path: '/teams/$id'
@@ -484,6 +524,7 @@ const rootRouteChildren: RootRouteChildren = {
   FavoritesRoute: FavoritesRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SearchRoute: SearchRoute,
+  SecretadminsafhaRoute: SecretadminsafhaRoute,
   SettingsRoute: SettingsRoute,
   TicketsRoute: TicketsRoute,
   TransfersRoute: TransfersRoute,
@@ -493,6 +534,7 @@ const rootRouteChildren: RootRouteChildren = {
   NewsSlugRoute: NewsSlugRoute,
   PlayersIdRoute: PlayersIdRoute,
   TeamsIdRoute: TeamsIdRoute,
+  UUsernameRoute: UUsernameRoute,
   VenuesIdRoute: VenuesIdRoute,
   VoiceIdRoute: VoiceIdRoute,
   CompetitionsIndexRoute: CompetitionsIndexRoute,

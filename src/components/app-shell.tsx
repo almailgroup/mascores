@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import { BrandLogo } from "@/components/brand-logo";
 import { LiveVoiceAlert } from "@/components/live-voice-alert";
+import { useReminderAlerts } from "@/components/match-reminders";
 
 type NavItem = { to: "/" | "/search" | "/competitions" | "/news" | "/transfers" | "/tickets" | "/voice" | "/settings"; labelKey: string; icon: typeof Home; exact?: boolean };
 /** Shown in the mobile tab bar. */
@@ -31,6 +32,7 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
   const location = useLocation();
   const [moreOpen, setMoreOpen] = useState(false);
   useEffect(() => { void user; }, [user]);
+  useReminderAlerts();
 
   const profile = useQuery({
     enabled: !!user,
