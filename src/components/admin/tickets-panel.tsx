@@ -17,6 +17,7 @@ type MatchOption = {
 type Offer = {
   id: string; match_id: string; name: string; stand: string | null; price: number; currency: string; resale_max_price: number | null;
   is_free: boolean; capacity: number | null; show_row: boolean; show_seat: boolean; notes: string | null; is_active: boolean;
+  approval_status?: string | null;
 };
 
 const emptyOffer = {
@@ -25,8 +26,11 @@ const emptyOffer = {
 };
 
 
-/** Admin ticketing: create ticket types per match, issue passes and scan QR codes. */
-export function TicketsPanel() {
+/**
+ * Admin ticketing: create ticket types per match, issue passes and scan QR codes.
+ * When the owner asked for approval, new tickets are held back until he says yes.
+ */
+export function TicketsPanel({ needsApproval = false }: { needsApproval?: boolean }) {
   const [view, setView] = useState<"offers" | "scan">("offers");
   return (
     <div>
