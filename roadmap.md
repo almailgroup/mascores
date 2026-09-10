@@ -86,22 +86,26 @@ Fixes:
 - [x] Match page background too bright
 - [x] Brand name -> "Mansour Almail Scores" (with space), smaller
 - [x] Back button on competition pages
-- [ ] National-team squad photo should persist on the player page (squad entry only)
+- [x] National-team squad photo should persist on the player page (squad entry only)
 Additions:
-- [ ] Share button on standings and line-ups + save to camera roll
-- [ ] Line-ups: choose formation+bench or names/numbers+bench
-- [ ] Club Info tab: one news preview + "more news"
+- [x] Share button on standings and line-ups + save to camera roll
+- [x] Line-ups: choose formation+bench or names/numbers+bench
+- [x] Club Info tab: one news preview + "more news"
 - [x] Settings: send feedback to the owner
-- [ ] Stadium: map link + "directions"; stadium shown under match
-- [ ] Club contact info; full staff (not only coach); club/national colour choice
-- [ ] National team squad: player's club shown next to the name
+- [x] Stadium: map link + "directions"; stadium shown under match
+- [x] Club contact info; full staff (not only coach); club/national colour choice
+- [x] National team squad: player's club shown next to the name
 Bigger builds (need database work):
-- [ ] Main admin (mansouralmailscores@gmail.com) at /secretadminsafha, everyone else signed out
-- [ ] Manage section: create users with limited access (news, club news, rabta), approval on/off, generated passwords
-- [ ] Ultras / Rabta section with per-club editors and approval
-- [ ] Public/private user profiles, usernames, followers; replays published to the host profile
-- [ ] Voice rooms: live text messages during the room
-- [ ] Admin moderation of match chat messages
-- [ ] Tickets: Apple Wallet, resale with price cap, new QR after resale, seller contact
-- [ ] Match reminders + 45/30/15 minute notifications
-- [ ] Reporter desk: contact mansouralmailscores@gmail.com, social accounts on published news
+- [x] Main admin (mansouralmailscores@gmail.com) at /secretadminsafha, everyone else signed out
+- [x] Manage section: create users with limited access (news, club news, rabta), approval on/off, generated passwords
+- [x] Ultras / Rabta section with per-club editors and approval
+- [x] Public/private user profiles, usernames, followers; replays published to the host profile
+- [x] Voice rooms: live text messages during the room
+- [x] Admin moderation of match chat messages
+- [x] Tickets: Apple Wallet, resale with price cap, new QR after resale, seller contact
+- [x] Match reminders + 45/30/15 minute notifications
+- [x] Reporter desk: contact mansouralmailscores@gmail.com, social accounts on published news
+
+## Notes
+- Wallet: passes save as a calendar/wallet event file; a signed Apple Wallet pass needs an Apple developer pass certificate.
+- Match reminders fire while the app is open (browser notifications); background push is not set up.
