@@ -103,7 +103,10 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
       <main
         className="relative z-10 mx-auto max-w-7xl px-4 pt-6 sm:px-6"
         style={{ paddingBottom: "calc(7rem + env(safe-area-inset-bottom))" }}
-      >{children}</main>
+      >
+        <RestrictionNotice />
+        {children}
+      </main>
 
       {!bare && <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/60 bg-background/95 backdrop-blur-xl md:hidden" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
         <div className="mx-auto flex max-w-7xl items-center justify-around px-2 py-2">
