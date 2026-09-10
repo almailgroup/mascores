@@ -11,7 +11,7 @@ type Post = {
 };
 
 /** Rabta / Ultras posts: where the ultras will gather, waiting for approval. */
-export function UltrasPanel() {
+export function UltrasPanel({ isOwner = false }: { isOwner?: boolean }) {
   const qc = useQueryClient();
   const [editing, setEditing] = useState<Partial<Post> | null>(null);
 
@@ -37,9 +37,9 @@ export function UltrasPanel() {
       <div className="mb-4 flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <h2 className="text-lg font-bold">Rabta / Ultras</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Approve where each club's ultras will meet. Only approved posts show on the club page.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Where each club's ultras will meet. Only approved posts show on the club page.</p>
         </div>
-        <button className={btnPrimary} onClick={() => setEditing({ status: "approved" })}><Plus className="h-3.5 w-3.5" /> New post</button>
+        <button className={btnPrimary} onClick={() => setEditing({ status: isOwner ? "approved" : "pending" })}><Plus className="h-3.5 w-3.5" /> New post</button>
       </div>
 
       {posts.isLoading && <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>}
@@ -52,8 +52,8 @@ export function UltrasPanel() {
               <div className="truncate text-[0.7rem] text-muted-foreground">{teamName.get(p.team_id) ?? "Club"}{p.meeting_place ? ` · ${p.meeting_place}` : ""}</div>
               <div className={`text-[0.65rem] font-bold ${p.status === "approved" ? "text-emerald-600" : p.status === "pending" ? "text-amber-600" : "text-destructive"}`}>{p.status}</div>
             </div>
-            {p.status !== "approved" && <button className={btnGhost} onClick={() => setStatus(p.id, "approved")}><Check className="h-3.5 w-3.5" /> Approve</button>}
-            {p.status !== "rejected" && <button className={btnGhost} onClick={() => setStatus(p.id, "rejected")}><X className="h-3.5 w-3.5" /> Reject</button>}
+            {isOwner && p.status !== "approved" && <button className={btnGhost} onClick={() => setStatus(p.id, "approved")}><Check className="h-3.5 w-3.5" /> Approve</button>}
+            {isOwner && p.status !== "rejected" && <button className={btnGhost} onClick={() => setStatus(p.id, "rejected")}><X className="h-3.5 w-3.5" /> Reject</button>}
             <button className={btnGhost} onClick={() => setEditing(p)}>Edit</button>
             <button className={btnDanger} onClick={async () => { await supabase.from("ultras_posts").delete().eq("id", p.id); refresh(); }}><Trash2 className="h-3.5 w-3.5" /></button>
           </div>

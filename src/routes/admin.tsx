@@ -22,6 +22,7 @@ import { TicketsPanel } from "@/components/admin/tickets-panel";
 import { UsersPanel } from "@/components/admin/users-panel";
 import { VoicePanel } from "@/components/admin/voice-panel";
 import { ManagePanel } from "@/components/admin/manage-panel";
+import { myAccess, OWNER_EMAIL } from "@/lib/owner.functions";
 import { UltrasPanel } from "@/components/admin/ultras-panel";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import { SeasonMenu } from "@/components/season-menu";
@@ -45,6 +46,11 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
   const [adminSeason, setAdminSeason] = useState<string | null>(null);
   const [compTab, setCompTab] = useState<"overview" | "teams" | "matches" | "standings" | "awards" | "media">("overview");
   const unlock = useServerFn(unlockAdmin);
+  const accessFn = useServerFn(myAccess);
+  const access = useQuery({ enabled: !!user, queryKey: ["my-access", user?.id], queryFn: () => accessFn({}) });
+  const isOwner = (user?.email ?? "").toLowerCase() === OWNER_EMAIL;
+  const scopes = new Set((access.data?.grants ?? []).map((g) => g.scope));
+  const canRabta = isOwner || scopes.has("all") || scopes.has("rabta");
 
   useEffect(() => {
     if (loading) return;
@@ -64,6 +70,17 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
        else setError(res.rateLimited ? "Too many attempts. Try again in 15 minutes." : t("admin.unlock.wrong"));
     } finally { setBusy(false); }
   };
+
+  if (owner && !loading && user && !isOwner) {
+    return (
+      <AppShell>
+        <div className="mx-auto max-w-md rounded-3xl border border-border bg-card p-6 text-center">
+          <div className="text-lg font-semibold">Owner area</div>
+          <p className="mt-1 text-sm text-muted-foreground">This control centre belongs to the site owner account only.</p>
+        </div>
+      </AppShell>
+    );
+  }
 
   if (loading || isAdmin === null) return <div className="flex min-h-screen items-center justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div>;
 
@@ -139,7 +156,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
           </div>
           <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
             {([
-              ["competitions", Trophy], ["teams", Shield], ["countries", Globe], ["players", Users], ["news", Newspaper], ["ai", Bot], ["venues", Landmark], ["channels", Radio], ["transfers", Repeat2], ["tickets", Ticket], ["reports", Flag], ["users", UserCog], ["voice", Mic], ["rabta", Megaphone], ...(owner ? [["manage", KeyRound] as const] : []),
+              ["competitions", Trophy], ["teams", Shield], ["countries", Globe], ["players", Users], ["news", Newspaper], ["ai", Bot], ["venues", Landmark], ["channels", Radio], ["transfers", Repeat2], ["tickets", Ticket], ["reports", Flag], ["users", UserCog], ["voice", Mic], ...(canRabta ? [["rabta", Megaphone] as const] : []), ...(owner ? [["manage", KeyRound] as const] : []),
             ] as const).map(([k, Icon]) => (
               <button key={k} onClick={() => setTab(k)} className={`flex min-h-20 flex-col items-start justify-between rounded-lg border p-3 text-left font-semibold capitalize ${tab === k ? "border-primary bg-primary/10 text-primary" : "border-border bg-card hover:border-primary/50"}`}><Icon className="h-4 w-4" />{k === "ai" ? "Almail AI" : k}</button>
             ))}
@@ -171,7 +188,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
             {tab === "reports" && <ChatReportsPanel />}
             {tab === "users" && <UsersPanel />}
            {tab === "voice" && <VoicePanel />}
-            {tab === "rabta" && <UltrasPanel />}
+            {tab === "rabta" && canRabta && <UltrasPanel isOwner={isOwner} />}
             {tab === "manage" && owner && <ManagePanel />}
           </div>
         </div>
