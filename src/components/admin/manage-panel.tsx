@@ -186,7 +186,7 @@ function AddPersonModal({ onClose, onDone }: { onClose: () => void; onDone: (sec
         </label>
         {error && <p className="text-xs text-destructive">{error}</p>}
         <div className="flex gap-2">
-          <button className={btnPrimary} disabled={busy || !email || (needsTeam && !teamId)} onClick={submit}>
+          <button className={btnPrimary} disabled={busy || !email || scopes.length === 0 || (needsTeam && !teamId)} onClick={submit}>
             {busy && <Loader2 className="h-3.5 w-3.5 animate-spin" />} Save access
           </button>
           <button className={btnGhost} onClick={onClose}>Cancel</button>
