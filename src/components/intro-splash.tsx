@@ -46,10 +46,10 @@ export function IntroSplash() {
         <div className="animate-mas-logo-in flex flex-col items-center gap-4">
           <img
             src={src}
-            alt="MansourAlmailScores"
+            alt="Mansour Almail Scores"
             className={`h-auto w-[min(220px,50vw)] ${isLight ? "" : "drop-shadow-[0_0_40px_rgba(37,99,235,0.45)]"}`}
           />
-          <div className={`text-2xl font-black tracking-tight ${isLight ? "text-slate-900" : "text-white"}`}>MansourAlmailScores</div>
+          <div className={`text-xl font-black tracking-tight sm:text-2xl ${isLight ? "text-slate-900" : "text-white"}`}>Mansour Almail Scores</div>
         </div>
       </div>
     </div>

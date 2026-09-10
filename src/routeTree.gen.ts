@@ -16,7 +16,6 @@ import { Route as SecretadminsafhaRouteImport } from './routes/secretadminsafha'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as FavoritesRouteImport } from './routes/favorites'
-import { Route as DownloadRouteImport } from './routes/download'
 import { Route as ContributeRouteImport } from './routes/contribute'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -67,11 +66,6 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const FavoritesRoute = FavoritesRouteImport.update({
   id: '/favorites',
   path: '/favorites',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DownloadRoute = DownloadRouteImport.update({
-  id: '/download',
-  path: '/download',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContributeRoute = ContributeRouteImport.update({
@@ -160,7 +154,6 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/contribute': typeof ContributeRoute
-  '/download': typeof DownloadRoute
   '/favorites': typeof FavoritesRoute
   '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
@@ -186,7 +179,6 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/contribute': typeof ContributeRoute
-  '/download': typeof DownloadRoute
   '/favorites': typeof FavoritesRoute
   '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
@@ -213,7 +205,6 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/contribute': typeof ContributeRoute
-  '/download': typeof DownloadRoute
   '/favorites': typeof FavoritesRoute
   '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
@@ -241,7 +232,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/contribute'
-    | '/download'
     | '/favorites'
     | '/reset-password'
     | '/search'
@@ -267,7 +257,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/contribute'
-    | '/download'
     | '/favorites'
     | '/reset-password'
     | '/search'
@@ -293,7 +282,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/contribute'
-    | '/download'
     | '/favorites'
     | '/reset-password'
     | '/search'
@@ -320,7 +308,6 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
   ContributeRoute: typeof ContributeRoute
-  DownloadRoute: typeof DownloadRoute
   FavoritesRoute: typeof FavoritesRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SearchRoute: typeof SearchRoute
@@ -391,13 +378,6 @@ declare module '@tanstack/react-router' {
       path: '/favorites'
       fullPath: '/favorites'
       preLoaderRoute: typeof FavoritesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/download': {
-      id: '/download'
-      path: '/download'
-      fullPath: '/download'
-      preLoaderRoute: typeof DownloadRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contribute': {
@@ -520,7 +500,6 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
   ContributeRoute: ContributeRoute,
-  DownloadRoute: DownloadRoute,
   FavoritesRoute: FavoritesRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SearchRoute: SearchRoute,

@@ -82,6 +82,17 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
   const [view, setView] = useState<View>("short");
   const shotRef = useRef<HTMLDivElement>(null);
   const form = useForm(rows, view === "form");
+  // The shared picture carries the league name, so it makes sense on its own.
+  const competitionId = rows[0]?.competition_id ?? null;
+  const competition = useQuery({
+    enabled: !!competitionId,
+    queryKey: ["standings-competition-name", competitionId],
+    queryFn: async () => {
+      const { data } = await supabase.from("competitions").select("name").eq("id", competitionId!).maybeSingle();
+      return data?.name ?? null;
+    },
+  });
+  const shareTitle = competition.data ? tx(competition.data) : tx("Standings");
   const highlights = [...(highlightTeamIds ?? []), ...(highlightTeamId ? [highlightTeamId] : [])];
   const views: View[] = ["full", "form", "short"];
   const viewName: Record<View, string> = { full: tx("Full"), form: tx("Form"), short: tx("Short") };
@@ -97,10 +108,10 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
       ))}
     </div>
     <ShareCardButton
-      title={tx("Standings")}
+      title={shareTitle}
       render={() => drawStandingsCard({
-        title: tx("Standings"),
-        subtitle: rows[0]?.season ?? null,
+        title: shareTitle,
+        subtitle: [tx("Standings"), rows[0]?.season ?? null].filter(Boolean).join(" · "),
         withForm: view === "form",
         groups: grouped(rows).map(([group, groupRows]) => ({
           label: group ? tx(group) : null,

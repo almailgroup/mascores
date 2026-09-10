@@ -317,6 +317,7 @@ function MatchPage() {
       </div>}
 
       {tab === "lineups" && lineupsVisible && <div className="space-y-4">
+      <div className="flex justify-end"><MatchShare data={shareData} mode="lineups" /></div>
       <div className="relative grid grid-cols-2 gap-1 rounded-full border border-border bg-muted/60 p-1">
         <span
           className="absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-full bg-primary shadow-sm transition-transform duration-300 ease-out"
@@ -743,11 +744,15 @@ function MatchVenueCard({ venueId, venueName }: { venueId: string | null; venueN
           <div className="truncate text-xs text-muted-foreground">{[tx(v.city), tx(v.country)].filter(Boolean).join(", ")}</div>
         </div>
       </Link>
-      {v.map_url && (
-        <a href={v.map_url} target="_blank" rel="noreferrer" className="flex items-center gap-3 border-t border-border px-4 py-3 text-sm font-bold text-primary hover:bg-accent">
-          <Navigation className="h-4 w-4" /> {tx("Directions to the stadium")}
-        </a>
-      )}
+      {/* Directions always work: a saved map link wins, otherwise we search maps for the stadium. */}
+      <a
+        href={v.map_url || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([v.name, v.city, v.country].filter(Boolean).join(", "))}`}
+        target="_blank"
+        rel="noreferrer"
+        className="flex items-center gap-3 border-t border-border px-4 py-3 text-sm font-bold text-primary hover:bg-accent"
+      >
+        <Navigation className="h-4 w-4" /> {tx("Directions to the stadium")}
+      </a>
     </div>
   );
 }

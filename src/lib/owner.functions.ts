@@ -18,11 +18,15 @@ async function ownerAdmin(claims: Record<string, unknown> | null | undefined) {
   return supabaseAdmin;
 }
 
-/** Readable one-off password we show the owner once so they can pass it on. */
-function makePassword() {
+/**
+ * One steady password per account: worked out from the account id, so the owner
+ * can look it up again later and it never changes on its own.
+ */
+async function accountPassword(userId: string) {
   const words = ["Match", "Goal", "Kick", "Score", "Pitch", "Corner", "Assist", "Keeper"];
-  const word = words[Math.floor(Math.random() * words.length)];
-  const digits = String(Math.floor(100000 + Math.random() * 899999));
+  const bytes = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`mas-access:${userId}`)));
+  const word = words[bytes[0]! % words.length];
+  const digits = String(100000 + ((bytes[1]! << 16) | (bytes[2]! << 8) | bytes[3]!) % 900000);
   return `${word}-${digits}-Mas`;
 }
 
@@ -100,18 +104,16 @@ export const addManagedUser = createServerFn({ method: "POST" })
     const email = data.email.trim().toLowerCase();
     const { data: existing } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
     let user = existing?.users.find((u) => (u.email ?? "").toLowerCase() === email) ?? null;
-    let password: string | null = null;
     if (!user) {
-      password = makePassword();
-      const created = await admin.auth.admin.createUser({ email, password, email_confirm: true });
+      const created = await admin.auth.admin.createUser({ email, email_confirm: true });
       if (created.error) throw new Error(created.error.message);
       user = created.data.user;
-    } else {
-      // Existing account: give it a fresh one-time password so it can be handed over.
-      password = makePassword();
-      const updated = await admin.auth.admin.updateUserById(user.id, { password });
-      if (updated.error) throw new Error(updated.error.message);
     }
+    if (!user) throw new Error("Could not create that account.");
+    // Always the same steady password for this account.
+    const password = await accountPassword(user.id);
+    const updated = await admin.auth.admin.updateUserById(user.id, { password });
+    if (updated.error) throw new Error(updated.error.message);
     if (!user) throw new Error("Could not create that account.");
     const teamId = data.teamId ?? null;
     const { error } = await admin.from("admin_grants").upsert(
@@ -151,16 +153,16 @@ export const setGrantApproval = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
-/** Makes a one-time password for a managed account, shows it once and emails the person. */
+/** Shows the account's steady password again (or sets a custom one the owner types). */
 export const resetManagedPassword = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ userId: z.string().uuid(), password: z.string().min(8).optional() }).parse(input))
+  .inputValidator((input: unknown) => z.object({ userId: z.string().uuid(), password: z.string().min(8).optional(), email: z.boolean().optional() }).parse(input))
   .handler(async ({ data, context }) => {
     const admin = await ownerAdmin(context.claims as Record<string, unknown>);
-    const password = data.password ?? makePassword();
+    const password = data.password ?? (await accountPassword(data.userId));
     const { data: updated, error } = await admin.auth.admin.updateUserById(data.userId, { password });
     if (error) throw new Error(error.message);
-    const emailed = updated.user?.email ? await emailSignInLink(updated.user.email) : false;
+    const emailed = data.email && updated.user?.email ? await emailSignInLink(updated.user.email) : false;
     return { ok: true as const, password, emailed };
   });
 

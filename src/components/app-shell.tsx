@@ -8,6 +8,20 @@ import { useI18n } from "@/lib/i18n";
 import { BrandLogo } from "@/components/brand-logo";
 import { LiveVoiceAlert } from "@/components/live-voice-alert";
 import { useReminderAlerts } from "@/components/match-reminders";
+import { suspensionMessage, useMySuspension } from "@/lib/suspension";
+
+/** Tells a restricted person, on every page, that they are banned or suspended and why. */
+function RestrictionNotice() {
+  const { user } = useAuth();
+  const suspension = useMySuspension(user?.id);
+  if (!suspension.data) return null;
+  return (
+    <div className="mb-4 rounded-2xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm font-semibold text-destructive">
+      {suspensionMessage(suspension.data)}
+    </div>
+  );
+}
+
 
 type NavItem = { to: "/" | "/search" | "/competitions" | "/news" | "/transfers" | "/tickets" | "/voice" | "/settings"; labelKey: string; icon: typeof Home; exact?: boolean };
 /** Shown in the mobile tab bar. */
@@ -103,7 +117,10 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
       <main
         className="relative z-10 mx-auto max-w-7xl px-4 pt-6 sm:px-6"
         style={{ paddingBottom: "calc(7rem + env(safe-area-inset-bottom))" }}
-      >{children}</main>
+      >
+        <RestrictionNotice />
+        {children}
+      </main>
 
       {!bare && <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/60 bg-background/95 backdrop-blur-xl md:hidden" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
         <div className="mx-auto flex max-w-7xl items-center justify-around px-2 py-2">
