@@ -12,6 +12,7 @@ import { MatchVoice } from "@/components/match-voice";
 import { MatchPrediction } from "@/components/match-prediction";
 import { MatchMomentum } from "@/components/match-momentum";
 import { MapPin, Users, Navigation } from "lucide-react";
+import { MatchReminders } from "@/components/match-reminders";
 import { FlagIcon } from "@/components/flag";
 import { EventIcon as EventArt, hasEventArt } from "@/components/event-icon";
 import { nationalOverrideMap, applyCallUp } from "@/lib/national";
@@ -289,6 +290,8 @@ function MatchPage() {
               ))}
             </dl>
           </div>
+
+          <MatchReminders matchId={id} kickoffAt={match.kickoff_at} />
 
           <MatchVenueCard venueId={match.venue_id} venueName={match.venue} />
 
