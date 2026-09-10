@@ -18,11 +18,15 @@ async function ownerAdmin(claims: Record<string, unknown> | null | undefined) {
   return supabaseAdmin;
 }
 
-/** Readable one-off password we show the owner once so they can pass it on. */
-function makePassword() {
+/**
+ * One steady password per account: worked out from the account id, so the owner
+ * can look it up again later and it never changes on its own.
+ */
+async function accountPassword(userId: string) {
   const words = ["Match", "Goal", "Kick", "Score", "Pitch", "Corner", "Assist", "Keeper"];
-  const word = words[Math.floor(Math.random() * words.length)];
-  const digits = String(Math.floor(100000 + Math.random() * 899999));
+  const bytes = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`mas-access:${userId}`)));
+  const word = words[bytes[0]! % words.length];
+  const digits = String(100000 + ((bytes[1]! << 16) | (bytes[2]! << 8) | bytes[3]!) % 900000);
   return `${word}-${digits}-Mas`;
 }
 
