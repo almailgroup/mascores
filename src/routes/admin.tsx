@@ -54,6 +54,8 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
   const scopes = new Set((access.data?.grants ?? []).map((g) => g.scope));
   const canRabta = isOwner || scopes.has("all") || scopes.has("rabta");
   const everything = isOwner || scopes.has("all");
+  /** A limited admin whose access is marked "needs my approval" cannot publish tickets straight away. */
+  const ticketsNeedApproval = !everything && (access.data?.grants ?? []).some((g) => g.requiresApproval);
   /** Which sections this account may open, based on what the owner handed out. */
   const allowed = (key: string) => {
     if (everything) return true;
@@ -215,7 +217,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
             {tab === "venues" && allowed("venues") && <VenuesPanel />}
             {tab === "channels" && allowed("channels") && <ChannelsPanel />}
             {tab === "transfers" && allowed("transfers") && <TransfersAdminPanel />}
-            {tab === "tickets" && allowed("tickets") && <TicketsPanel />}
+            {tab === "tickets" && allowed("tickets") && <TicketsPanel needsApproval={ticketsNeedApproval} />}
             {tab === "reports" && allowed("reports") && <ChatReportsPanel />}
             {tab === "users" && everything && <UsersPanel />}
            {tab === "voice" && allowed("voice") && <VoicePanel />}

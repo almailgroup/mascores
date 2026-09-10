@@ -174,6 +174,9 @@ function OffersView({ needsApproval }: { needsApproval: boolean }) {
           ))}
         </div>
         <p className="mt-3 text-xs text-muted-foreground">Saving generates one unique QR code per capacity slot. Fans receive codes from this pool when they purchase.</p>
+        {needsApproval && (
+          <p className="mt-1 text-xs font-semibold text-amber-600">This ticket is sent to the site owner first. It only goes on sale once he approves it.</p>
+        )}
         <div className="mt-4 flex gap-2">
           <button className={btnPrimary} disabled={busy || (!editing && !matchId) || !form.capacity.trim()} onClick={save}>
             {busy && <Loader2 className="h-3.5 w-3.5 animate-spin" />} {editing ? "Save ticket" : "Create ticket & codes"}
