@@ -150,7 +150,7 @@ export function ManagePanel() {
   );
 }
 
-function AddPersonModal({ onClose, onDone }: { onClose: () => void; onDone: (secret: { email: string; password: string } | null) => void }) {
+function AddPersonModal({ onClose, onDone }: { onClose: () => void; onDone: (secret: { email: string; password: string; emailed: boolean } | null) => void }) {
   const [email, setEmail] = useState("");
   const [scopes, setScopes] = useState<GrantScope[]>(["news"]);
   const [teamId, setTeamId] = useState("");
@@ -172,7 +172,7 @@ function AddPersonModal({ onClose, onDone }: { onClose: () => void; onDone: (sec
     setBusy(true); setError(null);
     try {
       const res = await add({ data: { email, scopes, teamId: needsTeam ? (teamId || null) : null, requiresApproval } });
-      onDone(res.password ? { email: email.trim().toLowerCase(), password: res.password } : null);
+      onDone(res.password ? { email: email.trim().toLowerCase(), password: res.password, emailed: res.emailed } : null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not save that.");
     } finally { setBusy(false); }
