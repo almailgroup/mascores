@@ -250,9 +250,17 @@ function SettingsPage() {
 }
 /** Sends the owner feedback about the app straight to his inbox. */
 function FeedbackBox() {
+  const { user } = useAuth();
   const [message, setMessage] = useState("");
   const [sent, setSent] = useState(false);
+  const [history, setHistory] = useState<{ id: string; message: string; admin_reply: string | null; created_at: string }[]>([]);
   const owner = "mansouralmailscores@gmail.com";
+  const loadHistory = async () => {
+    if (!user) return;
+    const { data } = await supabase.from("app_feedback").select("id,message,admin_reply,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(20);
+    setHistory(data ?? []);
+  };
+  useEffect(() => { void loadHistory(); }, [user?.id]);
   return (
     <section className="mt-10 rounded-3xl border border-border bg-card p-6">
       <h2 className="text-sm font-bold">Send feedback</h2>
@@ -270,7 +278,7 @@ function FeedbackBox() {
           onClick={async () => {
             const { data } = await supabase.auth.getUser();
             await supabase.from("app_feedback").insert({ message, user_id: data.user?.id ?? null, email: data.user?.email ?? null } as never);
-            setSent(true); setMessage("");
+            setSent(true); setMessage(""); void loadHistory();
           }}
           className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-4 text-sm font-bold text-primary-foreground disabled:opacity-60"
         >
@@ -279,6 +287,10 @@ function FeedbackBox() {
         <a href={`mailto:${owner}?subject=${encodeURIComponent("Mansour Almail Scores feedback")}&body=${encodeURIComponent(message)}`}
           className="text-[0.7rem] font-semibold text-primary">Email instead</a>
       </div>
+      {history.length > 0 && <div className="mt-5 space-y-2 border-t border-border pt-4">
+        <h3 className="text-xs font-bold">Your feedback and replies</h3>
+        {history.map((item) => <div key={item.id} className="rounded-xl bg-muted/50 p-3 text-xs"><p>{item.message}</p>{item.admin_reply && <div className="mt-2 rounded-lg border border-primary/20 bg-primary/10 p-2"><div className="mb-1 font-bold text-primary">Owner reply</div>{item.admin_reply}</div>}</div>)}
+      </div>}
     </section>
   );
 }

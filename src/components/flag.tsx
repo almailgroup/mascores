@@ -15,7 +15,7 @@ export function FlagIcon({
 }) {
   const c = findCountry(value);
   if (!c) return null;
-  // Stateless residents have no ISO flag — draw a wordmark flag instead.
+  // People without a nationality have no ISO flag — show a neutral mark.
   if (c.code === BIDOON_CODE) {
     return (
       <span
@@ -23,7 +23,7 @@ export function FlagIcon({
         aria-label={c.name}
         className={`${SIZES[size]} ${TEXT_SIZES[size]} inline-flex shrink-0 items-center justify-center rounded-[2px] bg-muted font-black leading-none text-foreground ring-1 ring-black/10 ${className}`}
       >
-        بدون
+        —
       </span>
     );
   }
