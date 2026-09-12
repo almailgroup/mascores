@@ -28,7 +28,7 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const tx = useTx();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   useRealtime(["competitions", "matches", "news_posts"]);
 
   const comps = useQuery({
@@ -117,7 +117,7 @@ function Home() {
               <Link key={c.id} to="/competitions/$slug" params={{ slug: c.slug }} className="group flex items-center gap-3 rounded-2xl border border-border bg-card p-4 transition hover:border-primary/50 hover:shadow-lg">
                 <CompLogo logo={c.logo_url} />
                 <div className="min-w-0">
-                  <div className="truncate font-semibold">{tx(c.name)}</div>
+                   <div className="truncate font-semibold">{lang === "ar" && c.name_ar ? c.name_ar : tx(c.name)}</div>
                   <div className="truncate text-xs text-muted-foreground">{[tx(c.country), c.season].filter(Boolean).join(" · ")}</div>
                 </div>
               </Link>

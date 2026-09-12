@@ -12,6 +12,7 @@ import { useVoiceRoom, type VoiceRole } from "@/lib/use-voice-room";
 import { suspensionMessage, useMySuspension } from "@/lib/suspension";
 import { uploadMedia } from "@/components/admin/upload";
 import { VoiceRoomChat } from "@/components/voice-room-chat";
+import { VoiceReactions } from "@/components/voice-reactions";
 
 export const Route = createFileRoute("/voice/$id")({
   head: () => ({
@@ -394,6 +395,7 @@ function VoiceRoomPage() {
 
       {/* Written messages sit under the speakers so listeners can join in silently. */}
       <div className="mt-4 pb-40 md:pb-6">
+        {live && joined && <VoiceReactions roomId={id} userId={user?.id} />}
         <VoiceRoomChat roomId={id} />
       </div>
 

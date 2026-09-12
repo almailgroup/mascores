@@ -6,6 +6,7 @@ import { useRealtime } from "@/lib/realtime";
 import { useCompetitionLogo } from "@/lib/comp-logo";
 import { Trophy } from "lucide-react";
 import { useNum, useTx } from "@/lib/auto-translate";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/competitions/")({
   head: () => ({ meta: [{ title: "Competitions — MansourAlmailScores" }] }),
@@ -14,6 +15,7 @@ export const Route = createFileRoute("/competitions/")({
 
 function CompetitionsList() {
   const tx = useTx();
+  const { lang } = useI18n();
   const compLogo = useCompetitionLogo();
   const num = useNum();
   useRealtime(["competitions"]);
@@ -37,7 +39,7 @@ function CompetitionsList() {
                 {compLogo(c) ? <img src={compLogo(c)!} alt="" className="h-full w-full object-contain" /> : <Trophy className="h-6 w-6" />}
               </div>
               <div className="min-w-0">
-                <div className="truncate font-semibold">{tx(c.name)}</div>
+                 <div className="truncate font-semibold">{lang === "ar" && c.name_ar ? c.name_ar : tx(c.name)}</div>
                 <div className="truncate text-xs text-muted-foreground">{[tx(c.country), num(c.season)].filter(Boolean).join(" · ")}</div>
               </div>
             </Link>
