@@ -23,7 +23,7 @@ import { MatchShare } from "@/components/match-share";
 import { displayShortName } from "@/lib/short-name";
 import { FavoriteButton, MatchNotificationButton } from "@/hooks/use-favorites";
 
-/** Crest + name used inside the tinted match hero. */
+/** Crest + name used inside the tinted match hero, with a follow star for the club. */
 function HeroTeam({ team }: { team: Team | null }) {
   const tx = useTx();
   const body = (
@@ -39,8 +39,17 @@ function HeroTeam({ team }: { team: Team | null }) {
   );
   const cls = "flex min-w-0 flex-col items-center text-center text-white";
   if (!team) return <div className={cls}>{body}</div>;
-  return <Link to="/teams/$id" params={{ id: team.id }} className={cls}>{body}</Link>;
+  return (
+    <div className={cls}>
+      <Link to="/teams/$id" params={{ id: team.id }} className="flex min-w-0 flex-col items-center text-center">{body}</Link>
+      {/* Follow star sits right under the club name, inside the match page. */}
+      <span className="mt-1 [&_button]:border-white/25 [&_button]:bg-white/10 [&_button]:text-white">
+        <FavoriteButton kind="team" id={team.id} />
+      </span>
+    </div>
+  );
 }
+
 
 /** Same slot keys the admin pitch board writes, so the public pitch mirrors it. */
 function formationRows(formation: string | null | undefined): string[][] {

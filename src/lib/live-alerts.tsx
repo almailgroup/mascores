@@ -3,6 +3,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useFavorites } from "@/hooks/use-favorites";
+import { playAlertSound, soundFor, type AlertEventKey, type AlertSoundMap } from "@/lib/alert-sounds";
+
 
 const ALERT_KEY = "mas.match_notification_ids";
 
@@ -60,27 +62,11 @@ const STATUS_TEXT: Record<string, { emoji: string; label: string }> = {
   cancelled: { emoji: "🚫", label: "Cancelled" },
 };
 
-type AlertPreferences = { goals?: boolean; cards?: boolean; kickoff?: boolean; final?: boolean; sound?: string };
-
-function playAlertSound(sound: string | undefined) {
-  if (!sound || sound === "none") return;
-  try {
-    const context = new AudioContext();
-    const oscillator = context.createOscillator();
-    const gain = context.createGain();
-    oscillator.type = sound === "whistle" ? "square" : sound === "soft" ? "sine" : "triangle";
-    oscillator.frequency.setValueAtTime(sound === "whistle" ? 1150 : sound === "soft" ? 520 : 720, context.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(sound === "stadium" ? 420 : 680, context.currentTime + 0.35);
-    gain.gain.setValueAtTime(0.0001, context.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.12, context.currentTime + 0.03);
-    gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.45);
-    oscillator.connect(gain).connect(context.destination);
-    oscillator.start(); oscillator.stop(context.currentTime + 0.46);
-  } catch { /* browser audio may need a prior interaction */ }
-}
+type AlertPreferences = { goals?: boolean; cards?: boolean; kickoff?: boolean; final?: boolean; sound?: string; sounds?: AlertSoundMap };
 
 function announce(title: string, body: string, sound?: string) {
   playAlertSound(sound);
+
   try {
     if ("Notification" in window && Notification.permission === "granted") {
       new Notification(title, { body, icon: "/icon-192.png", badge: "/icon-192.png", tag: title + body });
@@ -177,7 +163,9 @@ export function useLiveEventAlerts() {
         m ? `${m.home} ${score || "vs"} ${m.away}` : "",
         [minute, who, row.description].filter(Boolean).join(" · "),
       ].filter(Boolean).join("\n");
-      announce(title, body, preferences.sound);
+      const soundKey: AlertEventKey = ["penalty", "penalty_goal", "penalty_missed", "missed_penalty"].includes(row.type) ? "penalty" : category === "cards" ? "card" : category === "goals" ? "goal" : "kickoff";
+      announce(title, body, soundFor(preferences.sounds, soundKey));
+
     };
 
     const refreshScore = async (matchId: string) => {
@@ -197,7 +185,7 @@ export function useLiveEventAlerts() {
       seen.current.add(key);
       info.set(row.id, { ...(m as Info), homeScore: row.home_score, awayScore: row.away_score });
       const score = row.home_score != null && row.away_score != null ? `${row.home_score} - ${row.away_score}` : "vs";
-      announce(`${meta.emoji} ${meta.label}`, `${m?.home ?? "Home"} ${score} ${m?.away ?? "Away"}`, preferences.sound);
+      announce(`${meta.emoji} ${meta.label}`, `${m?.home ?? "Home"} ${score} ${m?.away ?? "Away"}`, soundFor(preferences.sounds, category === "final" ? "final" : "kickoff"));
     };
 
     loadAlerts();

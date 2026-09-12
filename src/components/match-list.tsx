@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Trophy } from "lucide-react";
 import { TeamCrest } from "@/components/team-crest";
 import { FlagIcon } from "@/components/flag";
-import { FavoriteButton, MatchNotificationButton } from "@/hooks/use-favorites";
+import { MatchNotificationButton } from "@/hooks/use-favorites";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
 import type { Match, Team } from "@/lib/db";
 import { matchClockSeconds } from "@/lib/db";
@@ -104,8 +104,8 @@ export function MatchRow({ m, highlightTeamId }: { m: MatchWithTeams; highlightT
       </div>
        <div className="flex shrink-0 items-center gap-1">
          {finished && outcome ? <span className={`grid h-7 w-7 place-items-center rounded-full text-[0.65rem] font-black ${outcome === "W" ? "bg-emerald-500/15 text-emerald-500" : outcome === "L" ? "bg-destructive/15 text-destructive" : "bg-muted text-muted-foreground"}`}>{outcome}</span> : <MatchNotificationButton matchId={m.id} teamIds={[m.home_team_id, m.away_team_id]} />}
-         <FavoriteButton kind="match" id={m.id} />
        </div>
+
     </Link>
   );
 }

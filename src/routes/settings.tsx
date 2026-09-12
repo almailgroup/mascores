@@ -14,6 +14,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { Save, LogOut, Loader2, LogIn, Camera, Trash2, BellRing, Volume2 } from "lucide-react";
 import { ImageCropper } from "@/components/image-cropper";
 import { ConfirmDelete } from "@/components/confirm-delete";
+import { ALERT_EVENTS, ALERT_SOUNDS, playAlertSound, soundFor, type AlertSoundId, type AlertSoundMap } from "@/lib/alert-sounds";
+
 
 export const Route = createFileRoute("/settings")({
   head: () => ({ meta: [{ title: "Settings — MansourAlmailScores" }, { name: "robots", content: "noindex" }] }),
@@ -39,7 +41,7 @@ function SettingsPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
-  const [alertPrefs, setAlertPrefs] = useState({ goals: true, cards: true, kickoff: true, final: true, voice: true, sound: "stadium" });
+  const [alertPrefs, setAlertPrefs] = useState<{ goals: boolean; cards: boolean; kickoff: boolean; final: boolean; voice: boolean; sound: string; sounds: AlertSoundMap }>({ goals: true, cards: true, kickoff: true, final: true, voice: true, sound: "stadium", sounds: {} });
 
   useEffect(() => {
     if (authLoading) return;
@@ -139,7 +141,34 @@ function SettingsPage() {
         <div className="mt-4 grid gap-2 sm:grid-cols-2">
           {([['goals','Goals and penalties'],['cards','Cards'],['kickoff','Kick-off and reminders'],['final','Full-time results'],['voice','Followed voice hosts']] as const).map(([key,label]) => <label key={key} className="flex items-center justify-between rounded-xl border border-border bg-background px-3 py-2 text-sm"><span>{label}</span><input type="checkbox" checked={alertPrefs[key]} onChange={(event) => setAlertPrefs({ ...alertPrefs, [key]: event.target.checked })} /></label>)}
         </div>
-        <label className="mt-3 flex items-center gap-3 rounded-xl border border-border bg-background px-3 py-2 text-sm"><Volume2 className="h-4 w-4 text-primary" /><span className="flex-1">Alert sound</span><select className="rounded-lg border border-border bg-card px-2 py-1" value={alertPrefs.sound} onChange={(event) => setAlertPrefs({ ...alertPrefs, sound: event.target.value })}><option value="stadium">Stadium</option><option value="whistle">Whistle</option><option value="soft">Soft chime</option><option value="none">Silent</option></select></label>
+        <div className="mt-4">
+          <div className="flex items-center gap-2 text-sm font-semibold"><Volume2 className="h-4 w-4 text-primary" /> Alert sounds</div>
+          <p className="mt-1 text-[0.7rem] text-muted-foreground">Each moment can have its own sound. Tap the play button to hear it.</p>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            {ALERT_EVENTS.map((event) => {
+              const value = soundFor(alertPrefs.sounds, event.key);
+              return (
+                <div key={event.key} className="flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-2 text-sm">
+                  <span className="min-w-0 flex-1 truncate">{event.label}</span>
+                  <select className="rounded-lg border border-border bg-card px-2 py-1 text-xs"
+                    value={value}
+                    onChange={(e) => {
+                      const next = e.target.value as AlertSoundId;
+                      setAlertPrefs({ ...alertPrefs, sounds: { ...alertPrefs.sounds, [event.key]: next } });
+                      playAlertSound(next);
+                    }}>
+                    {ALERT_SOUNDS.map((sound) => <option key={sound.id} value={sound.id}>{sound.label}</option>)}
+                  </select>
+                  <button type="button" aria-label={`Play ${event.label} sound`} onClick={() => playAlertSound(value)}
+                    className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-border text-primary">
+                    <Volume2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         <p className="mt-2 text-[0.7rem] text-muted-foreground">Alerts work while the app is open. System delivery depends on your phone and browser permissions.</p>
       </section>}
       {avatarFile && <ImageCropper file={avatarFile} aspect={1} onCancel={() => setAvatarFile(null)} onDone={async (file) => { await pickAvatar(file); setAvatarFile(null); }} />}

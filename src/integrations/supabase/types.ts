@@ -378,6 +378,7 @@ export type Database = {
           starts_on: string | null
           title_holder_team_id: string | null
           updated_at: string
+          youth_competition_ids: string[]
         }
         Insert: {
           category?: string | null
@@ -408,6 +409,7 @@ export type Database = {
           starts_on?: string | null
           title_holder_team_id?: string | null
           updated_at?: string
+          youth_competition_ids?: string[]
         }
         Update: {
           category?: string | null
@@ -438,6 +440,7 @@ export type Database = {
           starts_on?: string | null
           title_holder_team_id?: string | null
           updated_at?: string
+          youth_competition_ids?: string[]
         }
         Relationships: [
           {
@@ -1916,6 +1919,7 @@ export type Database = {
       teams: {
         Row: {
           accent_color: string | null
+          age_group: string | null
           chairman: string | null
           coach_name: string | null
           coach_photo_url: string | null
@@ -1935,6 +1939,7 @@ export type Database = {
           logo_url: string | null
           media_urls: string[]
           name: string
+          parent_team_id: string | null
           short_name: string | null
           social_links: Json
           trophies: number
@@ -1944,6 +1949,7 @@ export type Database = {
         }
         Insert: {
           accent_color?: string | null
+          age_group?: string | null
           chairman?: string | null
           coach_name?: string | null
           coach_photo_url?: string | null
@@ -1963,6 +1969,7 @@ export type Database = {
           logo_url?: string | null
           media_urls?: string[]
           name: string
+          parent_team_id?: string | null
           short_name?: string | null
           social_links?: Json
           trophies?: number
@@ -1972,6 +1979,7 @@ export type Database = {
         }
         Update: {
           accent_color?: string | null
+          age_group?: string | null
           chairman?: string | null
           coach_name?: string | null
           coach_photo_url?: string | null
@@ -1991,6 +1999,7 @@ export type Database = {
           logo_url?: string | null
           media_urls?: string[]
           name?: string
+          parent_team_id?: string | null
           short_name?: string | null
           social_links?: Json
           trophies?: number
@@ -2004,6 +2013,13 @@ export type Database = {
             columns: ["competition_id"]
             isOneToOne: false
             referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teams_parent_team_id_fkey"
+            columns: ["parent_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
             referencedColumns: ["id"]
           },
         ]

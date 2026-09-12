@@ -296,7 +296,9 @@ function TeamPage() {
               ) : null}
             </div>
           </section>
+          <YouthTeams team={t} />
           <TeamStaff teamId={t.id} />
+
           <TeamUltras teamId={t.id} />
           <TeamNewsTeaser teamId={t.id} onMore={() => setTab("news")} />
           {t.description ? <div className="rounded-2xl border border-border bg-card p-4 text-sm">{tx(t.description)}</div> : null}
@@ -461,7 +463,44 @@ function StandingsTabs({ rows, labels, teamId, tx }: {
   );
 }
 
+/** Youth sides linked to this first team, or the first team when viewing a youth side. */
+function YouthTeams({ team }: { team: Team }) {
+  const tx = useTx();
+  const q = useQuery({
+    queryKey: ["youth-teams", team.id, team.parent_team_id],
+    queryFn: async () => {
+      const children = (await supabase.from("teams").select("id,name,logo_url,age_group").eq("parent_team_id", team.id).order("name")).data ?? [];
+      const parent = team.parent_team_id
+        ? (await supabase.from("teams").select("id,name,logo_url,age_group").eq("id", team.parent_team_id).maybeSingle()).data
+        : null;
+      return { children: children as { id: string; name: string; logo_url: string | null; age_group: string | null }[], parent };
+    },
+  });
+  const children = q.data?.children ?? [];
+  const parent = q.data?.parent ?? null;
+  if (children.length === 0 && !parent) return null;
+  const rows = [...(parent ? [{ ...parent, age_group: tx("First team") ?? "First team" }] : []), ...children];
+  return (
+    <section className="overflow-hidden rounded-2xl border border-border bg-card">
+      <div className="border-b border-border px-4 py-2.5 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Youth teams")}</div>
+      <div className="divide-y divide-border">
+        {rows.map((row) => (
+          <Link key={row.id} to="/teams/$id" params={{ id: row.id }} className="flex items-center gap-3 px-4 py-3 hover:bg-accent">
+            <TeamCrest name={row.name} logo={row.logo_url} className="h-7 w-7" />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-semibold">{tx(row.name)}</span>
+              {row.age_group ? <span className="block truncate text-xs text-muted-foreground">{tx(row.age_group)}</span> : null}
+            </span>
+            <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 /** The people around the team beyond the coach. */
+
 function TeamStaff({ teamId }: { teamId: string }) {
   const tx = useTx();
   const staff = useQuery({

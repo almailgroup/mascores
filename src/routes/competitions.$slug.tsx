@@ -119,14 +119,15 @@ function CompetitionPage() {
     },
   });
   const divisions = useQuery({
-    enabled: !!comp.data && !!(comp.data.higher_division_id || comp.data.lower_division_id),
-    queryKey: ["comp-divisions", comp.data?.higher_division_id, comp.data?.lower_division_id],
+    enabled: !!comp.data && !!(comp.data.higher_division_id || comp.data.lower_division_id || (comp.data.youth_competition_ids ?? []).length),
+    queryKey: ["comp-divisions", comp.data?.higher_division_id, comp.data?.lower_division_id, (comp.data?.youth_competition_ids ?? []).join(",")],
     queryFn: async () => {
-      const ids = [comp.data!.higher_division_id, comp.data!.lower_division_id].filter((v): v is string => !!v);
+      const ids = [comp.data!.higher_division_id, comp.data!.lower_division_id, ...(comp.data!.youth_competition_ids ?? [])].filter((v): v is string => !!v);
       const { data } = await supabase.from("competitions").select("id,name,slug,logo_url").in("id", ids);
       return (data ?? []) as { id: string; name: string; slug: string; logo_url: string | null }[];
     },
   });
+
   const tx = useTx();
   const num = useNum();
   const dates = useDates();
@@ -383,6 +384,8 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
   const bestTeam = best ? teams.find((team) => team.id === best.team_id) : undefined;
   const higher = divisions.find((d) => d.id === c.higher_division_id);
   const lower = divisions.find((d) => d.id === c.lower_division_id);
+  const youth = divisions.filter((d) => (c.youth_competition_ids ?? []).includes(d.id));
+
   const featured = matches.find((match) => ["live", "ht"].includes(match.status)) ?? matches.find((match) => match.status === "scheduled") ?? matches.at(-1);
   const played = matches.filter((m) => ["ft", "aet", "pen", "awarded"].includes(m.status)).length;
   const cells: [string, string][] = friendly ? [
@@ -489,15 +492,15 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
         </section>
       )}
 
-      {(higher || lower) && (
+      {(higher || lower || youth.length > 0) && (
         <div className="grid gap-3 sm:grid-cols-2">
-          {[higher, lower].filter((division): division is { id: string; name: string; slug: string; logo_url: string | null } => Boolean(division)).map((division) => (
+          {[higher, lower, ...youth].filter((division): division is { id: string; name: string; slug: string; logo_url: string | null } => Boolean(division)).map((division) => (
             <Link key={division.id} to="/competitions/$slug" params={{ slug: division.slug }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 hover:border-primary">
               {division.logo_url
                 ? <img src={division.logo_url} alt="" className="h-8 w-8 shrink-0 object-contain" />
                 : <Trophy className="h-6 w-6 shrink-0 text-primary" />}
               <div className="min-w-0 flex-1">
-                <div className="text-[0.6rem] font-bold uppercase tracking-wide text-muted-foreground">{division.id === c.higher_division_id ? tx("Higher division") : tx("Lower division")}</div>
+                <div className="text-[0.6rem] font-bold uppercase tracking-wide text-muted-foreground">{division.id === c.higher_division_id ? tx("Higher division") : division.id === c.lower_division_id ? tx("Lower division") : tx("Youth league")}</div>
                 <div className="truncate text-xs font-semibold sm:text-sm">{tx(division.name)}</div>
               </div>
               <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -505,6 +508,7 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
           ))}
         </div>
       )}
+
 
       {c.description && <p className="rounded-xl border border-border bg-card p-3 text-xs leading-relaxed text-muted-foreground sm:text-sm">{tx(c.description)}</p>}
     </div>
