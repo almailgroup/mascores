@@ -44,10 +44,12 @@ export function LinkedNews({ kind, id }: { kind: Kind; id: string }) {
       {posts.map((p) => (
         <Link key={p.id} to="/news/$slug" params={{ slug: p.slug }} className="flex gap-3 rounded-2xl border border-border bg-card p-3 hover:border-primary/50">
           {p.cover_url && (
-            <div className="flex h-20 w-28 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-muted">
+            <div className="relative flex h-20 w-28 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-muted">
               <img src={p.cover_url} alt="" className="h-full w-full object-contain" />
+              <MediaWatermark compact />
             </div>
           )}
+
           <div className="min-w-0 flex-1">
              <div className="line-clamp-2 font-semibold">{lang === "ar" && p.title_ar ? p.title_ar : tx(p.title)}</div>
              {(p.excerpt || p.excerpt_ar) && <div className="mt-1 line-clamp-2 text-xs text-muted-foreground">{lang === "ar" && p.excerpt_ar ? p.excerpt_ar : tx(p.excerpt)}</div>}
