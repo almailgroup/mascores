@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, QrCode as QrIcon, Ticket, Camera, Search, Users } from "lucide-react";
+import { Loader2, QrCode as QrIcon, Ticket, Search, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { QrCode } from "@/components/qr-code";
 import { generateTicketPool, scanTicket } from "@/lib/tickets.functions";
