@@ -229,25 +229,16 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
             </div>
           </Field>
            <Field label="Chairman"><input className={inputCls} value={form.chairman ?? ""} onChange={(e) => setForm({ ...form, chairman: e.target.value || null })} /></Field>
-          {/* Youth setup: link this team to the first team and give it an age group. */}
-          <Field label="First team (for youth teams)">
-            <select className={inputCls} value={form.parent_team_id ?? ""} onChange={(e) => setForm({ ...form, parent_team_id: e.target.value || null })}>
-              <option value="">Not a youth team</option>
-              {(libraryQ.data ?? []).filter((team) => team.id !== form.id && !team.parent_team_id).map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}
-            </select>
-          </Field>
-          <Field label="Age group">
-            <input className={inputCls} list="mas-age-groups" placeholder="U19, U17, Reserves…" value={form.age_group ?? ""} onChange={(e) => setForm({ ...form, age_group: e.target.value || null })} />
-            <datalist id="mas-age-groups">{["U23", "U21", "U19", "U17", "U16", "U15", "Reserves", "Women"].map((item) => <option key={item} value={item} />)}</datalist>
-          </Field>
-          {form.parent_team_id && (
+          {form.id && (
             <div className="sm:col-span-2">
-              <button type="button" className={btnGhost} onClick={() => {
-                const parent = (libraryQ.data ?? []).find((team) => team.id === form.parent_team_id);
-                if (parent?.logo_url) setForm({ ...form, logo_url: parent.logo_url });
-              }}><ImagePlus className="h-3.5 w-3.5" /> Use the first team's logo</button>
+              <YouthLinks
+                team={form as Team}
+                library={libraryQ.data ?? []}
+                onUseParentLogo={(url) => setForm({ ...form, logo_url: url })}
+              />
             </div>
           )}
+
 
           <div className="sm:col-span-2"><Field label="Team logo">
             <ImageInput value={form.logo_url ?? null} onChange={(v) => setForm({ ...form, logo_url: v })} onFile={async (f) => { const url = await uploadMedia("team-logos", f); if (url) setForm({ ...form, logo_url: url }); }} />
