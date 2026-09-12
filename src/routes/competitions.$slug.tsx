@@ -221,7 +221,7 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
 }) {
   const tx = useTx();
   const num = useNum();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const accent = useLogoAccent(hero ? null : logo);
   // No custom hero and no logo to sample: use a clean white band instead of navy.
   const noLogo = !hero && !logo;
