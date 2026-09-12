@@ -46,8 +46,10 @@ function NewsPage() {
               {n.cover_url && (
                 <div className="relative flex aspect-video w-full items-center justify-center bg-gradient-to-br from-primary/25 via-card to-background">
                   <img src={n.cover_url} alt="" className="relative h-full w-full object-contain" />
+                  <MediaWatermark compact />
                 </div>
               )}
+
               <div className="flex-1 p-4">
                  <h2 className="font-semibold">{lang === "ar" && n.title_ar ? n.title_ar : tx(n.title)}</h2>
                  {(n.excerpt || n.excerpt_ar) && <p className="mt-1 text-sm text-muted-foreground">{lang === "ar" && n.excerpt_ar ? n.excerpt_ar : tx(n.excerpt)}</p>}
