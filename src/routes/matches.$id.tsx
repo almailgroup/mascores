@@ -21,7 +21,7 @@ import { useLogoAccent } from "@/lib/logo-accent";
 import { StandingsTable, type PublicStandingRow } from "@/components/standings-table";
 import { MatchShare } from "@/components/match-share";
 import { displayShortName } from "@/lib/short-name";
-import { FavoriteButton, MatchNotificationButton } from "@/hooks/use-favorites";
+import { FavoriteButton, MatchNotificationButton, useFavorites } from "@/hooks/use-favorites";
 
 /** Crest + name used inside the tinted match hero, with a follow star for the club. */
 function HeroTeam({ team, onFollow }: { team: Team | null; onFollow?: () => void }) {
