@@ -195,6 +195,11 @@ export function useNum() {
   return useContext(Ctx).num;
 }
 
+/** Compact number formatting hook: 1.2k, 10k, 1.2M (Arabic digits in Arabic mode). */
+export function useCompact() {
+  return useContext(Ctx).compact;
+}
+
 /** Locale-aware date formatting bound to the active language. */
 export function useDates() {
   const { lang } = useI18n();
