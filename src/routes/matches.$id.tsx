@@ -29,25 +29,27 @@ function HeroTeam({ team, onFollow, starSide }: { team: Team | null; onFollow?: 
   const tx = useTx();
   const reverse = starSide === "end";
   const star = team ? (
-    <span className="shrink-0 [&_button]:border-white/25 [&_button]:bg-white/10 [&_button]:text-white">
+    <span className="mt-1 shrink-0 [&_button]:h-9 [&_button]:w-9 [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-white [&_svg]:h-6 [&_svg]:w-6">
       <FavoriteButton kind="team" id={team.id} onFollow={onFollow} />
     </span>
   ) : null;
-  const crest = (
-    <span className="grid h-11 w-11 shrink-0 place-items-center">
-      {team?.logo_url
-        ? <img src={team.logo_url} alt="" className="h-full w-full object-contain drop-shadow-[0_2px_6px_rgba(0,0,0,0.35)]" />
-        : <TeamCrest name={team?.name} logo={null} className="h-9 w-9" />}
-    </span>
+  const stack = (
+    <>
+      <span className="grid h-14 w-14 place-items-center">
+        {team?.logo_url
+          ? <img src={team.logo_url} alt="" className="h-full w-full object-contain drop-shadow-[0_2px_6px_rgba(0,0,0,0.35)]" />
+          : <TeamCrest name={team?.name} logo={null} className="h-12 w-12" />}
+      </span>
+      {/* full club name, wrapping as needed - never truncated on a phone */}
+      <span className="mt-2 w-full text-balance break-words text-center text-sm font-bold leading-4.5 sm:text-base">{tx(team?.name) ?? "TBD"}</span>
+    </>
   );
-  const nameEl = <span className={`line-clamp-2 text-balance text-sm font-bold leading-4.5 sm:text-base ${reverse ? "text-end" : ""}`}>{tx(team?.name) ?? "TBD"}</span>;
-  const body = reverse ? <>{nameEl}{crest}</> : <>{crest}{nameEl}</>;
-  if (!team) return <div className={`flex min-w-0 items-center gap-2 text-white ${reverse ? "justify-end" : ""}`}>{reverse ? <>{nameEl}{crest}{star}</> : <>{star}{crest}{nameEl}</>}</div>;
+  const column = team
+    ? <Link to="/teams/$id" params={{ id: team.id }} className="flex min-w-0 flex-1 flex-col items-center">{stack}</Link>
+    : <div className="flex min-w-0 flex-1 flex-col items-center">{stack}</div>;
   return (
-    <div className={`flex min-w-0 items-center gap-2 text-white ${reverse ? "justify-end" : ""}`}>
-      {reverse
-        ? <><Link to="/teams/$id" params={{ id: team.id }} className="flex min-w-0 items-center gap-2">{body}</Link>{star}</>
-        : <>{star}<Link to="/teams/$id" params={{ id: team.id }} className="flex min-w-0 items-center gap-2">{body}</Link></>}
+    <div className={`flex min-w-0 items-start gap-1 text-white ${reverse ? "flex-row-reverse" : ""}`}>
+      {star}{column}
     </div>
   );
 }
