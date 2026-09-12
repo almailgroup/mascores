@@ -163,7 +163,9 @@ export function useLiveEventAlerts() {
         m ? `${m.home} ${score || "vs"} ${m.away}` : "",
         [minute, who, row.description].filter(Boolean).join(" · "),
       ].filter(Boolean).join("\n");
-      announce(title, body, preferences.sound);
+      const soundKey: AlertEventKey = ["penalty", "penalty_goal", "penalty_missed", "missed_penalty"].includes(row.type) ? "penalty" : category === "cards" ? "card" : category === "goals" ? "goal" : "kickoff";
+      announce(title, body, soundFor(preferences.sounds, soundKey));
+
     };
 
     const refreshScore = async (matchId: string) => {
@@ -183,7 +185,7 @@ export function useLiveEventAlerts() {
       seen.current.add(key);
       info.set(row.id, { ...(m as Info), homeScore: row.home_score, awayScore: row.away_score });
       const score = row.home_score != null && row.away_score != null ? `${row.home_score} - ${row.away_score}` : "vs";
-      announce(`${meta.emoji} ${meta.label}`, `${m?.home ?? "Home"} ${score} ${m?.away ?? "Away"}`, preferences.sound);
+      announce(`${meta.emoji} ${meta.label}`, `${m?.home ?? "Home"} ${score} ${m?.away ?? "Away"}`, soundFor(preferences.sounds, category === "final" ? "final" : "kickoff"));
     };
 
     loadAlerts();
