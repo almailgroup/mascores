@@ -115,6 +115,9 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
     },
   });
   const initials = (profile.data?.display_name ?? user?.email ?? "?").trim().slice(0, 1).toUpperCase();
+  // On phones the top bar only belongs on the main menu pages; inner pages have their own back arrow.
+  const onMainMenu = NAV.some((item) => location.pathname.replace(/\/$/, "") === item.to.replace(/\/$/, ""));
+
 
   // A banned or suspended person gets nothing but the reason and an appeal box.
   if (suspension.data) return <SuspendedScreen text={suspensionMessage(suspension.data)} />;
@@ -123,8 +126,9 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
     <div className="relative min-h-screen bg-background text-foreground">
       <div className="pointer-events-none fixed inset-0 opacity-40 [background:radial-gradient(circle_at_10%_-10%,color-mix(in_oklab,var(--primary)_25%,transparent),transparent_55%),radial-gradient(circle_at_100%_100%,color-mix(in_oklab,var(--primary)_15%,transparent),transparent_60%)]" />
 
-      {!bare && <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
+      {!bare && <header className={`sticky top-0 z-40 border-b border-border/60 bg-background/80 pt-[env(safe-area-inset-top)] backdrop-blur-xl ${onMainMenu ? "" : "hidden md:block"}`}>
         <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-3 px-4 py-2 sm:px-6">
+
           <Link to="/" className="inline-flex shrink-0 items-center gap-2">
             <BrandLogo className="h-10" />
           </Link>
@@ -177,8 +181,12 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
       {/* Extra bottom room so the iPhone home bar never covers page actions. */}
       <main
         className="relative z-10 mx-auto max-w-7xl px-4 pt-6 sm:px-6"
-        style={{ paddingBottom: "calc(7rem + env(safe-area-inset-bottom))" }}
+        style={{
+          paddingBottom: "calc(7rem + env(safe-area-inset-bottom))",
+          ...(onMainMenu ? null : { paddingTop: "calc(1.5rem + env(safe-area-inset-top))" }),
+        }}
       >
+
         {children}
       </main>
 
