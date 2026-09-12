@@ -21,6 +21,14 @@ export const scanTicketSchema = z.object({
   code: z.string().trim().min(4).max(120),
 });
 
+/** Reselling requires a phone number and an email so buyers can reach the seller. */
+export const sellTicketSchema = z.object({
+  ticketId: z.string().uuid(),
+  price: z.number().min(0),
+  phone: z.string().trim().min(6, "Please add a phone number buyers can reach you on.").max(40),
+  email: z.string().trim().email("Please add a valid email address.").max(120),
+});
+
 export const ticketPoolSchema = z.object({
   offerId: z.string().uuid(),
   capacity: z.number().int().min(1).max(5000),

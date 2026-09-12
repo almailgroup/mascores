@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, QrCode as QrIcon, Ticket, Camera, Search } from "lucide-react";
+import { Loader2, QrCode as QrIcon, Ticket, Camera, Search, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { QrCode } from "@/components/qr-code";
 import { generateTicketPool, scanTicket } from "@/lib/tickets.functions";
@@ -31,19 +31,63 @@ const emptyOffer = {
  * When the owner asked for approval, new tickets are held back until he says yes.
  */
 export function TicketsPanel({ needsApproval = false }: { needsApproval?: boolean }) {
-  const [view, setView] = useState<"offers" | "scan">("offers");
+  const [view, setView] = useState<"offers" | "sellers" | "scan">("offers");
+  const label = { offers: "Tickets", sellers: "Sellers", scan: "Scan QR code" } as const;
   return (
     <div>
-      <div className="mb-4 flex gap-2">
-        {(["offers", "scan"] as const).map((k) => (
+      <div className="mb-4 flex flex-wrap gap-2">
+        {(["offers", "sellers", "scan"] as const).map((k) => (
           <button key={k} onClick={() => setView(k)}
             className={`inline-flex h-9 items-center gap-1.5 rounded-full px-4 text-xs font-bold ${view === k ? "bg-primary text-primary-foreground" : "border border-border bg-card text-muted-foreground"}`}>
-            {k === "offers" ? <Ticket className="h-3.5 w-3.5" /> : <QrIcon className="h-3.5 w-3.5" />}
-            {k === "offers" ? "Tickets" : "Scan QR code"}
+            {k === "offers" ? <Ticket className="h-3.5 w-3.5" /> : k === "sellers" ? <Users className="h-3.5 w-3.5" /> : <QrIcon className="h-3.5 w-3.5" />}
+            {label[k]}
           </button>
         ))}
       </div>
-      {view === "offers" ? <OffersView needsApproval={needsApproval} /> : <ScanView />}
+      {view === "offers" ? <OffersView needsApproval={needsApproval} /> : view === "sellers" ? <SellersView /> : <ScanView />}
+    </div>
+  );
+}
+
+/** Everyone reselling a pass right now, with the phone and email they gave buyers. */
+function SellersView() {
+  const sellers = useQuery({
+    queryKey: ["admin-ticket-sellers"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("tickets")
+        .select("id, code, sale_price, currency, seller_phone, seller_email, holder_name, row_label, seat_label, updated_at, offer:offer_id(name, stand), match:match_id(kickoff_at, home:home_team_id(name), away:away_team_id(name), competition:competition_id(name))")
+        .eq("for_sale", true)
+        .eq("status", "valid")
+        .order("updated_at", { ascending: false })
+        .limit(300);
+      return data ?? [];
+    },
+  });
+
+  if (sellers.isLoading) return <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />;
+  if ((sellers.data ?? []).length === 0) return <p className="text-sm text-muted-foreground">Nobody is reselling a ticket right now.</p>;
+  return (
+    <div className="space-y-2">
+      {(sellers.data ?? []).map((row) => {
+        const match = row.match as { kickoff_at?: string | null; home?: { name?: string } | null; away?: { name?: string } | null; competition?: { name?: string } | null } | null;
+        const offer = row.offer as { name?: string; stand?: string | null } | null;
+        return (
+          <div key={row.id} className="rounded-2xl border border-border bg-card p-3 text-xs">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-bold">{match?.home?.name ?? "TBD"} vs {match?.away?.name ?? "TBD"}</span>
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[0.6rem] font-bold text-primary">{Number(row.sale_price ?? 0)} {row.currency}</span>
+              <span className="font-mono tracking-wider text-muted-foreground">{row.code}</span>
+            </div>
+            <div className="mt-1 text-muted-foreground">
+              {[offer?.name, offer?.stand, match?.competition?.name, match?.kickoff_at ? formatKickoff(match.kickoff_at) : null].filter(Boolean).join(" · ")}
+            </div>
+            <div className="mt-1 font-semibold">
+              {[row.seller_phone, row.seller_email].filter(Boolean).join(" · ") || "No contact details"}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

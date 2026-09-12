@@ -283,17 +283,16 @@ function ResaleMarket() {
   );
 }
 
-/** Sell / stop selling, plus saving the match to the phone's wallet-style calendar. */
+/** Sell / stop selling, plus saving the match to the phone's calendar. */
 function TicketActions({ ticket }: { ticket: MyTicket }) {
   const tx = useTx();
   const qc = useQueryClient();
-  const sell = useServerFn(listTicketForSale);
   const unlist = useServerFn(unlistTicket);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [sellOpen, setSellOpen] = useState(false);
   const refresh = () => qc.invalidateQueries({ queryKey: ["my-tickets"] });
 
-  const addToWallet = () => {
+  const addToCalendar = () => {
     const start = ticket.match?.kickoff_at ? new Date(ticket.match.kickoff_at) : new Date();
     const stamp = (d: Date) => d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
     const title = `${ticket.match?.home?.name ?? "Match"} vs ${ticket.match?.away?.name ?? ""}`;
@@ -319,23 +318,71 @@ function TicketActions({ ticket }: { ticket: MyTicket }) {
           </button>
         </>
       ) : (
-        <button disabled={busy} className="rounded-full border border-border px-3 py-1 text-[0.7rem] font-bold"
-          onClick={async () => {
-            const price = window.prompt(tx("Sell for how much?") ?? "", String(ticket.price_paid || 0));
-            if (price === null) return;
-            const phone = window.prompt(tx("Your phone number for buyers (optional)") ?? "") ?? "";
-            const email = window.prompt(tx("Your email for buyers (optional)") ?? "") ?? "";
-            setBusy(true); setError(null);
-            try { await sell({ data: { ticketId: ticket.id, price: Number(price) || 0, phone, email } }); refresh(); }
-            catch (err) { setError(err instanceof Error ? err.message : "Could not list this ticket."); }
-            finally { setBusy(false); }
-          }}>
+        <button className="rounded-full border border-border px-3 py-1 text-[0.7rem] font-bold" onClick={() => setSellOpen(true)}>
           {tx("Sell this ticket")}
         </button>
       )}
-      <button className="rounded-full border border-border px-3 py-1 text-[0.7rem] font-bold" onClick={addToWallet}>{tx("Add to wallet")}</button>
+      <button className="rounded-full border border-border px-3 py-1 text-[0.7rem] font-bold" onClick={addToCalendar}>{tx("Add to calendar")}</button>
+      <span className="inline-flex cursor-not-allowed items-center gap-1 rounded-full border border-dashed border-border px-3 py-1 text-[0.7rem] font-bold text-muted-foreground">
+        {tx("Add to wallet")} · {tx("Coming soon")}
+      </span>
       <button className="rounded-full border border-border px-3 py-1 text-[0.7rem] font-bold text-muted-foreground" onClick={async () => { await supabase.from("tickets").update({ is_hidden: !ticket.is_hidden }).eq("id", ticket.id); await refresh(); }}>{ticket.is_hidden ? tx("Restore") : tx("Hide")}</button>
-      {error && <span className="text-[0.7rem] font-semibold text-destructive">{tx(error)}</span>}
+      {sellOpen && <SellSheet ticket={ticket} onClose={() => setSellOpen(false)} onDone={() => { setSellOpen(false); refresh(); }} />}
+    </div>
+  );
+}
+
+/** In-app sheet for listing a pass: price plus the seller's phone and email, all required. */
+function SellSheet({ ticket, onClose, onDone }: { ticket: MyTicket; onClose: () => void; onDone: () => void }) {
+  const tx = useTx();
+  const sell = useServerFn(listTicketForSale);
+  const [price, setPrice] = useState(String(ticket.price_paid || 0));
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const submit = async () => {
+    const cleanPhone = phone.trim();
+    const cleanEmail = email.trim();
+    if (cleanPhone.length < 6) return setError("Please add a phone number buyers can reach you on.");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) return setError("Please add a valid email address.");
+    setBusy(true); setError(null);
+    try {
+      await sell({ data: { ticketId: ticket.id, price: Number(price) || 0, phone: cleanPhone, email: cleanEmail } });
+      onDone();
+    } catch (err) { setError(err instanceof Error ? err.message : "Could not list this ticket."); }
+    finally { setBusy(false); }
+  };
+
+  const field = "h-11 w-full rounded-xl border border-border bg-background px-3 text-sm";
+  return (
+    <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4" onClick={onClose}>
+      <div className="w-full max-w-md rounded-t-3xl border border-border bg-card p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:rounded-3xl sm:pb-5" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-black">{tx("Sell this ticket")}</h3>
+          <button className="grid h-8 w-8 place-items-center rounded-full border border-border" onClick={onClose}><X className="h-4 w-4" /></button>
+        </div>
+        <p className="mt-1 text-xs text-muted-foreground">{tx("Buyers will see your price and contact details.")}</p>
+        <div className="mt-4 space-y-3">
+          <label className="block">
+            <span className="text-[0.65rem] font-bold uppercase tracking-wide text-muted-foreground">{tx("Price")} ({ticket.currency})</span>
+            <input className={`mt-1 ${field}`} inputMode="decimal" value={price} onChange={(e) => setPrice(e.target.value)} />
+          </label>
+          <label className="block">
+            <span className="text-[0.65rem] font-bold uppercase tracking-wide text-muted-foreground">{tx("Your phone number")}</span>
+            <input className={`mt-1 ${field}`} inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+965 ..." />
+          </label>
+          <label className="block">
+            <span className="text-[0.65rem] font-bold uppercase tracking-wide text-muted-foreground">{tx("Your email")}</span>
+            <input className={`mt-1 ${field}`} inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@email.com" />
+          </label>
+        </div>
+        {error && <p className="mt-3 text-[0.7rem] font-semibold text-destructive">{tx(error)}</p>}
+        <button disabled={busy} className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-primary text-sm font-bold text-primary-foreground disabled:opacity-50" onClick={submit}>
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}{tx("List for sale")}
+        </button>
+      </div>
     </div>
   );
 }

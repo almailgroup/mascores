@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { availabilitySchema, claimTicketSchema, scanTicketSchema, ticketPoolSchema } from "./tickets.schemas";
+import { availabilitySchema, claimTicketSchema, scanTicketSchema, sellTicketSchema, ticketPoolSchema } from "./tickets.schemas";
 
 function makeCode(): string {
   return `MAS-${crypto.randomUUID().replace(/-/g, "").slice(0, 12).toUpperCase()}`;
@@ -151,10 +151,10 @@ export const scanTicket = createServerFn({ method: "POST" })
     return { result: "valid" as const, ticket: updated };
   });
 
-/** Owner lists their pass for resale. The admin's price cap on the offer is enforced. */
+/** Owner lists their pass for resale. Contact details are required and the price cap is enforced. */
 export const listTicketForSale = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { ticketId: string; price: number; phone?: string; email?: string }) => input)
+  .inputValidator((input: unknown) => sellTicketSchema.parse(input))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: ticket } = await supabaseAdmin
@@ -170,7 +170,7 @@ export const listTicketForSale = createServerFn({ method: "POST" })
     if (cap > 0 && price > cap) throw new Error(`The highest allowed resale price is ${cap} ${ticket.currency}.`);
     const { error } = await supabaseAdmin
       .from("tickets")
-      .update({ for_sale: true, sale_price: price, seller_phone: data.phone?.trim() || null, seller_email: data.email?.trim() || null })
+      .update({ for_sale: true, sale_price: price, seller_phone: data.phone.trim(), seller_email: data.email.trim() })
       .eq("id", ticket.id);
     if (error) throw new Error(error.message);
     return { ok: true, cap };
