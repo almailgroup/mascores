@@ -44,7 +44,7 @@ function HeroTeam({ team, onFollow }: { team: Team | null; onFollow?: () => void
       <Link to="/teams/$id" params={{ id: team.id }} className="flex min-w-0 flex-col items-center text-center">{body}</Link>
       {/* Follow star sits right under the club name, inside the match page. */}
       <span className="mt-1 [&_button]:border-white/25 [&_button]:bg-white/10 [&_button]:text-white">
-        <FavoriteButton kind="team" id={team.id} />
+        <FavoriteButton kind="team" id={team.id} onFollow={onFollow} />
       </span>
     </div>
   );
