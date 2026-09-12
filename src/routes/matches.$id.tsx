@@ -7,6 +7,7 @@ import { supabase, STATUS_LABELS, roundLabel, matchClockSeconds, formatClock, ev
 import { useRealtime } from "@/lib/realtime";
 import { ChevronRight, PlayCircle, Radio } from "lucide-react";
 import { useTx, useNum, useDates } from "@/lib/auto-translate";
+import { useI18n } from "@/lib/i18n";
 import { MatchChat } from "@/components/match-chat";
 import { MatchVoice } from "@/components/match-voice";
 import { MatchPrediction } from "@/components/match-prediction";
@@ -85,6 +86,7 @@ function MatchPage() {
   const num = useNum();
   const dates = useDates();
   const { id } = Route.useParams();
+  const { lang } = useI18n();
   const [tab, setTab] = useState<"details" | "lineups" | "stats" | "standings" | "previous" | "media">("details");
   const [lineupSide, setLineupSide] = useState<"home" | "away">("home");
   useRealtime(["matches", "match_events", "match_lineups", "player_ratings", "match_stats", "match_chat_messages", "media_items", "standings_rows"]);
@@ -92,16 +94,16 @@ function MatchPage() {
     queryKey: ["match", id],
     queryFn: async () => {
       const { data } = await supabase.from("matches")
-        .select("*, home:home_team_id(id,name,logo_url,is_national), away:away_team_id(id,name,logo_url,is_national), competition:competition_id(id,name,slug,logo_url,sport,country,country_code)")
+        .select("*, home:home_team_id(id,name,logo_url,is_national), away:away_team_id(id,name,logo_url,is_national), competition:competition_id(id,name,name_ar,slug,logo_url,sport,country,country_code)")
         .eq("id", id).maybeSingle();
-      return data as (Match & { home: Team | null; away: Team | null; competition: { id: string; name: string; slug: string; logo_url: string | null; sport: string; country: string | null; country_code: string | null } | null }) | null;
+      return data as (Match & { home: Team | null; away: Team | null; competition: { id: string; name: string; name_ar: string | null; slug: string; logo_url: string | null; sport: string; country: string | null; country_code: string | null } | null }) | null;
     },
   });
   const events = useQuery({
     queryKey: ["match-events", id],
     queryFn: async () => {
       const { data } = await supabase.from("match_events")
-        .select("*, player:player_id(id,name), team:team_id(id,name)")
+        .select("*, player:player_id(id,name,name_ar), team:team_id(id,name)")
         .eq("match_id", id).order("minute").order("extra");
       return (data ?? []) as unknown as (MatchEvent & { player: Player | null; team: Team | null })[];
     },
@@ -110,7 +112,7 @@ function MatchPage() {
     queryKey: ["match-lineups", id, m.data?.home?.is_national, m.data?.away?.is_national],
     queryFn: async () => {
       const { data } = await supabase.from("match_lineups")
-        .select("*, player:player_id(id,name,short_name,shirt_number,position,photo_url)")
+        .select("*, player:player_id(id,name,name_ar,short_name,short_name_ar,shirt_number,position,photo_url)")
         .eq("match_id", id);
       const rows = (data ?? []) as unknown as (Lineup & { player: Player | null })[];
       const overrides = await nationalOverrideMap([m.data?.home ?? null, m.data?.away ?? null]);
@@ -170,10 +172,11 @@ function MatchPage() {
   const clock = matchClockSeconds(match);
 
   const scorerList = (teamId: string | null | undefined) => (events.data ?? [])
-    .filter((event) => ["goal", "penalty", "own_goal"].includes(event.type) && event.team?.id === teamId)
+    .filter((event) => ["goal", "penalty_goal", "penalty", "own_goal", "red", "second_yellow"].includes(event.type) && event.team?.id === teamId)
     .map((event) => ({
-      name: tx(event.player?.name) ?? tx(event.description ?? "Goal"),
+      name: lang === "ar" && event.player?.name_ar ? event.player.name_ar : tx(event.player?.name) ?? tx(event.description ?? eventLabel(event.type)),
       minute: `${event.minute ?? ""}${event.extra ? `+${event.extra}` : ""}'${event.type === "own_goal" ? " (OG)" : event.type === "penalty" ? " (P)" : ""}`,
+      type: event.type,
     }));
   const homeScorers = scorerList(match.home_team_id);
   const awayScorers = scorerList(match.away_team_id);
@@ -199,7 +202,7 @@ function MatchPage() {
   return (
     <AppShell>
       {/* Hero split between both clubs' badge colours. */}
-      <div className="relative -mx-4 -mt-6 mb-4 overflow-hidden px-4 pb-1 pt-4 text-white sm:-mx-6 sm:px-6"
+      <div dir="ltr" className="relative -mx-4 -mt-6 mb-4 overflow-hidden px-4 pb-1 pt-4 text-white sm:-mx-6 sm:px-6"
         style={{ background: heroBackground }}>
         <div className="flex items-center justify-between">
           <BackButton className="mb-0 border-white/20 bg-white/10 text-white hover:text-white" />
@@ -235,9 +238,9 @@ function MatchPage() {
 
         {(homeScorers.length > 0 || awayScorers.length > 0) && (
           <div className="mt-4 grid items-start gap-3 text-[0.8rem] text-white/85" style={{ gridTemplateColumns: "minmax(0,1fr) auto minmax(0,1fr)" }}>
-            <div className="space-y-0.5 text-end">{homeScorers.map((scorer, index) => <div key={index} className="truncate">{scorer.name} {num(scorer.minute)}</div>)}</div>
-            <div className="pt-0.5"><EventIcon type="goal" /></div>
-            <div className="space-y-0.5">{awayScorers.map((scorer, index) => <div key={index} className="truncate">{scorer.name} {num(scorer.minute)}</div>)}</div>
+            <div className="space-y-1 text-end">{homeScorers.map((scorer, index) => <div key={index} className="flex items-center justify-end gap-1"><span className="truncate" dir={lang === "ar" ? "rtl" : "ltr"}>{scorer.name} {num(scorer.minute)}</span><EventIcon type={scorer.type} /></div>)}</div>
+            <div className="w-1" />
+            <div className="space-y-1">{awayScorers.map((scorer, index) => <div key={index} className="flex items-center gap-1"><EventIcon type={scorer.type} /><span className="truncate" dir={lang === "ar" ? "rtl" : "ltr"}>{scorer.name} {num(scorer.minute)}</span></div>)}</div>
           </div>
         )}
 
@@ -260,7 +263,7 @@ function MatchPage() {
           <span className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 text-sm font-bold sm:text-base">
             <span className="capitalize">{tx(match.competition.sport)},</span>
             {match.competition.country && <><FlagIcon value={match.competition.country_code ?? match.competition.country} /><span>{tx(match.competition.country)},</span></>}
-            <span className="truncate">{tx(match.competition.name)}</span>
+             <span className="truncate">{lang === "ar" && match.competition.name_ar ? match.competition.name_ar : tx(match.competition.name)}</span>
             {roundLabel(match.round_number, match.round) ? <span className="text-muted-foreground">, {tx(roundLabel(match.round_number, match.round))}</span> : null}
           </span>
           <ChevronRight className="h-5 w-5 shrink-0 text-primary" />
@@ -334,7 +337,7 @@ function MatchPage() {
       </div>}
 
       {tab === "lineups" && lineupsVisible && <div className="space-y-4">
-      <div className="relative grid grid-cols-2 gap-1 rounded-full border border-border bg-muted/60 p-1">
+      <div dir="ltr" className="relative grid grid-cols-2 gap-1 rounded-full border border-border bg-muted/60 p-1">
         <span
           className="absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-full bg-primary shadow-sm transition-transform duration-300 ease-out"
           style={{ transform: lineupSide === "away" ? "translateX(calc(100% + 0.25rem))" : "translateX(0)" }}
@@ -346,7 +349,7 @@ function MatchPage() {
             className={`relative z-10 flex min-w-0 items-center justify-center gap-2 rounded-full px-3 py-2 text-xs font-bold transition-colors sm:text-sm ${lineupSide === side ? "text-primary-foreground" : "text-muted-foreground"}`}
           >
             <TeamCrest name={team?.name} logo={team?.logo_url} className="h-5 w-5 shrink-0" />
-            <span className="truncate">{tx(team?.name) ?? "TBD"}</span>
+             <span className="truncate" dir={lang === "ar" ? "rtl" : "ltr"}>{tx(team?.name) ?? "TBD"}</span>
           </button>
         ))}
       </div>

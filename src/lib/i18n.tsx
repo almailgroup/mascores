@@ -41,7 +41,7 @@ const dict: Record<Lang, Record<string, string>> = {
     "settings.currency": "Currency",
     "settings.currencyHint": "Market values are entered in euros and converted for you.",
     "settings.reporter": "News reporter programme",
-    "settings.reporterHint": "Publish football news on MansourAlmailScores for $2.99 / month. Every article is reviewed by the main admin before it goes live.",
+    "settings.reporterHint": "Publish football news on Mansour Almail Scores for 3 KWD / month. Every article is reviewed by the main admin before it goes live.",
     "settings.reporterCta": "Open reporter desk",
     "settings.deleteAccount": "Delete account",
     "settings.deleteAccountHint": "This permanently removes your account, profile and preferences.",

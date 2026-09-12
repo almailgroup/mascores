@@ -12,6 +12,7 @@ import { useVoiceRoom, type VoiceRole } from "@/lib/use-voice-room";
 import { suspensionMessage, useMySuspension } from "@/lib/suspension";
 import { uploadMedia } from "@/components/admin/upload";
 import { VoiceRoomChat } from "@/components/voice-room-chat";
+import { VoiceReactions } from "@/components/voice-reactions";
 
 export const Route = createFileRoute("/voice/$id")({
   head: () => ({
@@ -187,7 +188,7 @@ function VoiceRoomPage() {
     if (result && user && room.data) {
       const ext = result.blob.type.includes("mp4") ? "m4a" : "webm";
       const file = new File([result.blob], `${crypto.randomUUID()}.${ext}`, { type: result.blob.type });
-      const url = await uploadMedia("voice-recordings", file);
+      const url = await uploadMedia("voice-recordings", file, user.id);
       if (url) {
         await supabase.from("voice_recordings").insert({
           room_id: id,
@@ -197,6 +198,7 @@ function VoiceRoomPage() {
           cover_url: room.data.photo_url,
           audio_url: url,
           duration_seconds: result.seconds,
+          is_public: false,
         });
         await qc.invalidateQueries({ queryKey: ["voice-replays"] });
       } else {
@@ -307,7 +309,7 @@ function VoiceRoomPage() {
               <PhoneOff className="h-3.5 w-3.5" /> {tx("End room")}
             </button>
           )}
-          {isHost && (
+           {isHost && !live && (
             <button onClick={deleteRoom} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-destructive px-3 text-xs font-bold text-destructive-foreground">
               <Trash2 className="h-3.5 w-3.5" /> {tx("Delete room")}
             </button>
@@ -393,6 +395,7 @@ function VoiceRoomPage() {
 
       {/* Written messages sit under the speakers so listeners can join in silently. */}
       <div className="mt-4 pb-40 md:pb-6">
+        {live && joined && <VoiceReactions roomId={id} userId={user?.id} />}
         <VoiceRoomChat roomId={id} />
       </div>
 

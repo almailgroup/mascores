@@ -38,10 +38,17 @@ function VenuePage() {
   });
   const matches = useQuery({
     enabled: !!venue.data,
-    queryKey: ["venue-matches", id],
-    queryFn: async () => ((await supabase.from("matches")
-      .select("*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url), competition:competition_id(slug,name,logo_url,country,country_code)")
-      .eq("venue_id", id).order("kickoff_at", { ascending: false }).limit(30)).data ?? []) as unknown as MatchWithTeams[],
+    queryKey: ["venue-matches", id, venue.data?.name],
+    queryFn: async () => {
+      const selection = "*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url), competition:competition_id(slug,name,logo_url,country,country_code)";
+      const [linked, legacy] = await Promise.all([
+        supabase.from("matches").select(selection).eq("venue_id", id).order("kickoff_at", { ascending: false }).limit(60),
+        supabase.from("matches").select(selection).ilike("venue", venue.data?.name ?? "").order("kickoff_at", { ascending: false }).limit(60),
+      ]);
+      const unique = new Map<string, MatchWithTeams>();
+      [...(linked.data ?? []), ...(legacy.data ?? [])].forEach((row) => unique.set(row.id, row as unknown as MatchWithTeams));
+      return [...unique.values()].sort((a, b) => new Date(b.kickoff_at ?? 0).getTime() - new Date(a.kickoff_at ?? 0).getTime());
+    },
   });
 
   if (venue.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;

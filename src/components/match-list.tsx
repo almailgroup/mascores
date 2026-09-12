@@ -74,6 +74,11 @@ export function MatchRow({ m, highlightTeamId }: { m: MatchWithTeams; highlightT
   const seconds = matchClockSeconds(m);
   const minute = Math.max(m.live_minute ?? 0, Math.floor(seconds / 60) + (seconds % 60 > 0 ? 1 : 0));
   const specialStatus = ["postponed", "cancelled", "interrupted"].includes(m.status);
+  const finished = ["ft", "aet", "pen", "awarded"].includes(m.status);
+  const highlightedScore = highlightTeamId === m.home_team_id ? [m.home_score, m.away_score] : highlightTeamId === m.away_team_id ? [m.away_score, m.home_score] : null;
+  const outcome = highlightedScore && highlightedScore[0] != null && highlightedScore[1] != null
+    ? highlightedScore[0] > highlightedScore[1] ? "W" : highlightedScore[0] < highlightedScore[1] ? "L" : "D"
+    : null;
   const line = (team: Team | null | undefined, score: number | null) => (
     <div className="flex min-w-0 items-center gap-2">
       <TeamCrest name={team?.name} logo={team?.logo_url} className="h-5 w-5 shrink-0" />
@@ -98,7 +103,7 @@ export function MatchRow({ m, highlightTeamId }: { m: MatchWithTeams; highlightT
         {line(m.away, m.away_score)}
       </div>
        <div className="flex shrink-0 items-center gap-1">
-         <MatchNotificationButton matchId={m.id} teamIds={[m.home_team_id, m.away_team_id]} />
+         {finished && outcome ? <span className={`grid h-7 w-7 place-items-center rounded-full text-[0.65rem] font-black ${outcome === "W" ? "bg-emerald-500/15 text-emerald-500" : outcome === "L" ? "bg-destructive/15 text-destructive" : "bg-muted text-muted-foreground"}`}>{outcome}</span> : <MatchNotificationButton matchId={m.id} teamIds={[m.home_team_id, m.away_team_id]} />}
          <FavoriteButton kind="match" id={m.id} />
        </div>
     </Link>

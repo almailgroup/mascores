@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { listModeratedUsers, clearUserSuspension, type ModeratedUser } from "@/lib/moderation.functions";
 import { inputCls, btnGhost } from "./ui";
 
-type Feedback = { id: string; user_id: string | null; email: string | null; message: string; created_at: string };
+type Feedback = { id: string; user_id: string | null; email: string | null; message: string; created_at: string; admin_reply: string | null; replied_at: string | null };
 
 /**
  * Appeals and account health: what restricted people wrote back, the state of
@@ -22,7 +22,7 @@ export function AppealsPanel() {
     queryKey: ["admin-appeals"],
     refetchInterval: 60000,
     queryFn: async () =>
-      ((await supabase.from("app_feedback").select("id,user_id,email,message,created_at")
+       ((await supabase.from("app_feedback").select("id,user_id,email,message,created_at,admin_reply,replied_at")
         .order("created_at", { ascending: false }).limit(200)).data ?? []) as Feedback[],
   });
 
@@ -127,6 +127,7 @@ export function AppealsPanel() {
                   <span className="ms-auto">{when(f.created_at)}</span>
                 </div>
                 <p className="mt-2 whitespace-pre-wrap text-sm">{f.message}</p>
+                <FeedbackReply feedback={f} onSaved={() => feedback.refetch()} />
               </div>
             );
           })}
@@ -134,4 +135,14 @@ export function AppealsPanel() {
       </div>
     </div>
   );
+}
+
+function FeedbackReply({ feedback, onSaved }: { feedback: Feedback; onSaved: () => void }) {
+  const [reply, setReply] = useState(feedback.admin_reply ?? "");
+  const [saving, setSaving] = useState(false);
+  return <div className="mt-3 border-t border-border pt-3">
+    <label className="mb-1 block text-[0.7rem] font-bold text-primary">Reply to user</label>
+    <textarea className={inputCls} rows={2} value={reply} placeholder="Write a clear reply…" onChange={(event) => setReply(event.target.value)} />
+    <button className={`${btnGhost} mt-2`} disabled={saving || !reply.trim()} onClick={async () => { setSaving(true); await supabase.from("app_feedback").update({ admin_reply: reply.trim(), replied_at: new Date().toISOString() }).eq("id", feedback.id); setSaving(false); onSaved(); }}>{saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MessageSquare className="h-3.5 w-3.5" />} Send reply</button>
+  </div>;
 }

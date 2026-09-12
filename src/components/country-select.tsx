@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { COUNTRIES, findCountry, searchCountries, type Country } from "@/lib/countries";
 import { FlagIcon } from "@/components/flag";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export function CountryFlag({ value, className = "" }: { value: string | null | undefined; className?: string }) {
   return <FlagIcon value={value} className={className} />;
@@ -27,6 +29,10 @@ export function CountrySelect({
   const boxRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const justPicked = useRef(false);
+  const nationalTeams = useQuery({
+    queryKey: ["country-select-national-teams"],
+    queryFn: async () => (await supabase.from("teams").select("id,name").eq("is_national", true).order("name")).data ?? [],
+  });
 
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
@@ -37,6 +43,7 @@ export function CountrySelect({
   }, []);
 
   const results = useMemo(() => (open ? searchCountries(query) : []), [open, query]);
+  const customTeams = open ? (nationalTeams.data ?? []).filter((team) => !findCountry(team.name) && (!query.trim() || team.name.toLowerCase().includes(query.trim().toLowerCase()))).slice(0, 15) : [];
 
   return (
     <div className="relative" ref={boxRef}>
@@ -60,7 +67,7 @@ export function CountrySelect({
       </div>
       {open && (
         <div className="absolute z-50 mt-1 max-h-64 w-full overflow-y-auto rounded-xl border border-border bg-card p-1 shadow-2xl">
-          {results.length === 0 && <div className="p-3 text-xs text-muted-foreground">{"لا توجد نتيجة مطابقة / No match"}</div>}
+           {results.length === 0 && customTeams.length === 0 && <div className="p-3 text-xs text-muted-foreground">{"لا توجد نتيجة مطابقة / No match"}</div>}
           {results.map((c) => (
             <button key={c.code} type="button"
               className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm hover:bg-accent"
@@ -71,6 +78,7 @@ export function CountrySelect({
               <span className="text-[0.6rem] text-muted-foreground">{c.code}</span>
             </button>
           ))}
+           {customTeams.map((team) => <button key={team.id} type="button" className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm hover:bg-accent" onMouseDown={(event) => { event.preventDefault(); justPicked.current = true; onChange(team.name, null); setOpen(false); setQuery(""); inputRef.current?.blur(); }}><span className="grid h-4 w-6 place-items-center rounded-sm bg-muted text-[0.5rem] font-black">NT</span><span className="flex-1 truncate">{team.name}</span><span className="text-[0.6rem] text-muted-foreground">National team</span></button>)}
         </div>
       )}
     </div>

@@ -130,7 +130,7 @@ function CompetitionPage() {
   const tx = useTx();
   const num = useNum();
   const dates = useDates();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const compLogo = useCompetitionLogo();
   const { isFavorite, toggle: toggleFavorite } = useFavorites();
 
@@ -221,7 +221,7 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
 }) {
   const tx = useTx();
   const num = useNum();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const accent = useLogoAccent(hero ? null : logo);
   // No custom hero and no logo to sample: use a clean white band instead of navy.
   const noLogo = !hero && !logo;
@@ -288,7 +288,7 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
           {logo ? <img src={logo} alt="" className="h-full w-full object-contain" /> : <Trophy className="h-7 w-7 text-primary" />}
         </div>
         <div className="min-w-0">
-          <h1 className="truncate text-lg font-black leading-tight sm:text-2xl">{tx(c.name)}</h1>
+          <h1 className="truncate text-lg font-black leading-tight sm:text-2xl">{lang === "ar" && c.name_ar ? c.name_ar : tx(c.name)}</h1>
           <div className="mt-1 flex min-w-0 items-center gap-2">
             {(c.seasons?.length ?? 0) > 0
               ? <SeasonMenu seasons={c.seasons} value={activeSeason} onChange={onSeason} onHero />

@@ -111,7 +111,7 @@ Bigger builds (need database work):
 - Match reminders fire while the app is open (browser notifications); background push is not set up.
 
 ## Current request — 2026-09-12
-- [ ] Redesign iPhone home ticket CTA and mobile match/club/date navigation.
-- [ ] Fix Arabic competition names, match colors, lineup team selection, and Arabic player short names.
-- [ ] Add feedback replies, reporter workflows, chat moderation, media watermarks, and venue match listing fixes.
-- [ ] Improve voice lifecycle/reactions, notification delivery/settings/sounds, ticket hiding, and nationality options.
+- [x] Redesign iPhone home ticket CTA and mobile match/club/date navigation.
+- [x] Fix Arabic competition names, match colors, lineup team selection, and Arabic player short names.
+- [x] Add feedback replies, reporter workflows, chat moderation, media watermarks, and venue match listing fixes.
+- [x] Improve voice lifecycle/reactions, notification delivery/settings/sounds, ticket hiding, and nationality options.
