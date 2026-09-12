@@ -501,16 +501,19 @@ function YouthLinks({ team, library, onUseParentLogo }: { team: Team; library: T
   const children = library.filter((row) => row.parent_team_id === team.id);
   const needle = search.trim().toLowerCase();
   const options = library.filter((row) =>
-    row.id !== team.id && !row.is_national && row.parent_team_id !== team.id && !row.parent_team_id && row.id !== team.parent_team_id
+    row.id !== team.id && !row.is_national && !row.parent_team_id && row.id !== team.parent_team_id
+    && !library.some((other) => other.parent_team_id === row.id)
     && (!needle ? false : `${row.name} ${row.country ?? ""}`.toLowerCase().includes(needle)));
 
-  if (parent) {
-    return (
-      <div className="rounded-2xl border border-primary/30 bg-primary/5 p-3">
-        <div className="text-xs font-bold uppercase tracking-wide text-muted-foreground">First team</div>
-        <div className="mt-2 flex flex-wrap items-center gap-2">
+  return (
+    <div className="rounded-2xl border border-border bg-background/40 p-3">
+      {parent && (
+        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-primary/30 bg-primary/5 p-2">
           <TeamCrest name={parent.name} logo={parent.logo_url} className="h-8 w-8" />
-          <span className="min-w-0 flex-1 truncate text-sm font-semibold">{parent.name}</span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[0.6rem] font-bold uppercase tracking-wide text-primary">First team</span>
+            <span className="block truncate text-sm font-semibold">{parent.name}</span>
+          </span>
           {parent.logo_url && <button type="button" className={btnGhost} onClick={() => onUseParentLogo(parent.logo_url!)}>
             <ImagePlus className="h-3.5 w-3.5" /> Use this badge
           </button>}
@@ -518,15 +521,9 @@ function YouthLinks({ team, library, onUseParentLogo }: { team: Team; library: T
             <UserMinus className="h-3.5 w-3.5" /> Unlink
           </button>
         </div>
-        <p className="mt-2 text-[0.65rem] text-muted-foreground">This club shows as a youth team of {parent.name}, and {parent.name} lists it as a youth team.</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="rounded-2xl border border-border bg-background/40 p-3">
+      )}
       <div className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Youth teams</div>
-      <p className="mt-1 text-[0.65rem] text-muted-foreground">Search a club and pick it to make it a youth team of {team.name}.</p>
+      <p className="mt-1 text-[0.65rem] text-muted-foreground">Search a club and pick it to add it as a youth team of {team.name}. You can add as many as you like.</p>
       {children.length > 0 && (
         <div className="mt-2 grid gap-2">
           {children.map((child) => (
