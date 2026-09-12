@@ -160,6 +160,28 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
           <Field label="Higher division"><select className={inputCls} value={form.higher_division_id ?? ""} onChange={(e) => setForm({ ...form, higher_division_id: e.target.value || null })}><option value="">None</option>{(q.data ?? []).filter((item) => item.id !== form.id).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></Field>
           <Field label="Lower division"><select className={inputCls} value={form.lower_division_id ?? ""} onChange={(e) => setForm({ ...form, lower_division_id: e.target.value || null })}><option value="">None</option>{(q.data ?? []).filter((item) => item.id !== form.id).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></Field>
           <Field label="Parent competition"><select className={inputCls} value={form.parent_competition_id ?? ""} onChange={(e) => setForm({ ...form, parent_competition_id: e.target.value || null })}><option value="">None</option>{(q.data ?? []).filter((item) => item.id !== form.id).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></Field>
+          {/* Youth leagues shown next to the higher and lower divisions on the public page. */}
+          <div className="sm:col-span-2"><Field label="Youth leagues">
+            <div className="space-y-2">
+              <div className="flex flex-wrap gap-2">
+                {(form.youth_competition_ids ?? []).map((youthId) => {
+                  const youth = (q.data ?? []).find((item) => item.id === youthId);
+                  return <button type="button" key={youthId} className="rounded-full border border-border px-3 py-1 text-xs"
+                    onClick={() => setForm({ ...form, youth_competition_ids: (form.youth_competition_ids ?? []).filter((item) => item !== youthId) })}>
+                    {youth?.name ?? "Unknown"} ×
+                  </button>;
+                })}
+              </div>
+              <select className={inputCls} value="" onChange={(e) => {
+                if (!e.target.value) return;
+                setForm({ ...form, youth_competition_ids: [...new Set([...(form.youth_competition_ids ?? []), e.target.value])] });
+              }}>
+                <option value="">Add a youth league</option>
+                {(q.data ?? []).filter((item) => item.id !== form.id && !(form.youth_competition_ids ?? []).includes(item.id)).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+              </select>
+            </div>
+          </Field></div>
+
           <Field label="Title holder"><select className={inputCls} value={form.title_holder_team_id ?? ""} onChange={(e) => setForm({ ...form, title_holder_team_id: e.target.value || null })}><option value="">None</option>{titleHolderTeams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}</select></Field>
           <Field label="Standings mode"><select className={inputCls} value={form.standings_mode ?? "table"} onChange={(e) => setForm({ ...form, standings_mode: e.target.value })}><option value="table">League table</option><option value="groups">Groups</option><option value="knockout">Knockout</option></select></Field>
           <div className="sm:col-span-2">
