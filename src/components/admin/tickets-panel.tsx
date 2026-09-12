@@ -238,15 +238,24 @@ function OffersView({ needsApproval }: { needsApproval: boolean }) {
               <Search className="pointer-events-none absolute start-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
               <input className={`${inputCls} ps-8`} placeholder="Search matches…" value={search} onChange={(e) => setSearch(e.target.value)} />
             </div>
-            <Field label="Match">
-              <select className={inputCls} value={matchId ?? ""} onChange={(e) => setMatchId(e.target.value || null)}>
-                <option value="">Select a match…</option>
+            <Field label="Copy details from a match (optional)">
+              <select className={inputCls} value={matchId ?? ""} onChange={(e) => pickMatch(e.target.value || null)}>
+                <option value="">Type the details myself…</option>
                 {filtered.slice(0, 120).map((m) => <option key={m.id} value={m.id}>{label(m)}</option>)}
               </select>
             </Field>
           </div>
         )}
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <Field label="Home team"><input className={inputCls} value={form.event_home} onChange={(e) => setForm({ ...form, event_home: e.target.value })} placeholder="Al Arabi" /></Field>
+          <Field label="Away team"><input className={inputCls} value={form.event_away} onChange={(e) => setForm({ ...form, event_away: e.target.value })} placeholder="Kuwait SC" /></Field>
+          <Field label="Competition"><input className={inputCls} value={form.event_competition} onChange={(e) => setForm({ ...form, event_competition: e.target.value })} placeholder="Premier League" /></Field>
+          <Field label="Stadium"><input className={inputCls} value={form.event_venue} onChange={(e) => setForm({ ...form, event_venue: e.target.value })} placeholder="Sabah Al Salem" /></Field>
+          <Field label="Date & time"><input type="datetime-local" className={inputCls} value={form.event_kickoff} onChange={(e) => setForm({ ...form, event_kickoff: e.target.value })} /></Field>
+        </div>
+        <p className="mt-2 text-[0.7rem] text-muted-foreground">These details are saved on the ticket itself, so deleting a match never breaks tickets already sold.</p>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+
           <Field label="Ticket name"><input className={inputCls} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
           <Field label="Stand / section"><input className={inputCls} value={form.stand} onChange={(e) => setForm({ ...form, stand: e.target.value })} placeholder="West stand" /></Field>
           <Field label="Price"><input className={inputCls} inputMode="decimal" disabled={form.is_free} value={form.is_free ? "0" : form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} /></Field>
