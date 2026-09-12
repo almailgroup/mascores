@@ -11,7 +11,7 @@ import { CURRENCIES, useCurrency } from "@/lib/currency";
 import { useHeightUnit } from "@/lib/units";
 import { deleteMyAccount } from "@/lib/account.functions";
 import { useServerFn } from "@tanstack/react-start";
-import { Save, LogOut, Loader2, LogIn, Camera, Trash2 } from "lucide-react";
+import { Save, LogOut, Loader2, LogIn, Camera, Trash2, BellRing, Volume2 } from "lucide-react";
 import { ImageCropper } from "@/components/image-cropper";
 import { ConfirmDelete } from "@/components/confirm-delete";
 
@@ -39,16 +39,18 @@ function SettingsPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [alertPrefs, setAlertPrefs] = useState({ goals: true, cards: true, kickoff: true, final: true, voice: true, sound: "stadium" });
 
   useEffect(() => {
     if (authLoading) return;
     if (!user) return;
     (async () => {
-      const { data: prof } = await supabase.from("profiles").select("display_name,language,avatar_url,height_unit,username,is_public").eq("id", user.id).maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("display_name,language,avatar_url,height_unit,username,is_public,notification_preferences").eq("id", user.id).maybeSingle();
       setDisplayName(prof?.display_name ?? "");
       setAvatarUrl(prof?.avatar_url ?? null);
       setUsername(prof?.username ?? "");
       setIsPublic(prof?.is_public ?? true);
+      if (prof?.notification_preferences && typeof prof.notification_preferences === "object" && !Array.isArray(prof.notification_preferences)) setAlertPrefs((prev) => ({ ...prev, ...(prof.notification_preferences as typeof prev) }));
       if (prof?.height_unit === "ft" || prof?.height_unit === "cm") setHeightUnit(prof.height_unit);
       if (prof?.language && (prof.language === "en" || prof.language === "ar")) setLang(prof.language as Lang);
     })();
@@ -60,7 +62,7 @@ function SettingsPage() {
     const clean = username.trim().replace(/[^a-zA-Z0-9_.]/g, "").slice(0, 20);
     const { error } = await supabase.from("profiles").update({
       display_name: displayName, language: lang, theme, avatar_url: avatarUrl, height_unit: heightUnit,
-      username: clean || null, is_public: isPublic,
+       username: clean || null, is_public: isPublic, notification_preferences: alertPrefs,
     }).eq("id", user.id);
     setSaving(false);
     if (error) { setNotice("That username is already taken."); setTimeout(() => setNotice(null), 2500); return; }
@@ -131,6 +133,15 @@ function SettingsPage() {
           </div>
         )}
       </section>
+
+      {user && <section className="mt-4 rounded-3xl border border-border bg-card p-6">
+        <div className="flex items-center gap-2 text-sm font-semibold"><BellRing className="h-4 w-4 text-primary" /> {t("settings.notifications")}</div>
+        <div className="mt-4 grid gap-2 sm:grid-cols-2">
+          {([['goals','Goals and penalties'],['cards','Cards'],['kickoff','Kick-off and reminders'],['final','Full-time results'],['voice','Followed voice hosts']] as const).map(([key,label]) => <label key={key} className="flex items-center justify-between rounded-xl border border-border bg-background px-3 py-2 text-sm"><span>{label}</span><input type="checkbox" checked={alertPrefs[key]} onChange={(event) => setAlertPrefs({ ...alertPrefs, [key]: event.target.checked })} /></label>)}
+        </div>
+        <label className="mt-3 flex items-center gap-3 rounded-xl border border-border bg-background px-3 py-2 text-sm"><Volume2 className="h-4 w-4 text-primary" /><span className="flex-1">Alert sound</span><select className="rounded-lg border border-border bg-card px-2 py-1" value={alertPrefs.sound} onChange={(event) => setAlertPrefs({ ...alertPrefs, sound: event.target.value })}><option value="stadium">Stadium</option><option value="whistle">Whistle</option><option value="soft">Soft chime</option><option value="none">Silent</option></select></label>
+        <p className="mt-2 text-[0.7rem] text-muted-foreground">Alerts work while the app is open. System delivery depends on your phone and browser permissions.</p>
+      </section>}
       {avatarFile && <ImageCropper file={avatarFile} aspect={1} onCancel={() => setAvatarFile(null)} onDone={async (file) => { await pickAvatar(file); setAvatarFile(null); }} />}
 
       <section className="mt-4 grid gap-4 sm:grid-cols-2">
