@@ -116,8 +116,6 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
   });
   const initials = (profile.data?.display_name ?? user?.email ?? "?").trim().slice(0, 1).toUpperCase();
 
-
-
   // A banned or suspended person gets nothing but the reason and an appeal box.
   if (suspension.data) return <SuspendedScreen text={suspensionMessage(suspension.data)} />;
 
