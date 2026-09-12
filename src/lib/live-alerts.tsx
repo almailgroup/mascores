@@ -60,7 +60,27 @@ const STATUS_TEXT: Record<string, { emoji: string; label: string }> = {
   cancelled: { emoji: "🚫", label: "Cancelled" },
 };
 
-function announce(title: string, body: string) {
+type AlertPreferences = { goals?: boolean; cards?: boolean; kickoff?: boolean; final?: boolean; sound?: string };
+
+function playAlertSound(sound: string | undefined) {
+  if (!sound || sound === "none") return;
+  try {
+    const context = new AudioContext();
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    oscillator.type = sound === "whistle" ? "square" : sound === "soft" ? "sine" : "triangle";
+    oscillator.frequency.setValueAtTime(sound === "whistle" ? 1150 : sound === "soft" ? 520 : 720, context.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(sound === "stadium" ? 420 : 680, context.currentTime + 0.35);
+    gain.gain.setValueAtTime(0.0001, context.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.12, context.currentTime + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.45);
+    oscillator.connect(gain).connect(context.destination);
+    oscillator.start(); oscillator.stop(context.currentTime + 0.46);
+  } catch { /* browser audio may need a prior interaction */ }
+}
+
+function announce(title: string, body: string, sound?: string) {
+  playAlertSound(sound);
   try {
     if ("Notification" in window && Notification.permission === "granted") {
       new Notification(title, { body, icon: "/icon-192.png", badge: "/icon-192.png", tag: title + body });
@@ -88,6 +108,7 @@ export function useLiveEventAlerts() {
     const info = new Map<string, Info>();
     const followedTeams = new Set(teamIds ? teamIds.split(",") : []);
     let explicit = new Set<string>(matchIds ? matchIds.split(",") : []);
+    let preferences: AlertPreferences = {};
 
     try {
       const local = JSON.parse(localStorage.getItem(ALERT_KEY) ?? "[]");
@@ -96,8 +117,9 @@ export function useLiveEventAlerts() {
 
     const loadAlerts = async () => {
       if (!user) return;
-      const { data } = await supabase.from("profiles").select("match_notification_ids").eq("id", user.id).maybeSingle();
+      const { data } = await supabase.from("profiles").select("match_notification_ids,notification_preferences").eq("id", user.id).maybeSingle();
       for (const id of data?.match_notification_ids ?? []) explicit.add(String(id));
+      if (data?.notification_preferences && typeof data.notification_preferences === "object" && !Array.isArray(data.notification_preferences)) preferences = data.notification_preferences as AlertPreferences;
     };
 
     const loadMatch = async (matchId: string): Promise<Info | null> => {
@@ -142,6 +164,8 @@ export function useLiveEventAlerts() {
       const m = await loadMatch(row.match_id);
       if (cancelled || !wanted(m, row.match_id)) return;
       const meta = EVENT_TEXT[row.type] ?? { emoji: "🔔", label: row.type.replace(/_/g, " ") };
+      const category = ["yellow", "yellow_card", "second_yellow", "red", "red_card"].includes(row.type) ? "cards" : ["goal", "own_goal", "penalty", "penalty_goal", "penalty_missed", "missed_penalty"].includes(row.type) ? "goals" : null;
+      if (category && preferences[category] === false) return;
       const side = m && row.team_id ? (row.team_id === m.homeId ? m.home : row.team_id === m.awayId ? m.away : null) : null;
       const who = await playerName(row.player_id);
       const minute = row.minute != null ? `${row.minute}${row.extra ? `+${row.extra}` : ""}'` : "";
@@ -153,7 +177,7 @@ export function useLiveEventAlerts() {
         m ? `${m.home} ${score || "vs"} ${m.away}` : "",
         [minute, who, row.description].filter(Boolean).join(" · "),
       ].filter(Boolean).join("\n");
-      announce(title, body);
+      announce(title, body, preferences.sound);
     };
 
     const refreshScore = async (matchId: string) => {
@@ -164,6 +188,8 @@ export function useLiveEventAlerts() {
     const onMatch = async (row: { id: string; status: string; home_score: number | null; away_score: number | null }) => {
       const meta = STATUS_TEXT[row.status];
       if (!meta) return;
+      const category = ["ft", "aet", "pen"].includes(row.status) ? "final" : ["live", "1h", "2h"].includes(row.status) ? "kickoff" : null;
+      if (category && preferences[category] === false) return;
       const key = `${row.id}:${row.status}`;
       if (seen.current.has(key)) return;
       const m = await loadMatch(row.id);
@@ -171,7 +197,7 @@ export function useLiveEventAlerts() {
       seen.current.add(key);
       info.set(row.id, { ...(m as Info), homeScore: row.home_score, awayScore: row.away_score });
       const score = row.home_score != null && row.away_score != null ? `${row.home_score} - ${row.away_score}` : "vs";
-      announce(`${meta.emoji} ${meta.label}`, `${m?.home ?? "Home"} ${score} ${m?.away ?? "Away"}`);
+      announce(`${meta.emoji} ${meta.label}`, `${m?.home ?? "Home"} ${score} ${m?.away ?? "Away"}`, preferences.sound);
     };
 
     loadAlerts();
