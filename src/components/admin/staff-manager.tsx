@@ -8,6 +8,21 @@ import { CountrySelect } from "@/components/country-select";
 
 type Staff = { id: string; name: string; role: string; photo_url: string | null; nationality_code: string | null; sort_order: number };
 
+/** The staff jobs an admin can pick from — no typing needed. */
+const STAFF_ROLES = [
+  "Assistant coach",
+  "Goalkeeping coach",
+  "Fitness coach",
+  "Analyst",
+  "Physiotherapist",
+  "Team doctor",
+  "Kit manager",
+  "Team manager",
+  "Scout",
+  "Media officer",
+  "Youth coach",
+] as const;
+
 /** Everyone around the team besides the coach: assistants, doctors, kit staff. */
 export function StaffManager({ teamId }: { teamId: string }) {
   const qc = useQueryClient();
