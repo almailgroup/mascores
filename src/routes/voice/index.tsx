@@ -169,6 +169,8 @@ function RoomCard({ room, host, lang, following, onFollow, isSelf }: {
 }) {
   const tx = useTx();
   const compact = useCompact();
+  return (
+    <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition hover:shadow-md">
       <Link to="/voice/$id" params={{ id: room.id }} className="block">
         <div className="relative aspect-[16/9] w-full overflow-hidden">
           <img src={roomCover(room)} alt="" className="h-full w-full object-cover" />
