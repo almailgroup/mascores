@@ -9,7 +9,7 @@ import { uploadMedia } from "@/components/admin/upload";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
-import { useTx } from "@/lib/auto-translate";
+import { useCompact, useTx } from "@/lib/auto-translate";
 import { generatedCover, liveFor, roomCover, type VoiceHost, type VoiceRoom } from "@/lib/voice";
 import { suspensionMessage, useMySuspension } from "@/lib/suspension";
 

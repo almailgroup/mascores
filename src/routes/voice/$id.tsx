@@ -6,7 +6,7 @@ import { AppShell, BackButton } from "@/components/app-shell";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
-import { useTx } from "@/lib/auto-translate";
+import { useCompact, useTx } from "@/lib/auto-translate";
 import { inviteLink, liveFor, roomCover, type VoiceHost, type VoiceRoom } from "@/lib/voice";
 import { useVoiceRoom, type VoiceRole } from "@/lib/use-voice-room";
 import { suspensionMessage, useMySuspension } from "@/lib/suspension";
