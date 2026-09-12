@@ -81,7 +81,7 @@ function SellersView() {
     queryFn: async () => {
       const { data } = await supabase
         .from("tickets")
-        .select("id, code, sale_price, currency, seller_phone, seller_email, holder_name, row_label, seat_label, updated_at, offer:offer_id(name, stand), match:match_id(kickoff_at, home:home_team_id(name), away:away_team_id(name), competition:competition_id(name))")
+        .select("id, code, sale_price, price_paid, currency, seller_phone, seller_email, holder_name, holder_email, holder_phone, row_label, seat_label, updated_at, offer:offer_id(name, stand, event_home, event_away, event_competition, event_venue, event_kickoff_at), match:match_id(kickoff_at, home:home_team_id(name), away:away_team_id(name), competition:competition_id(name))")
         .eq("for_sale", true)
         .eq("status", "valid")
         .order("updated_at", { ascending: false })
@@ -96,20 +96,34 @@ function SellersView() {
     <div className="space-y-2">
       {(sellers.data ?? []).map((row) => {
         const match = row.match as { kickoff_at?: string | null; home?: { name?: string } | null; away?: { name?: string } | null; competition?: { name?: string } | null } | null;
-        const offer = row.offer as { name?: string; stand?: string | null } | null;
+        const offer = row.offer as { name?: string; stand?: string | null; event_home?: string | null; event_away?: string | null; event_competition?: string | null; event_venue?: string | null; event_kickoff_at?: string | null } | null;
+        const home = offer?.event_home || match?.home?.name || "TBD";
+        const away = offer?.event_away || match?.away?.name || "TBD";
+        const kickoff = offer?.event_kickoff_at || match?.kickoff_at || null;
         return (
-          <div key={row.id} className="rounded-2xl border border-border bg-card p-3 text-xs">
+          <div key={row.id} className="rounded-2xl border border-amber-500/40 bg-amber-500/5 p-3 text-xs">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="font-bold">{match?.home?.name ?? "TBD"} vs {match?.away?.name ?? "TBD"}</span>
-              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[0.6rem] font-bold text-primary">{Number(row.sale_price ?? 0)} {row.currency}</span>
+              <span className="font-bold">{home} vs {away}</span>
+              <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[0.6rem] font-bold text-amber-700 dark:text-amber-400">Asking {Number(row.sale_price ?? 0)} {row.currency}</span>
+              <span className="text-[0.6rem] text-muted-foreground">Paid {Number(row.price_paid ?? 0)} {row.currency}</span>
               <span className="font-mono tracking-wider text-muted-foreground">{row.code}</span>
             </div>
             <div className="mt-1 text-muted-foreground">
-              {[offer?.name, offer?.stand, match?.competition?.name, match?.kickoff_at ? formatKickoff(match.kickoff_at) : null].filter(Boolean).join(" · ")}
+              {[offer?.name, offer?.stand, offer?.event_competition || match?.competition?.name, offer?.event_venue, kickoff ? formatKickoff(kickoff) : null].filter(Boolean).join(" · ")}
             </div>
             <div className="mt-1 font-semibold">
-              {[row.seller_phone, row.seller_email].filter(Boolean).join(" · ") || "No contact details"}
+              Seller: {[row.seller_phone, row.seller_email].filter(Boolean).join(" · ") || "No contact details"}
             </div>
+            <div className="mt-0.5 text-muted-foreground">
+              Ticket holder: {[row.holder_name, row.holder_phone, row.holder_email].filter(Boolean).join(" · ") || "not given"}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
           </div>
         );
       })}
