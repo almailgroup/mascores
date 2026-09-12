@@ -164,7 +164,7 @@ export function useLiveEventAlerts() {
       const m = await loadMatch(row.match_id);
       if (cancelled || !wanted(m, row.match_id)) return;
       const meta = EVENT_TEXT[row.type] ?? { emoji: "🔔", label: row.type.replace(/_/g, " ") };
-      const category = ["yellow", "yellow_card", "second_yellow", "red", "red_card"].includes(row.type) ? "cards" : ["goal", "own_goal", "penalty", "penalty_goal", "penalty_missed", "missed_penalty"].includes(row.type) ? "goals" : null;
+      const category: "cards" | "goals" | null = ["yellow", "yellow_card", "second_yellow", "red", "red_card"].includes(row.type) ? "cards" : ["goal", "own_goal", "penalty", "penalty_goal", "penalty_missed", "missed_penalty"].includes(row.type) ? "goals" : null;
       if (category && preferences[category] === false) return;
       const side = m && row.team_id ? (row.team_id === m.homeId ? m.home : row.team_id === m.awayId ? m.away : null) : null;
       const who = await playerName(row.player_id);
@@ -188,7 +188,7 @@ export function useLiveEventAlerts() {
     const onMatch = async (row: { id: string; status: string; home_score: number | null; away_score: number | null }) => {
       const meta = STATUS_TEXT[row.status];
       if (!meta) return;
-      const category = ["ft", "aet", "pen"].includes(row.status) ? "final" : ["live", "1h", "2h"].includes(row.status) ? "kickoff" : null;
+      const category: "final" | "kickoff" | null = ["ft", "aet", "pen"].includes(row.status) ? "final" : ["live", "1h", "2h"].includes(row.status) ? "kickoff" : null;
       if (category && preferences[category] === false) return;
       const key = `${row.id}:${row.status}`;
       if (seen.current.has(key)) return;
