@@ -384,7 +384,7 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
             <button
               key={item}
               onClick={() => onTab(item)}
-              className={`shrink-0 border-b-2 px-3 py-2 font-bold capitalize sm:px-4 ${activeTab === item ? "border-current" : "border-transparent opacity-65"}`}
+              className={`shrink-0 border-b-2 px-3 py-2 font-bold capitalize sm:px-4 ${tab === item ? "border-current" : "border-transparent opacity-65"}`}
             >{item === "awards" ? tx("Awards") : item === "knockout" ? tx("Knockout") : t(`tab.${item}`)}</button>
           ))}
         </SwipeTabs>
