@@ -167,13 +167,34 @@ function OffersView({ needsApproval }: { needsApproval: boolean }) {
   const label = (m: MatchOption) => `${m.home?.name ?? "TBD"} vs ${m.away?.name ?? "TBD"} — ${m.competition?.name ?? ""} ${formatKickoff(m.kickoff_at)}`;
   const filtered = (matches.data ?? []).filter((m) => label(m).toLowerCase().includes(search.trim().toLowerCase()));
 
+  /** Picking a match copies its details in; they are then editable and kept forever. */
+  const pickMatch = (id: string | null) => {
+    setMatchId(id);
+    const m = (matches.data ?? []).find((item) => item.id === id);
+    if (!m) return;
+    setForm((prev) => ({
+      ...prev,
+      event_home: m.home?.name ?? "",
+      event_away: m.away?.name ?? "",
+      event_competition: m.competition?.name ?? "",
+      event_venue: m.venue ?? "",
+      event_kickoff: toLocalInput(m.kickoff_at),
+    }));
+  };
+
   const save = async () => {
-    if (!matchId && !editing) return;
+    if (!form.event_home.trim() && !matchId && !editing) return;
     const capacity = Number(form.capacity);
     if (!Number.isFinite(capacity) || capacity < 1) return;
     setBusy(true);
     const payload = {
-      match_id: editing?.match_id ?? matchId!,
+      match_id: editing ? editing.match_id : matchId,
+      event_home: form.event_home.trim() || null,
+      event_away: form.event_away.trim() || null,
+      event_competition: form.event_competition.trim() || null,
+      event_venue: form.event_venue.trim() || null,
+      event_kickoff_at: fromLocalInput(form.event_kickoff),
+
       name: form.name.trim() || "General admission",
       stand: form.stand.trim() || null,
       price: form.is_free ? 0 : Number(form.price || 0),
