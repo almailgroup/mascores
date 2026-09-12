@@ -44,14 +44,19 @@ export function ChatManagerPanel() {
         .limit(200)).data ?? []) as unknown as MatchRow[],
   });
 
+  const competitions = useMemo(
+    () => [...new Set((matchesQ.data ?? []).map((m) => m.competition?.name).filter((name): name is string => !!name))].sort(),
+    [matchesQ.data],
+  );
+
   const matches = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const rows = matchesQ.data ?? [];
-    if (!q) return rows.slice(0, 40);
-    return rows
-      .filter((m) => `${m.home?.name ?? ""} ${m.away?.name ?? ""} ${m.competition?.name ?? ""}`.toLowerCase().includes(q))
-      .slice(0, 40);
-  }, [matchesQ.data, search]);
+    return (matchesQ.data ?? [])
+      .filter((m) => (!competition || m.competition?.name === competition))
+      .filter((m) => (!q ? true : `${m.home?.name ?? ""} ${m.away?.name ?? ""} ${m.competition?.name ?? ""}`.toLowerCase().includes(q)))
+      .slice(0, 60);
+  }, [matchesQ.data, search, competition]);
+
 
   const messagesKey = ["admin", "chat-messages", matchId];
   const messagesQ = useQuery({
