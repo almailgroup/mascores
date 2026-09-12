@@ -146,10 +146,12 @@ export function AutoTranslateProvider({ children }: { children: ReactNode }) {
       if (isNaN(n)) return value == null ? "" : String(value);
       const fmt = (() => {
         const abs = Math.abs(n);
+        const sign = n < 0 ? "-" : "";
         if (abs < 1000) return String(n);
-        if (abs < 10000) return `${(n / 1000).toFixed(1).replace(/\.0$/, "")}k`;
-        if (abs < 1_000_000) return `${Math.round(n / 1000)}k`;
-        return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
+        // Truncate (floor) to one decimal — never round to nearest.
+        if (abs < 1_000_000)
+          return `${sign}${(Math.floor(abs / 100) / 10).toFixed(1).replace(/\.0$/, "")}k`;
+        return `${sign}${(Math.floor(abs / 100000) / 10).toFixed(1).replace(/\.0$/, "")}M`;
       })();
       return lang === "ar" ? toArabicDigits(fmt) : fmt;
     },
