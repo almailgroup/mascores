@@ -209,6 +209,18 @@ function MatchPage() {
     accentAway: awayAccent?.color ?? homeAccent?.color ?? "#0b1020",
   };
 
+  /** Following a club here also saves this match and switches its alerts on. */
+  const followMatch = () => {
+    void addFavorite("match", match.id);
+    try {
+      const muted = JSON.parse(localStorage.getItem("mas.match_notification_ids") ?? "[]") as string[];
+      if (Array.isArray(muted) && muted.includes(match.id)) {
+        localStorage.setItem("mas.match_notification_ids", JSON.stringify(muted.filter((item) => item !== match.id)));
+      }
+    } catch { /* nothing saved yet */ }
+    window.dispatchEvent(new Event("mas:alerts-changed"));
+  };
+
   return (
     <AppShell>
       {/* Hero split between both clubs' badge colours. */}
