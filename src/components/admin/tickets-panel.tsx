@@ -124,12 +124,7 @@ function SellersView() {
   );
 }
 
-          </div>
-        );
-      })}
-    </div>
-  );
-}
+
 
 function OffersView({ needsApproval }: { needsApproval: boolean }) {
   const qc = useQueryClient();
