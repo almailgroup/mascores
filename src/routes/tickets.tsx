@@ -328,42 +328,63 @@ function ResaleMarket() {
     <section className="mt-8">
       <h2 className="mb-3 text-sm font-bold uppercase tracking-widest text-muted-foreground">{tx("Tickets from supporters")}</h2>
       {error && <p className="mb-2 text-xs font-semibold text-destructive">{tx(error)}</p>}
-      {(list.data ?? []).length === 0 ? (
+      {list.isLoading ? (
+        <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+      ) : (list.data ?? []).length === 0 ? (
         <div className="rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground">{tx("Nobody is reselling a ticket right now.")}</div>
       ) : (
-        <div className="space-y-2">
-          {(list.data ?? []).map((item) => (
-            <div key={item.id} className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-4">
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-bold">{tx(item.match?.home?.name ?? "TBD")} <span className="text-muted-foreground">{tx("vs")}</span> {tx(item.match?.away?.name ?? "TBD")}</div>
-                <div className="truncate text-[0.7rem] text-muted-foreground">
-                  {[item.offer ? tx(item.offer.name) : null, item.offer?.stand ? tx(item.offer.stand) : null, formatKickoff(item.match?.kickoff_at ?? null)].filter(Boolean).join(" · ")}
+        <div className="space-y-3">
+          {(list.data ?? []).map((item) => {
+            const offer = item.offer as { name?: string; stand?: string | null; price?: number | null; event_home?: string | null; event_away?: string | null; event_competition?: string | null; event_venue?: string | null; event_kickoff_at?: string | null } | null;
+            const home = offer?.event_home || item.match?.home?.name || "TBD";
+            const away = offer?.event_away || item.match?.away?.name || "TBD";
+            const kickoff = offer?.event_kickoff_at || item.match?.kickoff_at || null;
+            const face = Number(offer?.price ?? 0);
+            return (
+              <div key={item.id} className="overflow-hidden rounded-2xl border border-amber-500/50 bg-amber-500/[0.07]">
+                <div className="flex flex-wrap items-center gap-3 border-b border-amber-500/30 p-4">
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-bold">{tx(home)} <span className="text-muted-foreground">{tx("vs")}</span> {tx(away)}</div>
+                    <div className="truncate text-[0.7rem] text-muted-foreground">
+                      {[offer?.name ? tx(offer.name) : null, offer?.stand ? tx(offer.stand) : null, offer?.event_competition ? tx(offer.event_competition) : null, formatKickoff(kickoff)].filter(Boolean).join(" · ")}
+                    </div>
+                    <div className="mt-1 text-[0.7rem] text-muted-foreground">
+                      {tx("Original price")}: <span className="font-bold text-foreground">{face > 0 ? `${face} ${item.currency}` : tx("Free")}</span>
+                    </div>
+                  </div>
+                  <div className="text-end">
+                    <div className="text-[0.6rem] font-bold uppercase tracking-widest text-amber-700 dark:text-amber-400">{tx("Supporter price")}</div>
+                    <div className="text-lg font-black tabular-nums text-amber-700 dark:text-amber-400">{Number(item.sale_price ?? 0)} {item.currency}</div>
+                  </div>
                 </div>
-                <div className="mt-0.5 text-[0.7rem] text-muted-foreground">
-                  {tx("Seller")}: {[item.seller_phone, item.seller_email].filter(Boolean).join(" · ") || tx("no contact given")}
+                <div className="flex flex-wrap items-center gap-3 bg-amber-500/10 p-4">
+                  <div className="min-w-0 flex-1 text-[0.7rem]">
+                    <div className="font-bold uppercase tracking-widest text-amber-700 dark:text-amber-400">{tx("Contact the seller")}</div>
+                    <div className="mt-0.5 break-words font-semibold">{[item.seller_phone, item.seller_email].filter(Boolean).join(" · ") || tx("no contact given")}</div>
+                  </div>
+                  <button
+                    disabled={!user || busy === item.id}
+                    className="inline-flex h-9 items-center gap-1.5 rounded-full bg-primary px-4 text-xs font-bold text-primary-foreground disabled:opacity-50"
+                    onClick={async () => {
+                      setBusy(item.id); setError(null);
+                      try {
+                        await buy({ data: { ticketId: item.id } });
+                        await Promise.all([list.refetch(), qc.invalidateQueries({ queryKey: ["my-tickets"] })]);
+                      } catch (err) { setError(err instanceof Error ? err.message : "Could not buy this ticket."); }
+                      finally { setBusy(null); }
+                    }}>
+                    {busy === item.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}{user ? tx("Buy") : tx("Sign in to buy")}
+                  </button>
                 </div>
               </div>
-              <div className="text-sm font-black tabular-nums">{Number(item.sale_price ?? 0)} {item.currency}</div>
-              <button
-                disabled={!user || busy === item.id}
-                className="inline-flex h-9 items-center gap-1.5 rounded-full bg-primary px-4 text-xs font-bold text-primary-foreground disabled:opacity-50"
-                onClick={async () => {
-                  setBusy(item.id); setError(null);
-                  try {
-                    await buy({ data: { ticketId: item.id } });
-                    await Promise.all([list.refetch(), qc.invalidateQueries({ queryKey: ["my-tickets"] })]);
-                  } catch (err) { setError(err instanceof Error ? err.message : "Could not buy this ticket."); }
-                  finally { setBusy(null); }
-                }}>
-                {busy === item.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}{user ? tx("Buy") : tx("Sign in to buy")}
-              </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </section>
   );
 }
+
 
 /** Sell / stop selling, plus saving the match to the phone's calendar. */
 function TicketActions({ ticket }: { ticket: MyTicket }) {
