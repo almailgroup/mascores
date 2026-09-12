@@ -159,12 +159,12 @@ function TicketsBanner() {
   });
   if ((count.data ?? 0) === 0) return null;
   return (
-    <Link to="/tickets" className="mb-6 flex items-center gap-4 overflow-hidden rounded-3xl border border-primary/30 bg-gradient-to-r from-primary/20 via-card to-card p-4 transition hover:border-primary/60 hover:shadow-lg">
-      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-md"><TicketIcon className="h-6 w-6" /></span>
+    <Link to="/tickets" className="mb-5 flex min-h-20 items-center gap-3 overflow-hidden rounded-2xl border border-border bg-card p-3 shadow-sm transition hover:border-primary/60">
+      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><TicketIcon className="h-5 w-5" /></span>
       <span className="min-w-0 flex-1">
-        <span className="block text-[0.65rem] font-black uppercase tracking-[0.2em] text-primary">{tx("Tickets")}</span>
-        <span className="block truncate text-base font-black tracking-tight">{tx("Buy match tickets")}</span>
-        <span className="block truncate text-xs text-muted-foreground">{tx("Instant QR entry passes for upcoming fixtures")}</span>
+        <span className="block text-[0.65rem] font-bold uppercase tracking-widest text-primary">{tx("Tickets")}</span>
+        <span className="block truncate text-sm font-black">{tx("Buy match tickets")}</span>
+        <span className="block truncate text-[0.7rem] text-muted-foreground">{tx("Secure QR entry passes")}</span>
       </span>
       <ArrowRight className="h-5 w-5 shrink-0 text-primary" />
     </Link>
@@ -178,6 +178,7 @@ function ScoreBoard({ liveCount }: { liveCount: number }) {
   const [scope, setScope] = useState<"all" | "favourites" | "competitions">("all");
   const [offset, setOffset] = useState(0);
   const [status, setStatus] = useState<"live" | "finished" | "upcoming" | null>(null);
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   const day = useMemo(() => {
     const d = new Date();
@@ -250,10 +251,23 @@ function ScoreBoard({ liveCount }: { liveCount: number }) {
         </div>
         <div className="flex shrink-0 items-center overflow-hidden rounded-full border border-border">
           <button onClick={() => setOffset(offset - 1)} className="px-2 py-1.5 text-primary hover:bg-accent" aria-label={tx("Previous day")}><ChevronLeft className="h-4 w-4" /></button>
-          <button onClick={() => setOffset(0)} className="min-w-24 px-2 py-1.5 text-xs font-semibold text-primary">{dayLabel}</button>
+          <button onClick={() => setCalendarOpen(true)} className="min-w-24 px-2 py-1.5 text-xs font-semibold text-primary">{dayLabel}</button>
           <button onClick={() => setOffset(offset + 1)} className="px-2 py-1.5 text-primary hover:bg-accent" aria-label={tx("Next day")}><ChevronRight className="h-4 w-4" /></button>
         </div>
       </div>
+      {calendarOpen && <div className="border-b border-border bg-muted/30 px-4 py-3">
+        <label className="flex items-center gap-3 text-xs font-semibold text-muted-foreground">
+          {tx("Choose date")}
+          <input type="date" className="h-10 min-w-0 flex-1 rounded-xl border border-border bg-background px-3 text-sm text-foreground" value={day.toISOString().slice(0, 10)} onChange={(event) => {
+            if (!event.target.value) return;
+            const selected = new Date(`${event.target.value}T00:00:00`);
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            setOffset(Math.round((selected.getTime() - today.getTime()) / 86400000));
+            setCalendarOpen(false);
+          }} />
+          <button onClick={() => setCalendarOpen(false)} className="rounded-full px-3 py-2 text-primary">{tx("Close")}</button>
+        </label>
+      </div>}
 
       <div className="flex flex-wrap items-center gap-2 px-4 py-3">
         {chip("live", t("board.live"))}

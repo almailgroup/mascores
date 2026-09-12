@@ -37,13 +37,13 @@ type OfferRow = {
 type MyTicket = {
   id: string; code: string; status: string; row_label: string | null; seat_label: string | null;
   holder_name: string | null; price_paid: number; currency: string; used_at: string | null;
-  for_sale: boolean; sale_price: number | null; match_id: string;
+  for_sale: boolean; sale_price: number | null; match_id: string; is_hidden: boolean;
   offer: { name: string; stand: string | null } | null;
   match: { kickoff_at: string | null; venue: string | null; home: { name: string } | null; away: { name: string } | null; competition: { name: string } | null } | null;
 };
 
 const TICKET_SELECT =
-  "id, code, status, row_label, seat_label, holder_name, price_paid, currency, used_at, created_at, for_sale, sale_price, match_id, offer:offer_id(name, stand), match:match_id(kickoff_at, venue, home:home_team_id(name), away:away_team_id(name), competition:competition_id(name))";
+  "id, code, status, row_label, seat_label, holder_name, price_paid, currency, used_at, created_at, for_sale, sale_price, is_hidden, match_id, offer:offer_id(name, stand), match:match_id(kickoff_at, venue, home:home_team_id(name), away:away_team_id(name), competition:competition_id(name))";
 
 /** A pass stops working three hours after kickoff. */
 function isExpired(kickoff: string | null | undefined): boolean {
@@ -55,6 +55,7 @@ function TicketsPage() {
   const tx = useTx();
   const { user } = useAuth();
   const [checkout, setCheckout] = useState<OfferRow | null>(null);
+  const [showHidden, setShowHidden] = useState(false);
   const availability = useServerFn(ticketAvailability);
 
   const offers = useQuery({
@@ -161,16 +162,16 @@ function TicketsPage() {
         </div>
       )}
 
-      <h2 className="mt-8 mb-3 text-sm font-bold uppercase tracking-widest text-muted-foreground">{tx("My tickets")}</h2>
+       <div className="mt-8 mb-3 flex items-center justify-between gap-3"><h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">{tx("My tickets")}</h2>{user && <button onClick={() => setShowHidden(!showHidden)} className="rounded-full border border-border px-3 py-1 text-[0.7rem] font-bold text-muted-foreground">{showHidden ? tx("Show active") : `${tx("Hidden")} (${(mine.data ?? []).filter((ticket) => ticket.is_hidden).length})`}</button>}</div>
       {!user ? (
         <div className="rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground">
           {tx("Sign in to see your tickets.")} <Link to="/auth" className="font-semibold text-primary">{tx("Sign in")}</Link>
         </div>
-      ) : (mine.data ?? []).length === 0 ? (
+      ) : (mine.data ?? []).filter((ticket) => ticket.is_hidden === showHidden).length === 0 ? (
         <div className="rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground">{tx("No tickets yet.")}</div>
       ) : (
         <div className="grid gap-3 lg:grid-cols-2">
-          {(mine.data ?? []).map((ticket) => <TicketCard key={ticket.id} ticket={ticket} />)}
+           {(mine.data ?? []).filter((ticket) => ticket.is_hidden === showHidden).map((ticket) => <TicketCard key={ticket.id} ticket={ticket} />)}
         </div>
       )}
 
@@ -333,6 +334,7 @@ function TicketActions({ ticket }: { ticket: MyTicket }) {
         </button>
       )}
       <button className="rounded-full border border-border px-3 py-1 text-[0.7rem] font-bold" onClick={addToWallet}>{tx("Add to wallet")}</button>
+      <button className="rounded-full border border-border px-3 py-1 text-[0.7rem] font-bold text-muted-foreground" onClick={async () => { await supabase.from("tickets").update({ is_hidden: !ticket.is_hidden }).eq("id", ticket.id); await refresh(); }}>{ticket.is_hidden ? tx("Restore") : tx("Hide")}</button>
       {error && <span className="text-[0.7rem] font-semibold text-destructive">{tx(error)}</span>}
     </div>
   );
