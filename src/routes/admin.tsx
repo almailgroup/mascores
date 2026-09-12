@@ -51,7 +51,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
   const [tab, setTab] = useState<"competitions" | "teams" | "countries" | "players" | "news" | "ai" | "venues" | "channels" | "transfers" | "reports" | "tickets" | "users" | "voice" | "rabta" | "approvals" | "appeals" | "manage" | "requests">("competitions");
   const [openComp, setOpenComp] = useState<Competition | null>(null);
   const [adminSeason, setAdminSeason] = useState<string | null>(null);
-  const [compTab, setCompTab] = useState<"overview" | "teams" | "matches" | "standings" | "awards" | "media">("overview");
+  const [compTab, setCompTab] = useState<"overview" | "teams" | "matches" | "standings" | "knockout" | "awards" | "media">("overview");
   const unlock = useServerFn(unlockAdmin);
   const accessFn = useServerFn(myAccess);
   const access = useQuery({ enabled: !!user, queryKey: ["my-access", user?.id], queryFn: () => accessFn({}) });
