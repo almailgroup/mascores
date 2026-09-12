@@ -26,29 +26,22 @@ import { FavoriteButton, MatchNotificationButton, useFavorites } from "@/hooks/u
 /** Crest + name used inside the slim match hero. The follow star sits on the
  *  outer edge of each club: home star on the left, away star on the right. */
 function HeroTeam({ team, onFollow, starSide }: { team: Team | null; onFollow?: () => void; starSide: "start" | "end" }) {
-  const tx = useTx();
   const reverse = starSide === "end";
   const star = team ? (
-    <span className="mt-1 shrink-0 [&_button]:h-9 [&_button]:w-9 [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-white [&_svg]:h-6 [&_svg]:w-6">
+    <span className="shrink-0 [&_button]:h-10 [&_button]:w-10 [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-white [&_svg]:h-6 [&_svg]:w-6">
       <FavoriteButton kind="team" id={team.id} onFollow={onFollow} />
     </span>
   ) : null;
-  const stack = (
-    <>
-      <span className="grid h-14 w-14 place-items-center">
-        {team?.logo_url
-          ? <img src={team.logo_url} alt="" className="h-full w-full object-contain drop-shadow-[0_2px_6px_rgba(0,0,0,0.35)]" />
-          : <TeamCrest name={team?.name} logo={null} className="h-12 w-12" />}
-      </span>
-      {/* full club name, wrapping as needed - never truncated on a phone */}
-      <span className="mt-2 w-full text-balance break-words text-center text-sm font-bold leading-4.5 sm:text-base">{tx(team?.name) ?? "TBD"}</span>
-    </>
-  );
+  const crest = <span className="grid h-16 w-16 shrink-0 place-items-center sm:h-[4.5rem] sm:w-[4.5rem]">
+    {team?.logo_url
+      ? <img src={team.logo_url} alt="" className="h-full w-full object-contain drop-shadow-[0_3px_8px_rgba(0,0,0,0.35)]" />
+      : <TeamCrest name={team?.name} logo={null} className="h-14 w-14" />}
+  </span>;
   const column = team
-    ? <Link to="/teams/$id" params={{ id: team.id }} className="flex min-w-0 flex-1 flex-col items-center">{stack}</Link>
-    : <div className="flex min-w-0 flex-1 flex-col items-center">{stack}</div>;
+    ? <Link to="/teams/$id" params={{ id: team.id }} className="flex min-w-0 flex-1 items-center justify-center">{crest}</Link>
+    : <div className="flex min-w-0 flex-1 items-center justify-center">{crest}</div>;
   return (
-    <div className={`flex min-w-0 items-start gap-1 text-white ${reverse ? "flex-row-reverse" : ""}`}>
+    <div className={`flex min-w-0 items-center gap-2 text-white ${reverse ? "flex-row-reverse" : ""}`}>
       {star}{column}
     </div>
   );
@@ -230,52 +223,60 @@ function MatchPage() {
       {/* Slim hero split between both clubs' badge colours. */}
       <div dir="ltr" className="relative -mx-4 -mt-6 mb-4 overflow-hidden px-4 pb-0 pt-1 text-white sm:-mx-6 sm:px-6"
         style={{ background: heroBackground }}>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between px-1 pb-1">
           {/* plain arrow only, matching a native phone header */}
           <BackButton iconOnly className="text-white" />
-          <div className="flex items-center gap-1 [&_button]:h-9 [&_button]:w-9 [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-white [&_svg]:h-6 [&_svg]:w-6">
+          <div className="flex items-center gap-2 [&_button]:h-10 [&_button]:w-10 [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-white [&_svg]:h-5 [&_svg]:w-5">
             <MatchShare data={shareData} mode="result" />
             <MatchNotificationButton matchId={match.id} teamIds={[match.home_team_id, match.away_team_id]} withSettings />
             <FavoriteButton kind="match" id={match.id} />
           </div>
         </div>
 
-        <div className="mt-3 grid items-start gap-2" style={{ gridTemplateColumns: "minmax(0,1fr) auto minmax(0,1fr)" }}>
+        <div className="mt-4 grid items-center gap-3 px-1 sm:px-4" style={{ gridTemplateColumns: "minmax(0,1fr) minmax(5.5rem,auto) minmax(0,1fr)" }}>
           <HeroTeam team={match.home} onFollow={followMatch} starSide="start" />
-          <div className="pt-2 text-center">
+          <div className="min-w-[5.5rem] text-center">
             {["scheduled", "postponed", "cancelled"].includes(match.status)
-              ? <div className="text-sm font-bold">{tx(STATUS_LABELS[match.status] ?? match.status)}</div>
+              ? <div className="text-sm font-bold leading-5">{tx(STATUS_LABELS[match.status] ?? match.status)}</div>
               : <>
                 {/* live matches show score and clock in red, like a broadcast ticker */}
-                <div className={`text-3xl font-black tabular-nums leading-none ${isLive ? "text-[#ff3b4e]" : ""}`}>
-                  {num(match.home_score ?? 0)} <span className={isLive ? "text-[#ff3b4e]/70" : "text-white/60"}>-</span> {num(match.away_score ?? 0)}
+                <div className={`text-4xl font-black tabular-nums leading-none ${isLive ? "text-destructive" : ""}`}>
+                  {num(match.home_score ?? 0)} <span className={isLive ? "text-destructive/70" : "text-white/60"}>-</span> {num(match.away_score ?? 0)}
                 </div>
                 {match.status === "pen" && match.home_pen != null && match.away_pen != null && (
                   <div className="text-xs text-white/70">({num(match.home_pen)}–{num(match.away_pen)} {tx("pens")})</div>
                 )}
-                <div className={`mt-1 flex items-center justify-center gap-1 text-sm font-semibold tabular-nums ${isLive ? "text-[#ff3b4e]" : "text-white/80"}`}>
-                  {isLive && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#ff3b4e]" />}
+                <div className={`mt-2 flex items-center justify-center gap-1.5 text-sm font-bold tabular-nums ${isLive ? "text-destructive" : "text-white/80"}`}>
+                  {isLive && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-destructive" />}
                   {match.status === "live" ? num(formatClock(clock)) : tx(STATUS_LABELS[match.status] ?? match.status)}
                 </div>
               </>}
-            <div className="mt-1 text-[0.65rem] font-semibold uppercase tracking-wide text-white/70">{num(dates.kickoff(match.kickoff_at))}</div>
+            <div className="mt-2 text-[0.65rem] font-semibold uppercase text-white/70">{num(dates.kickoff(match.kickoff_at))}</div>
           </div>
           <HeroTeam team={match.away} onFollow={followMatch} starSide="end" />
         </div>
 
+        <div className="mt-5 grid grid-cols-2 gap-8 px-5 text-center">
+          <div className="min-w-0">
+            <Link to="/teams/$id" params={{ id: match.home?.id ?? "" }} disabled={!match.home} className="block text-balance break-words text-sm font-bold leading-5 text-white">{tx(match.home?.name) ?? "TBD"}</Link>
+          </div>
+          <div className="min-w-0">
+            <Link to="/teams/$id" params={{ id: match.away?.id ?? "" }} disabled={!match.away} className="block text-balance break-words text-sm font-bold leading-5 text-white">{tx(match.away?.name) ?? "TBD"}</Link>
+          </div>
+        </div>
+
         {(homeScorers.length > 0 || awayScorers.length > 0) && (
-          <div className="mt-2 grid items-start gap-3 text-[0.8rem] text-white/85" style={{ gridTemplateColumns: "minmax(0,1fr) auto minmax(0,1fr)" }}>
-            <div className="space-y-1 text-end">{homeScorers.map((scorer, index) => <div key={index} className="flex items-center justify-end gap-1"><span className="truncate" dir={lang === "ar" ? "rtl" : "ltr"}>{scorer.name} {num(scorer.minute)}</span><EventIcon type={scorer.type} /></div>)}</div>
-            <div className="w-1" />
-            <div className="space-y-1">{awayScorers.map((scorer, index) => <div key={index} className="flex items-center gap-1"><EventIcon type={scorer.type} /><span className="truncate" dir={lang === "ar" ? "rtl" : "ltr"}>{scorer.name} {num(scorer.minute)}</span></div>)}</div>
+          <div className="mt-3 grid grid-cols-2 items-start gap-8 px-4 text-[0.72rem] text-white/85">
+            <div className="space-y-1.5 text-end">{homeScorers.map((scorer, index) => <div key={index} className="flex min-w-0 items-center justify-end gap-1.5"><span className="truncate" dir={lang === "ar" ? "rtl" : "ltr"}>{scorer.name} {num(scorer.minute)}</span><EventIcon type={scorer.type} /></div>)}</div>
+            <div className="space-y-1.5 text-start">{awayScorers.map((scorer, index) => <div key={index} className="flex min-w-0 items-center gap-1.5"><EventIcon type={scorer.type} /><span className="truncate" dir={lang === "ar" ? "rtl" : "ltr"}>{scorer.name} {num(scorer.minute)}</span></div>)}</div>
           </div>
         )}
 
-        {match.venue && <div className="mt-2 text-center text-xs text-white/70">{tx(match.venue)}{match.city ? ` · ${tx(match.city)}` : ""}</div>}
+        {match.venue && <div className="mt-5 flex justify-center px-4"><div className="rounded-full border border-white/10 bg-background/20 px-4 py-1.5 text-center text-[0.7rem] font-semibold text-white/75 backdrop-blur-sm">{tx(match.venue)}{match.city ? ` · ${tx(match.city)}` : ""}</div></div>}
 
-        <div className="mt-2">
-          <SwipeTabs className="gap-1 text-sm">
-            {tabs.map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 py-2 font-semibold capitalize ${tab === item ? "border-b-2 border-white text-white" : "text-white/65"}`}>{tx(item === "media" ? "Media" : item === "previous" ? "Matches" : item === "details" ? "Details" : item === "lineups" ? "Lineups" : item === "standings" ? "Standings" : "Stats")}</button>)}
+        <div className="mt-5 border-t border-white/10 px-1">
+          <SwipeTabs className="gap-2 text-sm">
+            {tabs.map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 pb-3 pt-3 font-semibold capitalize ${tab === item ? "border-b-2 border-white text-white" : "text-white/55"}`}>{tx(item === "media" ? "Media" : item === "previous" ? "Matches" : item === "details" ? "Details" : item === "lineups" ? "Lineups" : item === "standings" ? "Standings" : "Stats")}</button>)}
           </SwipeTabs>
         </div>
       </div>
