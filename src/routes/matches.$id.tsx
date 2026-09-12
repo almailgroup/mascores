@@ -164,6 +164,7 @@ function MatchPage() {
   // Two solid halves joined by a thin seam in a slightly shifted tone - never a blend of both colours.
   const seamColor = `color-mix(in oklab, ${homeColor} 50%, #000 25%)`;
   const heroBackground = `linear-gradient(100deg, ${homeColor} 0%, ${homeColor} 49.4%, ${seamColor} 49.4%, ${seamColor} 50.6%, ${awayColor} 50.6%, ${awayColor} 100%)`;
+  const { add: addFavorite } = useFavorites();
   const [, tickClock] = useState(0);
   useEffect(() => {
     if (!m.data?.timer_running) return;
