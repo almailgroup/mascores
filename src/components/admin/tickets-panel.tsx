@@ -15,15 +15,40 @@ type MatchOption = {
 };
 
 type Offer = {
-  id: string; match_id: string; name: string; stand: string | null; price: number; currency: string; resale_max_price: number | null;
+  id: string; match_id: string | null; name: string; stand: string | null; price: number; currency: string; resale_max_price: number | null;
   is_free: boolean; capacity: number | null; show_row: boolean; show_seat: boolean; notes: string | null; is_active: boolean;
   approval_status?: string | null;
+  event_home?: string | null; event_away?: string | null; event_competition?: string | null;
+  event_venue?: string | null; event_kickoff_at?: string | null;
 };
 
 const emptyOffer = {
   name: "General admission", stand: "", price: "3", currency: "KWD", is_free: false, resale_max_price: "",
   capacity: "100", show_row: true, show_seat: true, notes: "", is_active: true,
+  event_home: "", event_away: "", event_competition: "", event_venue: "", event_kickoff: "",
 };
+
+/** ISO timestamp ⇄ the value an <input type="datetime-local"> expects. */
+function toLocalInput(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function fromLocalInput(value: string): string | null {
+  if (!value) return null;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
+}
+
+/** What this ticket is for, taken from its own saved details first. */
+export function offerEventLabel(offer: Offer): string {
+  const teams = [offer.event_home, offer.event_away].filter(Boolean).join(" vs ");
+  return [teams || null, offer.event_competition, offer.event_kickoff_at ? formatKickoff(offer.event_kickoff_at) : null, offer.event_venue]
+    .filter(Boolean).join(" · ");
+}
+
 
 
 /**
@@ -56,7 +81,7 @@ function SellersView() {
     queryFn: async () => {
       const { data } = await supabase
         .from("tickets")
-        .select("id, code, sale_price, currency, seller_phone, seller_email, holder_name, row_label, seat_label, updated_at, offer:offer_id(name, stand), match:match_id(kickoff_at, home:home_team_id(name), away:away_team_id(name), competition:competition_id(name))")
+        .select("id, code, sale_price, price_paid, currency, seller_phone, seller_email, holder_name, holder_email, holder_phone, row_label, seat_label, updated_at, offer:offer_id(name, stand, event_home, event_away, event_competition, event_venue, event_kickoff_at), match:match_id(kickoff_at, home:home_team_id(name), away:away_team_id(name), competition:competition_id(name))")
         .eq("for_sale", true)
         .eq("status", "valid")
         .order("updated_at", { ascending: false })
@@ -71,19 +96,26 @@ function SellersView() {
     <div className="space-y-2">
       {(sellers.data ?? []).map((row) => {
         const match = row.match as { kickoff_at?: string | null; home?: { name?: string } | null; away?: { name?: string } | null; competition?: { name?: string } | null } | null;
-        const offer = row.offer as { name?: string; stand?: string | null } | null;
+        const offer = row.offer as { name?: string; stand?: string | null; event_home?: string | null; event_away?: string | null; event_competition?: string | null; event_venue?: string | null; event_kickoff_at?: string | null } | null;
+        const home = offer?.event_home || match?.home?.name || "TBD";
+        const away = offer?.event_away || match?.away?.name || "TBD";
+        const kickoff = offer?.event_kickoff_at || match?.kickoff_at || null;
         return (
-          <div key={row.id} className="rounded-2xl border border-border bg-card p-3 text-xs">
+          <div key={row.id} className="rounded-2xl border border-amber-500/40 bg-amber-500/5 p-3 text-xs">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="font-bold">{match?.home?.name ?? "TBD"} vs {match?.away?.name ?? "TBD"}</span>
-              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[0.6rem] font-bold text-primary">{Number(row.sale_price ?? 0)} {row.currency}</span>
+              <span className="font-bold">{home} vs {away}</span>
+              <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[0.6rem] font-bold text-amber-700 dark:text-amber-400">Asking {Number(row.sale_price ?? 0)} {row.currency}</span>
+              <span className="text-[0.6rem] text-muted-foreground">Paid {Number(row.price_paid ?? 0)} {row.currency}</span>
               <span className="font-mono tracking-wider text-muted-foreground">{row.code}</span>
             </div>
             <div className="mt-1 text-muted-foreground">
-              {[offer?.name, offer?.stand, match?.competition?.name, match?.kickoff_at ? formatKickoff(match.kickoff_at) : null].filter(Boolean).join(" · ")}
+              {[offer?.name, offer?.stand, offer?.event_competition || match?.competition?.name, offer?.event_venue, kickoff ? formatKickoff(kickoff) : null].filter(Boolean).join(" · ")}
             </div>
             <div className="mt-1 font-semibold">
-              {[row.seller_phone, row.seller_email].filter(Boolean).join(" · ") || "No contact details"}
+              Seller: {[row.seller_phone, row.seller_email].filter(Boolean).join(" · ") || "No contact details"}
+            </div>
+            <div className="mt-0.5 text-muted-foreground">
+              Ticket holder: {[row.holder_name, row.holder_phone, row.holder_email].filter(Boolean).join(" · ") || "not given"}
             </div>
           </div>
         );
@@ -91,6 +123,8 @@ function SellersView() {
     </div>
   );
 }
+
+
 
 function OffersView({ needsApproval }: { needsApproval: boolean }) {
   const qc = useQueryClient();
@@ -142,13 +176,34 @@ function OffersView({ needsApproval }: { needsApproval: boolean }) {
   const label = (m: MatchOption) => `${m.home?.name ?? "TBD"} vs ${m.away?.name ?? "TBD"} — ${m.competition?.name ?? ""} ${formatKickoff(m.kickoff_at)}`;
   const filtered = (matches.data ?? []).filter((m) => label(m).toLowerCase().includes(search.trim().toLowerCase()));
 
+  /** Picking a match copies its details in; they are then editable and kept forever. */
+  const pickMatch = (id: string | null) => {
+    setMatchId(id);
+    const m = (matches.data ?? []).find((item) => item.id === id);
+    if (!m) return;
+    setForm((prev) => ({
+      ...prev,
+      event_home: m.home?.name ?? "",
+      event_away: m.away?.name ?? "",
+      event_competition: m.competition?.name ?? "",
+      event_venue: m.venue ?? "",
+      event_kickoff: toLocalInput(m.kickoff_at),
+    }));
+  };
+
   const save = async () => {
-    if (!matchId && !editing) return;
+    if (!form.event_home.trim() && !matchId && !editing) return;
     const capacity = Number(form.capacity);
     if (!Number.isFinite(capacity) || capacity < 1) return;
     setBusy(true);
     const payload = {
-      match_id: editing?.match_id ?? matchId!,
+      match_id: editing ? editing.match_id : matchId,
+      event_home: form.event_home.trim() || null,
+      event_away: form.event_away.trim() || null,
+      event_competition: form.event_competition.trim() || null,
+      event_venue: form.event_venue.trim() || null,
+      event_kickoff_at: fromLocalInput(form.event_kickoff),
+
       name: form.name.trim() || "General admission",
       stand: form.stand.trim() || null,
       price: form.is_free ? 0 : Number(form.price || 0),
@@ -192,15 +247,24 @@ function OffersView({ needsApproval }: { needsApproval: boolean }) {
               <Search className="pointer-events-none absolute start-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
               <input className={`${inputCls} ps-8`} placeholder="Search matches…" value={search} onChange={(e) => setSearch(e.target.value)} />
             </div>
-            <Field label="Match">
-              <select className={inputCls} value={matchId ?? ""} onChange={(e) => setMatchId(e.target.value || null)}>
-                <option value="">Select a match…</option>
+            <Field label="Copy details from a match (optional)">
+              <select className={inputCls} value={matchId ?? ""} onChange={(e) => pickMatch(e.target.value || null)}>
+                <option value="">Type the details myself…</option>
                 {filtered.slice(0, 120).map((m) => <option key={m.id} value={m.id}>{label(m)}</option>)}
               </select>
             </Field>
           </div>
         )}
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <Field label="Home team"><input className={inputCls} value={form.event_home} onChange={(e) => setForm({ ...form, event_home: e.target.value })} placeholder="Al Arabi" /></Field>
+          <Field label="Away team"><input className={inputCls} value={form.event_away} onChange={(e) => setForm({ ...form, event_away: e.target.value })} placeholder="Kuwait SC" /></Field>
+          <Field label="Competition"><input className={inputCls} value={form.event_competition} onChange={(e) => setForm({ ...form, event_competition: e.target.value })} placeholder="Premier League" /></Field>
+          <Field label="Stadium"><input className={inputCls} value={form.event_venue} onChange={(e) => setForm({ ...form, event_venue: e.target.value })} placeholder="Sabah Al Salem" /></Field>
+          <Field label="Date & time"><input type="datetime-local" className={inputCls} value={form.event_kickoff} onChange={(e) => setForm({ ...form, event_kickoff: e.target.value })} /></Field>
+        </div>
+        <p className="mt-2 text-[0.7rem] text-muted-foreground">These details are saved on the ticket itself, so deleting a match never breaks tickets already sold.</p>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+
           <Field label="Ticket name"><input className={inputCls} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
           <Field label="Stand / section"><input className={inputCls} value={form.stand} onChange={(e) => setForm({ ...form, stand: e.target.value })} placeholder="West stand" /></Field>
           <Field label="Price"><input className={inputCls} inputMode="decimal" disabled={form.is_free} value={form.is_free ? "0" : form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} /></Field>
@@ -222,7 +286,7 @@ function OffersView({ needsApproval }: { needsApproval: boolean }) {
           <p className="mt-1 text-xs font-semibold text-amber-600">This ticket is sent to the site owner first. It only goes on sale once he approves it.</p>
         )}
         <div className="mt-4 flex gap-2">
-          <button className={btnPrimary} disabled={busy || (!editing && !matchId) || !form.capacity.trim()} onClick={save}>
+          <button className={btnPrimary} disabled={busy || (!editing && !matchId && !form.event_home.trim()) || !form.capacity.trim()} onClick={save}>
             {busy && <Loader2 className="h-3.5 w-3.5 animate-spin" />} {editing ? "Save ticket" : "Create ticket & codes"}
           </button>
           {editing && <button className={btnGhost} onClick={() => { setEditing(null); setForm({ ...emptyOffer }); }}>Cancel</button>}
@@ -238,7 +302,7 @@ function OffersView({ needsApproval }: { needsApproval: boolean }) {
             <div key={offer.id} className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-3">
               <div className="min-w-0 flex-1">
                 <div className="truncate text-sm font-bold">{offer.name}{offer.stand ? ` · ${offer.stand}` : ""} <span className="text-muted-foreground">{offer.is_free ? "· Free" : `· ${offer.price} ${offer.currency}`}</span></div>
-                <div className="truncate text-[0.7rem] text-muted-foreground">{m ? label(m) : offer.match_id}</div>
+                <div className="truncate text-[0.7rem] text-muted-foreground">{offerEventLabel(offer) || (m ? label(m) : "No event details")}</div>
                 <div className="mt-0.5 text-[0.65rem] text-muted-foreground">
                   {[
                     offer.approval_status === "pending" ? "Waiting for approval" : offer.approval_status === "rejected" ? "Turned down" : offer.is_active ? "On sale" : "Hidden",
@@ -252,7 +316,7 @@ function OffersView({ needsApproval }: { needsApproval: boolean }) {
               <button className={btnGhost} onClick={() => setIssueOffer(offer)}><QrIcon className="h-3.5 w-3.5" /> Passes</button>
               <button className={btnGhost} onClick={async () => { await supabase.from("ticket_offers").update({ is_active: !offer.is_active }).eq("id", offer.id); await qc.invalidateQueries({ queryKey: ["admin-ticket-offers"] }); }}>{offer.is_active ? "Hide" : "Show"}</button>
               <button className={btnGhost} onClick={() => setBuyersOffer(offer)}>Buyers</button>
-              <button className={btnGhost} onClick={() => { setEditing(offer); setForm({ name: offer.name, stand: offer.stand ?? "", price: String(offer.price), currency: offer.currency, is_free: offer.is_free, capacity: offer.capacity ? String(offer.capacity) : "", show_row: offer.show_row, show_seat: offer.show_seat, notes: offer.notes ?? "", is_active: offer.is_active, resale_max_price: offer.resale_max_price != null ? String(offer.resale_max_price) : "" }); }}>Edit</button>
+              <button className={btnGhost} onClick={() => { setEditing(offer); setForm({ name: offer.name, stand: offer.stand ?? "", price: String(offer.price), currency: offer.currency, is_free: offer.is_free, capacity: offer.capacity ? String(offer.capacity) : "", show_row: offer.show_row, show_seat: offer.show_seat, notes: offer.notes ?? "", is_active: offer.is_active, resale_max_price: offer.resale_max_price != null ? String(offer.resale_max_price) : "", event_home: offer.event_home ?? "", event_away: offer.event_away ?? "", event_competition: offer.event_competition ?? "", event_venue: offer.event_venue ?? "", event_kickoff: toLocalInput(offer.event_kickoff_at) }); }}>Edit</button>
               <button className={btnDanger} onClick={() => setDeleteOffer(offer)}>Delete</button>
             </div>
           );

@@ -164,17 +164,27 @@ export const listTicketForSale = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!ticket || ticket.user_id !== context.userId) throw new Error("This is not your ticket.");
     if (ticket.status !== "valid") throw new Error("Only a valid, unused ticket can be sold.");
-    const { data: offer } = await supabaseAdmin.from("ticket_offers").select("resale_max_price, price").eq("id", ticket.offer_id ?? "").maybeSingle();
+    const { data: offer } = await supabaseAdmin
+      .from("ticket_offers")
+      .select("resale_max_price, price, event_kickoff_at, match:match_id(kickoff_at)")
+      .eq("id", ticket.offer_id ?? "")
+      .maybeSingle();
+    // Selling closes ten minutes before kickoff; the pass itself stays valid.
+    const kickoff = offer?.event_kickoff_at ?? (offer?.match as { kickoff_at?: string | null } | null)?.kickoff_at ?? null;
+    if (kickoff && Date.now() > new Date(kickoff).getTime() - 10 * 60 * 1000) {
+      throw new Error("Selling closed ten minutes before kickoff. Your ticket still works at the gate.");
+    }
     const cap = offer?.resale_max_price != null ? Number(offer.resale_max_price) : Number(offer?.price ?? ticket.price_paid);
     const price = Math.max(0, Number(data.price) || 0);
     if (cap > 0 && price > cap) throw new Error(`The highest allowed resale price is ${cap} ${ticket.currency}.`);
     const { error } = await supabaseAdmin
       .from("tickets")
-      .update({ for_sale: true, sale_price: price, seller_phone: data.phone.trim(), seller_email: data.email.trim() })
+      .update({ for_sale: true, sale_price: price, seller_phone: data.phone.trim(), seller_email: data.email.trim(), is_hidden: false })
       .eq("id", ticket.id);
     if (error) throw new Error(error.message);
     return { ok: true, cap };
   });
+
 
 /** Owner takes their pass off the resale list. */
 export const unlistTicket = createServerFn({ method: "POST" })
@@ -196,9 +206,10 @@ export const listResaleTickets = createServerFn({ method: "GET" }).handler(async
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data } = await supabaseAdmin
     .from("tickets")
-    .select("id, sale_price, currency, row_label, seat_label, seller_phone, seller_email, offer:offer_id(name, stand), match:match_id(kickoff_at, venue, home:home_team_id(name), away:away_team_id(name), competition:competition_id(name))")
+    .select("id, sale_price, price_paid, currency, row_label, seat_label, seller_phone, seller_email, offer:offer_id(name, stand, price, event_home, event_away, event_competition, event_venue, event_kickoff_at), match:match_id(kickoff_at, venue, home:home_team_id(name), away:away_team_id(name), competition:competition_id(name))")
     .eq("for_sale", true)
     .eq("status", "valid")
+
     .order("sale_price", { ascending: true })
     .limit(100);
   return data ?? [];

@@ -2123,10 +2123,15 @@ export type Database = {
           created_at: string
           created_by: string | null
           currency: string
+          event_away: string | null
+          event_competition: string | null
+          event_home: string | null
+          event_kickoff_at: string | null
+          event_venue: string | null
           id: string
           is_active: boolean
           is_free: boolean
-          match_id: string
+          match_id: string | null
           name: string
           notes: string | null
           price: number
@@ -2144,10 +2149,15 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           currency?: string
+          event_away?: string | null
+          event_competition?: string | null
+          event_home?: string | null
+          event_kickoff_at?: string | null
+          event_venue?: string | null
           id?: string
           is_active?: boolean
           is_free?: boolean
-          match_id: string
+          match_id?: string | null
           name?: string
           notes?: string | null
           price?: number
@@ -2165,10 +2175,15 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           currency?: string
+          event_away?: string | null
+          event_competition?: string | null
+          event_home?: string | null
+          event_kickoff_at?: string | null
+          event_venue?: string | null
           id?: string
           is_active?: boolean
           is_free?: boolean
-          match_id?: string
+          match_id?: string | null
           name?: string
           notes?: string | null
           price?: number
@@ -2202,7 +2217,7 @@ export type Database = {
           id: string
           is_hidden: boolean
           issued_with_admin_code: boolean
-          match_id: string
+          match_id: string | null
           offer_id: string | null
           price_paid: number
           resold_at: string | null
@@ -2227,7 +2242,7 @@ export type Database = {
           id?: string
           is_hidden?: boolean
           issued_with_admin_code?: boolean
-          match_id: string
+          match_id?: string | null
           offer_id?: string | null
           price_paid?: number
           resold_at?: string | null
@@ -2252,7 +2267,7 @@ export type Database = {
           id?: string
           is_hidden?: boolean
           issued_with_admin_code?: boolean
-          match_id?: string
+          match_id?: string | null
           offer_id?: string | null
           price_paid?: number
           resold_at?: string | null
