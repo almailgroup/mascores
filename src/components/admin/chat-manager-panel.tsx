@@ -98,20 +98,34 @@ export function ChatManagerPanel() {
       <p className="mb-3 text-sm text-muted-foreground">Pick a match to write in its chat and to remove any message.</p>
 
       <div className="grid gap-2 sm:grid-cols-2">
-        <label className="relative block">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-          <input className={`${inputCls} pl-9`} placeholder="Search matches" value={search} onChange={(e) => setSearch(e.target.value)} />
+        <label className="block">
+          <span className="mb-1 block text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">Competition</span>
+          <select className={inputCls} value={competition} onChange={(e) => { setCompetition(e.target.value); setMatchId(""); }}>
+            <option value="">All competitions</option>
+            {competitions.map((name) => <option key={name} value={name}>{name}</option>)}
+          </select>
         </label>
-        <select className={inputCls} value={matchId} onChange={(e) => setMatchId(e.target.value)}>
-          <option value="">Choose a match</option>
-          {matches.map((m) => (
-            <option key={m.id} value={m.id}>
-              {(m.home?.name ?? "Home")} vs {(m.away?.name ?? "Away")}
-              {m.kickoff_at ? ` · ${new Date(m.kickoff_at).toLocaleDateString()}` : ""}
-            </option>
-          ))}
-        </select>
+        <label className="relative block">
+          <span className="mb-1 block text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">Search</span>
+          <Search className="pointer-events-none absolute left-3 top-[2.15rem] h-3.5 w-3.5 text-muted-foreground" />
+          <input className={`${inputCls} pl-9`} placeholder="Search clubs" value={search} onChange={(e) => setSearch(e.target.value)} />
+        </label>
       </div>
+
+      {/* Matches are listed inside the page, not in the phone's own dropdown. */}
+      <div className="mt-3 max-h-72 space-y-1 overflow-y-auto rounded-2xl border border-border p-2">
+        {matches.map((m) => (
+          <button key={m.id} type="button" onClick={() => setMatchId(m.id)}
+            className={`flex w-full items-center gap-2 rounded-xl border p-2 text-start ${matchId === m.id ? "border-primary bg-primary/10" : "border-transparent hover:bg-accent"}`}>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-semibold">{(m.home?.name ?? "Home")} vs {(m.away?.name ?? "Away")}</span>
+              <span className="block truncate text-[0.65rem] text-muted-foreground">{[m.competition?.name, m.kickoff_at ? new Date(m.kickoff_at).toLocaleDateString() : null, m.status.toUpperCase()].filter(Boolean).join(" · ")}</span>
+            </span>
+          </button>
+        ))}
+        {matches.length === 0 && <div className="p-3 text-center text-xs text-muted-foreground">{matchesQ.isLoading ? "Loading matches…" : "No match matches those filters."}</div>}
+      </div>
+
 
       {matchId && (
         <>
