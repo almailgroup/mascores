@@ -7,6 +7,7 @@ import { supabase, STATUS_LABELS, roundLabel, matchClockSeconds, formatClock, ev
 import { useRealtime } from "@/lib/realtime";
 import { ChevronRight, PlayCircle, Radio } from "lucide-react";
 import { useTx, useNum, useDates } from "@/lib/auto-translate";
+import { useI18n } from "@/lib/i18n";
 import { MatchChat } from "@/components/match-chat";
 import { MatchVoice } from "@/components/match-voice";
 import { MatchPrediction } from "@/components/match-prediction";
@@ -95,7 +96,7 @@ function MatchPage() {
       const { data } = await supabase.from("matches")
         .select("*, home:home_team_id(id,name,logo_url,is_national), away:away_team_id(id,name,logo_url,is_national), competition:competition_id(id,name,name_ar,slug,logo_url,sport,country,country_code)")
         .eq("id", id).maybeSingle();
-      return data as (Match & { home: Team | null; away: Team | null; competition: { id: string; name: string; slug: string; logo_url: string | null; sport: string; country: string | null; country_code: string | null } | null }) | null;
+      return data as (Match & { home: Team | null; away: Team | null; competition: { id: string; name: string; name_ar: string | null; slug: string; logo_url: string | null; sport: string; country: string | null; country_code: string | null } | null }) | null;
     },
   });
   const events = useQuery({
