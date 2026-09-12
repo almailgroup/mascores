@@ -274,7 +274,6 @@ export const COUNTRIES: Country[] = [
   { code: "WF", name: "Wallis & Futuna", nameAr: "جزر والس وفوتونا", flag: "🇼🇫" },
   { code: "WS", name: "Samoa", nameAr: "ساموا", flag: "🇼🇸" },
   { code: "XA", name: "Pseudo-Accents", nameAr: "لكنات تجريبية غير أصلية", flag: "🇽🇦" },
-  { code: "XB", name: "Pseudo-Bidi", nameAr: "لكنات تجريبية ثنائية الاتجاه", flag: "🇽🇧" },
   { code: "XK", name: "Kosovo", nameAr: "كوسوفو", flag: "🇽🇰" },
   { code: "YD", name: "Yemen", nameAr: "اليمن", flag: "🇾🇩" },
   { code: "YE", name: "Yemen", nameAr: "اليمن", flag: "🇾🇪" },
@@ -285,11 +284,11 @@ export const COUNTRIES: Country[] = [
   { code: "ZR", name: "Congo - Kinshasa", nameAr: "الكونغو - كينشاسا", flag: "🇿🇷" },
   { code: "ZW", name: "Zimbabwe", nameAr: "زيمبابوي", flag: "🇿🇼" },
   { code: "ZZ", name: "Unknown Region", nameAr: "منطقة غير معروفة", flag: "🇿🇿" },
-  // Stateless residents ("Bidoon") — no ISO country, so the flag is drawn in-app.
-  { code: "XB", name: "Bidoon", nameAr: "بدون", flag: "بدون" },];
+  // Explicit choice for players who do not have a nationality.
+  { code: "XN", name: "No nationality", nameAr: "بلا جنسية", flag: "—" },];
 
 /** Nationality code for stateless ("Bidoon") people — rendered with a custom flag. */
-export const BIDOON_CODE = "XB";
+export const BIDOON_CODE = "XN";
 
 const byCode = new Map(COUNTRIES.map((c) => [c.code.toUpperCase(), c]));
 const byName = new Map(COUNTRIES.map((c) => [c.name.toLowerCase(), c]));

@@ -1,6 +1,5 @@
 import { autoShortName } from "@/lib/short-name";
 import { useState } from "react";
-import { ArabicNameField } from "./arabic-name-field";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useAdminAbility } from "@/lib/admin-ability";
@@ -117,7 +116,8 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
         <div className="grid gap-3 rounded-2xl border border-border bg-card p-4 sm:grid-cols-2 lg:grid-cols-3">
           <Field label="Name *"><input className={inputCls} value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
           <Field label="Short name (used in lineups)"><input className={inputCls} placeholder={autoShortName(form.name) || "e.g. A. Aziz"} value={form.short_name ?? ""} onChange={(e) => setForm({ ...form, short_name: e.target.value || null })} /></Field>
-          <ArabicNameField englishName={form.name} />
+          <Field label="Arabic name"><input dir="rtl" className={inputCls} placeholder="الاسم بالعربية" value={form.name_ar ?? ""} onChange={(e) => setForm({ ...form, name_ar: e.target.value || null })} /></Field>
+          <Field label="Arabic short name (lineups)"><input dir="rtl" className={inputCls} placeholder="ع. عزيز" value={form.short_name_ar ?? ""} onChange={(e) => setForm({ ...form, short_name_ar: e.target.value || null })} /></Field>
 
           <Field label="Position">
             <select className={inputCls} value={form.position ?? "Unknown"} onChange={(e) => setForm({ ...form, position: e.target.value })}>

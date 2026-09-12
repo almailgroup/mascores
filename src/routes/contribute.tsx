@@ -162,7 +162,7 @@ function ContributePage() {
             <div className="flex items-center gap-2 text-sm font-bold"><Mail className="h-4 w-4 text-primary" /> How to get access</div>
             <p className="mt-2 text-sm text-muted-foreground">
               Contact <a href="mailto:mansouralmailscores@gmail.com" className="font-semibold text-primary">mansouralmailscores@gmail.com</a> to be given access to the news desk. The
-              <strong className="text-foreground"> $2.99 / month subscription is included</strong> with your reporter access.
+              <strong className="text-foreground"> 3 KWD / month subscription is included</strong> with your reporter access.
             </p>
             <ul className="mt-4 grid gap-2 text-sm">
               {[

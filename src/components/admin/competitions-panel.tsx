@@ -5,7 +5,6 @@ import { Field, Modal, ImageInput, inputCls, btnPrimary, btnGhost, btnDanger } f
 import { uploadMedia } from "./upload";
 import { Plus, Pencil, Trash2, ChevronRight } from "lucide-react";
 import { CountrySelect } from "@/components/country-select";
-import { ArabicNameField } from "./arabic-name-field";
 import { useAdminAbility } from "@/lib/admin-ability";
 import { ConfirmDelete } from "@/components/confirm-delete";
 
@@ -117,7 +116,7 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
       <Modal open={open} onClose={() => setOpen(false)} title={form.id ? "Edit competition" : "New competition"} wide>
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Name"><input className={inputCls} value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value, slug: form.slug || slugify(e.target.value) })} /></Field>
-          <ArabicNameField englishName={form.name} />
+          <Field label="Arabic name"><input dir="rtl" className={inputCls} placeholder="الاسم بالعربية" value={form.name_ar ?? ""} onChange={(e) => setForm({ ...form, name_ar: e.target.value || null })} /></Field>
           <Field label="Slug"><input className={inputCls} value={form.slug ?? ""} onChange={(e) => setForm({ ...form, slug: e.target.value })} /></Field>
           <Field label="Sport"><select className={inputCls} value={form.sport ?? "football"} onChange={(e) => setForm({ ...form, sport: e.target.value })}><option value="football">Football</option><option value="basketball">Basketball</option><option value="american_football">American football</option><option value="hockey">Hockey</option><option value="volleyball">Volleyball</option><option value="handball">Handball</option></select></Field>
           <Field label="Scope">
