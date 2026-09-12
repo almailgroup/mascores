@@ -15,6 +15,7 @@ import { FifaRankingsPanel } from "@/components/admin/fifa-rankings-panel";
 import { PlayersPanel } from "@/components/admin/players-panel";
 import { MatchesPanel } from "@/components/admin/matches-panel";
 import { StandingsPanel } from "@/components/admin/standings-panel";
+import { KnockoutPanel } from "@/components/admin/knockout-panel";
 import { NewsPanel } from "@/components/admin/news-panel";
 import { AlmailAiPanel, ChannelsPanel, TransfersAdminPanel, VenuesPanel } from "@/components/admin/content-panels";
 import { CompetitionAwardsManager, MediaManager } from "@/components/admin/media-manager";
@@ -50,7 +51,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
   const [tab, setTab] = useState<"competitions" | "teams" | "countries" | "players" | "news" | "ai" | "venues" | "channels" | "transfers" | "reports" | "tickets" | "users" | "voice" | "rabta" | "approvals" | "appeals" | "manage" | "requests">("competitions");
   const [openComp, setOpenComp] = useState<Competition | null>(null);
   const [adminSeason, setAdminSeason] = useState<string | null>(null);
-  const [compTab, setCompTab] = useState<"overview" | "teams" | "matches" | "standings" | "awards" | "media">("overview");
+  const [compTab, setCompTab] = useState<"overview" | "teams" | "matches" | "standings" | "knockout" | "awards" | "media">("overview");
   const unlock = useServerFn(unlockAdmin);
   const accessFn = useServerFn(myAccess);
   const access = useQuery({ enabled: !!user, queryKey: ["my-access", user?.id], queryFn: () => accessFn({}) });
@@ -166,7 +167,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
           <div className="flex max-w-full gap-1 overflow-x-auto border-b border-border pb-2 text-xs">
             {(openComp.format === "friendly"
               ? (["overview", "teams", "matches", "media"] as const)
-              : (["overview", "teams", "matches", "standings", "awards", "media"] as const)
+              : ([...(["overview", "teams", "matches", "standings"] as const), ...(openComp.has_knockout ? (["knockout"] as const) : []), ...(["awards", "media"] as const)] as const)
             ).map((k) => (
               <button key={k} onClick={() => setCompTab(k)} className={`rounded-full px-4 py-1.5 font-semibold capitalize ${compTab === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>{k}</button>
             ))}
@@ -176,6 +177,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
             {compTab === "teams" && <TeamsPanel competitionId={openComp.id} season={adminSeason ?? openComp.season ?? null} competition={openComp} />}
             {compTab === "matches" && <MatchesPanel competitionId={openComp.id} season={adminSeason ?? openComp.season ?? null} friendly={openComp.format === "friendly"} />}
             {compTab === "standings" && openComp.format !== "friendly" && <StandingsPanel competitionId={openComp.id} season={adminSeason ?? openComp.season ?? null} />}
+            {compTab === "knockout" && <KnockoutPanel competitionId={openComp.id} season={adminSeason ?? openComp.season ?? null} />}
             {compTab === "awards" && openComp.format !== "friendly" && <CompetitionAwardsManager competitionId={openComp.id} />}
             {compTab === "media" && <MediaManager ownerType="competition" ownerId={openComp.id} />}
           </div>

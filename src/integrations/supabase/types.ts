@@ -306,6 +306,89 @@ export type Database = {
           },
         ]
       }
+      competition_knockout_ties: {
+        Row: {
+          away_placeholder: string | null
+          away_score: number | null
+          away_team_id: string | null
+          competition_id: string
+          created_at: string
+          home_placeholder: string | null
+          home_score: number | null
+          home_team_id: string | null
+          id: string
+          match_id: string | null
+          note: string | null
+          round_label: string
+          season: string | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          away_placeholder?: string | null
+          away_score?: number | null
+          away_team_id?: string | null
+          competition_id: string
+          created_at?: string
+          home_placeholder?: string | null
+          home_score?: number | null
+          home_team_id?: string | null
+          id?: string
+          match_id?: string | null
+          note?: string | null
+          round_label?: string
+          season?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          away_placeholder?: string | null
+          away_score?: number | null
+          away_team_id?: string | null
+          competition_id?: string
+          created_at?: string
+          home_placeholder?: string | null
+          home_score?: number | null
+          home_team_id?: string | null
+          id?: string
+          match_id?: string | null
+          note?: string | null
+          round_label?: string
+          season?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competition_knockout_ties_away_team_id_fkey"
+            columns: ["away_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competition_knockout_ties_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competition_knockout_ties_home_team_id_fkey"
+            columns: ["home_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competition_knockout_ties_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       competition_teams: {
         Row: {
           competition_id: string
@@ -357,7 +440,10 @@ export type Database = {
           description: string | null
           ends_on: string | null
           featured: boolean
+          followers_override: number | null
           format: string
+          has_knockout: boolean
+          hidden_tabs: string[]
           higher_division_id: string | null
           id: string
           is_national: boolean
@@ -388,7 +474,10 @@ export type Database = {
           description?: string | null
           ends_on?: string | null
           featured?: boolean
+          followers_override?: number | null
           format?: string
+          has_knockout?: boolean
+          hidden_tabs?: string[]
           higher_division_id?: string | null
           id?: string
           is_national?: boolean
@@ -419,7 +508,10 @@ export type Database = {
           description?: string | null
           ends_on?: string | null
           featured?: boolean
+          followers_override?: number | null
           format?: string
+          has_knockout?: boolean
+          hidden_tabs?: string[]
           higher_division_id?: string | null
           id?: string
           is_national?: boolean

@@ -107,6 +107,19 @@ function CompetitionPage() {
       return (data ?? []) as PositionLabel[];
     },
   });
+  const knockout = useQuery({
+    enabled: !!comp.data && !!comp.data.has_knockout,
+    queryKey: ["comp-knockout", comp.data?.id, season],
+    queryFn: async () => {
+      let query = supabase.from("competition_knockout_ties")
+        .select("*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url)")
+        .eq("competition_id", comp.data!.id);
+      const selectedSeason = season ?? comp.data!.season;
+      if (selectedSeason) query = query.or(`season.eq.${selectedSeason},season.is.null`);
+      const { data } = await query.order("sort_order");
+      return (data ?? []) as unknown as KnockoutTie[];
+    },
+  });
   const media = useQuery({ enabled: !!comp.data, queryKey: ["competition-media", comp.data?.id], queryFn: async () => (await supabase.from("media_items").select("*").eq("owner_type", "competition").eq("owner_id", comp.data!.id).order("sort_order")).data ?? [] });
   const awards = useQuery({ enabled: !!comp.data, queryKey: ["competition-awards", comp.data?.id], queryFn: async () => (await supabase.from("competition_awards").select("*, player:players(id,name,photo_url)").eq("competition_id", comp.data!.id).order("created_at", { ascending: false })).data ?? [] });
   const titleHolder = teams.data?.find((team) => team.id === comp.data?.title_holder_team_id);
@@ -139,10 +152,14 @@ function CompetitionPage() {
   if (!comp.data) return <AppShell><EmptyState title="Competition not found" /></AppShell>;
   const c = comp.data;
   const friendly = c.format === "friendly";
-  const tabs = friendly
-    ? (["overview", "matches", "media", "news"] as const)
-    : (["overview", "matches", "standings", "stats", "teams", "awards", "media", "news"] as const);
+  // The owner can hide sections, and switch a knockout bracket on next to the table.
+  const hidden = new Set((c.hidden_tabs ?? []) as string[]);
+  const base: CompTab[] = friendly
+    ? ["overview", "matches", "media", "news"]
+    : ["overview", "matches", "standings", ...(c.has_knockout ? (["knockout"] as CompTab[]) : []), "stats", "teams", "awards", "media", "news"];
+  const tabs = base.filter((item) => item === "overview" || item === "matches" || !hidden.has(item));
 
+  const activeTab: CompTab = tabs.includes(tab) ? tab : "overview";
   const theme = competitionTheme({ slug: c.slug, name: c.name });
   const faved = isFavorite("competition", c.id);
   const activeSeason = season ?? c.season ?? c.seasons?.[0] ?? null;
@@ -159,27 +176,30 @@ function CompetitionPage() {
           faved={faved}
           onToggleFav={() => toggleFavorite("competition", c.id)}
           onSeason={setSeason}
-          tab={tab}
+          tab={activeTab}
           tabs={tabs}
           onTab={setTab}
         />
 
 
 
-       {tab === "overview" && <CompetitionOverviewTab c={c} season={season} teams={teams.data ?? []} titleHolder={friendly ? null : (titleHolder ?? null)} titles={friendly ? [] : (compTitles.data ?? [])} divisions={friendly ? [] : (divisions.data ?? [])} matches={matches.data ?? []} media={media.data ?? []} friendly={friendly} />}
+       {activeTab === "overview" && <CompetitionOverviewTab c={c} season={season} teams={teams.data ?? []} titleHolder={friendly ? null : (titleHolder ?? null)} titles={friendly ? [] : (compTitles.data ?? [])} divisions={friendly ? [] : (divisions.data ?? [])} matches={matches.data ?? []} media={media.data ?? []} friendly={friendly} />}
 
-      {tab === "matches" && <><SectionHeader title={t("tab.matches")} />
+      {activeTab === "matches" && <><SectionHeader title={t("tab.matches")} />
       {matches.data && matches.data.length > 0 ? (
         <CompetitionMatches data={matches.data} />
       ) : <EmptyState title={tx("No matches yet")} />}</>}
 
-      {tab === "stats" && !friendly && <><SectionHeader title={t("tab.stats")} />
+      {activeTab === "stats" && !friendly && <><SectionHeader title={t("tab.stats")} />
         <CompetitionStats competitionId={c.id} season={season ?? c.season ?? null} /></>}
 
-      {tab === "standings" && !friendly && <><SectionHeader title={t("tab.standings")} action={<div />} />
+      {activeTab === "standings" && !friendly && <><SectionHeader title={t("tab.standings")} action={<div />} />
       {standings.data && standings.data.length > 0 ? <StandingsTable rows={standings.data} labels={posLabels.data ?? []} /> : <EmptyState title={tx("No standings yet")} />}</>}
 
-      {tab === "teams" && !friendly && <><SectionHeader title={tx("Teams")} />
+      {activeTab === "knockout" && <><SectionHeader title={tx("Knockout")} />
+        <KnockoutBracket ties={knockout.data ?? []} /></>}
+
+      {activeTab === "teams" && !friendly && <><SectionHeader title={tx("Teams")} />
       {teams.data && teams.data.length > 0 ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {teams.data.map((t) => (
@@ -190,15 +210,67 @@ function CompetitionPage() {
           ))}
         </div>
       ) : <EmptyState title={tx("No teams yet")} />}</>}
-      {tab === "awards" && !friendly && <AwardsBoard awards={awards.data ?? []} />}
-      {tab === "media" && <>{media.data && media.data.length > 0 ? <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{media.data.map((item) => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="rounded-lg border border-border bg-card p-4 hover:border-primary"><div className="text-xs font-bold uppercase text-primary">{item.source}</div><div className="mt-1 font-semibold">{tx(item.title) || tx("Open media")}</div><div className="mt-1 truncate text-xs text-muted-foreground">{item.url}</div></a>)}</div> : <EmptyState title={tx("No competition media yet")} />}</>}
-      {tab === "news" && <LinkedNews kind="competition" id={c.id} />}
+      {activeTab === "awards" && !friendly && <AwardsBoard awards={awards.data ?? []} />}
+      {activeTab === "media" && <>{media.data && media.data.length > 0 ? <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{media.data.map((item) => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="rounded-lg border border-border bg-card p-4 hover:border-primary"><div className="text-xs font-bold uppercase text-primary">{item.source}</div><div className="mt-1 font-semibold">{tx(item.title) || tx("Open media")}</div><div className="mt-1 truncate text-xs text-muted-foreground">{item.url}</div></a>)}</div> : <EmptyState title={tx("No competition media yet")} />}</>}
+      {activeTab === "news" && <LinkedNews kind="competition" id={c.id} />}
       </div>
     </AppShell>
   );
 }
 
-type CompTab = "overview" | "matches" | "standings" | "stats" | "teams" | "awards" | "media" | "news";
+type CompTab = "overview" | "matches" | "standings" | "knockout" | "stats" | "teams" | "awards" | "media" | "news";
+
+type KnockoutTie = {
+  id: string; round_label: string; sort_order: number;
+  home_placeholder: string | null; away_placeholder: string | null;
+  home_score: number | null; away_score: number | null; note: string | null;
+  match_id: string | null;
+  home: { id: string; name: string; logo_url: string | null } | null;
+  away: { id: string; name: string; logo_url: string | null } | null;
+};
+
+/** Bracket rounds. Slots that have no club yet show the place they come from,
+ *  for example "1st from Group A". */
+function KnockoutBracket({ ties }: { ties: KnockoutTie[] }) {
+  const tx = useTx();
+  const num = useNum();
+  if (ties.length === 0) return <EmptyState title={tx("The knockout rounds are not set yet")} />;
+  const rounds = new Map<string, KnockoutTie[]>();
+  for (const tie of ties) rounds.set(tie.round_label, [...(rounds.get(tie.round_label) ?? []), tie]);
+  const side = (team: KnockoutTie["home"], placeholder: string | null) => team
+    ? <Link to="/teams/$id" params={{ id: team.id }} className="flex min-w-0 flex-1 items-center gap-2 font-semibold hover:text-primary">
+        <TeamCrest name={team.name} logo={team.logo_url} className="h-6 w-6 shrink-0" />
+        <span className="truncate">{tx(team.name)}</span>
+      </Link>
+    : <span className="flex min-w-0 flex-1 items-center gap-2 text-muted-foreground">
+        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-dashed border-border text-[0.6rem]">?</span>
+        <span className="truncate italic">{tx(placeholder || "To be decided")}</span>
+      </span>;
+  return (
+    <div className="space-y-3">
+      {[...rounds.entries()].map(([label, list]) => (
+        <section key={label} className="overflow-hidden rounded-2xl border border-border bg-card">
+          <div className="border-b border-border bg-muted/40 px-4 py-2.5 text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">{tx(label)}</div>
+          <div className="divide-y divide-border">
+            {list.map((tie) => (
+              <div key={tie.id} className="px-4 py-3 text-sm">
+                <div className="flex items-center gap-2">
+                  {side(tie.home, tie.home_placeholder)}
+                  <span className="shrink-0 rounded-lg bg-muted px-2 py-0.5 text-xs font-black tabular-nums">
+                    {tie.home_score != null && tie.away_score != null ? `${num(tie.home_score)} - ${num(tie.away_score)}` : tx("vs")}
+                  </span>
+                  {side(tie.away, tie.away_placeholder)}
+                </div>
+                {tie.note && <p className="mt-1.5 text-[0.7rem] text-muted-foreground">{tx(tie.note)}</p>}
+                {tie.match_id && <Link to="/matches/$id" params={{ id: tie.match_id }} className="mt-1.5 inline-flex items-center gap-1 text-[0.7rem] font-bold text-primary">{tx("Open match")} <ChevronRight className="h-3 w-3" /></Link>}
+              </div>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  );
+}
 
 const COMP_ALERT_KEY = "mas.competition_notification_ids";
 
@@ -231,8 +303,9 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
 
 
   const followers = useQuery({
-    queryKey: ["comp-followers", c.id],
+    queryKey: ["comp-followers", c.id, c.followers_override],
     queryFn: async () => {
+      if (c.followers_override != null) return c.followers_override;
       const { data } = await supabase.rpc("competition_follower_count", { _competition_id: c.id });
       return typeof data === "number" ? data : 0;
     },
@@ -259,60 +332,60 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
   const chip = onLight ? "bg-black/10" : "bg-white/15";
 
   return (
-    <div className="-mx-4 -mt-6 mb-4 px-4 pb-0 pt-3 sm:-mx-6 sm:px-6" style={{ background, color: fg }}>
+    <div className="-mx-4 -mt-6 mb-4 px-4 pb-0 pt-1 sm:-mx-6 sm:px-6" style={{ background, color: fg }}>
       <div className="flex items-center gap-1">
         <button
           onClick={() => { if (router.history.canGoBack()) router.history.back(); else router.navigate({ to: "/competitions" }); }}
           aria-label={tx("Back")}
-          className={`-ms-2 me-auto inline-flex h-10 w-10 items-center justify-center rounded-full ${chip.replace("bg-", "hover:bg-")}`}
+          className={`-ms-2 me-auto inline-flex h-9 w-9 items-center justify-center rounded-full ${chip.replace("bg-", "hover:bg-")}`}
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
         <button
           onClick={toggleAlert}
           aria-label={tx("Notifications")}
-          className={`inline-flex h-10 w-10 items-center justify-center rounded-full ${chip.replace("bg-", "hover:bg-")} ${alerted ? "opacity-100" : "opacity-70"}`}
+          className={`inline-flex h-9 w-9 items-center justify-center rounded-full ${chip.replace("bg-", "hover:bg-")} ${alerted ? "opacity-100" : "opacity-70"}`}
         >
           <Bell className="h-5 w-5" fill={alerted ? "currentColor" : "none"} />
         </button>
         <button
           onClick={() => { onToggleFav(); setBump((v) => (faved ? v - 1 : v + 1)); }}
           aria-label={tx("Follow")}
-          className={`-me-2 inline-flex h-10 w-10 items-center justify-center rounded-full ${chip.replace("bg-", "hover:bg-")} ${faved ? "text-amber-400" : "opacity-70"}`}
+          className={`-me-2 inline-flex h-9 w-9 items-center justify-center rounded-full ${chip.replace("bg-", "hover:bg-")} ${faved ? "text-amber-400" : "opacity-70"}`}
         >
           <Star className="h-5 w-5" fill={faved ? "currentColor" : "none"} />
         </button>
       </div>
 
-      <div className="mt-1 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
-        <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-1.5 shadow-lg">
-          {logo ? <img src={logo} alt="" className="h-full w-full object-contain" /> : <Trophy className="h-7 w-7 text-primary" />}
+      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-1 shadow-md">
+          {logo ? <img src={logo} alt="" className="h-full w-full object-contain" /> : <Trophy className="h-6 w-6 text-primary" />}
         </div>
         <div className="min-w-0">
-          <h1 className="truncate text-lg font-black leading-tight sm:text-2xl">{lang === "ar" && c.name_ar ? c.name_ar : tx(c.name)}</h1>
-          <div className="mt-1 flex min-w-0 items-center gap-2">
+          <h1 className="truncate text-base font-black leading-tight sm:text-xl">{lang === "ar" && c.name_ar ? c.name_ar : tx(c.name)}</h1>
+          <div className="mt-0.5 flex min-w-0 items-center gap-2">
             {(c.seasons?.length ?? 0) > 0
               ? <SeasonMenu seasons={c.seasons} value={activeSeason} onChange={onSeason} onHero />
               : <span className="text-xs font-bold opacity-80">{activeSeason ? num(activeSeason) : ""}</span>}
             {!friendly && <FlagIcon value={c.country_code ?? c.country} />}
           </div>
         </div>
-        <div className={`shrink-0 rounded-2xl px-3 py-2 text-center backdrop-blur-sm ${chip}`}>
-          <div className="text-base font-black leading-none tabular-nums">{num(followerCount)}</div>
+        <div className={`shrink-0 rounded-xl px-2.5 py-1.5 text-center backdrop-blur-sm ${chip}`}>
+          <div className="text-sm font-black leading-none tabular-nums">{num(followerCount)}</div>
           <div className="mt-1 text-[0.6rem] font-semibold uppercase tracking-wide opacity-80">
             {tx(followerCount === 1 ? "Follower" : "Followers")}
           </div>
         </div>
       </div>
 
-      <div className="mt-3">
+      <div className="mt-2">
         <SwipeTabs className="gap-1 text-xs sm:text-sm">
           {tabs.map((item) => (
             <button
               key={item}
               onClick={() => onTab(item)}
-              className={`shrink-0 border-b-2 px-3 py-2.5 font-bold capitalize sm:px-4 ${tab === item ? "border-current" : "border-transparent opacity-65"}`}
-            >{item === "awards" ? tx("Awards") : t(`tab.${item}`)}</button>
+              className={`shrink-0 border-b-2 px-3 py-2 font-bold capitalize sm:px-4 ${tab === item ? "border-current" : "border-transparent opacity-65"}`}
+            >{item === "awards" ? tx("Awards") : item === "knockout" ? tx("Knockout") : t(`tab.${item}`)}</button>
           ))}
         </SwipeTabs>
       </div>

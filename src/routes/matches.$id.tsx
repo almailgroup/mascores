@@ -21,10 +21,10 @@ import { useLogoAccent } from "@/lib/logo-accent";
 import { StandingsTable, type PublicStandingRow } from "@/components/standings-table";
 import { MatchShare } from "@/components/match-share";
 import { displayShortName } from "@/lib/short-name";
-import { FavoriteButton, MatchNotificationButton } from "@/hooks/use-favorites";
+import { FavoriteButton, MatchNotificationButton, useFavorites } from "@/hooks/use-favorites";
 
 /** Crest + name used inside the tinted match hero, with a follow star for the club. */
-function HeroTeam({ team }: { team: Team | null }) {
+function HeroTeam({ team, onFollow }: { team: Team | null; onFollow?: () => void }) {
   const tx = useTx();
   const body = (
     <>
@@ -44,7 +44,7 @@ function HeroTeam({ team }: { team: Team | null }) {
       <Link to="/teams/$id" params={{ id: team.id }} className="flex min-w-0 flex-col items-center text-center">{body}</Link>
       {/* Follow star sits right under the club name, inside the match page. */}
       <span className="mt-1 [&_button]:border-white/25 [&_button]:bg-white/10 [&_button]:text-white">
-        <FavoriteButton kind="team" id={team.id} />
+        <FavoriteButton kind="team" id={team.id} onFollow={onFollow} />
       </span>
     </div>
   );
@@ -164,6 +164,7 @@ function MatchPage() {
   // Two solid halves joined by a thin seam in a slightly shifted tone - never a blend of both colours.
   const seamColor = `color-mix(in oklab, ${homeColor} 50%, #000 25%)`;
   const heroBackground = `linear-gradient(100deg, ${homeColor} 0%, ${homeColor} 49.4%, ${seamColor} 49.4%, ${seamColor} 50.6%, ${awayColor} 50.6%, ${awayColor} 100%)`;
+  const { add: addFavorite } = useFavorites();
   const [, tickClock] = useState(0);
   useEffect(() => {
     if (!m.data?.timer_running) return;
@@ -208,6 +209,18 @@ function MatchPage() {
     accentAway: awayAccent?.color ?? homeAccent?.color ?? "#0b1020",
   };
 
+  /** Following a club here also saves this match and switches its alerts on. */
+  const followMatch = () => {
+    void addFavorite("match", match.id);
+    try {
+      const muted = JSON.parse(localStorage.getItem("mas.match_notification_ids") ?? "[]") as string[];
+      if (Array.isArray(muted) && muted.includes(match.id)) {
+        localStorage.setItem("mas.match_notification_ids", JSON.stringify(muted.filter((item) => item !== match.id)));
+      }
+    } catch { /* nothing saved yet */ }
+    window.dispatchEvent(new Event("mas:alerts-changed"));
+  };
+
   return (
     <AppShell>
       {/* Hero split between both clubs' badge colours. */}
@@ -217,7 +230,7 @@ function MatchPage() {
           <BackButton className="mb-0 border-white/20 bg-white/10 text-white hover:text-white" />
           <div className="flex items-center gap-2 [&_button]:border-white/25 [&_button]:bg-white/10 [&_button]:text-white">
             <MatchShare data={shareData} mode="result" />
-            <MatchNotificationButton matchId={match.id} teamIds={[match.home_team_id, match.away_team_id]} />
+            <MatchNotificationButton matchId={match.id} teamIds={[match.home_team_id, match.away_team_id]} withSettings />
             <FavoriteButton kind="match" id={match.id} />
           </div>
         </div>
@@ -227,7 +240,7 @@ function MatchPage() {
         </div>
 
         <div className="mt-3 grid items-start gap-2" style={{ gridTemplateColumns: "minmax(0,1fr) auto minmax(0,1fr)" }}>
-          <HeroTeam team={match.home} />
+          <HeroTeam team={match.home} onFollow={followMatch} />
           <div className="pt-3 text-center">
             {["scheduled", "postponed", "cancelled"].includes(match.status)
               ? <div className="text-lg font-bold">{tx(STATUS_LABELS[match.status] ?? match.status)}</div>
@@ -242,7 +255,7 @@ function MatchPage() {
                 </div>
               </>}
           </div>
-          <HeroTeam team={match.away} />
+          <HeroTeam team={match.away} onFollow={followMatch} />
         </div>
 
         {(homeScorers.length > 0 || awayScorers.length > 0) && (

@@ -184,6 +184,30 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
 
           <Field label="Title holder"><select className={inputCls} value={form.title_holder_team_id ?? ""} onChange={(e) => setForm({ ...form, title_holder_team_id: e.target.value || null })}><option value="">None</option>{titleHolderTeams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}</select></Field>
           <Field label="Standings mode"><select className={inputCls} value={form.standings_mode ?? "table"} onChange={(e) => setForm({ ...form, standings_mode: e.target.value })}><option value="table">League table</option><option value="groups">Groups</option><option value="knockout">Knockout</option></select></Field>
+          {/* Choose which sections people see, switch a knockout bracket on, and correct the follower number. */}
+          <div className="sm:col-span-2"><Field label="Sections to hide on the public page">
+            <div className="flex flex-wrap gap-2">
+              {["standings", "knockout", "stats", "teams", "awards", "media", "news"].map((section) => {
+                const hidden = (form.hidden_tabs ?? []).includes(section);
+                return <button type="button" key={section} onClick={() => setForm({ ...form, hidden_tabs: hidden ? (form.hidden_tabs ?? []).filter((item) => item !== section) : [...(form.hidden_tabs ?? []), section] })}
+                  className={`rounded-full border px-3 py-1 text-xs font-semibold capitalize ${hidden ? "border-destructive bg-destructive/10 text-destructive" : "border-border"}`}>
+                  {section}{hidden ? " · hidden" : ""}
+                </button>;
+              })}
+            </div>
+          </Field></div>
+          <label className="flex items-start gap-2 rounded-xl border border-border bg-background/50 p-3 text-xs sm:col-span-2">
+            <input type="checkbox" className="mt-0.5 h-4 w-4" checked={form.has_knockout ?? false} onChange={(e) => setForm({ ...form, has_knockout: e.target.checked })} />
+            <span><strong className="block">Has knockout rounds</strong>Adds a Knockout section next to the table, where the ties can be set even before the clubs are known.</span>
+          </label>
+          {isOwner && (
+            <Field label="Followers shown (leave empty for the real count)">
+              <div className="flex gap-2">
+                <input type="number" className={inputCls} value={form.followers_override ?? ""} onChange={(e) => setForm({ ...form, followers_override: e.target.value === "" ? null : Number(e.target.value) })} />
+                <button type="button" className={btnGhost} onClick={() => setForm({ ...form, followers_override: null })}>Reset</button>
+              </div>
+            </Field>
+          )}
           <div className="sm:col-span-2">
             <Field label="Logo (light mode)">
               <ImageInput value={form.logo_url ?? null} onChange={(v) => setForm({ ...form, logo_url: v })} onFile={async (f) => { const url = await uploadMedia("competition-logos", f); if (url) setForm({ ...form, logo_url: url }); }} />
