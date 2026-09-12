@@ -67,7 +67,12 @@ export function StaffManager({ teamId }: { teamId: string }) {
       </div>
       <div className="mt-3 grid gap-2 sm:grid-cols-2">
         <Field label="Name"><input className={inputCls} value={draft.name ?? ""} onChange={(e) => setDraft({ ...draft, name: e.target.value })} /></Field>
-        <Field label="Role"><input className={inputCls} placeholder="Assistant coach" value={draft.role ?? ""} onChange={(e) => setDraft({ ...draft, role: e.target.value })} /></Field>
+        <Field label="Role">
+          <select className={inputCls} value={draft.role ?? ""} onChange={(e) => setDraft({ ...draft, role: e.target.value })}>
+            <option value="">Choose a role</option>
+            {STAFF_ROLES.map((role) => <option key={role} value={role}>{role}</option>)}
+          </select>
+        </Field>
         <Field label="Nationality"><CountrySelect value={draft.nationality_code} onChange={(_, c) => setDraft({ ...draft, nationality_code: c?.code ?? null })} /></Field>
         <Field label="Photo">
           <ImageInput value={draft.photo_url ?? null} onChange={(v) => setDraft({ ...draft, photo_url: v })}
