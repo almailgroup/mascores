@@ -41,7 +41,7 @@ function readHistory(): Visited[] {
 
 function SearchPage() {
   const tx = useTx();
-  const router = useRouter();
+  const compact = useCompact();
   const reverse = useReverseTranslate();
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<Filter>("all");

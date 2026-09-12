@@ -297,7 +297,7 @@ function VoiceRoomPage() {
             : <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-bold">{(host.data?.display_name ?? "?").slice(0, 1).toUpperCase()}</span>}
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-bold">{host.data?.display_name ?? tx("Host")}</div>
-            <div className="text-[0.7rem] text-muted-foreground">{tx("Followers")}: {host.data?.followers ?? 0}</div>
+            <div className="text-[0.7rem] text-muted-foreground">{tx("Followers")}: {compact(host.data?.followers ?? 0)}</div>
           </div>
           {!isHost && (
             <button onClick={toggleFollow} className={`inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-bold ${following.data ? "border border-border bg-card text-muted-foreground" : "bg-primary text-primary-foreground"}`}>
