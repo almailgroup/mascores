@@ -182,7 +182,7 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
                 onChange={(e) => setTitles(t.id, Math.max(0, Number(e.target.value) || 0))} />
             </label>}
             <button className={btnGhost} onClick={() => setSquadOf(t)}>{t.is_national ? <Flag className="h-3.5 w-3.5" /> : <Users className="h-3.5 w-3.5" />} {t.is_national ? "Call-ups" : "Squad"}</button>
-            <button className={btnGhost} onClick={() => setStaffOf(t)}><UserCog className="h-3.5 w-3.5" /> Coaches</button>
+            <button className={btnGhost} onClick={() => setStaffOf(t)}><UserCog className="h-3.5 w-3.5" /> Coaches &amp; staff</button>
             <button className={btnGhost} onClick={() => { setForm(t); setOpen(true); }}><Pencil className="h-3.5 w-3.5" /></button>
             {competitionId
               ? <button className={btnDanger} title="Remove from this competition" onClick={() => removeFromCompetition(t.id)}><UserMinus className="h-3.5 w-3.5" /></button>
@@ -258,8 +258,7 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
           <input type="checkbox" className="mt-0.5 h-4 w-4" checked={!!form.is_national} onChange={(e) => setForm({ ...form, is_national: e.target.checked })} />
           <span><strong className="block">National team</strong>Players are called up instead of transferred, so their club never changes.</span>
         </label>
-        {form.id && <StaffManager teamId={form.id} />}
-        <p className="mt-3 text-[0.65rem] text-muted-foreground">Groups are managed from the Standings tab. Coaches are added from the Coaches button.</p>
+        <p className="mt-3 text-[0.65rem] text-muted-foreground">Groups are managed from the Standings tab. Coaches and staff are added from the Coaches &amp; staff button.</p>
         <div className="mt-5 flex justify-end gap-2">
           <button className={btnGhost} onClick={() => setOpen(false)}>Cancel</button>
           <button className={btnPrimary} onClick={save}>{!form.id && needsApproval ? "Send for review" : "Save"}</button>
