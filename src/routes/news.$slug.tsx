@@ -1,3 +1,4 @@
+import { MediaWatermark } from "@/components/media-watermark";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, BackButton, EmptyState, LoadingSkeleton } from "@/components/app-shell";

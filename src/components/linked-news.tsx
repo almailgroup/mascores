@@ -1,3 +1,4 @@
+import { MediaWatermark } from "@/components/media-watermark";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase, type NewsPost } from "@/lib/db";
