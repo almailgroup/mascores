@@ -469,27 +469,32 @@ function YouthTeams({ team }: { team: Team }) {
   const q = useQuery({
     queryKey: ["youth-teams", team.id, team.parent_team_id],
     queryFn: async () => {
-      const children = (await supabase.from("teams").select("id,name,logo_url,age_group").eq("parent_team_id", team.id).order("name")).data ?? [];
+      const children = (await supabase.from("teams").select("id,name,logo_url").eq("parent_team_id", team.id).order("name")).data ?? [];
       const parent = team.parent_team_id
-        ? (await supabase.from("teams").select("id,name,logo_url,age_group").eq("id", team.parent_team_id).maybeSingle()).data
+        ? (await supabase.from("teams").select("id,name,logo_url").eq("id", team.parent_team_id).maybeSingle()).data
         : null;
-      return { children: children as { id: string; name: string; logo_url: string | null; age_group: string | null }[], parent };
+      return { children: children as { id: string; name: string; logo_url: string | null }[], parent };
     },
   });
   const children = q.data?.children ?? [];
   const parent = q.data?.parent ?? null;
   if (children.length === 0 && !parent) return null;
-  const rows = [...(parent ? [{ ...parent, age_group: tx("First team") ?? "First team" }] : []), ...children];
+  const rows = [
+    ...(parent ? [{ ...parent, tag: "First team" }] : []),
+    ...children.map((child) => ({ ...child, tag: "Youth team" })),
+  ];
   return (
     <section className="overflow-hidden rounded-2xl border border-border bg-card">
-      <div className="border-b border-border px-4 py-2.5 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Youth teams")}</div>
+      <div className="border-b border-border px-4 py-2.5 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">
+        {tx(parent ? "Club structure" : "Youth teams")}
+      </div>
       <div className="divide-y divide-border">
         {rows.map((row) => (
-          <Link key={row.id} to="/teams/$id" params={{ id: row.id }} className="flex items-center gap-3 px-4 py-3 hover:bg-accent">
-            <TeamCrest name={row.name} logo={row.logo_url} className="h-7 w-7" />
+          <Link key={row.id} to="/teams/$id" params={{ id: row.id }} className="flex items-center gap-3 px-4 py-3 transition hover:bg-accent">
+            <TeamCrest name={row.name} logo={row.logo_url} className="h-9 w-9" />
             <span className="min-w-0 flex-1">
               <span className="block truncate text-sm font-semibold">{tx(row.name)}</span>
-              {row.age_group ? <span className="block truncate text-xs text-muted-foreground">{tx(row.age_group)}</span> : null}
+              <span className="mt-0.5 inline-flex rounded-full bg-primary/10 px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wide text-primary">{tx(row.tag)}</span>
             </span>
             <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
           </Link>

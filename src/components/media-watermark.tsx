@@ -1,26 +1,19 @@
 /**
- * Site watermark laid over a whole picture: the MA mark plus the site name,
- * in a light or dark tone so it stays readable on any photo.
+ * Small site credit placed in the corner of a picture, so photos stay clear of
+ * faces while still carrying the MA Scores name.
  */
 export function MediaWatermark({ compact = false, tone = "light" }: { compact?: boolean; tone?: "light" | "dark" }) {
-  const color = tone === "dark" ? "rgba(0,0,0,0.34)" : "rgba(255,255,255,0.34)";
-  const shadow = tone === "dark" ? "0 1px 2px rgba(255,255,255,0.25)" : "0 1px 3px rgba(0,0,0,0.35)";
+  const dark = tone === "dark";
   return (
-    <span className="pointer-events-none absolute inset-0 z-10 select-none overflow-hidden">
-      {/* Big mark across the middle of the picture. */}
-      <span
-        className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-12 font-black tracking-tight ${compact ? "text-2xl" : "text-5xl sm:text-6xl"}`}
-        style={{ color, textShadow: shadow }}
-      >
-        MA
-      </span>
-      {/* Full name along the bottom edge. */}
-      <span
-        className={`absolute bottom-1.5 end-2 font-black ${compact ? "text-[0.5rem]" : "text-[0.7rem]"}`}
-        style={{ color, textShadow: shadow }}
-      >
-        Mansour Almail Scores
-      </span>
+    <span
+      className={`pointer-events-none absolute bottom-1.5 end-1.5 z-10 flex select-none items-center gap-1 rounded-full px-1.5 py-0.5 font-black backdrop-blur-[2px] ${compact ? "text-[0.5rem]" : "text-[0.65rem]"}`}
+      style={{
+        color: dark ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.85)",
+        background: dark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.28)",
+      }}
+    >
+      <span className="tracking-tight">MA</span>
+      {!compact && <span className="font-bold tracking-tight">Mansour Almail Scores</span>}
     </span>
   );
 }
