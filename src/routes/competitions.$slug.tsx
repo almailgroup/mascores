@@ -384,6 +384,8 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
   const bestTeam = best ? teams.find((team) => team.id === best.team_id) : undefined;
   const higher = divisions.find((d) => d.id === c.higher_division_id);
   const lower = divisions.find((d) => d.id === c.lower_division_id);
+  const youth = divisions.filter((d) => (c.youth_competition_ids ?? []).includes(d.id));
+
   const featured = matches.find((match) => ["live", "ht"].includes(match.status)) ?? matches.find((match) => match.status === "scheduled") ?? matches.at(-1);
   const played = matches.filter((m) => ["ft", "aet", "pen", "awarded"].includes(m.status)).length;
   const cells: [string, string][] = friendly ? [
