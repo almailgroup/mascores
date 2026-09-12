@@ -102,6 +102,11 @@ export function useLiveEventAlerts() {
     } catch { /* nothing saved yet */ }
 
     const loadAlerts = async () => {
+      // Choices made while signed out still apply.
+      try {
+        const localPrefs = JSON.parse(localStorage.getItem("mas.notification_preferences") ?? "{}");
+        if (localPrefs && typeof localPrefs === "object") preferences = { ...localPrefs, ...preferences };
+      } catch { /* nothing saved yet */ }
       if (!user) return;
       const { data } = await supabase.from("profiles").select("match_notification_ids,notification_preferences").eq("id", user.id).maybeSingle();
       for (const id of data?.match_notification_ids ?? []) explicit.add(String(id));
