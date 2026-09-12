@@ -5,7 +5,7 @@ import { Loader2, ScanLine } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { BrandLogo } from "@/components/brand-logo";
 import { TicketScanner } from "@/components/ticket-scanner";
-import { useAuth } from "@/lib/auth";
+import { useAuth } from "@/hooks/use-auth";
 import { myAccess } from "@/lib/owner.functions";
 
 export const Route = createFileRoute("/scanner")({
