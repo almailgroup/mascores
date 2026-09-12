@@ -33,7 +33,7 @@ function VoiceRoomPage() {
   const { user } = useAuth();
   const { lang } = useI18n();
   const tx = useTx();
-  const qc = useQueryClient();
+  const compact = useCompact();
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
