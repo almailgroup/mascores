@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { VoiceReplays } from "@/components/voice-replays";
 import { BackButton } from "@/components/app-shell";
+import { useCompact } from "@/lib/auto-translate";
 
 export const Route = createFileRoute("/u/$username")({
   head: ({ params }) => ({
