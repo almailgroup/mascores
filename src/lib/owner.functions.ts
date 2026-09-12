@@ -7,8 +7,9 @@ export const OWNER_EMAIL = "mansouralmailscores@gmail.com";
 
 export const GRANT_SCOPES = [
   "all", "news", "club_news", "rabta", "tickets", "matches", "voice",
-  "teams", "players", "standings", "transfers", "venues", "competitions", "channels", "ai", "chat",
+  "teams", "players", "standings", "transfers", "venues", "competitions", "channels", "ai", "chat", "scanner",
 ] as const;
+
 export type GrantScope = (typeof GRANT_SCOPES)[number];
 
 async function ownerAdmin(claims: Record<string, unknown> | null | undefined) {
