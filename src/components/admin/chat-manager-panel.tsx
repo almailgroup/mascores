@@ -25,6 +25,8 @@ export function ChatManagerPanel() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [matchId, setMatchId] = useState<string>("");
+  const [competition, setCompetition] = useState<string>("");
+
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
