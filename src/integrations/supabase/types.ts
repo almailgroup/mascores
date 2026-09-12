@@ -2524,6 +2524,38 @@ export type Database = {
           },
         ]
       }
+      voice_room_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          room_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          room_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          room_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voice_room_reactions_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "voice_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       voice_rooms: {
         Row: {
           created_at: string
