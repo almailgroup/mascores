@@ -255,19 +255,12 @@ function ScoreBoard({ liveCount }: { liveCount: number }) {
           <button onClick={() => setOffset(offset + 1)} className="px-2 py-1.5 text-primary hover:bg-accent" aria-label={tx("Next day")}><ChevronRight className="h-4 w-4" /></button>
         </div>
       </div>
-      {calendarOpen && <div className="border-b border-border bg-muted/30 px-4 py-3">
-        <label className="flex items-center gap-3 text-xs font-semibold text-muted-foreground">
-          {tx("Choose date")}
-          <input type="date" className="h-10 min-w-0 flex-1 rounded-xl border border-border bg-background px-3 text-sm text-foreground" value={day.toISOString().slice(0, 10)} onChange={(event) => {
-            if (!event.target.value) return;
-            const selected = new Date(`${event.target.value}T00:00:00`);
-            const today = new Date(); today.setHours(0, 0, 0, 0);
-            setOffset(Math.round((selected.getTime() - today.getTime()) / 86400000));
-            setCalendarOpen(false);
-          }} />
-          <button onClick={() => setCalendarOpen(false)} className="rounded-full px-3 py-2 text-primary">{tx("Close")}</button>
-        </label>
-      </div>}
+      {calendarOpen && <MonthCalendar day={day} onPick={(selected) => {
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        setOffset(Math.round((selected.getTime() - today.getTime()) / 86400000));
+        setCalendarOpen(false);
+      }} onClose={() => setCalendarOpen(false)} />}
+
 
       <div className="flex flex-wrap items-center gap-2 px-4 py-3">
         {chip("live", t("board.live"))}
