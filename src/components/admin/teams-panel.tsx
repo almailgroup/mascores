@@ -474,3 +474,91 @@ function CoachesModal({ team, onClose }: { team: Team; onClose: () => void }) {
     </Modal>
   );
 }
+/**
+ * Youth links for one club. On a first team you search the club list and pick
+ * its youth sides; on a youth side it shows the first team and lets you reuse
+ * that badge.
+ */
+function YouthLinks({ team, library, onUseParentLogo }: { team: Team; library: Team[]; onUseParentLogo: (url: string) => void }) {
+  const qc = useQueryClient();
+  const [search, setSearch] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const refresh = () => {
+    qc.invalidateQueries({ queryKey: ["admin", "team-library"] });
+    qc.invalidateQueries({ queryKey: ["youth-teams"] });
+  };
+
+  const link = async (id: string, parent: string | null) => {
+    setBusy(true);
+    await supabase.from("teams").update({ parent_team_id: parent }).eq("id", id);
+    setBusy(false);
+    refresh();
+  };
+
+  const parent = library.find((row) => row.id === team.parent_team_id) ?? null;
+  const children = library.filter((row) => row.parent_team_id === team.id);
+  const needle = search.trim().toLowerCase();
+  const options = library.filter((row) =>
+    row.id !== team.id && !row.is_national && row.parent_team_id !== team.id && !row.parent_team_id && row.id !== team.parent_team_id
+    && (!needle ? false : `${row.name} ${row.country ?? ""}`.toLowerCase().includes(needle)));
+
+  if (parent) {
+    return (
+      <div className="rounded-2xl border border-primary/30 bg-primary/5 p-3">
+        <div className="text-xs font-bold uppercase tracking-wide text-muted-foreground">First team</div>
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <TeamCrest name={parent.name} logo={parent.logo_url} className="h-8 w-8" />
+          <span className="min-w-0 flex-1 truncate text-sm font-semibold">{parent.name}</span>
+          {parent.logo_url && <button type="button" className={btnGhost} onClick={() => onUseParentLogo(parent.logo_url!)}>
+            <ImagePlus className="h-3.5 w-3.5" /> Use this badge
+          </button>}
+          <button type="button" className={btnDanger} disabled={busy} onClick={() => link(team.id, null)}>
+            <UserMinus className="h-3.5 w-3.5" /> Unlink
+          </button>
+        </div>
+        <p className="mt-2 text-[0.65rem] text-muted-foreground">This club shows as a youth team of {parent.name}, and {parent.name} lists it as a youth team.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-2xl border border-border bg-background/40 p-3">
+      <div className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Youth teams</div>
+      <p className="mt-1 text-[0.65rem] text-muted-foreground">Search a club and pick it to make it a youth team of {team.name}.</p>
+      {children.length > 0 && (
+        <div className="mt-2 grid gap-2">
+          {children.map((child) => (
+            <div key={child.id} className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-2">
+              <TeamCrest name={child.name} logo={child.logo_url} className="h-7 w-7" />
+              <span className="min-w-0 flex-1 truncate text-sm font-semibold">{child.name}</span>
+              {team.logo_url && <button type="button" className={btnGhost} disabled={busy} onClick={async () => {
+                setBusy(true);
+                await supabase.from("teams").update({ logo_url: team.logo_url }).eq("id", child.id);
+                setBusy(false); refresh();
+              }}><ImagePlus className="h-3.5 w-3.5" /> Give it this badge</button>}
+              <button type="button" className={btnDanger} disabled={busy} onClick={() => link(child.id, null)}><Trash2 className="h-3.5 w-3.5" /></button>
+            </div>
+          ))}
+        </div>
+      )}
+      <input className={`${inputCls} mt-2`} placeholder="Search clubs, e.g. Al Arabi SC U19" value={search} onChange={(e) => setSearch(e.target.value)} />
+      {needle && (
+        <div className="mt-2 max-h-56 space-y-1 overflow-y-auto">
+          {options.slice(0, 40).map((row) => (
+            <button key={row.id} type="button" disabled={busy} onClick={() => { link(row.id, team.id); setSearch(""); }}
+              className="flex w-full items-center gap-2 rounded-lg border border-border bg-background p-2 text-start hover:bg-accent">
+              <TeamCrest name={row.name} logo={row.logo_url} className="h-7 w-7" />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-semibold">{row.name}</span>
+                {row.country && <span className="block truncate text-[0.65rem] text-muted-foreground">{row.country}</span>}
+              </span>
+              <Plus className="h-3.5 w-3.5 text-primary" />
+            </button>
+          ))}
+          {options.length === 0 && <div className="rounded-lg border border-dashed border-border p-3 text-center text-xs text-muted-foreground">No club matches that name</div>}
+        </div>
+      )}
+    </div>
+  );
+}
