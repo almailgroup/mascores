@@ -23,29 +23,31 @@ import { MatchShare } from "@/components/match-share";
 import { displayShortName } from "@/lib/short-name";
 import { FavoriteButton, MatchNotificationButton, useFavorites } from "@/hooks/use-favorites";
 
-/** Crest + name used inside the tinted match hero, with a follow star for the club. */
-function HeroTeam({ team, onFollow }: { team: Team | null; onFollow?: () => void }) {
+/** Crest + name used inside the slim match hero. The follow star sits on the
+ *  outer edge of each club: home star on the left, away star on the right. */
+function HeroTeam({ team, onFollow, starSide }: { team: Team | null; onFollow?: () => void; starSide: "start" | "end" }) {
   const tx = useTx();
-  const body = (
-    <>
-      {/* No plate behind the crest: the badge sits straight on the hero colour. */}
-      <span className="grid h-16 w-16 place-items-center">
-        {team?.logo_url
-          ? <img src={team.logo_url} alt="" className="h-full w-full object-contain drop-shadow-[0_2px_6px_rgba(0,0,0,0.35)]" />
-          : <TeamCrest name={team?.name} logo={null} className="h-14 w-14" />}
-      </span>
-      <span className="mt-2 line-clamp-2 min-h-9 text-balance text-sm font-bold leading-4.5 sm:text-base">{tx(team?.name) ?? "TBD"}</span>
-    </>
+  const reverse = starSide === "end";
+  const star = team ? (
+    <span className="shrink-0 [&_button]:border-white/25 [&_button]:bg-white/10 [&_button]:text-white">
+      <FavoriteButton kind="team" id={team.id} onFollow={onFollow} />
+    </span>
+  ) : null;
+  const crest = (
+    <span className="grid h-11 w-11 shrink-0 place-items-center">
+      {team?.logo_url
+        ? <img src={team.logo_url} alt="" className="h-full w-full object-contain drop-shadow-[0_2px_6px_rgba(0,0,0,0.35)]" />
+        : <TeamCrest name={team?.name} logo={null} className="h-9 w-9" />}
+    </span>
   );
-  const cls = "flex min-w-0 flex-col items-center text-center text-white";
-  if (!team) return <div className={cls}>{body}</div>;
+  const nameEl = <span className={`line-clamp-2 text-balance text-sm font-bold leading-4.5 sm:text-base ${reverse ? "text-end" : ""}`}>{tx(team?.name) ?? "TBD"}</span>;
+  const body = reverse ? <>{nameEl}{crest}</> : <>{crest}{nameEl}</>;
+  if (!team) return <div className={`flex min-w-0 items-center gap-2 text-white ${reverse ? "justify-end" : ""}`}>{reverse ? <>{nameEl}{crest}{star}</> : <>{star}{crest}{nameEl}</>}</div>;
   return (
-    <div className={cls}>
-      <Link to="/teams/$id" params={{ id: team.id }} className="flex min-w-0 flex-col items-center text-center">{body}</Link>
-      {/* Follow star sits right under the club name, inside the match page. */}
-      <span className="mt-1 [&_button]:border-white/25 [&_button]:bg-white/10 [&_button]:text-white">
-        <FavoriteButton kind="team" id={team.id} onFollow={onFollow} />
-      </span>
+    <div className={`flex min-w-0 items-center gap-2 text-white ${reverse ? "justify-end" : ""}`}>
+      {reverse
+        ? <><Link to="/teams/$id" params={{ id: team.id }} className="flex min-w-0 items-center gap-2">{body}</Link>{star}</>
+        : <>{star}<Link to="/teams/$id" params={{ id: team.id }} className="flex min-w-0 items-center gap-2">{body}</Link></>}
     </div>
   );
 }
