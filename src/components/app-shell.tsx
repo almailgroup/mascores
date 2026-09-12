@@ -180,7 +180,7 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
 
       {/* Extra bottom room so the iPhone home bar never covers page actions. */}
       <main
-        className={`relative z-10 mx-auto max-w-7xl px-4 sm:px-6 ${onMainMenu ? "pt-6" : "max-md:pt-0"}`}
+        className={`relative z-10 mx-auto max-w-7xl px-4 pt-6 sm:px-6 ${onMainMenu ? "" : "max-md:pt-[calc(0.75rem+env(safe-area-inset-top))]"}`}
         style={{
           paddingBottom: "calc(7rem + env(safe-area-inset-bottom))",
         }}
