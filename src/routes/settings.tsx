@@ -14,6 +14,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { Save, LogOut, Loader2, LogIn, Camera, Trash2, BellRing, Volume2 } from "lucide-react";
 import { ImageCropper } from "@/components/image-cropper";
 import { ConfirmDelete } from "@/components/confirm-delete";
+import { ALERT_EVENTS, ALERT_SOUNDS, playAlertSound, soundFor, type AlertSoundId, type AlertSoundMap } from "@/lib/alert-sounds";
+
 
 export const Route = createFileRoute("/settings")({
   head: () => ({ meta: [{ title: "Settings — MansourAlmailScores" }, { name: "robots", content: "noindex" }] }),
@@ -39,7 +41,7 @@ function SettingsPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
-  const [alertPrefs, setAlertPrefs] = useState({ goals: true, cards: true, kickoff: true, final: true, voice: true, sound: "stadium" });
+  const [alertPrefs, setAlertPrefs] = useState<{ goals: boolean; cards: boolean; kickoff: boolean; final: boolean; voice: boolean; sound: string; sounds: AlertSoundMap }>({ goals: true, cards: true, kickoff: true, final: true, voice: true, sound: "stadium", sounds: {} });
 
   useEffect(() => {
     if (authLoading) return;
