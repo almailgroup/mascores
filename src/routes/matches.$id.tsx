@@ -24,7 +24,7 @@ import { displayShortName } from "@/lib/short-name";
 import { FavoriteButton, MatchNotificationButton } from "@/hooks/use-favorites";
 
 /** Crest + name used inside the tinted match hero, with a follow star for the club. */
-function HeroTeam({ team }: { team: Team | null }) {
+function HeroTeam({ team, onFollow }: { team: Team | null; onFollow?: () => void }) {
   const tx = useTx();
   const body = (
     <>
