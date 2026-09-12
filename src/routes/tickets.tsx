@@ -393,16 +393,21 @@ function TicketActions({ ticket }: { ticket: MyTicket }) {
   const unlist = useServerFn(unlistTicket);
   const [busy, setBusy] = useState(false);
   const [sellOpen, setSellOpen] = useState(false);
-  const refresh = () => qc.invalidateQueries({ queryKey: ["my-tickets"] });
+  const info = ticketEvent(ticket);
+  const closed = sellingClosed(info.kickoff);
+  const refresh = async () => {
+    await qc.invalidateQueries({ queryKey: ["my-tickets"] });
+    await qc.invalidateQueries({ queryKey: ["resale-tickets"] });
+  };
 
   const addToCalendar = () => {
-    const start = ticket.match?.kickoff_at ? new Date(ticket.match.kickoff_at) : new Date();
+    const start = info.kickoff ? new Date(info.kickoff) : new Date();
     const stamp = (d: Date) => d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
-    const title = `${ticket.match?.home?.name ?? "Match"} vs ${ticket.match?.away?.name ?? ""}`;
+    const title = `${info.home} vs ${info.away}`;
     const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Mansour Almail Scores//Tickets//EN", "BEGIN:VEVENT",
       `UID:${ticket.id}`, `DTSTAMP:${stamp(new Date())}`, `DTSTART:${stamp(start)}`,
       `DTEND:${stamp(new Date(start.getTime() + 2 * 3600000))}`, `SUMMARY:${title}`,
-      `LOCATION:${ticket.match?.venue ?? ""}`, `DESCRIPTION:Ticket code ${ticket.code}`, "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+      `LOCATION:${info.venue ?? ""}`, `DESCRIPTION:Ticket code ${ticket.code}`, "END:VEVENT", "END:VCALENDAR"].join("\r\n");
     const url = URL.createObjectURL(new Blob([ics], { type: "text/calendar" }));
     const a = document.createElement("a");
     a.href = url; a.download = `${ticket.code}.ics`; a.click();
@@ -414,12 +419,16 @@ function TicketActions({ ticket }: { ticket: MyTicket }) {
     <div className="mt-3 flex flex-wrap items-center gap-2">
       {ticket.for_sale ? (
         <>
-          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[0.65rem] font-bold text-primary">{tx("For sale")} · {Number(ticket.sale_price ?? 0)} {ticket.currency}</span>
+          <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[0.65rem] font-bold text-amber-700 dark:text-amber-400">{tx("For sale")} · {Number(ticket.sale_price ?? 0)} {ticket.currency}</span>
           <button disabled={busy} className="rounded-full border border-border px-3 py-1 text-[0.7rem] font-bold"
-            onClick={async () => { setBusy(true); try { await unlist({ data: { ticketId: ticket.id } }); refresh(); } finally { setBusy(false); } }}>
+            onClick={async () => { setBusy(true); try { await unlist({ data: { ticketId: ticket.id } }); await refresh(); } finally { setBusy(false); } }}>
             {tx("Stop selling")}
           </button>
         </>
+      ) : closed ? (
+        <span className="rounded-full border border-dashed border-border px-3 py-1 text-[0.7rem] font-bold text-muted-foreground">
+          {tx("Selling closed — your ticket still works at the gate")}
+        </span>
       ) : (
         <button className="rounded-full border border-border px-3 py-1 text-[0.7rem] font-bold" onClick={() => setSellOpen(true)}>
           {tx("Sell this ticket")}
@@ -430,7 +439,8 @@ function TicketActions({ ticket }: { ticket: MyTicket }) {
         {tx("Add to wallet")} · {tx("Coming soon")}
       </span>
       <button className="rounded-full border border-border px-3 py-1 text-[0.7rem] font-bold text-muted-foreground" onClick={async () => { await supabase.from("tickets").update({ is_hidden: !ticket.is_hidden }).eq("id", ticket.id); await refresh(); }}>{ticket.is_hidden ? tx("Restore") : tx("Hide")}</button>
-      {sellOpen && <SellSheet ticket={ticket} onClose={() => setSellOpen(false)} onDone={() => { setSellOpen(false); refresh(); }} />}
+      {sellOpen && <SellSheet ticket={ticket} onClose={() => setSellOpen(false)} onDone={async () => { setSellOpen(false); await refresh(); }} />}
+
     </div>
   );
 }
