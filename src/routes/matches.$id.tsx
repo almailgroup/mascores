@@ -231,26 +231,30 @@ function MatchPage() {
       <div dir="ltr" className="relative -mx-4 -mt-6 mb-4 overflow-hidden px-4 pb-0 pt-1 text-white sm:-mx-6 sm:px-6"
         style={{ background: heroBackground }}>
         <div className="flex items-center justify-between">
-          <BackButton className="mb-0 border-white/20 bg-white/10 text-white hover:text-white" />
-          <div className="flex items-center gap-2 [&_button]:border-white/25 [&_button]:bg-white/10 [&_button]:text-white">
+          {/* plain arrow only, matching a native phone header */}
+          <BackButton iconOnly className="text-white" />
+          <div className="flex items-center gap-1 [&_button]:h-9 [&_button]:w-9 [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-white [&_svg]:h-6 [&_svg]:w-6">
             <MatchShare data={shareData} mode="result" />
             <MatchNotificationButton matchId={match.id} teamIds={[match.home_team_id, match.away_team_id]} withSettings />
             <FavoriteButton kind="match" id={match.id} />
           </div>
         </div>
 
-        <div className="mt-2 grid items-center gap-2" style={{ gridTemplateColumns: "minmax(0,1fr) auto minmax(0,1fr)" }}>
+        <div className="mt-3 grid items-start gap-2" style={{ gridTemplateColumns: "minmax(0,1fr) auto minmax(0,1fr)" }}>
           <HeroTeam team={match.home} onFollow={followMatch} starSide="start" />
-          <div className="text-center">
+          <div className="pt-2 text-center">
             {["scheduled", "postponed", "cancelled"].includes(match.status)
               ? <div className="text-sm font-bold">{tx(STATUS_LABELS[match.status] ?? match.status)}</div>
               : <>
-                <div className="text-3xl font-black tabular-nums leading-none">{num(match.home_score ?? 0)} <span className="text-white/60">-</span> {num(match.away_score ?? 0)}</div>
+                {/* live matches show score and clock in red, like a broadcast ticker */}
+                <div className={`text-3xl font-black tabular-nums leading-none ${isLive ? "text-[#ff3b4e]" : ""}`}>
+                  {num(match.home_score ?? 0)} <span className={isLive ? "text-[#ff3b4e]/70" : "text-white/60"}>-</span> {num(match.away_score ?? 0)}
+                </div>
                 {match.status === "pen" && match.home_pen != null && match.away_pen != null && (
                   <div className="text-xs text-white/70">({num(match.home_pen)}–{num(match.away_pen)} {tx("pens")})</div>
                 )}
-                <div className="mt-1 flex items-center justify-center gap-1 text-xs text-white/80">
-                  {isLive && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />}
+                <div className={`mt-1 flex items-center justify-center gap-1 text-sm font-semibold tabular-nums ${isLive ? "text-[#ff3b4e]" : "text-white/80"}`}>
+                  {isLive && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#ff3b4e]" />}
                   {match.status === "live" ? num(formatClock(clock)) : tx(STATUS_LABELS[match.status] ?? match.status)}
                 </div>
               </>}
