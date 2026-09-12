@@ -296,7 +296,9 @@ function TeamPage() {
               ) : null}
             </div>
           </section>
+          <YouthTeams team={t} />
           <TeamStaff teamId={t.id} />
+
           <TeamUltras teamId={t.id} />
           <TeamNewsTeaser teamId={t.id} onMore={() => setTab("news")} />
           {t.description ? <div className="rounded-2xl border border-border bg-card p-4 text-sm">{tx(t.description)}</div> : null}
