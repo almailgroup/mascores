@@ -46,6 +46,7 @@ function ProfilePage() {
     },
   });
 
+  const compactNum = useCompact();
   const target = profile.data;
 
   useEffect(() => {
