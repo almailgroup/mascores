@@ -14,6 +14,7 @@ import { Route as TicketsRouteImport } from './routes/tickets'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SecretadminsafhaRouteImport } from './routes/secretadminsafha'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as ScannerRouteImport } from './routes/scanner'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as ContributeRouteImport } from './routes/contribute'
@@ -56,6 +57,11 @@ const SecretadminsafhaRoute = SecretadminsafhaRouteImport.update({
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ScannerRoute = ScannerRouteImport.update({
+  id: '/scanner',
+  path: '/scanner',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -156,6 +162,7 @@ export interface FileRoutesByFullPath {
   '/contribute': typeof ContributeRoute
   '/favorites': typeof FavoritesRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/scanner': typeof ScannerRoute
   '/search': typeof SearchRoute
   '/secretadminsafha': typeof SecretadminsafhaRoute
   '/settings': typeof SettingsRoute
@@ -181,6 +188,7 @@ export interface FileRoutesByTo {
   '/contribute': typeof ContributeRoute
   '/favorites': typeof FavoritesRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/scanner': typeof ScannerRoute
   '/search': typeof SearchRoute
   '/secretadminsafha': typeof SecretadminsafhaRoute
   '/settings': typeof SettingsRoute
@@ -207,6 +215,7 @@ export interface FileRoutesById {
   '/contribute': typeof ContributeRoute
   '/favorites': typeof FavoritesRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/scanner': typeof ScannerRoute
   '/search': typeof SearchRoute
   '/secretadminsafha': typeof SecretadminsafhaRoute
   '/settings': typeof SettingsRoute
@@ -234,6 +243,7 @@ export interface FileRouteTypes {
     | '/contribute'
     | '/favorites'
     | '/reset-password'
+    | '/scanner'
     | '/search'
     | '/secretadminsafha'
     | '/settings'
@@ -259,6 +269,7 @@ export interface FileRouteTypes {
     | '/contribute'
     | '/favorites'
     | '/reset-password'
+    | '/scanner'
     | '/search'
     | '/secretadminsafha'
     | '/settings'
@@ -284,6 +295,7 @@ export interface FileRouteTypes {
     | '/contribute'
     | '/favorites'
     | '/reset-password'
+    | '/scanner'
     | '/search'
     | '/secretadminsafha'
     | '/settings'
@@ -310,6 +322,7 @@ export interface RootRouteChildren {
   ContributeRoute: typeof ContributeRoute
   FavoritesRoute: typeof FavoritesRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ScannerRoute: typeof ScannerRoute
   SearchRoute: typeof SearchRoute
   SecretadminsafhaRoute: typeof SecretadminsafhaRoute
   SettingsRoute: typeof SettingsRoute
@@ -364,6 +377,13 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/scanner': {
+      id: '/scanner'
+      path: '/scanner'
+      fullPath: '/scanner'
+      preLoaderRoute: typeof ScannerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -502,6 +522,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContributeRoute: ContributeRoute,
   FavoritesRoute: FavoritesRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ScannerRoute: ScannerRoute,
   SearchRoute: SearchRoute,
   SecretadminsafhaRoute: SecretadminsafhaRoute,
   SettingsRoute: SettingsRoute,

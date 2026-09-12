@@ -124,8 +124,14 @@ export const scanTicket = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => scanTicketSchema.parse(input))
   .handler(async ({ data, context }) => {
+    // Full admins scan, and so do gate staff who only hold scanning access.
     const { data: isAdmin } = await context.supabase.rpc("is_admin", { _uid: context.userId });
-    if (!isAdmin) throw new Error("Forbidden");
+    if (!isAdmin) {
+      const { data: grants } = await context.supabase.from("admin_grants").select("scope").eq("user_id", context.userId);
+      const may = (grants ?? []).some((g) => g.scope === "scanner" || g.scope === "tickets" || g.scope === "all");
+      if (!may) throw new Error("Forbidden");
+    }
+
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const raw = data.code.trim();

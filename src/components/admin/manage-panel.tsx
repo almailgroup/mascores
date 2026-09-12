@@ -27,6 +27,8 @@ const SCOPE_LABEL: Record<GrantScope, string> = {
   channels: "TV channels",
   ai: "Almail AI tools",
   chat: "Chat moderation",
+  scanner: "Ticket scanning only (/scanner)",
+
 };
 
 /** Owner-only area: hand out limited access and decide who needs approval. */
