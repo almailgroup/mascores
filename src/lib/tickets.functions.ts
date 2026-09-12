@@ -206,9 +206,10 @@ export const listResaleTickets = createServerFn({ method: "GET" }).handler(async
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data } = await supabaseAdmin
     .from("tickets")
-    .select("id, sale_price, currency, row_label, seat_label, seller_phone, seller_email, offer:offer_id(name, stand), match:match_id(kickoff_at, venue, home:home_team_id(name), away:away_team_id(name), competition:competition_id(name))")
+    .select("id, sale_price, price_paid, currency, row_label, seat_label, seller_phone, seller_email, offer:offer_id(name, stand, price, event_home, event_away, event_competition, event_venue, event_kickoff_at), match:match_id(kickoff_at, venue, home:home_team_id(name), away:away_team_id(name), competition:competition_id(name))")
     .eq("for_sale", true)
     .eq("status", "valid")
+
     .order("sale_price", { ascending: true })
     .limit(100);
   return data ?? [];
