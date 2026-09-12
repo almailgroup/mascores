@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { availabilitySchema, claimTicketSchema, scanTicketSchema, ticketPoolSchema } from "./tickets.schemas";
+import { availabilitySchema, claimTicketSchema, scanTicketSchema, sellTicketSchema, ticketPoolSchema } from "./tickets.schemas";
 
 function makeCode(): string {
   return `MAS-${crypto.randomUUID().replace(/-/g, "").slice(0, 12).toUpperCase()}`;
