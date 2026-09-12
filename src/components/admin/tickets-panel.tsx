@@ -15,15 +15,40 @@ type MatchOption = {
 };
 
 type Offer = {
-  id: string; match_id: string; name: string; stand: string | null; price: number; currency: string; resale_max_price: number | null;
+  id: string; match_id: string | null; name: string; stand: string | null; price: number; currency: string; resale_max_price: number | null;
   is_free: boolean; capacity: number | null; show_row: boolean; show_seat: boolean; notes: string | null; is_active: boolean;
   approval_status?: string | null;
+  event_home?: string | null; event_away?: string | null; event_competition?: string | null;
+  event_venue?: string | null; event_kickoff_at?: string | null;
 };
 
 const emptyOffer = {
   name: "General admission", stand: "", price: "3", currency: "KWD", is_free: false, resale_max_price: "",
   capacity: "100", show_row: true, show_seat: true, notes: "", is_active: true,
+  event_home: "", event_away: "", event_competition: "", event_venue: "", event_kickoff: "",
 };
+
+/** ISO timestamp ⇄ the value an <input type="datetime-local"> expects. */
+function toLocalInput(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function fromLocalInput(value: string): string | null {
+  if (!value) return null;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
+}
+
+/** What this ticket is for, taken from its own saved details first. */
+export function offerEventLabel(offer: Offer): string {
+  const teams = [offer.event_home, offer.event_away].filter(Boolean).join(" vs ");
+  return [teams || null, offer.event_competition, offer.event_kickoff_at ? formatKickoff(offer.event_kickoff_at) : null, offer.event_venue]
+    .filter(Boolean).join(" · ");
+}
+
 
 
 /**
