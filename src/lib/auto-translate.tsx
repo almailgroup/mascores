@@ -173,7 +173,7 @@ export function AutoTranslateProvider({ children }: { children: ReactNode }) {
     [map],
   );
 
-  return <Ctx.Provider value={{ tx, num, reverse, ready }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ tx, num, compact, reverse, ready }}>{children}</Ctx.Provider>;
 }
 
 export function useTranslationReady() {
