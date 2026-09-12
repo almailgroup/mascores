@@ -7,7 +7,7 @@ import { supabase, formatKickoff, type Competition, type Team, type Match, type 
 import { useRealtime } from "@/lib/realtime";
 import { FlagIcon } from "@/components/flag";
 import { LinkedNews } from "@/components/linked-news";
-import { useDates, useNum, useTx } from "@/lib/auto-translate";
+import { useCompact, useDates, useNum, useTx } from "@/lib/auto-translate";
 import { MatchRow, type MatchWithTeams } from "@/components/match-list";
 import { CompetitionStats } from "@/components/competition-stats";
 import { useI18n } from "@/lib/i18n";

@@ -87,8 +87,8 @@ function ProfilePage() {
           <h1 className="truncate text-xl font-bold">{target.display_name ?? target.username}</h1>
           <div className="text-sm text-muted-foreground">@{target.username}</div>
           <div className="mt-1 flex gap-4 text-xs">
-            <span><b>{target.followers}</b> followers</span>
-            <span><b>{target.following}</b> following</span>
+            <span><b>{compactNum(target.followers)}</b> followers</span>
+            <span><b>{compactNum(target.following)}</b> following</span>
           </div>
           {target.bio && <p className="mt-2 text-sm">{target.bio}</p>}
         </div>
