@@ -277,7 +277,7 @@ function OffersView({ needsApproval }: { needsApproval: boolean }) {
           <p className="mt-1 text-xs font-semibold text-amber-600">This ticket is sent to the site owner first. It only goes on sale once he approves it.</p>
         )}
         <div className="mt-4 flex gap-2">
-          <button className={btnPrimary} disabled={busy || (!editing && !matchId) || !form.capacity.trim()} onClick={save}>
+          <button className={btnPrimary} disabled={busy || (!editing && !matchId && !form.event_home.trim()) || !form.capacity.trim()} onClick={save}>
             {busy && <Loader2 className="h-3.5 w-3.5 animate-spin" />} {editing ? "Save ticket" : "Create ticket & codes"}
           </button>
           {editing && <button className={btnGhost} onClick={() => { setEditing(null); setForm({ ...emptyOffer }); }}>Cancel</button>}
