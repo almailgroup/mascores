@@ -471,6 +471,7 @@ function CoachesModal({ team, onClose }: { team: Team; onClose: () => void }) {
       ) : (
         <button className={btnPrimary} onClick={() => { setForm({}); setEditing(true); }}><Plus className="h-3.5 w-3.5" /> Add coach</button>
       )}
+      <StaffManager teamId={team.id} />
     </Modal>
   );
 }
