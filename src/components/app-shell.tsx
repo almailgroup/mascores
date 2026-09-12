@@ -116,7 +116,7 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
   });
   const initials = (profile.data?.display_name ?? user?.email ?? "?").trim().slice(0, 1).toUpperCase();
   // On phones the top bar only belongs on the main menu pages; inner pages have their own back arrow.
-  const onMainMenu = NAV.some((item) => (item.exact ? location.pathname === item.to : location.pathname === item.to || location.pathname.startsWith(`${item.to}/`)));
+  const onMainMenu = NAV.some((item) => location.pathname.replace(/\/$/, "") === item.to.replace(/\/$/, ""));
 
 
   // A banned or suspended person gets nothing but the reason and an appeal box.
