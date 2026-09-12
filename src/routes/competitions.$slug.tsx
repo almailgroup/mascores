@@ -294,6 +294,7 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
 }) {
   const tx = useTx();
   const num = useNum();
+  const compact = useCompact();
   const { t, lang } = useI18n();
   const accent = useLogoAccent(hero ? null : logo);
   // No custom hero and no logo to sample: use a clean white band instead of navy.
@@ -371,7 +372,7 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
           </div>
         </div>
         <div className={`shrink-0 rounded-xl px-2.5 py-1.5 text-center backdrop-blur-sm ${chip}`}>
-          <div className="text-sm font-black leading-none tabular-nums">{num(followerCount)}</div>
+          <div className="text-sm font-black leading-none tabular-nums">{compact(followerCount)}</div>
           <div className="mt-1 text-[0.6rem] font-semibold uppercase tracking-wide opacity-80">
             {tx(followerCount === 1 ? "Follower" : "Followers")}
           </div>
