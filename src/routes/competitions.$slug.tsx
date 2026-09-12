@@ -119,14 +119,15 @@ function CompetitionPage() {
     },
   });
   const divisions = useQuery({
-    enabled: !!comp.data && !!(comp.data.higher_division_id || comp.data.lower_division_id),
-    queryKey: ["comp-divisions", comp.data?.higher_division_id, comp.data?.lower_division_id],
+    enabled: !!comp.data && !!(comp.data.higher_division_id || comp.data.lower_division_id || (comp.data.youth_competition_ids ?? []).length),
+    queryKey: ["comp-divisions", comp.data?.higher_division_id, comp.data?.lower_division_id, (comp.data?.youth_competition_ids ?? []).join(",")],
     queryFn: async () => {
-      const ids = [comp.data!.higher_division_id, comp.data!.lower_division_id].filter((v): v is string => !!v);
+      const ids = [comp.data!.higher_division_id, comp.data!.lower_division_id, ...(comp.data!.youth_competition_ids ?? [])].filter((v): v is string => !!v);
       const { data } = await supabase.from("competitions").select("id,name,slug,logo_url").in("id", ids);
       return (data ?? []) as { id: string; name: string; slug: string; logo_url: string | null }[];
     },
   });
+
   const tx = useTx();
   const num = useNum();
   const dates = useDates();
