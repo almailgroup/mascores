@@ -293,7 +293,7 @@ function OffersView({ needsApproval }: { needsApproval: boolean }) {
             <div key={offer.id} className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-3">
               <div className="min-w-0 flex-1">
                 <div className="truncate text-sm font-bold">{offer.name}{offer.stand ? ` · ${offer.stand}` : ""} <span className="text-muted-foreground">{offer.is_free ? "· Free" : `· ${offer.price} ${offer.currency}`}</span></div>
-                <div className="truncate text-[0.7rem] text-muted-foreground">{m ? label(m) : offer.match_id}</div>
+                <div className="truncate text-[0.7rem] text-muted-foreground">{offerEventLabel(offer) || (m ? label(m) : "No event details")}</div>
                 <div className="mt-0.5 text-[0.65rem] text-muted-foreground">
                   {[
                     offer.approval_status === "pending" ? "Waiting for approval" : offer.approval_status === "rejected" ? "Turned down" : offer.is_active ? "On sale" : "Hidden",
