@@ -10,11 +10,14 @@ type Tx = <T extends string | null | undefined>(value: T) => T;
 const Ctx = createContext<{
   tx: Tx;
   num: (v: number | string | null | undefined) => string;
+  /** Compact formatting: 999→999, 1200→1.2k, 10000→10k, 1200000→1.2M. */
+  compact: (v: number | string | null | undefined) => string;
   reverse: (v: string) => string[];
   ready: boolean;
 }>({
   tx: ((v: unknown) => v) as Tx,
   num: (v) => (v == null ? "" : String(v)),
+  compact: (v) => (v == null ? "" : String(v)),
   reverse: () => [],
   ready: true,
 });
