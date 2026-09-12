@@ -25,9 +25,16 @@ export const Route = createFileRoute("/tickets")({
   component: TicketsPage,
 });
 
+type EventDetails = {
+  offer_event_home?: string | null; offer_event_away?: string | null;
+  offer_event_competition?: string | null; offer_event_venue?: string | null; offer_event_kickoff_at?: string | null;
+};
+
 type OfferRow = {
-  id: string; match_id: string; name: string; stand: string | null; price: number; currency: string;
+  id: string; match_id: string | null; name: string; stand: string | null; price: number; currency: string;
   is_free: boolean; capacity: number | null; notes: string | null;
+  event_home: string | null; event_away: string | null; event_competition: string | null;
+  event_venue: string | null; event_kickoff_at: string | null;
   match: { id: string; kickoff_at: string | null; status: string; venue: string | null;
     home: { name: string; logo_url: string | null } | null;
     away: { name: string; logo_url: string | null } | null;
@@ -37,13 +44,37 @@ type OfferRow = {
 type MyTicket = {
   id: string; code: string; status: string; row_label: string | null; seat_label: string | null;
   holder_name: string | null; price_paid: number; currency: string; used_at: string | null;
-  for_sale: boolean; sale_price: number | null; match_id: string; is_hidden: boolean;
-  offer: { name: string; stand: string | null } | null;
+  for_sale: boolean; sale_price: number | null; match_id: string | null; is_hidden: boolean;
+  offer: { name: string; stand: string | null; event_home: string | null; event_away: string | null;
+    event_competition: string | null; event_venue: string | null; event_kickoff_at: string | null } | null;
   match: { kickoff_at: string | null; venue: string | null; home: { name: string } | null; away: { name: string } | null; competition: { name: string } | null } | null;
 };
 
 const TICKET_SELECT =
-  "id, code, status, row_label, seat_label, holder_name, price_paid, currency, used_at, created_at, for_sale, sale_price, is_hidden, match_id, offer:offer_id(name, stand), match:match_id(kickoff_at, venue, home:home_team_id(name), away:away_team_id(name), competition:competition_id(name))";
+  "id, code, status, row_label, seat_label, holder_name, price_paid, currency, used_at, created_at, for_sale, sale_price, is_hidden, match_id, offer:offer_id(name, stand, event_home, event_away, event_competition, event_venue, event_kickoff_at), match:match_id(kickoff_at, venue, home:home_team_id(name), away:away_team_id(name), competition:competition_id(name))";
+
+type EventInfo = { home: string; away: string; competition: string | null; venue: string | null; kickoff: string | null };
+
+/** Details saved on the ticket itself win, so a deleted match never empties a pass. */
+function offerEvent(offer: OfferRow): EventInfo {
+  return {
+    home: offer.event_home || offer.match?.home?.name || "TBD",
+    away: offer.event_away || offer.match?.away?.name || "TBD",
+    competition: offer.event_competition || offer.match?.competition?.name || null,
+    venue: offer.event_venue || offer.match?.venue || null,
+    kickoff: offer.event_kickoff_at || offer.match?.kickoff_at || null,
+  };
+}
+
+function ticketEvent(ticket: MyTicket): EventInfo {
+  return {
+    home: ticket.offer?.event_home || ticket.match?.home?.name || "TBD",
+    away: ticket.offer?.event_away || ticket.match?.away?.name || "TBD",
+    competition: ticket.offer?.event_competition || ticket.match?.competition?.name || null,
+    venue: ticket.offer?.event_venue || ticket.match?.venue || null,
+    kickoff: ticket.offer?.event_kickoff_at || ticket.match?.kickoff_at || null,
+  };
+}
 
 /** A pass stops working three hours after kickoff. */
 function isExpired(kickoff: string | null | undefined): boolean {
@@ -51,11 +82,18 @@ function isExpired(kickoff: string | null | undefined): boolean {
   return Date.now() - new Date(kickoff).getTime() > 3 * 60 * 60 * 1000;
 }
 
+/** Reselling closes ten minutes before kickoff — the pass itself stays valid. */
+function sellingClosed(kickoff: string | null | undefined): boolean {
+  if (!kickoff) return false;
+  return Date.now() > new Date(kickoff).getTime() - 10 * 60 * 1000;
+}
+
 function TicketsPage() {
   const tx = useTx();
   const { user } = useAuth();
   const [checkout, setCheckout] = useState<OfferRow | null>(null);
   const [showHidden, setShowHidden] = useState(false);
+  const [openTicket, setOpenTicket] = useState<MyTicket | null>(null);
   const availability = useServerFn(ticketAvailability);
 
   const offers = useQuery({
@@ -63,7 +101,7 @@ function TicketsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("ticket_offers")
-        .select("id, match_id, name, stand, price, currency, is_free, capacity, notes, match:match_id(id, kickoff_at, status, venue, home:home_team_id(name, logo_url), away:away_team_id(name, logo_url), competition:competition_id(name, slug, logo_url))")
+        .select("id, match_id, name, stand, price, currency, is_free, capacity, notes, event_home, event_away, event_competition, event_venue, event_kickoff_at, match:match_id(id, kickoff_at, status, venue, home:home_team_id(name, logo_url), away:away_team_id(name, logo_url), competition:competition_id(name, slug, logo_url))")
         .eq("is_active", true)
         .eq("approval_status", "approved")
         .order("sort_order");
@@ -95,10 +133,11 @@ function TicketsPage() {
 
   const grouped = new Map<string, OfferRow[]>();
   for (const offer of offers.data ?? []) {
-    if (isExpired(offer.match?.kickoff_at)) continue;
-    const list = grouped.get(offer.match_id) ?? [];
+    if (isExpired(offerEvent(offer).kickoff)) continue;
+    const key = offer.match_id ?? offer.id;
+    const list = grouped.get(key) ?? [];
     list.push(offer);
-    grouped.set(offer.match_id, list);
+    grouped.set(key, list);
   }
 
   return (
@@ -118,19 +157,20 @@ function TicketsPage() {
         <div className="rounded-2xl border border-border bg-card p-6 text-center text-sm text-muted-foreground">{tx("No tickets on sale right now.")}</div>
       ) : (
         <div className="space-y-3">
-          {[...grouped.values()].map((list) => {
-            const m = list[0]!.match;
+          {[...grouped.entries()].map(([key, list]) => {
+            const first = list[0]!;
+            const info = offerEvent(first);
             return (
-              <div key={list[0]!.match_id} className="overflow-hidden rounded-2xl border border-border bg-card">
+              <div key={key} className="overflow-hidden rounded-2xl border border-border bg-card">
                 <div className="flex items-center gap-3 border-b border-border/70 bg-muted/30 px-4 py-3">
-                  {m?.competition?.logo_url && <img src={m.competition.logo_url} alt="" className="h-7 w-7 object-contain" />}
+                  {first.match?.competition?.logo_url && <img src={first.match.competition.logo_url} alt="" className="h-7 w-7 object-contain" />}
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-bold">{tx(m?.home?.name ?? "TBD")} <span className="text-muted-foreground">{tx("vs")}</span> {tx(m?.away?.name ?? "TBD")}</div>
+                    <div className="truncate text-sm font-bold">{tx(info.home)} <span className="text-muted-foreground">{tx("vs")}</span> {tx(info.away)}</div>
                     <div className="truncate text-[0.7rem] text-muted-foreground">
-                      {[m?.competition ? tx(m.competition.name) : null, formatKickoff(m?.kickoff_at ?? null), m?.venue ? tx(m.venue) : null].filter(Boolean).join(" · ")}
+                      {[info.competition ? tx(info.competition) : null, formatKickoff(info.kickoff), info.venue ? tx(info.venue) : null].filter(Boolean).join(" · ")}
                     </div>
                   </div>
-                  {m?.competition && <Link to="/competitions/$slug" params={{ slug: m.competition.slug }} className="shrink-0 text-xs font-semibold text-primary">{tx("Match")}</Link>}
+                  {first.match?.competition && <Link to="/competitions/$slug" params={{ slug: first.match.competition.slug }} className="shrink-0 text-xs font-semibold text-primary">{tx("Match")}</Link>}
                 </div>
                 <div className="divide-y divide-border/70">
                   {list.map((offer) => {
@@ -170,12 +210,14 @@ function TicketsPage() {
       ) : (mine.data ?? []).filter((ticket) => ticket.is_hidden === showHidden).length === 0 ? (
         <div className="rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground">{tx("No tickets yet.")}</div>
       ) : (
-        <div className="grid gap-3 lg:grid-cols-2">
-           {(mine.data ?? []).filter((ticket) => ticket.is_hidden === showHidden).map((ticket) => <TicketCard key={ticket.id} ticket={ticket} />)}
+        <div className="grid gap-2 lg:grid-cols-2">
+           {(mine.data ?? []).filter((ticket) => ticket.is_hidden === showHidden).map((ticket) => <TicketRow key={ticket.id} ticket={ticket} onOpen={() => setOpenTicket(ticket)} />)}
         </div>
       )}
 
       <ResaleMarket />
+
+      {openTicket && <TicketSheet ticket={openTicket} onClose={() => setOpenTicket(null)} />}
 
       {checkout && (
         <CheckoutModal
@@ -188,12 +230,51 @@ function TicketsPage() {
   );
 }
 
+/** Small row: just the match details plus a hint to tap for the pass. */
+function TicketRow({ ticket, onOpen }: { ticket: MyTicket; onOpen: () => void }) {
+  const tx = useTx();
+  const info = ticketEvent(ticket);
+  const used = ticket.status === "used";
+  const expired = !used && isExpired(info.kickoff);
+  return (
+    <button onClick={onOpen} className={`flex w-full items-center gap-3 rounded-2xl border p-3 text-start ${used || expired ? "border-border bg-muted/40" : "border-primary/40 bg-card"}`}>
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><TicketIcon className="h-4 w-4" /></span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-bold">{tx(info.home)} <span className="text-muted-foreground">{tx("vs")}</span> {tx(info.away)}</span>
+        <span className="block truncate text-[0.7rem] text-muted-foreground">
+          {[info.competition ? tx(info.competition) : null, formatKickoff(info.kickoff), info.venue ? tx(info.venue) : null].filter(Boolean).join(" · ")}
+        </span>
+        <span className={`mt-0.5 block text-[0.65rem] font-bold ${used || expired ? "text-muted-foreground" : "text-primary"}`}>
+          {used ? tx("Scanned") : expired ? tx("Expired") : tx("Click for ticket")}
+        </span>
+      </span>
+      <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+    </button>
+  );
+}
+
+/** Full pass with the QR code, opened from a ticket row. */
+function TicketSheet({ ticket, onClose }: { ticket: MyTicket; onClose: () => void }) {
+  const tx = useTx();
+  return (
+    <div className="fixed inset-0 z-[90] flex items-end justify-center overflow-y-auto bg-black/60 sm:items-center sm:p-4" onClick={onClose}>
+      <div className="w-full max-w-md rounded-t-3xl bg-background p-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:rounded-3xl sm:pb-4" onClick={(e) => e.stopPropagation()}>
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground">{tx("Your ticket")}</h3>
+          <button className="grid h-8 w-8 place-items-center rounded-full border border-border" onClick={onClose}><X className="h-4 w-4" /></button>
+        </div>
+        <TicketCard ticket={ticket} />
+      </div>
+    </div>
+  );
+}
+
 /** Professional entry pass: match details on the left, QR stub on the side. */
 function TicketCard({ ticket }: { ticket: MyTicket }) {
   const tx = useTx();
   const used = ticket.status === "used";
-  const m = ticket.match;
-  const expired = !used && isExpired(m?.kickoff_at);
+  const info = ticketEvent(ticket);
+  const expired = !used && isExpired(info.kickoff);
   return (
     <div className={`relative flex overflow-hidden rounded-3xl border shadow-sm ${used || expired ? "border-border bg-muted/40" : "border-primary/40 bg-card"}`}>
       {expired && <span className="absolute end-3 top-3 z-10 rounded-full bg-muted px-2 py-0.5 text-[0.6rem] font-black uppercase tracking-widest text-muted-foreground">{tx("Expired")}</span>}
@@ -203,14 +284,14 @@ function TicketCard({ ticket }: { ticket: MyTicket }) {
           <span className="text-[0.65rem] font-bold">{ticket.price_paid > 0 ? `${ticket.price_paid} ${ticket.currency}` : tx("Free")}</span>
         </div>
         <div className="p-4">
-          <div className="text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{m?.competition ? tx(m.competition.name) : tx("Match")}</div>
-          <div className="mt-0.5 text-base font-black leading-tight">{tx(m?.home?.name ?? "TBD")}<span className="text-muted-foreground"> {tx("vs")} </span>{tx(m?.away?.name ?? "TBD")}</div>
-          <div className="mt-1 text-[0.72rem] text-muted-foreground">{formatKickoff(m?.kickoff_at ?? null)}</div>
+          <div className="text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{info.competition ? tx(info.competition) : tx("Match")}</div>
+          <div className="mt-0.5 text-base font-black leading-tight">{tx(info.home)}<span className="text-muted-foreground"> {tx("vs")} </span>{tx(info.away)}</div>
+          <div className="mt-1 text-[0.72rem] text-muted-foreground">{formatKickoff(info.kickoff)}</div>
           <div className="mt-3 grid grid-cols-2 gap-2 text-[0.7rem]">
             <Cell label={tx("Ticket")} value={ticket.offer ? tx(ticket.offer.name) : "—"} />
             <Cell label={tx("Stand")} value={ticket.offer?.stand ? tx(ticket.offer.stand) : "—"} />
             <Cell label={tx("Holder")} value={ticket.holder_name || "—"} />
-            <Cell label={tx("Venue")} value={m?.venue ? tx(m.venue) : "—"} />
+            <Cell label={tx("Venue")} value={info.venue ? tx(info.venue) : "—"} />
             {ticket.row_label && <Cell label={tx("Row")} value={ticket.row_label} />}
             {ticket.seat_label && <Cell label={tx("Seat")} value={ticket.seat_label} />}
           </div>
@@ -230,6 +311,7 @@ function TicketCard({ ticket }: { ticket: MyTicket }) {
     </div>
   );
 }
+
 
 /** Supporter-to-supporter resale list. Buying issues a fresh QR code. */
 function ResaleMarket() {
