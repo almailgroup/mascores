@@ -138,24 +138,30 @@ export type Database = {
       }
       app_feedback: {
         Row: {
+          admin_reply: string | null
           created_at: string
           email: string | null
           id: string
           message: string
+          replied_at: string | null
           user_id: string | null
         }
         Insert: {
+          admin_reply?: string | null
           created_at?: string
           email?: string | null
           id?: string
           message: string
+          replied_at?: string | null
           user_id?: string | null
         }
         Update: {
+          admin_reply?: string | null
           created_at?: string
           email?: string | null
           id?: string
           message?: string
+          replied_at?: string | null
           user_id?: string | null
         }
         Relationships: []
@@ -359,6 +365,7 @@ export type Database = {
           logo_url_dark: string | null
           lower_division_id: string | null
           name: string
+          name_ar: string | null
           parent_competition_id: string | null
           region: string | null
           scope: string
@@ -388,6 +395,7 @@ export type Database = {
           logo_url_dark?: string | null
           lower_division_id?: string | null
           name: string
+          name_ar?: string | null
           parent_competition_id?: string | null
           region?: string | null
           scope?: string
@@ -417,6 +425,7 @@ export type Database = {
           logo_url_dark?: string | null
           lower_division_id?: string | null
           name?: string
+          name_ar?: string | null
           parent_competition_id?: string | null
           region?: string | null
           scope?: string
@@ -1467,12 +1476,14 @@ export type Database = {
           market_value: string | null
           media_urls: string[]
           name: string
+          name_ar: string | null
           nationality: string | null
           nationality_code: string | null
           photo_url: string | null
           position: string | null
           shirt_number: number | null
           short_name: string | null
+          short_name_ar: string | null
           social_links: Json
           team_id: string | null
           updated_at: string
@@ -1485,12 +1496,14 @@ export type Database = {
           market_value?: string | null
           media_urls?: string[]
           name: string
+          name_ar?: string | null
           nationality?: string | null
           nationality_code?: string | null
           photo_url?: string | null
           position?: string | null
           shirt_number?: number | null
           short_name?: string | null
+          short_name_ar?: string | null
           social_links?: Json
           team_id?: string | null
           updated_at?: string
@@ -1503,12 +1516,14 @@ export type Database = {
           market_value?: string | null
           media_urls?: string[]
           name?: string
+          name_ar?: string | null
           nationality?: string | null
           nationality_code?: string | null
           photo_url?: string | null
           position?: string | null
           shirt_number?: number | null
           short_name?: string | null
+          short_name_ar?: string | null
           social_links?: Json
           team_id?: string | null
           updated_at?: string
@@ -2077,6 +2092,7 @@ export type Database = {
           holder_name: string | null
           holder_phone: string | null
           id: string
+          is_hidden: boolean
           issued_with_admin_code: boolean
           match_id: string
           offer_id: string | null
@@ -2101,6 +2117,7 @@ export type Database = {
           holder_name?: string | null
           holder_phone?: string | null
           id?: string
+          is_hidden?: boolean
           issued_with_admin_code?: boolean
           match_id: string
           offer_id?: string | null
@@ -2125,6 +2142,7 @@ export type Database = {
           holder_name?: string | null
           holder_phone?: string | null
           id?: string
+          is_hidden?: boolean
           issued_with_admin_code?: boolean
           match_id?: string
           offer_id?: string | null
