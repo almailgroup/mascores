@@ -10,11 +10,14 @@ type Tx = <T extends string | null | undefined>(value: T) => T;
 const Ctx = createContext<{
   tx: Tx;
   num: (v: number | string | null | undefined) => string;
+  /** Compact formatting: 999→999, 1200→1.2k, 10000→10k, 1200000→1.2M. */
+  compact: (v: number | string | null | undefined) => string;
   reverse: (v: string) => string[];
   ready: boolean;
 }>({
   tx: ((v: unknown) => v) as Tx,
   num: (v) => (v == null ? "" : String(v)),
+  compact: (v) => (v == null ? "" : String(v)),
   reverse: () => [],
   ready: true,
 });
@@ -137,6 +140,22 @@ export function AutoTranslateProvider({ children }: { children: ReactNode }) {
     [lang],
   );
 
+  const compact = useCallback(
+    (value: number | string | null | undefined) => {
+      const n = typeof value === "number" ? value : value == null ? NaN : Number(value);
+      if (isNaN(n)) return value == null ? "" : String(value);
+      const fmt = (() => {
+        const abs = Math.abs(n);
+        if (abs < 1000) return String(n);
+        if (abs < 10000) return `${(n / 1000).toFixed(1).replace(/\.0$/, "")}k`;
+        if (abs < 1_000_000) return `${Math.round(n / 1000)}k`;
+        return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
+      })();
+      return lang === "ar" ? toArabicDigits(fmt) : fmt;
+    },
+    [lang],
+  );
+
   /** Arabic query -> the original English strings it was translated from (for search). */
   const reverse = useCallback(
     (value: string) => {
@@ -154,7 +173,7 @@ export function AutoTranslateProvider({ children }: { children: ReactNode }) {
     [map],
   );
 
-  return <Ctx.Provider value={{ tx, num, reverse, ready }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ tx, num, compact, reverse, ready }}>{children}</Ctx.Provider>;
 }
 
 export function useTranslationReady() {
@@ -174,6 +193,11 @@ export function useTx(): Tx {
 /** Localize any number (scores, minutes, percentages) for the active language. */
 export function useNum() {
   return useContext(Ctx).num;
+}
+
+/** Compact number formatting hook: 1.2k, 10k, 1.2M (Arabic digits in Arabic mode). */
+export function useCompact() {
+  return useContext(Ctx).compact;
 }
 
 /** Locale-aware date formatting bound to the active language. */

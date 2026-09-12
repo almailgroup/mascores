@@ -6,7 +6,7 @@ import { AppShell, BackButton } from "@/components/app-shell";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
-import { useTx } from "@/lib/auto-translate";
+import { useCompact, useTx } from "@/lib/auto-translate";
 import { inviteLink, liveFor, roomCover, type VoiceHost, type VoiceRoom } from "@/lib/voice";
 import { useVoiceRoom, type VoiceRole } from "@/lib/use-voice-room";
 import { suspensionMessage, useMySuspension } from "@/lib/suspension";
@@ -33,6 +33,7 @@ function VoiceRoomPage() {
   const { user } = useAuth();
   const { lang } = useI18n();
   const tx = useTx();
+  const compact = useCompact();
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
@@ -296,7 +297,7 @@ function VoiceRoomPage() {
             : <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-bold">{(host.data?.display_name ?? "?").slice(0, 1).toUpperCase()}</span>}
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-bold">{host.data?.display_name ?? tx("Host")}</div>
-            <div className="text-[0.7rem] text-muted-foreground">{tx("Followers")}: {host.data?.followers ?? 0}</div>
+            <div className="text-[0.7rem] text-muted-foreground">{tx("Followers")}: {compact(host.data?.followers ?? 0)}</div>
           </div>
           {!isHost && (
             <button onClick={toggleFollow} className={`inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-bold ${following.data ? "border border-border bg-card text-muted-foreground" : "bg-primary text-primary-foreground"}`}>

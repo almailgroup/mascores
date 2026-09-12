@@ -9,7 +9,7 @@ import { uploadMedia } from "@/components/admin/upload";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
-import { useTx } from "@/lib/auto-translate";
+import { useCompact, useTx } from "@/lib/auto-translate";
 import { generatedCover, liveFor, roomCover, type VoiceHost, type VoiceRoom } from "@/lib/voice";
 import { suspensionMessage, useMySuspension } from "@/lib/suspension";
 
@@ -168,6 +168,7 @@ function RoomCard({ room, host, lang, following, onFollow, isSelf }: {
   room: RoomWithCount; host?: VoiceHost; lang: "en" | "ar"; following: boolean; onFollow: () => void; isSelf: boolean;
 }) {
   const tx = useTx();
+  const compact = useCompact();
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition hover:shadow-md">
       <Link to="/voice/$id" params={{ id: room.id }} className="block">
@@ -191,7 +192,7 @@ function RoomCard({ room, host, lang, following, onFollow, isSelf }: {
         </div>
       </Link>
       <div className="flex items-center justify-between border-t border-border px-3 py-2">
-        <span className="text-[0.65rem] text-muted-foreground">{tx("Followers")}: {host?.followers ?? 0}</span>
+        <span className="text-[0.65rem] text-muted-foreground">{tx("Followers")}: {compact(host?.followers ?? 0)}</span>
         {!isSelf && (
           <button onClick={onFollow} className={`inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-bold ${following ? "border border-border bg-card text-muted-foreground" : "bg-primary text-primary-foreground"}`}>
             {following ? <UserCheck className="h-3.5 w-3.5" /> : <UserPlus className="h-3.5 w-3.5" />}

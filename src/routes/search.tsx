@@ -7,7 +7,7 @@ import { AppShell, EmptyState } from "@/components/app-shell";
 import { supabase } from "@/lib/db";
 import { FlagIcon } from "@/components/flag";
 import { Search as SearchIcon, Trophy, Shield, User, Building2, Clock, X, ArrowLeft } from "lucide-react";
-import { useReverseTranslate, useTx } from "@/lib/auto-translate";
+import { useCompact, useReverseTranslate, useTx } from "@/lib/auto-translate";
 import { COUNTRIES } from "@/lib/countries";
 
 export const Route = createFileRoute("/search")({
@@ -41,6 +41,7 @@ function readHistory(): Visited[] {
 
 function SearchPage() {
   const tx = useTx();
+  const compact = useCompact();
   const router = useRouter();
   const reverse = useReverseTranslate();
   const [q, setQ] = useState("");
@@ -229,7 +230,7 @@ function SearchPage() {
               <ResultRow key={person.id} to="/u/$username" params={{ username: person.username ?? "" }} round
                 logo={person.avatar_url} fallback={<User className="h-4 w-4 text-muted-foreground" />}
                 title={person.display_name ?? person.username ?? ""}
-                sub={`@${person.username ?? ""} · ${person.followers} ${tx("followers") ?? "followers"}`} />
+                sub={`@${person.username ?? ""} · ${compact(person.followers)} ${tx("followers") ?? "followers"}`} />
             ))}</Group>
           )}
         </div>
