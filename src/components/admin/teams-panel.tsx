@@ -426,7 +426,7 @@ function CoachesModal({ team, onClose }: { team: Team; onClose: () => void }) {
   };
 
   return (
-    <Modal open onClose={onClose} title={`${team.name} — coaches`} wide>
+    <Modal open onClose={onClose} title={`${team.name} — coaches & staff`} wide>
       <div className="mb-4 grid gap-2">
         {(q.data ?? []).map((c) => (
           <div key={c.id} className="flex items-center gap-3 rounded-lg border border-border bg-background p-2">
