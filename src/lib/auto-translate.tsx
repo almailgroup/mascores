@@ -140,6 +140,22 @@ export function AutoTranslateProvider({ children }: { children: ReactNode }) {
     [lang],
   );
 
+  const compact = useCallback(
+    (value: number | string | null | undefined) => {
+      const n = typeof value === "number" ? value : value == null ? NaN : Number(value);
+      if (isNaN(n)) return value == null ? "" : String(value);
+      const fmt = (() => {
+        const abs = Math.abs(n);
+        if (abs < 1000) return String(n);
+        if (abs < 10000) return `${(n / 1000).toFixed(1).replace(/\.0$/, "")}k`;
+        if (abs < 1_000_000) return `${Math.round(n / 1000)}k`;
+        return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
+      })();
+      return lang === "ar" ? toArabicDigits(fmt) : fmt;
+    },
+    [lang],
+  );
+
   /** Arabic query -> the original English strings it was translated from (for search). */
   const reverse = useCallback(
     (value: string) => {
