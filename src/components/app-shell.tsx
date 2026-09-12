@@ -252,13 +252,22 @@ export function SectionHeader({ title, action }: { title: string; action?: React
 }
 
 /** Back control for detail pages — steps through history, falling back to the home page. */
-export function BackButton({ className = "" }: { className?: string }) {
+export function BackButton({ className = "", iconOnly = false }: { className?: string; iconOnly?: boolean }) {
   const router = useRouter();
   const { lang } = useI18n();
+  const back = () => { if (router.history.canGoBack()) router.history.back(); else router.navigate({ to: "/" }); };
+  if (iconOnly) {
+    return (
+      <button type="button" onClick={back} aria-label={lang === "ar" ? "رجوع" : "Back"}
+        className={`inline-flex h-9 w-9 items-center justify-center transition hover:opacity-80 ${className}`}>
+        <ArrowLeft className="h-6 w-6" />
+      </button>
+    );
+  }
   return (
     <button
       type="button"
-      onClick={() => { if (router.history.canGoBack()) router.history.back(); else router.navigate({ to: "/" }); }}
+      onClick={back}
       className={`mb-4 inline-flex h-9 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-sm font-medium text-muted-foreground transition hover:text-foreground ${className}`}
     >
       <ArrowLeft className="h-4 w-4" /> {lang === "ar" ? "رجوع" : "Back"}
