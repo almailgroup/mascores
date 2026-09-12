@@ -342,7 +342,49 @@ function FavoriteMatches() {
   </section>;
 }
 
+/** In-app month calendar, so tapping the date never opens the phone's own picker. */
+function MonthCalendar({ day, onPick, onClose }: { day: Date; onPick: (d: Date) => void; onClose: () => void }) {
+  const tx = useTx();
+  const { lang } = useI18n();
+  const [month, setMonth] = useState(() => new Date(day.getFullYear(), day.getMonth(), 1));
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const first = new Date(month.getFullYear(), month.getMonth(), 1);
+  const startPad = first.getDay();
+  const daysInMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+  const cells: (Date | null)[] = [
+    ...Array.from({ length: startPad }, () => null),
+    ...Array.from({ length: daysInMonth }, (_, i) => new Date(month.getFullYear(), month.getMonth(), i + 1)),
+  ];
+  const locale = lang === "ar" ? "ar-EG" : "en-GB";
+  const same = (a: Date, b: Date) => a.toDateString() === b.toDateString();
+  return (
+    <div className="border-b border-border bg-muted/30 px-3 py-3">
+      <div className="mb-2 flex items-center justify-between">
+        <button onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))} className="grid h-8 w-8 place-items-center rounded-full border border-border text-primary"><ChevronLeft className="h-4 w-4" /></button>
+        <div className="text-sm font-bold">{month.toLocaleDateString(locale, { month: "long", year: "numeric" })}</div>
+        <button onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))} className="grid h-8 w-8 place-items-center rounded-full border border-border text-primary"><ChevronRight className="h-4 w-4" /></button>
+      </div>
+      <div className="grid grid-cols-7 gap-1 text-center text-[0.6rem] font-bold uppercase text-muted-foreground">
+        {Array.from({ length: 7 }, (_, i) => <div key={i}>{new Date(2024, 8, 1 + i).toLocaleDateString(locale, { weekday: "short" })}</div>)}
+      </div>
+      <div className="mt-1 grid grid-cols-7 gap-1">
+        {cells.map((cell, index) => cell ? (
+          <button key={index} onClick={() => onPick(cell)}
+            className={`h-9 rounded-xl text-sm font-semibold transition ${same(cell, day) ? "bg-primary text-primary-foreground" : same(cell, today) ? "border border-primary/50 text-primary" : "hover:bg-accent"}`}>
+            {cell.getDate()}
+          </button>
+        ) : <div key={index} />)}
+      </div>
+      <div className="mt-2 flex justify-between">
+        <button onClick={() => onPick(today)} className="rounded-full px-3 py-1.5 text-xs font-bold text-primary">{tx("Today")}</button>
+        <button onClick={onClose} className="rounded-full px-3 py-1.5 text-xs font-semibold text-muted-foreground">{tx("Close")}</button>
+      </div>
+    </div>
+  );
+}
+
 function CompLogo({ logo }: { logo: string | null }) {
+
   return (
      <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl text-primary">
       {logo ? <img src={logo} alt="" className="h-full w-full object-contain" /> : <Trophy className="h-6 w-6" />}
