@@ -257,8 +257,9 @@ function TicketRow({ ticket, onOpen }: { ticket: MyTicket; onOpen: () => void })
 function TicketSheet({ ticket, onClose }: { ticket: MyTicket; onClose: () => void }) {
   const tx = useTx();
   return (
-    <div className="fixed inset-0 z-[90] flex items-end justify-center overflow-y-auto bg-black/60 sm:items-center sm:p-4" onClick={onClose}>
-      <div className="w-full max-w-md rounded-t-3xl bg-background p-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:rounded-3xl sm:pb-4" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[90] flex items-end justify-center bg-black/60 sm:items-center sm:p-4" onClick={onClose}>
+      <div className="max-h-[90dvh] w-full max-w-md overflow-y-auto overscroll-contain rounded-t-3xl bg-background p-4 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-[calc(1rem+env(safe-area-inset-top))] sm:max-h-[85dvh] sm:rounded-3xl sm:pb-4 sm:pt-4" onClick={(e) => e.stopPropagation()}>
+
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground">{tx("Your ticket")}</h3>
           <button className="grid h-8 w-8 place-items-center rounded-full border border-border" onClick={onClose}><X className="h-4 w-4" /></button>
