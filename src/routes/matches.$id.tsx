@@ -230,7 +230,7 @@ function MatchPage() {
           <BackButton className="mb-0 border-white/20 bg-white/10 text-white hover:text-white" />
           <div className="flex items-center gap-2 [&_button]:border-white/25 [&_button]:bg-white/10 [&_button]:text-white">
             <MatchShare data={shareData} mode="result" />
-            <MatchNotificationButton matchId={match.id} teamIds={[match.home_team_id, match.away_team_id]} />
+            <MatchNotificationButton matchId={match.id} teamIds={[match.home_team_id, match.away_team_id]} withSettings />
             <FavoriteButton kind="match" id={match.id} />
           </div>
         </div>
@@ -240,7 +240,7 @@ function MatchPage() {
         </div>
 
         <div className="mt-3 grid items-start gap-2" style={{ gridTemplateColumns: "minmax(0,1fr) auto minmax(0,1fr)" }}>
-          <HeroTeam team={match.home} />
+          <HeroTeam team={match.home} onFollow={followMatch} />
           <div className="pt-3 text-center">
             {["scheduled", "postponed", "cancelled"].includes(match.status)
               ? <div className="text-lg font-bold">{tx(STATUS_LABELS[match.status] ?? match.status)}</div>
@@ -255,7 +255,7 @@ function MatchPage() {
                 </div>
               </>}
           </div>
-          <HeroTeam team={match.away} />
+          <HeroTeam team={match.away} onFollow={followMatch} />
         </div>
 
         {(homeScorers.length > 0 || awayScorers.length > 0) && (
