@@ -109,3 +109,9 @@ Bigger builds (need database work):
 ## Notes
 - Wallet: passes save as a calendar/wallet event file; a signed Apple Wallet pass needs an Apple developer pass certificate.
 - Match reminders fire while the app is open (browser notifications); background push is not set up.
+
+## Current request — 2026-09-12
+- [ ] Redesign iPhone home ticket CTA and mobile match/club/date navigation.
+- [ ] Fix Arabic competition names, match colors, lineup team selection, and Arabic player short names.
+- [ ] Add feedback replies, reporter workflows, chat moderation, media watermarks, and venue match listing fixes.
+- [ ] Improve voice lifecycle/reactions, notification delivery/settings/sounds, ticket hiding, and nationality options.
