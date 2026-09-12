@@ -230,7 +230,7 @@ function SearchPage() {
               <ResultRow key={person.id} to="/u/$username" params={{ username: person.username ?? "" }} round
                 logo={person.avatar_url} fallback={<User className="h-4 w-4 text-muted-foreground" />}
                 title={person.display_name ?? person.username ?? ""}
-                sub={`@${person.username ?? ""} · ${person.followers} ${tx("followers") ?? "followers"}`} />
+                sub={`@${person.username ?? ""} · ${compact(person.followers)} ${tx("followers") ?? "followers"}`} />
             ))}</Group>
           )}
         </div>
