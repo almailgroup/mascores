@@ -28,13 +28,14 @@ function NewsPage() {
     <AppShell>
        <SectionHeader title={t("nav.news")} />
 
-      <Link to="/contribute" className="mb-5 flex items-center gap-4 overflow-hidden rounded-2xl border border-border bg-card p-4 transition hover:border-primary/60">
+      <div className="mb-5 flex items-center gap-4 overflow-hidden rounded-2xl border border-border bg-card p-4">
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><PenLine className="h-5 w-5" /></span>
         <span className="min-w-0 flex-1">
           <span className="block text-sm font-bold">{tx("Publish news")}</span>
           <span className="block text-xs text-muted-foreground">{tx("Join the reporter desk — contact mansouralmailscores@gmail.com for access.")}</span>
         </span>
-      </Link>
+        <span className="shrink-0 rounded-full bg-primary/15 px-3 py-1 text-xs font-semibold text-primary">{tx("Coming soon")}</span>
+      </div>
 
 
       {q.isLoading ? <LoadingSkeleton /> : !q.data || q.data.length === 0 ? (
