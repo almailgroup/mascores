@@ -5,7 +5,6 @@ import { lovable } from "@/integrations/lovable";
 import { BrandLogo } from "@/components/brand-logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Loader2, Mail, Lock, User as UserIcon, ArrowLeft } from "lucide-react";
-import { validateDemoAccount, saveDemoSession, getDemoSession } from "@/lib/demo-auth";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -44,50 +43,34 @@ function AuthPage() {
     setError(null);
     setNotice(null);
 
-    // Use queueMicrotask to avoid blocking UI
-    queueMicrotask(async () => {
-      try {
-        if (mode === "signin") {
-          // Demo auth - instant
-          if (validateDemoAccount(email, password)) {
-            saveDemoSession(getDemoSession(email));
-            window.location.href = "/";
-            return;
-          }
-
-          // Supabase auth
-          const { error } = await supabase.auth.signInWithPassword({ email, password });
-          if (error) throw error;
-          navigate({ to: "/" });
-        } else if (mode === "signup") {
-          const { error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              emailRedirectTo: window.location.origin,
-              data: { display_name: displayName || email.split("@")[0] },
-            },
-          });
-          if (error) {
-            saveDemoSession(getDemoSession(email));
-            setNotice("Demo account created!");
-            setEmail("");
-            setPassword("");
-          } else {
-            setNotice("Check your email to confirm.");
-          }
-        } else {
-          const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: window.location.origin + "/reset-password",
-          });
-          if (error) throw error;
-          setNotice("Password reset link sent.");
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Try demo@mascores.app / demo123");
-        setBusy(false);
+    try {
+      if (mode === "signin") {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        navigate({ to: "/" });
+      } else if (mode === "signup") {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: window.location.origin,
+            data: { display_name: displayName || email.split("@")[0] },
+          },
+        });
+        if (error) throw error;
+        setNotice("Check your email to confirm.");
+      } else {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin + "/reset-password",
+        });
+        if (error) throw error;
+        setNotice("Password reset link sent.");
       }
-    });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } finally {
+      setBusy(false);
+    }
   };
 
   const handleOAuth = async (provider: "google" | "apple") => {
@@ -95,19 +78,17 @@ function AuthPage() {
     setBusy(true);
     setError(null);
 
-    queueMicrotask(async () => {
-      try {
-        const result = await lovable.auth.signInWithOAuth(provider, {
-          redirect_uri: window.location.origin,
-        });
-        if (result.error) throw result.error;
-        if (result.redirected) return;
-        navigate({ to: "/" });
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Try demo@mascores.app / demo123");
-        setBusy(false);
-      }
-    });
+    try {
+      const result = await lovable.auth.signInWithOAuth(provider, {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) throw result.error;
+      if (result.redirected) return;
+      navigate({ to: "/" });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Sign-in failed. Please try again.");
+      setBusy(false);
+    }
   };
 
   return (
