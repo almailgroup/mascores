@@ -42,6 +42,8 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
   const [search, setSearch] = useState("");
   const [deleteTeam, setDeleteTeam] = useState<Team | null>(null);
   const [unlinkTeam, setUnlinkTeam] = useState<Team | null>(null);
+  const [librarySearch, setLibrarySearch] = useState("");
+  const [libraryCountry, setLibraryCountry] = useState("");
   const { needsApproval, competitionIds } = useAdminAbility();
   const [reviewNote, setReviewNote] = useState<string | null>(null);
   /** A past season keeps its own frozen squad instead of the club's live squad. */
