@@ -244,6 +244,7 @@ function AddPersonModal({ onClose, onDone }: { onClose: () => void; onDone: (sec
             </select>
           </Field>
         )}
+        <CompetitionPicker value={competitionIds} onChange={setCompetitionIds} />
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={requiresApproval} onChange={(e) => setRequiresApproval(e.target.checked)} />
           Their posts wait for my approval
