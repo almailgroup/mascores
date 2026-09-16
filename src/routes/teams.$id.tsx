@@ -156,35 +156,9 @@ function TeamPage() {
 
 
       {tab === "matches" && (
-        matches.data && matches.data.length > 0 ? (
-          <div className="space-y-3">
-            {[...matches.data.reduce((map, m) => {
-              const key = m.competition?.slug ?? "other";
-              map.set(key, [...(map.get(key) ?? []), m]);
-              return map;
-            }, new Map<string, MatchWithTeams[]>()).values()].map((ms) => (
-              <div key={ms[0].competition?.slug ?? "other"} className="overflow-hidden rounded-2xl border border-border bg-card">
-                {ms[0].competition ? (
-                  <Link to="/competitions/$slug" params={{ slug: ms[0].competition.slug }} className="flex items-center gap-2.5 border-b border-border px-4 py-3 hover:bg-accent">
-                    {ms[0].competition.logo_url ? <img src={ms[0].competition.logo_url} alt="" className="h-7 w-7 shrink-0 object-contain" /> : null}
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-bold">{tx(ms[0].competition.name)}</span>
-                      {ms[0].competition.country ? (
-                        <span className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
-                          <FlagIcon value={ms[0].competition.country_code ?? ms[0].competition.country} />
-                          <span className="truncate">{tx(ms[0].competition.country)}</span>
-                        </span>
-                      ) : null}
-                    </span>
-                  </Link>
-                ) : null}
-                <div className="divide-y divide-border">
-                  {ms.map((m) => <MatchRow key={m.id} m={m} highlightTeamId={id} />)}
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : <EmptyState title={tx("No matches yet")} />
+        matches.data && matches.data.length > 0
+          ? <TeamMatches data={matches.data} teamId={id} nextId={upcoming[0]?.id ?? null} />
+          : <EmptyState title={tx("No matches yet")} />
       )}
 
       {tab === "standings" && (
