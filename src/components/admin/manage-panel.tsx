@@ -194,6 +194,7 @@ function AddPersonModal({ onClose, onDone }: { onClose: () => void; onDone: (sec
   const [email, setEmail] = useState("");
   const [scopes, setScopes] = useState<GrantScope[]>(["news"]);
   const [teamId, setTeamId] = useState("");
+  const [competitionIds, setCompetitionIds] = useState<string[]>([]);
   const [requiresApproval, setRequiresApproval] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -211,7 +212,7 @@ function AddPersonModal({ onClose, onDone }: { onClose: () => void; onDone: (sec
   const submit = async () => {
     setBusy(true); setError(null);
     try {
-      const res = await add({ data: { email, scopes, teamId: needsTeam ? (teamId || null) : null, requiresApproval } });
+      const res = await add({ data: { email, scopes, teamId: needsTeam ? (teamId || null) : null, competitionIds, requiresApproval } });
       onDone(res.password ? { email: email.trim().toLowerCase(), password: res.password, emailed: res.emailed } : null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not save that.");
