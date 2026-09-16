@@ -8,6 +8,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { ShareCardButton } from "@/components/share-image";
 import { drawStandingsCard } from "@/lib/share-cards";
 import { useNum, useTx } from "@/lib/auto-translate";
+import { compareGroupLabels } from "@/lib/group-order";
 
 type Label = Database["public"]["Tables"]["standings_position_labels"]["Row"];
 export type PublicStandingRow = StandingRow & { team: Pick<Team, "id" | "name" | "logo_url" | "short_name"> | null };
@@ -19,7 +20,8 @@ function grouped(rows: PublicStandingRow[]) {
     const key = row.group_label ?? null;
     groups.set(key, [...(groups.get(key) ?? []), row]);
   });
-  return [...groups.entries()];
+  // Group A first, Group B second, whatever order the rows were saved in.
+  return [...groups.entries()].sort(([a], [b]) => compareGroupLabels(a, b));
 }
 
 /** Last five finished results per team, taken from the same competition/season as the table. */

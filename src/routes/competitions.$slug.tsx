@@ -19,6 +19,7 @@ import { SeasonMenu } from "@/components/season-menu";
 import { StandingsTable } from "@/components/standings-table";
 import { useCompetitionLogo } from "@/lib/comp-logo";
 import { useLogoAccent } from "@/lib/logo-accent";
+import { compareGroupLabels } from "@/lib/group-order";
 
 type PositionLabel = Database["public"]["Tables"]["standings_position_labels"]["Row"];
 type Row = StandingRow & { team: Team | null };
@@ -410,24 +411,35 @@ function CompetitionOverviewTab({ c, season, teams, titleHolder, titles, divisio
   return <CompetitionOverviewInner c={c} season={season} teams={teams} titleHolder={titleHolder} titles={titles} divisions={divisions} matches={matches} media={media} friendly={friendly} />;
 }
 
-/** Sofascore-style rounds: one card per round, split by group when the table has groups. */
+/** Sofascore-style rounds: one card per round, split by group with Group A first, Group B second. */
 function CompetitionMatches({ data }: { data: MatchWithTeams[] }) {
   const tx = useTx();
   const num = useNum();
   const groupOf = useMatchGroupLabels(data);
-  const groups = new Map<string, { round: string; group: string | null; matches: MatchWithTeams[] }>();
-  for (const m of data) {
+  const buckets = new Map<string, { key: string; round: string; group: string | null; matches: MatchWithTeams[]; order: number }>();
+  data.forEach((m) => {
     const round = m.round_number ? `#${m.round_number}` : (m.round ?? "");
     const group = groupOf(m);
     const key = `${round}|${group ?? ""}`;
-    const bucket = groups.get(key) ?? { round, group, matches: [] };
+    const bucket = buckets.get(key) ?? { key, round, group, matches: [], order: buckets.size };
     bucket.matches.push(m);
-    groups.set(key, bucket);
-  }
+    buckets.set(key, bucket);
+  });
+  // Grouped cards run A, B, C…; rounds inside a group keep their order and any
+  // card without a group (knockout, qualifying) stays where the calendar puts it.
+  const list = [...buckets.values()].sort((a, b) => {
+    const byGroup = compareGroupLabels(a.group, b.group, false);
+    if (byGroup) return byGroup;
+    const ra = a.round.startsWith("#") ? Number(a.round.slice(1)) : null;
+    const rb = b.round.startsWith("#") ? Number(b.round.slice(1)) : null;
+    if (ra != null && rb != null && ra !== rb) return ra - rb;
+    // The list arrives in date order, so the first card seen keeps its place.
+    return a.order - b.order;
+  });
   return (
     <div className="space-y-3">
-      {[...groups.entries()].map(([key, bucket]) => (
-        <div key={key || "all"} className="overflow-hidden rounded-2xl border border-border bg-card">
+      {list.map((bucket) => (
+        <div key={bucket.key || "all"} className="overflow-hidden rounded-2xl border border-border bg-card">
           <div className="border-b border-border px-4 py-3 text-sm font-bold">
             {[bucket.round.startsWith("#") ? `${tx("Round")} ${num(Number(bucket.round.slice(1)))}` : (tx(bucket.round) || tx("Matches")), bucket.group ? tx(bucket.group) : null].filter(Boolean).join(" · ")}
           </div>
