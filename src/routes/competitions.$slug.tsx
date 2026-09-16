@@ -410,24 +410,29 @@ function CompetitionOverviewTab({ c, season, teams, titleHolder, titles, divisio
   return <CompetitionOverviewInner c={c} season={season} teams={teams} titleHolder={titleHolder} titles={titles} divisions={divisions} matches={matches} media={media} friendly={friendly} />;
 }
 
-/** Sofascore-style rounds: one card per round, compact rows inside. */
+/** Sofascore-style rounds: one card per round, split by group when the table has groups. */
 function CompetitionMatches({ data }: { data: MatchWithTeams[] }) {
   const tx = useTx();
   const num = useNum();
-  const groups = new Map<string, MatchWithTeams[]>();
+  const groupOf = useMatchGroupLabels(data);
+  const groups = new Map<string, { round: string; group: string | null; matches: MatchWithTeams[] }>();
   for (const m of data) {
-    const key = m.round_number ? `#${m.round_number}` : (m.round ?? "");
-    groups.set(key, [...(groups.get(key) ?? []), m]);
+    const round = m.round_number ? `#${m.round_number}` : (m.round ?? "");
+    const group = groupOf(m);
+    const key = `${round}|${group ?? ""}`;
+    const bucket = groups.get(key) ?? { round, group, matches: [] };
+    bucket.matches.push(m);
+    groups.set(key, bucket);
   }
   return (
     <div className="space-y-3">
-      {[...groups.entries()].map(([key, ms]) => (
+      {[...groups.entries()].map(([key, bucket]) => (
         <div key={key || "all"} className="overflow-hidden rounded-2xl border border-border bg-card">
           <div className="border-b border-border px-4 py-3 text-sm font-bold">
-            {key.startsWith("#") ? `${tx("Round")} ${num(Number(key.slice(1)))}` : (tx(key) || tx("Matches"))}
+            {[bucket.round.startsWith("#") ? `${tx("Round")} ${num(Number(bucket.round.slice(1)))}` : (tx(bucket.round) || tx("Matches")), bucket.group ? tx(bucket.group) : null].filter(Boolean).join(" · ")}
           </div>
           <div className="divide-y divide-border">
-            {ms.map((m) => <MatchRow key={m.id} m={m} />)}
+            {bucket.matches.map((m) => <MatchRow key={m.id} m={m} />)}
           </div>
         </div>
       ))}
