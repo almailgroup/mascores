@@ -198,7 +198,7 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
             <button className={btnGhost} onClick={() => setStaffOf(t)}><UserCog className="h-3.5 w-3.5" /> Coaches &amp; staff</button>
             <button className={btnGhost} onClick={() => { setForm(t); setOpen(true); }}><Pencil className="h-3.5 w-3.5" /></button>
             {competitionId
-              ? <button className={btnDanger} title="Remove from this competition" onClick={() => removeFromCompetition(t.id)}><UserMinus className="h-3.5 w-3.5" /></button>
+              ? <button className={btnDanger} title="Remove from this competition" onClick={() => setUnlinkTeam(t)}><UserMinus className="h-3.5 w-3.5" /></button>
               : <button className={btnDanger} title="Delete permanently" onClick={() => setDeleteTeam(t)}><Trash2 className="h-3.5 w-3.5" /></button>}
           </div>
         ))}
