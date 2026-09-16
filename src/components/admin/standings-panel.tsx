@@ -201,6 +201,25 @@ export function StandingsPanel({ competitionId, season = null }: { competitionId
         position (1st place, 2nd place…), not to the team.
       </p>
 
+      <Modal open={groupName !== null} onClose={() => setGroupName(null)} title="Add a group">
+        <Field label="Group name">
+          <input
+            autoFocus
+            className={inputCls}
+            placeholder="Group A"
+            value={groupName ?? ""}
+            onChange={(e) => setGroupName(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter" && groupName?.trim()) addGroup(groupName); }}
+          />
+        </Field>
+        <p className="mt-2 text-[0.65rem] text-muted-foreground">The first group takes the teams already in the table. Later groups start empty — use “Add teams” inside the group to move clubs across.</p>
+        <div className="mt-4 flex justify-end gap-2">
+          <button className={btnGhost} onClick={() => setGroupName(null)}>Cancel</button>
+          <button className={btnPrimary} disabled={groupBusy || !groupName?.trim()} onClick={() => addGroup(groupName ?? "")}>{groupBusy ? "Adding…" : "Add group"}</button>
+        </div>
+      </Modal>
+
+
       {addTo && (
         <GroupTeamsModal
           group={addTo}
