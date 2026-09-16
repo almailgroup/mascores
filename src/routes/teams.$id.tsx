@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { MediaGallery } from "@/components/media-gallery";
 import { AppShell, BackButton, EmptyState, LoadingSkeleton, SwipeTabs } from "@/components/app-shell";
@@ -13,7 +13,7 @@ import { PlayerAvatar } from "@/components/player-avatar";
 import { SocialLinksSection } from "@/components/social-links";
 import { LinkedNews } from "@/components/linked-news";
 import { ArrowRight, Landmark, CalendarClock, Crown, Trophy, Users, Phone, Mail, Globe } from "lucide-react";
-import { MatchRow, type MatchWithTeams } from "@/components/match-list";
+import { MatchGroups, MatchRow, type MatchWithTeams } from "@/components/match-list";
 import { type NationalPlayer, fetchNationalSquad } from "@/lib/national";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
 import { TeamStats, type TeamComp } from "@/components/team-stats";
