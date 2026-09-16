@@ -103,10 +103,14 @@ export function StandingsPanel({ competitionId, season = null }: { competitionId
     invalidate();
   };
 
-  const addGroup = async () => {
-    const name = window.prompt("Group name (e.g. Group A)");
-    if (!name?.trim()) return;
+  /** Asked for in the app itself — a browser pop-up is blocked inside the app frame. */
+  const [groupName, setGroupName] = useState<string | null>(null);
+  const [groupBusy, setGroupBusy] = useState(false);
+
+  const addGroup = async (name: string) => {
     const label = name.trim();
+    if (!label) return;
+    setGroupBusy(true);
     // The first group takes over the un-grouped table; later groups start empty and teams are moved into them.
     if (groups.length === 1 && groups[0] === SINGLE && rows.length > 0) {
       let update = supabase.from("standings_rows").update({ group_label: label }).eq("competition_id", competitionId).is("group_label", null);
@@ -114,6 +118,8 @@ export function StandingsPanel({ competitionId, season = null }: { competitionId
       await update;
     }
     setPendingGroups((g) => (g.includes(label) ? g : [...g, label]));
+    setGroupBusy(false);
+    setGroupName(null);
     invalidate();
   };
 
