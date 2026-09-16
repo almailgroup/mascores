@@ -151,6 +151,7 @@ export const addManagedUser = createServerFn({ method: "POST" })
       { onConflict: "user_id,scope,team_id" },
     );
     if (error) throw new Error(error.message);
+    await syncCompetitionAccess(admin, user.id, data.competitionIds ?? [], context.userId);
     const emailed = await emailSignInLink(email);
     return { ok: true as const, userId: user.id, password, emailed };
   });
@@ -164,6 +165,7 @@ export const setManagedScopes = createServerFn({ method: "POST" })
       userId: z.string().uuid(),
       scopes: z.array(z.enum(GRANT_SCOPES)).min(1),
       teamId: z.string().uuid().nullish(),
+      competitionIds: z.array(z.string().uuid()).optional(),
       requiresApproval: z.boolean().default(true),
     }).parse(input),
   )
