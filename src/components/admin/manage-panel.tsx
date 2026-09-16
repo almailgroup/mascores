@@ -265,6 +265,7 @@ function AddPersonModal({ onClose, onDone }: { onClose: () => void; onDone: (sec
 function EditAccessModal({ user, onClose, onSaved }: { user: ManagedUser; onClose: () => void; onSaved: () => void }) {
   const [scopes, setScopes] = useState<GrantScope[]>(user.grants.map((g) => g.scope));
   const [teamId, setTeamId] = useState(user.grants.find((g) => g.teamId)?.teamId ?? "");
+  const [competitionIds, setCompetitionIds] = useState<string[]>(user.competitionIds ?? []);
   const [requiresApproval, setRequiresApproval] = useState(user.grants.some((g) => g.requiresApproval));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
