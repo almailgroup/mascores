@@ -1,4 +1,6 @@
 import { Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Trophy } from "lucide-react";
 import { TeamCrest } from "@/components/team-crest";
 import { FlagIcon } from "@/components/flag";
