@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { ThemeProvider } from "../components/theme-provider";
 import { IntroSplash } from "../components/intro-splash";
+import { InstallPrompt } from "../components/install-prompt";
 import { I18nProvider } from "../lib/i18n";
 import { CurrencyProvider } from "../lib/currency";
 import { HeightUnitProvider } from "../lib/units";
@@ -115,7 +116,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: appCss,
       },
       { rel: "icon", type: "image/x-icon", href: "/favicon.ico" },
-      { rel: "apple-touch-icon", href: "/favicon.jpg" },
+      { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" },
       { rel: "manifest", href: "/manifest.webmanifest" },
 
     ],
@@ -152,6 +153,7 @@ function RootComponent() {
               <AutoTranslateProvider>
                 <IntroSplash />
                 <LanguageReadyGate><Outlet /></LanguageReadyGate>
+                <InstallPrompt />
               </AutoTranslateProvider>
             </HeightUnitProvider>
           </CurrencyProvider>

@@ -128,6 +128,11 @@ const dict: Record<Lang, Record<string, string>> = {
     "admin.pointsAdjust": "Point adjust",
     "admin.reorder": "Reorder",
     "admin.notAdmin": "You don't have admin access. Enter the password to unlock.",
+    "install.title": "Install the app",
+    "install.body": "Add MansourAlmailScores to your home screen for faster access.",
+    "install.iosBody": "Tap the Share button, then choose \u201cAdd to Home Screen\u201d.",
+    "install.action": "Install",
+    "install.dismiss": "Not now",
   },
   ar: {
     "nav.home": "الرئيسية",
@@ -254,6 +259,11 @@ const dict: Record<Lang, Record<string, string>> = {
     "admin.pointsAdjust": "تعديل النقاط",
     "admin.reorder": "إعادة الترتيب",
     "admin.notAdmin": "ليس لديك صلاحية إدارة. أدخل كلمة السر للفتح.",
+    "install.title": "ثبّت التطبيق",
+    "install.body": "أضف منصور الميل سكورز إلى شاشتك الرئيسية للوصول الأسرع.",
+    "install.iosBody": "اضغط زر المشاركة ثم اختر «إضافة إلى الشاشة الرئيسية».",
+    "install.action": "تثبيت",
+    "install.dismiss": "ليس الآن",
   },
 };
 
