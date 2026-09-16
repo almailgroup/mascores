@@ -283,7 +283,7 @@ function EditAccessModal({ user, onClose, onSaved }: { user: ManagedUser; onClos
   const submit = async () => {
     setBusy(true); setError(null);
     try {
-      await save({ data: { userId: user.id, scopes, teamId: needsTeam ? (teamId || null) : null, requiresApproval } });
+      await save({ data: { userId: user.id, scopes, teamId: needsTeam ? (teamId || null) : null, competitionIds, requiresApproval } });
       onSaved();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not save that.");
@@ -314,6 +314,7 @@ function EditAccessModal({ user, onClose, onSaved }: { user: ManagedUser; onClos
             </select>
           </Field>
         )}
+        <CompetitionPicker value={competitionIds} onChange={setCompetitionIds} />
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={requiresApproval} onChange={(e) => setRequiresApproval(e.target.checked)} />
           Their new posts and tickets wait for my approval
