@@ -157,8 +157,9 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
       {reviewNote && <div className="mb-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm font-semibold text-amber-700 dark:text-amber-300">{reviewNote}</div>}
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-base font-bold">Teams</h3>
-        <div className="flex flex-wrap gap-2">{competitionId && <button className={btnGhost} onClick={() => setLibraryOpen(true)}><Library className="h-3.5 w-3.5" /> Add existing</button>}<button className={btnPrimary} onClick={() => { setForm(competition ? { country: competition.country ?? null, country_code: competition.country_code ?? null, is_national: !!competition.is_national } : lockKind ? { is_national: lockKind === "national" } : {}); setOpen(true); }}><Plus className="h-3.5 w-3.5" /> New team</button></div>
+        <div className="flex flex-wrap gap-2">{competitionId && <button className={btnGhost} onClick={() => setLibraryOpen(true)}><Library className="h-3.5 w-3.5" /> Add existing</button>}{(competitionId || !restricted) && <button className={btnPrimary} onClick={() => { setForm(competition ? { country: competition.country ?? null, country_code: competition.country_code ?? null, is_national: !!competition.is_national } : lockKind ? { is_national: lockKind === "national" } : {}); setOpen(true); }}><Plus className="h-3.5 w-3.5" /> New team</button>}</div>
       </div>
+      {restricted && !competitionId && <p className="mb-3 rounded-xl border border-border bg-card p-3 text-xs text-muted-foreground">You only see clubs that play in the competitions the site owner chose for you.</p>}
       <div className="grid gap-2">
         <div className="mb-1 flex flex-wrap items-center gap-2">
           {!competitionId && (
@@ -176,6 +177,7 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
           <input className={`${inputCls} max-w-48`} placeholder="Search teams" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         {(q.data ?? [])
+          .filter((t) => (competitionId || !restricted ? true : allowedTeams.data?.has(t.id) ?? false))
           .filter((t) => (competitionId ? true : activeKind === "all" || (activeKind === "national" ? t.is_national : !t.is_national)))
           .filter((t) => (!search.trim() ? true : t.name.toLowerCase().includes(search.trim().toLowerCase())))
           .slice(0, competitionId ? 500 : 120)
