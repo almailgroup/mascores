@@ -41,10 +41,21 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
   const activeKind = lockKind ?? kind;
   const [search, setSearch] = useState("");
   const [deleteTeam, setDeleteTeam] = useState<Team | null>(null);
-  const { needsApproval } = useAdminAbility();
+  const [unlinkTeam, setUnlinkTeam] = useState<Team | null>(null);
+  const { needsApproval, competitionIds } = useAdminAbility();
   const [reviewNote, setReviewNote] = useState<string | null>(null);
   /** A past season keeps its own frozen squad instead of the club's live squad. */
   const pastSeason = !!(season && competition?.season && season !== competition.season) ? season : null;
+  /** When the owner tied this person to certain competitions, only those clubs can be opened. */
+  const restricted = competitionIds.length > 0;
+  const allowedTeams = useQuery({
+    enabled: restricted,
+    queryKey: ["admin", "allowed-teams", competitionIds.join(",")],
+    queryFn: async () => {
+      const { data } = await supabase.from("competition_teams").select("team_id").in("competition_id", competitionIds);
+      return new Set((data ?? []).map((row) => row.team_id));
+    },
+  });
 
   /** Inside a competition only teams that belong to it make sense: same country, same kind. */
   const eligible = (team: Team) => {
