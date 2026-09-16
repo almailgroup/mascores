@@ -41,10 +41,23 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
   const activeKind = lockKind ?? kind;
   const [search, setSearch] = useState("");
   const [deleteTeam, setDeleteTeam] = useState<Team | null>(null);
-  const { needsApproval } = useAdminAbility();
+  const [unlinkTeam, setUnlinkTeam] = useState<Team | null>(null);
+  const [librarySearch, setLibrarySearch] = useState("");
+  const [libraryCountry, setLibraryCountry] = useState("");
+  const { needsApproval, competitionIds } = useAdminAbility();
   const [reviewNote, setReviewNote] = useState<string | null>(null);
   /** A past season keeps its own frozen squad instead of the club's live squad. */
   const pastSeason = !!(season && competition?.season && season !== competition.season) ? season : null;
+  /** When the owner tied this person to certain competitions, only those clubs can be opened. */
+  const restricted = competitionIds.length > 0;
+  const allowedTeams = useQuery({
+    enabled: restricted,
+    queryKey: ["admin", "allowed-teams", competitionIds.join(",")],
+    queryFn: async () => {
+      const { data } = await supabase.from("competition_teams").select("team_id").in("competition_id", competitionIds);
+      return new Set((data ?? []).map((row) => row.team_id));
+    },
+  });
 
   /** Inside a competition only teams that belong to it make sense: same country, same kind. */
   const eligible = (team: Team) => {
@@ -146,8 +159,9 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
       {reviewNote && <div className="mb-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm font-semibold text-amber-700 dark:text-amber-300">{reviewNote}</div>}
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-base font-bold">Teams</h3>
-        <div className="flex flex-wrap gap-2">{competitionId && <button className={btnGhost} onClick={() => setLibraryOpen(true)}><Library className="h-3.5 w-3.5" /> Add existing</button>}<button className={btnPrimary} onClick={() => { setForm(competition ? { country: competition.country ?? null, country_code: competition.country_code ?? null, is_national: !!competition.is_national } : lockKind ? { is_national: lockKind === "national" } : {}); setOpen(true); }}><Plus className="h-3.5 w-3.5" /> New team</button></div>
+        <div className="flex flex-wrap gap-2">{competitionId && <button className={btnGhost} onClick={() => setLibraryOpen(true)}><Library className="h-3.5 w-3.5" /> Add existing</button>}{(competitionId || !restricted) && <button className={btnPrimary} onClick={() => { setForm(competition ? { country: competition.country ?? null, country_code: competition.country_code ?? null, is_national: !!competition.is_national } : lockKind ? { is_national: lockKind === "national" } : {}); setOpen(true); }}><Plus className="h-3.5 w-3.5" /> New team</button>}</div>
       </div>
+      {restricted && !competitionId && <p className="mb-3 rounded-xl border border-border bg-card p-3 text-xs text-muted-foreground">You only see clubs that play in the competitions the site owner chose for you.</p>}
       <div className="grid gap-2">
         <div className="mb-1 flex flex-wrap items-center gap-2">
           {!competitionId && (
@@ -165,6 +179,7 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
           <input className={`${inputCls} max-w-48`} placeholder="Search teams" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         {(q.data ?? [])
+          .filter((t) => (competitionId || !restricted ? true : allowedTeams.data?.has(t.id) ?? false))
           .filter((t) => (competitionId ? true : activeKind === "all" || (activeKind === "national" ? t.is_national : !t.is_national)))
           .filter((t) => (!search.trim() ? true : t.name.toLowerCase().includes(search.trim().toLowerCase())))
           .slice(0, competitionId ? 500 : 120)
@@ -185,7 +200,7 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
             <button className={btnGhost} onClick={() => setStaffOf(t)}><UserCog className="h-3.5 w-3.5" /> Coaches &amp; staff</button>
             <button className={btnGhost} onClick={() => { setForm(t); setOpen(true); }}><Pencil className="h-3.5 w-3.5" /></button>
             {competitionId
-              ? <button className={btnDanger} title="Remove from this competition" onClick={() => removeFromCompetition(t.id)}><UserMinus className="h-3.5 w-3.5" /></button>
+              ? <button className={btnDanger} title="Remove from this competition" onClick={() => setUnlinkTeam(t)}><UserMinus className="h-3.5 w-3.5" /></button>
               : <button className={btnDanger} title="Delete permanently" onClick={() => setDeleteTeam(t)}><Trash2 className="h-3.5 w-3.5" /></button>}
           </div>
         ))}
@@ -266,15 +281,57 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
       </Modal>
 
       <Modal open={libraryOpen} onClose={() => setLibraryOpen(false)} title="Add an existing team">
-        <Field label="Saved team"><select className={inputCls} value={libraryTeamId} onChange={(e) => setLibraryTeamId(e.target.value)}><option value="">Choose a team</option>{(libraryQ.data ?? []).filter((team) => !(q.data ?? []).some((current) => current.id === team.id)).filter((team) => libraryAll || eligible(team)).map((team) => <option key={team.id} value={team.id}>{team.name}{team.country ? ` · ${team.country}` : ""}</option>)}</select></Field>
-        {competition && (
-          <label className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-            <input type="checkbox" className="h-4 w-4" checked={libraryAll} onChange={(e) => setLibraryAll(e.target.checked)} />
-            Show every team in the world (off shows only {competition.is_national ? "national teams" : "teams"} from {competition.country ?? "this competition's country"})
-          </label>
-        )}
-        <div className="mt-4 flex justify-end gap-2"><button className={btnGhost} onClick={() => setLibraryOpen(false)}>Cancel</button><button className={btnPrimary} disabled={!libraryTeamId} onClick={async () => { await supabase.from("competition_teams").insert({ competition_id: competitionId, team_id: libraryTeamId, season } as never); setLibraryTeamId(""); setLibraryOpen(false); qc.invalidateQueries({ queryKey: ["admin", "teams", competitionId] }); qc.invalidateQueries({ queryKey: ["admin", "standings", competitionId] }); }}>Add to competition</button></div>
+        {(() => {
+          const pool = (libraryQ.data ?? [])
+            .filter((team) => !(q.data ?? []).some((current) => current.id === team.id))
+            .filter((team) => libraryAll || eligible(team));
+          const countries = [...new Set(pool.map((team) => team.country).filter(Boolean) as string[])].sort((a, b) => a.localeCompare(b));
+          const needle = librarySearch.trim().toLowerCase();
+          const results = pool
+            .filter((team) => (!libraryCountry ? true : team.country === libraryCountry))
+            .filter((team) => (!needle ? true : `${team.name} ${team.short_name ?? ""} ${team.country ?? ""}`.toLowerCase().includes(needle)))
+            .slice(0, 120);
+          return (
+            <>
+              <div className="flex flex-wrap gap-2">
+                <input className={`${inputCls} min-w-40 flex-1`} placeholder="Search teams…" value={librarySearch} onChange={(e) => setLibrarySearch(e.target.value)} />
+                <select className={`${inputCls} max-w-44`} value={libraryCountry} onChange={(e) => setLibraryCountry(e.target.value)}>
+                  <option value="">All countries</option>
+                  {countries.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              {competition && (
+                <label className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                  <input type="checkbox" className="h-4 w-4" checked={libraryAll} onChange={(e) => setLibraryAll(e.target.checked)} />
+                  Show every team in the world (off shows only {competition.is_national ? "national teams" : "teams"} from {competition.country ?? "this competition's country"})
+                </label>
+              )}
+              <div className="mt-3 max-h-72 space-y-1 overflow-y-auto rounded-xl border border-border p-1">
+                {results.map((team) => (
+                  <button key={team.id} type="button" onClick={() => setLibraryTeamId(team.id)}
+                    className={`flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm ${libraryTeamId === team.id ? "bg-primary/10 font-semibold text-primary" : "hover:bg-accent"}`}>
+                    <TeamCrest name={team.name} logo={team.logo_url} className="h-7 w-7 shrink-0" />
+                    <span className="min-w-0 flex-1"><span className="block truncate">{team.name}</span>{team.country && <span className="block truncate text-xs text-muted-foreground">{team.country}</span>}</span>
+                  </button>
+                ))}
+                {results.length === 0 && <p className="p-3 text-xs text-muted-foreground">No matching team.</p>}
+              </div>
+            </>
+          );
+        })()}
+        <div className="mt-4 flex justify-end gap-2"><button className={btnGhost} onClick={() => setLibraryOpen(false)}>Cancel</button><button className={btnPrimary} disabled={!libraryTeamId} onClick={async () => { await supabase.from("competition_teams").insert({ competition_id: competitionId, team_id: libraryTeamId, season } as never); setLibraryTeamId(""); setLibrarySearch(""); setLibraryCountry(""); setLibraryOpen(false); qc.invalidateQueries({ queryKey: ["admin", "teams", competitionId] }); qc.invalidateQueries({ queryKey: ["admin", "standings", competitionId] }); }}>Add to competition</button></div>
       </Modal>
+
+      <Modal open={!!unlinkTeam} onClose={() => setUnlinkTeam(null)} title="Remove from this competition">
+        <p className="text-sm text-muted-foreground">
+          Take <strong className="text-foreground">{unlinkTeam?.name}</strong> out of this competition{season ? ` for ${season}` : ""}? Its table row goes too. The club itself and its matches stay saved.
+        </p>
+        <div className="mt-4 flex justify-end gap-2">
+          <button className={btnGhost} onClick={() => setUnlinkTeam(null)}>Keep it</button>
+          <button className={btnDanger} onClick={async () => { const t = unlinkTeam!; setUnlinkTeam(null); await removeFromCompetition(t.id); }}>Remove team</button>
+        </div>
+      </Modal>
+
 
       {squadOf && (pastSeason
         ? <SeasonSquadModal team={squadOf} season={pastSeason} onClose={() => setSquadOf(null)} />

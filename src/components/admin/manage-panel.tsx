@@ -157,10 +157,44 @@ export function ManagePanel() {
   );
 }
 
+/** Lets the owner tie a helper to certain competitions. Nothing ticked = every competition. */
+function CompetitionPicker({ value, onChange }: { value: string[]; onChange: (ids: string[]) => void }) {
+  const [search, setSearch] = useState("");
+  const comps = useQuery({
+    queryKey: ["owner-competitions"],
+    queryFn: async () => (await supabase.from("competitions").select("id,name,country").order("name")).data ?? [],
+  });
+  const needle = search.trim().toLowerCase();
+  const list = (comps.data ?? []).filter((c) => !needle || `${c.name} ${c.country ?? ""}`.toLowerCase().includes(needle)).slice(0, 120);
+  const toggle = (id: string) => onChange(value.includes(id) ? value.filter((x) => x !== id) : [...value, id]);
+  return (
+    <Field label="Which competitions can they manage? (leave empty for all)">
+      <input className={inputCls} placeholder="Search competitions…" value={search} onChange={(e) => setSearch(e.target.value)} />
+      <div className="mt-2 max-h-52 space-y-1 overflow-y-auto rounded-xl border border-border p-1">
+        {list.map((c) => {
+          const on = value.includes(c.id);
+          return (
+            <button key={c.id} type="button" onClick={() => toggle(c.id)}
+              className={`flex w-full items-center justify-between gap-2 rounded-lg px-2 py-2 text-start text-xs font-semibold ${on ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-accent"}`}>
+              <span className="min-w-0 truncate">{c.name}{c.country ? ` · ${c.country}` : ""}</span>
+              {on && <span>✓</span>}
+            </button>
+          );
+        })}
+        {list.length === 0 && <p className="p-3 text-xs text-muted-foreground">No matching competition.</p>}
+      </div>
+      <p className="mt-1 text-[0.65rem] text-muted-foreground">
+        {value.length === 0 ? "They can manage every competition and club." : `Only ${value.length} competition${value.length === 1 ? "" : "s"} and the clubs inside them.`}
+      </p>
+    </Field>
+  );
+}
+
 function AddPersonModal({ onClose, onDone }: { onClose: () => void; onDone: (secret: { email: string; password: string; emailed: boolean } | null) => void }) {
   const [email, setEmail] = useState("");
   const [scopes, setScopes] = useState<GrantScope[]>(["news"]);
   const [teamId, setTeamId] = useState("");
+  const [competitionIds, setCompetitionIds] = useState<string[]>([]);
   const [requiresApproval, setRequiresApproval] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -178,7 +212,7 @@ function AddPersonModal({ onClose, onDone }: { onClose: () => void; onDone: (sec
   const submit = async () => {
     setBusy(true); setError(null);
     try {
-      const res = await add({ data: { email, scopes, teamId: needsTeam ? (teamId || null) : null, requiresApproval } });
+      const res = await add({ data: { email, scopes, teamId: needsTeam ? (teamId || null) : null, competitionIds, requiresApproval } });
       onDone(res.password ? { email: email.trim().toLowerCase(), password: res.password, emailed: res.emailed } : null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not save that.");
@@ -210,6 +244,7 @@ function AddPersonModal({ onClose, onDone }: { onClose: () => void; onDone: (sec
             </select>
           </Field>
         )}
+        <CompetitionPicker value={competitionIds} onChange={setCompetitionIds} />
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={requiresApproval} onChange={(e) => setRequiresApproval(e.target.checked)} />
           Their posts wait for my approval
@@ -230,6 +265,7 @@ function AddPersonModal({ onClose, onDone }: { onClose: () => void; onDone: (sec
 function EditAccessModal({ user, onClose, onSaved }: { user: ManagedUser; onClose: () => void; onSaved: () => void }) {
   const [scopes, setScopes] = useState<GrantScope[]>(user.grants.map((g) => g.scope));
   const [teamId, setTeamId] = useState(user.grants.find((g) => g.teamId)?.teamId ?? "");
+  const [competitionIds, setCompetitionIds] = useState<string[]>(user.competitionIds ?? []);
   const [requiresApproval, setRequiresApproval] = useState(user.grants.some((g) => g.requiresApproval));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -247,7 +283,7 @@ function EditAccessModal({ user, onClose, onSaved }: { user: ManagedUser; onClos
   const submit = async () => {
     setBusy(true); setError(null);
     try {
-      await save({ data: { userId: user.id, scopes, teamId: needsTeam ? (teamId || null) : null, requiresApproval } });
+      await save({ data: { userId: user.id, scopes, teamId: needsTeam ? (teamId || null) : null, competitionIds, requiresApproval } });
       onSaved();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not save that.");
@@ -278,6 +314,7 @@ function EditAccessModal({ user, onClose, onSaved }: { user: ManagedUser; onClos
             </select>
           </Field>
         )}
+        <CompetitionPicker value={competitionIds} onChange={setCompetitionIds} />
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={requiresApproval} onChange={(e) => setRequiresApproval(e.target.checked)} />
           Their new posts and tickets wait for my approval

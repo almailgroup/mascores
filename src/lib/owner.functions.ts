@@ -58,6 +58,8 @@ export type ManagedUser = {
   email: string | null;
   displayName: string | null;
   grants: { id: string; scope: GrantScope; teamId: string | null; teamName: string | null; requiresApproval: boolean }[];
+  /** Empty means every competition; otherwise only these competitions. */
+  competitionIds: string[];
 };
 
 export const listManagedUsers = createServerFn({ method: "GET" })
@@ -66,10 +68,11 @@ export const listManagedUsers = createServerFn({ method: "GET" })
     const admin = await ownerAdmin(context.claims as Record<string, unknown>);
     const { data: users, error } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
     if (error) throw new Error(error.message);
-    const [{ data: grants }, { data: profiles }, { data: teams }] = await Promise.all([
+    const [{ data: grants }, { data: profiles }, { data: teams }, { data: comps }] = await Promise.all([
       admin.from("admin_grants").select("id,user_id,scope,team_id,requires_approval"),
       admin.from("profiles").select("id,display_name"),
       admin.from("teams").select("id,name"),
+      admin.from("admin_competition_access").select("user_id,competition_id"),
     ]);
     const teamName = new Map((teams ?? []).map((t) => [t.id, t.name]));
     const name = new Map((profiles ?? []).map((p) => [p.id, p.display_name]));
@@ -86,13 +89,32 @@ export const listManagedUsers = createServerFn({ method: "GET" })
           teamName: g.team_id ? teamName.get(g.team_id) ?? null : null,
           requiresApproval: g.requires_approval,
         })),
+      competitionIds: (comps ?? []).filter((c) => c.user_id === u.id).map((c) => c.competition_id),
     }));
   });
+
+/** Replaces the list of competitions one helper may manage. Empty list = every competition. */
+async function syncCompetitionAccess(
+  admin: Awaited<ReturnType<typeof ownerAdmin>>,
+  userId: string,
+  competitionIds: string[] | null | undefined,
+  ownerId: string,
+) {
+  if (!competitionIds) return;
+  const wanted = [...new Set(competitionIds)];
+  await admin.from("admin_competition_access").delete().eq("user_id", userId);
+  if (wanted.length === 0) return;
+  const { error } = await admin.from("admin_competition_access").insert(
+    wanted.map((competition_id) => ({ user_id: userId, competition_id, created_by: ownerId })) as never,
+  );
+  if (error) throw new Error(error.message);
+}
 
 const grantSchema = z.object({
   email: z.string().email(),
   scopes: z.array(z.enum(GRANT_SCOPES)).min(1),
   teamId: z.string().uuid().nullish(),
+  competitionIds: z.array(z.string().uuid()).optional(),
   requiresApproval: z.boolean().default(true),
 });
 
@@ -129,6 +151,7 @@ export const addManagedUser = createServerFn({ method: "POST" })
       { onConflict: "user_id,scope,team_id" },
     );
     if (error) throw new Error(error.message);
+    await syncCompetitionAccess(admin, user.id, data.competitionIds ?? [], context.userId);
     const emailed = await emailSignInLink(email);
     return { ok: true as const, userId: user.id, password, emailed };
   });
@@ -142,6 +165,7 @@ export const setManagedScopes = createServerFn({ method: "POST" })
       userId: z.string().uuid(),
       scopes: z.array(z.enum(GRANT_SCOPES)).min(1),
       teamId: z.string().uuid().nullish(),
+      competitionIds: z.array(z.string().uuid()).optional(),
       requiresApproval: z.boolean().default(true),
     }).parse(input),
   )
@@ -165,6 +189,7 @@ export const setManagedScopes = createServerFn({ method: "POST" })
     if (stale.length) await admin.from("admin_grants").delete().in("id", stale);
     // Keep the approval setting the same across everything they hold.
     await admin.from("admin_grants").update({ requires_approval: data.requiresApproval }).eq("user_id", data.userId);
+    await syncCompetitionAccess(admin, data.userId, data.competitionIds ?? [], context.userId);
     return { ok: true as const };
   });
 
@@ -239,9 +264,14 @@ export const myAccess = createServerFn({ method: "GET" })
     const claims = context.claims as Record<string, unknown>;
     const email = typeof claims?.email === "string" ? claims.email.toLowerCase() : "";
     const isOwner = email === OWNER_EMAIL;
-    const { data } = await context.supabase.from("admin_grants").select("scope,team_id,requires_approval");
+    const [{ data }, { data: comps }] = await Promise.all([
+      context.supabase.from("admin_grants").select("scope,team_id,requires_approval"),
+      context.supabase.from("admin_competition_access").select("competition_id").eq("user_id", context.userId),
+    ]);
     return {
       isOwner,
       grants: (data ?? []).map((g) => ({ scope: g.scope as GrantScope, teamId: g.team_id, requiresApproval: g.requires_approval })),
+      /** Empty means no restriction. */
+      competitionIds: (comps ?? []).map((c) => c.competition_id),
     };
   });

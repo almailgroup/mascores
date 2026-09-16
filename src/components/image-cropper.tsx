@@ -8,16 +8,19 @@ export function ImageCropper({
   file,
   src,
   aspect = 1,
+  cancelLabel = "Cancel",
   onCancel,
   onDone,
 }: {
   file?: File | null;
   src?: string | null;
   aspect?: number;
+  cancelLabel?: string;
   onCancel: () => void;
   onDone: (file: File) => void | Promise<void>;
 }) {
   const [url, setUrl] = useState<string | null>(null);
+  const [display, setDisplay] = useState<string | null>(null);
   const [img, setImg] = useState<HTMLImageElement | null>(null);
   const [zoom, setZoom] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -38,12 +41,47 @@ export function ImageCropper({
   }, [file, src]);
 
   useEffect(() => {
-    if (!url) return;
-    const image = new Image();
-    image.crossOrigin = "anonymous";
-    image.onload = () => { setImg(image); setZoom(1); setOffset({ x: 0, y: 0 }); };
-    image.onerror = () => setFailed(true);
-    image.src = url;
+    if (!url) return undefined;
+    let cancelled = false;
+    let created: string | null = null;
+
+    const load = (source: string, anonymous: boolean) =>
+      new Promise<HTMLImageElement | null>((resolve) => {
+        const image = new Image();
+        if (anonymous) image.crossOrigin = "anonymous";
+        image.onload = () => resolve(image);
+        image.onerror = () => resolve(null);
+        image.src = source;
+      });
+
+    (async () => {
+      // A picture already saved online is copied into the browser first, so
+      // saving the crop always works instead of being blocked.
+      let source = url;
+      if (!/^(blob:|data:)/.test(url)) {
+        try {
+          const res = await fetch(url, { mode: "cors", cache: "no-store" });
+          if (res.ok) {
+            source = URL.createObjectURL(await res.blob());
+            created = source;
+          }
+        } catch {
+          source = url;
+        }
+      }
+      let image = await load(source, source !== url ? false : true);
+      if (!image && source !== url) image = await load(url, true);
+      if (!image) image = await load(url, false);
+      if (cancelled) return;
+      if (!image) { setFailed(true); return; }
+      setFailed(false);
+      setDisplay(source);
+      setImg(image);
+      setZoom(1);
+      setOffset({ x: 0, y: 0 });
+    })();
+
+    return () => { cancelled = true; if (created) URL.revokeObjectURL(created); };
   }, [url]);
 
   const commit = async () => {
@@ -90,7 +128,7 @@ export function ImageCropper({
           <button onClick={onCancel} className="rounded-full px-2 text-sm text-muted-foreground hover:bg-accent">✕</button>
         </div>
         {failed ? (
-          <p className="text-xs text-muted-foreground">This image can’t be cropped in the browser. Upload a new file to crop it.</p>
+          <p className="text-xs text-muted-foreground">This picture could not be opened. Choose the file again to crop it.</p>
         ) : (
           <>
             <div
@@ -102,9 +140,9 @@ export function ImageCropper({
                onPointerUp={(e) => { drag.current = null; e.currentTarget.releasePointerCapture(e.pointerId); }}
                onPointerCancel={() => { drag.current = null; }}
             >
-              {url && (
+              {(display ?? url) && (
                 <img
-                  src={url}
+                  src={display ?? url ?? ""}
                   alt=""
                   draggable={false}
                   className="pointer-events-none absolute left-1/2 top-1/2 max-w-none select-none"
@@ -124,8 +162,8 @@ export function ImageCropper({
         )}
         {error && <p className="mt-3 text-xs text-destructive">{error}</p>}
         <div className="mt-4 flex justify-end gap-2">
-          <button className="inline-flex h-9 items-center rounded-full border border-border px-3 text-xs font-medium" onClick={onCancel}>Cancel</button>
-          {!failed && <button disabled={busy || !img} className="inline-flex h-9 items-center rounded-full bg-primary px-4 text-xs font-semibold text-primary-foreground disabled:opacity-60" onClick={commit}>{busy ? "Saving…" : "Use crop"}</button>}
+          <button className="inline-flex h-9 items-center rounded-full border border-border px-3 text-xs font-medium" onClick={onCancel}>{cancelLabel}</button>
+          {!failed && <button disabled={busy || !img} className="inline-flex h-9 items-center rounded-full bg-primary px-4 text-xs font-semibold text-primary-foreground disabled:opacity-60" onClick={commit}>{busy ? "Saving…" : img ? "Use crop" : "Loading…"}</button>}
         </div>
       </div>
     </div>

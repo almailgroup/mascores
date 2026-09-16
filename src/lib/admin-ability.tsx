@@ -5,9 +5,11 @@ export type AdminAbility = {
   isOwner: boolean;
   /** True when this person's additions and removals must be looked at first. */
   needsApproval: boolean;
+  /** Competitions this person may manage. Empty means every competition. */
+  competitionIds: string[];
 };
 
-const Ctx = createContext<AdminAbility>({ isOwner: false, needsApproval: false });
+const Ctx = createContext<AdminAbility>({ isOwner: false, needsApproval: false, competitionIds: [] });
 
 export function AdminAbilityProvider({ value, children }: { value: AdminAbility; children: ReactNode }) {
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

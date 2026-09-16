@@ -145,7 +145,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
   }
 
   return (
-    <AdminAbilityProvider value={{ isOwner, needsApproval: ticketsNeedApproval }}>
+    <AdminAbilityProvider value={{ isOwner, needsApproval: ticketsNeedApproval, competitionIds: isOwner ? [] : (access.data?.competitionIds ?? []) }}>
     <AppShell bare={!!openComp}>
       {openComp ? (
         <div>

@@ -103,10 +103,14 @@ export function StandingsPanel({ competitionId, season = null }: { competitionId
     invalidate();
   };
 
-  const addGroup = async () => {
-    const name = window.prompt("Group name (e.g. Group A)");
-    if (!name?.trim()) return;
+  /** Asked for in the app itself — a browser pop-up is blocked inside the app frame. */
+  const [groupName, setGroupName] = useState<string | null>(null);
+  const [groupBusy, setGroupBusy] = useState(false);
+
+  const addGroup = async (name: string) => {
     const label = name.trim();
+    if (!label) return;
+    setGroupBusy(true);
     // The first group takes over the un-grouped table; later groups start empty and teams are moved into them.
     if (groups.length === 1 && groups[0] === SINGLE && rows.length > 0) {
       let update = supabase.from("standings_rows").update({ group_label: label }).eq("competition_id", competitionId).is("group_label", null);
@@ -114,6 +118,8 @@ export function StandingsPanel({ competitionId, season = null }: { competitionId
       await update;
     }
     setPendingGroups((g) => (g.includes(label) ? g : [...g, label]));
+    setGroupBusy(false);
+    setGroupName(null);
     invalidate();
   };
 
@@ -158,7 +164,7 @@ export function StandingsPanel({ competitionId, season = null }: { competitionId
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-base font-bold">Standings</h3>
         <div className="flex flex-wrap gap-2">
-          <button className={btnGhost} onClick={addGroup}><Plus className="h-3.5 w-3.5" /> Add group</button>
+          <button className={btnGhost} onClick={() => setGroupName("")}><Plus className="h-3.5 w-3.5" /> Add group</button>
           {allGroups.some((g) => g !== SINGLE) && <button className={btnGhost} onClick={toSingleTable}>Single table</button>}
         </div>
       </div>
@@ -194,6 +200,25 @@ export function StandingsPanel({ competitionId, season = null }: { competitionId
         P/W/D/L/GF/GA/Pts are computed from finished matches. Drag a team to move it up or down. Labels stay attached to the
         position (1st place, 2nd place…), not to the team.
       </p>
+
+      <Modal open={groupName !== null} onClose={() => setGroupName(null)} title="Add a group">
+        <Field label="Group name">
+          <input
+            autoFocus
+            className={inputCls}
+            placeholder="Group A"
+            value={groupName ?? ""}
+            onChange={(e) => setGroupName(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter" && groupName?.trim()) addGroup(groupName); }}
+          />
+        </Field>
+        <p className="mt-2 text-[0.65rem] text-muted-foreground">The first group takes the teams already in the table. Later groups start empty — use “Add teams” inside the group to move clubs across.</p>
+        <div className="mt-4 flex justify-end gap-2">
+          <button className={btnGhost} onClick={() => setGroupName(null)}>Cancel</button>
+          <button className={btnPrimary} disabled={groupBusy || !groupName?.trim()} onClick={() => addGroup(groupName ?? "")}>{groupBusy ? "Adding…" : "Add group"}</button>
+        </div>
+      </Modal>
+
 
       {addTo && (
         <GroupTeamsModal
