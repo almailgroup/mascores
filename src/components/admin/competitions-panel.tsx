@@ -17,7 +17,7 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
   const [form, setForm] = useState<Form>(empty);
   const [search, setSearch] = useState("");
   const [scope, setScope] = useState<"all" | "national" | "continental" | "regional" | "international">("all");
-  const { isOwner } = useAdminAbility();
+  const { isOwner, competitionIds } = useAdminAbility();
   const [deleteComp, setDeleteComp] = useState<Competition | null>(null);
 
   const q = useQuery({
@@ -59,7 +59,10 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
   };
 
   const term = search.trim().toLowerCase();
+  // A helper the owner tied to certain competitions only ever sees those.
+  const limited = competitionIds.length > 0;
   const visible = (q.data ?? []).filter((c) =>
+    (!limited || competitionIds.includes(c.id)) &&
     (scope === "all" || (c.scope ?? "national") === scope) &&
     (!term || c.name.toLowerCase().includes(term) || (c.country ?? "").toLowerCase().includes(term)),
   );
@@ -68,10 +71,13 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
     <div>
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-bold">Competitions</h2>
-        <button className={btnPrimary} onClick={() => { setForm(empty); setOpen(true); }}>
-          <Plus className="h-3.5 w-3.5" /> New competition
-        </button>
+        {!limited && (
+          <button className={btnPrimary} onClick={() => { setForm(empty); setOpen(true); }}>
+            <Plus className="h-3.5 w-3.5" /> New competition
+          </button>
+        )}
       </div>
+      {limited && <p className="mb-3 rounded-xl border border-border bg-card p-3 text-xs text-muted-foreground">You can manage only the competitions the site owner chose for you.</p>}
 
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <input className={`${inputCls} max-w-56`} placeholder="Search competitions" value={search} onChange={(e) => setSearch(e.target.value)} />
