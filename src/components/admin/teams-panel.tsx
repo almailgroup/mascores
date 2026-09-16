@@ -281,15 +281,57 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
       </Modal>
 
       <Modal open={libraryOpen} onClose={() => setLibraryOpen(false)} title="Add an existing team">
-        <Field label="Saved team"><select className={inputCls} value={libraryTeamId} onChange={(e) => setLibraryTeamId(e.target.value)}><option value="">Choose a team</option>{(libraryQ.data ?? []).filter((team) => !(q.data ?? []).some((current) => current.id === team.id)).filter((team) => libraryAll || eligible(team)).map((team) => <option key={team.id} value={team.id}>{team.name}{team.country ? ` · ${team.country}` : ""}</option>)}</select></Field>
-        {competition && (
-          <label className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-            <input type="checkbox" className="h-4 w-4" checked={libraryAll} onChange={(e) => setLibraryAll(e.target.checked)} />
-            Show every team in the world (off shows only {competition.is_national ? "national teams" : "teams"} from {competition.country ?? "this competition's country"})
-          </label>
-        )}
-        <div className="mt-4 flex justify-end gap-2"><button className={btnGhost} onClick={() => setLibraryOpen(false)}>Cancel</button><button className={btnPrimary} disabled={!libraryTeamId} onClick={async () => { await supabase.from("competition_teams").insert({ competition_id: competitionId, team_id: libraryTeamId, season } as never); setLibraryTeamId(""); setLibraryOpen(false); qc.invalidateQueries({ queryKey: ["admin", "teams", competitionId] }); qc.invalidateQueries({ queryKey: ["admin", "standings", competitionId] }); }}>Add to competition</button></div>
+        {(() => {
+          const pool = (libraryQ.data ?? [])
+            .filter((team) => !(q.data ?? []).some((current) => current.id === team.id))
+            .filter((team) => libraryAll || eligible(team));
+          const countries = [...new Set(pool.map((team) => team.country).filter(Boolean) as string[])].sort((a, b) => a.localeCompare(b));
+          const needle = librarySearch.trim().toLowerCase();
+          const results = pool
+            .filter((team) => (!libraryCountry ? true : team.country === libraryCountry))
+            .filter((team) => (!needle ? true : `${team.name} ${team.short_name ?? ""} ${team.country ?? ""}`.toLowerCase().includes(needle)))
+            .slice(0, 120);
+          return (
+            <>
+              <div className="flex flex-wrap gap-2">
+                <input className={`${inputCls} min-w-40 flex-1`} placeholder="Search teams…" value={librarySearch} onChange={(e) => setLibrarySearch(e.target.value)} />
+                <select className={`${inputCls} max-w-44`} value={libraryCountry} onChange={(e) => setLibraryCountry(e.target.value)}>
+                  <option value="">All countries</option>
+                  {countries.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              {competition && (
+                <label className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                  <input type="checkbox" className="h-4 w-4" checked={libraryAll} onChange={(e) => setLibraryAll(e.target.checked)} />
+                  Show every team in the world (off shows only {competition.is_national ? "national teams" : "teams"} from {competition.country ?? "this competition's country"})
+                </label>
+              )}
+              <div className="mt-3 max-h-72 space-y-1 overflow-y-auto rounded-xl border border-border p-1">
+                {results.map((team) => (
+                  <button key={team.id} type="button" onClick={() => setLibraryTeamId(team.id)}
+                    className={`flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm ${libraryTeamId === team.id ? "bg-primary/10 font-semibold text-primary" : "hover:bg-accent"}`}>
+                    <TeamCrest name={team.name} logo={team.logo_url} className="h-7 w-7 shrink-0" />
+                    <span className="min-w-0 flex-1"><span className="block truncate">{team.name}</span>{team.country && <span className="block truncate text-xs text-muted-foreground">{team.country}</span>}</span>
+                  </button>
+                ))}
+                {results.length === 0 && <p className="p-3 text-xs text-muted-foreground">No matching team.</p>}
+              </div>
+            </>
+          );
+        })()}
+        <div className="mt-4 flex justify-end gap-2"><button className={btnGhost} onClick={() => setLibraryOpen(false)}>Cancel</button><button className={btnPrimary} disabled={!libraryTeamId} onClick={async () => { await supabase.from("competition_teams").insert({ competition_id: competitionId, team_id: libraryTeamId, season } as never); setLibraryTeamId(""); setLibrarySearch(""); setLibraryCountry(""); setLibraryOpen(false); qc.invalidateQueries({ queryKey: ["admin", "teams", competitionId] }); qc.invalidateQueries({ queryKey: ["admin", "standings", competitionId] }); }}>Add to competition</button></div>
       </Modal>
+
+      <Modal open={!!unlinkTeam} onClose={() => setUnlinkTeam(null)} title="Remove from this competition">
+        <p className="text-sm text-muted-foreground">
+          Take <strong className="text-foreground">{unlinkTeam?.name}</strong> out of {competition?.name ?? "this competition"}{season ? ` for ${season}` : ""}? Its table row goes too. The club itself and its matches stay saved.
+        </p>
+        <div className="mt-4 flex justify-end gap-2">
+          <button className={btnGhost} onClick={() => setUnlinkTeam(null)}>Keep it</button>
+          <button className={btnDanger} onClick={async () => { const t = unlinkTeam!; setUnlinkTeam(null); await removeFromCompetition(t.id); }}>Remove team</button>
+        </div>
+      </Modal>
+
 
       {squadOf && (pastSeason
         ? <SeasonSquadModal team={squadOf} season={pastSeason} onClose={() => setSquadOf(null)} />
