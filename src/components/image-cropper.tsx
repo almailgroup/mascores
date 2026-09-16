@@ -126,7 +126,7 @@ export function ImageCropper({
           <button onClick={onCancel} className="rounded-full px-2 text-sm text-muted-foreground hover:bg-accent">✕</button>
         </div>
         {failed ? (
-          <p className="text-xs text-muted-foreground">This image can’t be cropped in the browser. Upload a new file to crop it.</p>
+          <p className="text-xs text-muted-foreground">This picture could not be opened. Choose the file again to crop it.</p>
         ) : (
           <>
             <div
@@ -138,9 +138,9 @@ export function ImageCropper({
                onPointerUp={(e) => { drag.current = null; e.currentTarget.releasePointerCapture(e.pointerId); }}
                onPointerCancel={() => { drag.current = null; }}
             >
-              {url && (
+              {(display ?? url) && (
                 <img
-                  src={url}
+                  src={display ?? url ?? ""}
                   alt=""
                   draggable={false}
                   className="pointer-events-none absolute left-1/2 top-1/2 max-w-none select-none"
