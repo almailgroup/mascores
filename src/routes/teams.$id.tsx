@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { MediaGallery } from "@/components/media-gallery";
 import { AppShell, BackButton, EmptyState, LoadingSkeleton, SwipeTabs } from "@/components/app-shell";
@@ -13,7 +13,7 @@ import { PlayerAvatar } from "@/components/player-avatar";
 import { SocialLinksSection } from "@/components/social-links";
 import { LinkedNews } from "@/components/linked-news";
 import { ArrowRight, Landmark, CalendarClock, Crown, Trophy, Users, Phone, Mail, Globe } from "lucide-react";
-import { MatchRow, type MatchWithTeams } from "@/components/match-list";
+import { MatchGroups, MatchRow, type MatchWithTeams } from "@/components/match-list";
 import { type NationalPlayer, fetchNationalSquad } from "@/lib/national";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
 import { TeamStats, type TeamComp } from "@/components/team-stats";
@@ -156,35 +156,9 @@ function TeamPage() {
 
 
       {tab === "matches" && (
-        matches.data && matches.data.length > 0 ? (
-          <div className="space-y-3">
-            {[...matches.data.reduce((map, m) => {
-              const key = m.competition?.slug ?? "other";
-              map.set(key, [...(map.get(key) ?? []), m]);
-              return map;
-            }, new Map<string, MatchWithTeams[]>()).values()].map((ms) => (
-              <div key={ms[0].competition?.slug ?? "other"} className="overflow-hidden rounded-2xl border border-border bg-card">
-                {ms[0].competition ? (
-                  <Link to="/competitions/$slug" params={{ slug: ms[0].competition.slug }} className="flex items-center gap-2.5 border-b border-border px-4 py-3 hover:bg-accent">
-                    {ms[0].competition.logo_url ? <img src={ms[0].competition.logo_url} alt="" className="h-7 w-7 shrink-0 object-contain" /> : null}
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-bold">{tx(ms[0].competition.name)}</span>
-                      {ms[0].competition.country ? (
-                        <span className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
-                          <FlagIcon value={ms[0].competition.country_code ?? ms[0].competition.country} />
-                          <span className="truncate">{tx(ms[0].competition.country)}</span>
-                        </span>
-                      ) : null}
-                    </span>
-                  </Link>
-                ) : null}
-                <div className="divide-y divide-border">
-                  {ms.map((m) => <MatchRow key={m.id} m={m} highlightTeamId={id} />)}
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : <EmptyState title={tx("No matches yet")} />
+        matches.data && matches.data.length > 0
+          ? <TeamMatches data={matches.data} teamId={id} nextId={upcoming[0]?.id ?? null} />
+          : <EmptyState title={tx("No matches yet")} />
       )}
 
       {tab === "standings" && (
@@ -588,4 +562,18 @@ function TeamNewsTeaser({ teamId, onMore }: { teamId: string; onMore: () => void
       </button>
     </section>
   );
+}
+
+/**
+ * Club fixtures grouped by competition (and group) in date order. Opening the tab
+ * jumps straight to the next upcoming match, so past games are just a scroll away.
+ */
+function TeamMatches({ data, teamId, nextId }: { data: MatchWithTeams[]; teamId: string; nextId: string | null }) {
+  const box = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!nextId || !box.current) return;
+    const row = box.current.querySelector(`a[href*="/matches/${nextId}"]`);
+    row?.scrollIntoView({ block: "center" });
+  }, [nextId]);
+  return <div ref={box}><MatchGroups data={data} highlightTeamId={teamId} /></div>;
 }
