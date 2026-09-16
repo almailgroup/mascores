@@ -48,27 +48,25 @@ export function useMatchGroupLabels(data: MatchWithTeams[]) {
   };
 }
 
-/** Keeps the list in date order: a new card starts whenever the competition/group changes. */
-function runs(data: MatchWithTeams[], groupOf: (m: MatchWithTeams) => string | null) {
-  const out: { key: string; group: string | null; matches: MatchWithTeams[] }[] = [];
+/** Keeps the list in date order: a new card only starts when the competition changes. */
+function runs(data: MatchWithTeams[]) {
+  const out: { key: string; matches: MatchWithTeams[] }[] = [];
   data.forEach((m, index) => {
-    const group = groupOf(m);
-    const key = `${m.competition?.slug ?? "other"}|${group ?? ""}`;
+    const key = m.competition?.slug ?? "other";
     const last = out[out.length - 1];
-    if (last && last.key === key) last.matches.push(m);
-    else out.push({ key: `${key}|${index}`, group, matches: [m] });
+    if (last && last.matches[0].competition?.slug === m.competition?.slug) last.matches.push(m);
+    else out.push({ key: `${key}|${index}`, matches: [m] });
   });
   return out;
 }
 
 /** Sofascore-style grouped list: one card per competition run, compact rows inside. */
 export function MatchGroups({ data, highlightTeamId }: { data: MatchWithTeams[]; highlightTeamId?: string }) {
-  const groupOf = useMatchGroupLabels(data);
   return (
     <div className="space-y-3">
-      {runs(data, groupOf).map((run) => (
+      {runs(data).map((run) => (
         <div key={run.key} className="overflow-hidden rounded-2xl border border-border bg-card">
-          <CompHeader m={run.matches[0]} group={run.group} />
+          <CompHeader m={run.matches[0]} />
           <div className="divide-y divide-border">
             {run.matches.map((m) => <MatchRow key={m.id} m={m} highlightTeamId={highlightTeamId} />)}
           </div>
