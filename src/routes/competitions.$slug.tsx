@@ -416,12 +416,12 @@ function CompetitionMatches({ data }: { data: MatchWithTeams[] }) {
   const tx = useTx();
   const num = useNum();
   const groupOf = useMatchGroupLabels(data);
-  const buckets = new Map<string, { key: string; round: string; group: string | null; matches: MatchWithTeams[]; order: number; started: number }>();
+  const buckets = new Map<string, { key: string; round: string; group: string | null; matches: MatchWithTeams[]; order: number }>();
   data.forEach((m) => {
     const round = m.round_number ? `#${m.round_number}` : (m.round ?? "");
     const group = groupOf(m);
     const key = `${round}|${group ?? ""}`;
-    const bucket = buckets.get(key) ?? { key, round, group, matches: [], order: buckets.size, started: new Date(m.kickoff_at).getTime() };
+    const bucket = buckets.get(key) ?? { key, round, group, matches: [], order: buckets.size };
     bucket.matches.push(m);
     buckets.set(key, bucket);
   });
@@ -433,7 +433,8 @@ function CompetitionMatches({ data }: { data: MatchWithTeams[] }) {
     const ra = a.round.startsWith("#") ? Number(a.round.slice(1)) : null;
     const rb = b.round.startsWith("#") ? Number(b.round.slice(1)) : null;
     if (ra != null && rb != null && ra !== rb) return ra - rb;
-    return a.started - b.started || a.order - b.order;
+    // The list arrives in date order, so the first card seen keeps its place.
+    return a.order - b.order;
   });
   return (
     <div className="space-y-3">
