@@ -189,6 +189,7 @@ export const setManagedScopes = createServerFn({ method: "POST" })
     if (stale.length) await admin.from("admin_grants").delete().in("id", stale);
     // Keep the approval setting the same across everything they hold.
     await admin.from("admin_grants").update({ requires_approval: data.requiresApproval }).eq("user_id", data.userId);
+    await syncCompetitionAccess(admin, data.userId, data.competitionIds ?? [], context.userId);
     return { ok: true as const };
   });
 
