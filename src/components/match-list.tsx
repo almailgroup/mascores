@@ -14,20 +14,61 @@ export type MatchWithTeams = Match & {
   competition: { slug: string; name: string; logo_url: string | null; country?: string | null; country_code?: string | null } | null;
 };
 
-/** Sofascore-style grouped list: one card per competition, compact rows inside. */
-export function MatchGroups({ data }: { data: MatchWithTeams[] }) {
-  const groups = new Map<string, MatchWithTeams[]>();
-  for (const m of data) {
-    const key = m.competition?.slug ?? "other";
-    groups.set(key, [...(groups.get(key) ?? []), m]);
-  }
+/**
+ * Group labels ("Group B") for the competitions in a list, taken from the
+ * standings rows so a match card can say "League, Group B" like the reference apps.
+ */
+export function useMatchGroupLabels(data: MatchWithTeams[]) {
+  const compIds = [...new Set(data.map((m) => m.competition_id).filter(Boolean))].sort();
+  const q = useQuery({
+    enabled: compIds.length > 0,
+    queryKey: ["match-group-labels", compIds.join(",")],
+    queryFn: async () => {
+      const { data: rows } = await supabase.from("standings_rows")
+        .select("competition_id,team_id,season,group_label").in("competition_id", compIds);
+      const map: Record<string, string> = {};
+      for (const row of rows ?? []) {
+        if (!row.group_label) continue;
+        map[`${row.competition_id}|${row.season ?? ""}|${row.team_id}`] = row.group_label;
+      }
+      return map;
+    },
+  });
+  const map = q.data ?? {};
+  return (m: MatchWithTeams) => {
+    const season = m.season ?? "";
+    for (const teamId of [m.home_team_id, m.away_team_id]) {
+      if (!teamId) continue;
+      const hit = map[`${m.competition_id}|${season}|${teamId}`] ?? map[`${m.competition_id}||${teamId}`];
+      if (hit) return hit;
+    }
+    return null;
+  };
+}
+
+/** Keeps the list in date order: a new card starts whenever the competition/group changes. */
+function runs(data: MatchWithTeams[], groupOf: (m: MatchWithTeams) => string | null) {
+  const out: { key: string; group: string | null; matches: MatchWithTeams[] }[] = [];
+  data.forEach((m, index) => {
+    const group = groupOf(m);
+    const key = `${m.competition?.slug ?? "other"}|${group ?? ""}`;
+    const last = out[out.length - 1];
+    if (last && last.key === key) last.matches.push(m);
+    else out.push({ key: `${key}|${index}`, group, matches: [m] });
+  });
+  return out;
+}
+
+/** Sofascore-style grouped list: one card per competition run, compact rows inside. */
+export function MatchGroups({ data, highlightTeamId }: { data: MatchWithTeams[]; highlightTeamId?: string }) {
+  const groupOf = useMatchGroupLabels(data);
   return (
     <div className="space-y-3">
-      {[...groups.values()].map((ms) => (
-        <div key={ms[0].competition?.slug ?? "other"} className="overflow-hidden rounded-2xl border border-border bg-card">
-          <CompHeader m={ms[0]} />
+      {runs(data, groupOf).map((run) => (
+        <div key={run.key} className="overflow-hidden rounded-2xl border border-border bg-card">
+          <CompHeader m={run.matches[0]} group={run.group} />
           <div className="divide-y divide-border">
-            {ms.map((m) => <MatchRow key={m.id} m={m} />)}
+            {run.matches.map((m) => <MatchRow key={m.id} m={m} highlightTeamId={highlightTeamId} />)}
           </div>
         </div>
       ))}
@@ -35,14 +76,15 @@ export function MatchGroups({ data }: { data: MatchWithTeams[] }) {
   );
 }
 
-function CompHeader({ m }: { m: MatchWithTeams }) {
+export function CompHeader({ m, group }: { m: MatchWithTeams; group?: string | null }) {
   const tx = useTx();
   const c = m.competition;
+  const name = [tx(c?.name) ?? tx("Matches"), group ? tx(group) : null].filter(Boolean).join(", ");
   const inner = (
     <>
       {c?.logo_url ? <img src={c.logo_url} alt="" className="h-7 w-7 shrink-0 object-contain" /> : <Trophy className="h-6 w-6 shrink-0 text-primary" />}
       <span className="min-w-0">
-        <span className="block truncate text-sm font-bold">{tx(c?.name) ?? tx("Matches")}</span>
+        <span className="block truncate text-sm font-bold">{name}</span>
         {c?.country ? (
           <span className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
             <FlagIcon value={c.country_code ?? c.country} />
