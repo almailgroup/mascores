@@ -324,7 +324,7 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
 
       <Modal open={!!unlinkTeam} onClose={() => setUnlinkTeam(null)} title="Remove from this competition">
         <p className="text-sm text-muted-foreground">
-          Take <strong className="text-foreground">{unlinkTeam?.name}</strong> out of {competition?.name ?? "this competition"}{season ? ` for ${season}` : ""}? Its table row goes too. The club itself and its matches stay saved.
+          Take <strong className="text-foreground">{unlinkTeam?.name}</strong> out of this competition{season ? ` for ${season}` : ""}? Its table row goes too. The club itself and its matches stay saved.
         </p>
         <div className="mt-4 flex justify-end gap-2">
           <button className={btnGhost} onClick={() => setUnlinkTeam(null)}>Keep it</button>
