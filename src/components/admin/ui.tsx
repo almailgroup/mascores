@@ -81,6 +81,7 @@ export function ImageInput({ value, onChange, onFile, placeholder, aspect = 1 }:
         <ImageCropper
           file={pending}
           aspect={aspect}
+          cancelLabel="Skip crop"
           onCancel={async () => { const original = pending; setPending(null); if (original) await finish(original); }}
           onDone={async (f) => { setPending(null); await finish(f); }}
         />
