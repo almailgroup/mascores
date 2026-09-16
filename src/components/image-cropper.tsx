@@ -8,12 +8,14 @@ export function ImageCropper({
   file,
   src,
   aspect = 1,
+  cancelLabel = "Cancel",
   onCancel,
   onDone,
 }: {
   file?: File | null;
   src?: string | null;
   aspect?: number;
+  cancelLabel?: string;
   onCancel: () => void;
   onDone: (file: File) => void | Promise<void>;
 }) {
