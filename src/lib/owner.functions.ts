@@ -264,9 +264,14 @@ export const myAccess = createServerFn({ method: "GET" })
     const claims = context.claims as Record<string, unknown>;
     const email = typeof claims?.email === "string" ? claims.email.toLowerCase() : "";
     const isOwner = email === OWNER_EMAIL;
-    const { data } = await context.supabase.from("admin_grants").select("scope,team_id,requires_approval");
+    const [{ data }, { data: comps }] = await Promise.all([
+      context.supabase.from("admin_grants").select("scope,team_id,requires_approval"),
+      context.supabase.from("admin_competition_access").select("competition_id").eq("user_id", context.userId),
+    ]);
     return {
       isOwner,
       grants: (data ?? []).map((g) => ({ scope: g.scope as GrantScope, teamId: g.team_id, requiresApproval: g.requires_approval })),
+      /** Empty means no restriction. */
+      competitionIds: (comps ?? []).map((c) => c.competition_id),
     };
   });
