@@ -164,7 +164,7 @@ export function StandingsPanel({ competitionId, season = null }: { competitionId
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-base font-bold">Standings</h3>
         <div className="flex flex-wrap gap-2">
-          <button className={btnGhost} onClick={addGroup}><Plus className="h-3.5 w-3.5" /> Add group</button>
+          <button className={btnGhost} onClick={() => setGroupName("")}><Plus className="h-3.5 w-3.5" /> Add group</button>
           {allGroups.some((g) => g !== SINGLE) && <button className={btnGhost} onClick={toSingleTable}>Single table</button>}
         </div>
       </div>
