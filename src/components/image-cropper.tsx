@@ -18,6 +18,7 @@ export function ImageCropper({
   onDone: (file: File) => void | Promise<void>;
 }) {
   const [url, setUrl] = useState<string | null>(null);
+  const [display, setDisplay] = useState<string | null>(null);
   const [img, setImg] = useState<HTMLImageElement | null>(null);
   const [zoom, setZoom] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -38,12 +39,47 @@ export function ImageCropper({
   }, [file, src]);
 
   useEffect(() => {
-    if (!url) return;
-    const image = new Image();
-    image.crossOrigin = "anonymous";
-    image.onload = () => { setImg(image); setZoom(1); setOffset({ x: 0, y: 0 }); };
-    image.onerror = () => setFailed(true);
-    image.src = url;
+    if (!url) return undefined;
+    let cancelled = false;
+    let created: string | null = null;
+
+    const load = (source: string, anonymous: boolean) =>
+      new Promise<HTMLImageElement | null>((resolve) => {
+        const image = new Image();
+        if (anonymous) image.crossOrigin = "anonymous";
+        image.onload = () => resolve(image);
+        image.onerror = () => resolve(null);
+        image.src = source;
+      });
+
+    (async () => {
+      // A picture already saved online is copied into the browser first, so
+      // saving the crop always works instead of being blocked.
+      let source = url;
+      if (!/^(blob:|data:)/.test(url)) {
+        try {
+          const res = await fetch(url, { mode: "cors", cache: "no-store" });
+          if (res.ok) {
+            source = URL.createObjectURL(await res.blob());
+            created = source;
+          }
+        } catch {
+          source = url;
+        }
+      }
+      let image = await load(source, source !== url ? false : true);
+      if (!image && source !== url) image = await load(url, true);
+      if (!image) image = await load(url, false);
+      if (cancelled) return;
+      if (!image) { setFailed(true); return; }
+      setFailed(false);
+      setDisplay(source);
+      setImg(image);
+      setZoom(1);
+      setOffset({ x: 0, y: 0 });
+    })();
+
+    return () => { cancelled = true; if (created) URL.revokeObjectURL(created); };
   }, [url]);
 
   const commit = async () => {
