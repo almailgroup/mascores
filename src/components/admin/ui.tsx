@@ -56,6 +56,7 @@ export function Modal({ open, onClose, title, children, wide, fullPage }: { open
 
 export function ImageInput({ value, onChange, onFile, placeholder, aspect = 1 }: { value: string | null; onChange: (v: string | null) => void; onFile: (f: File) => Promise<void>; placeholder?: string; aspect?: number }) {
   const [cropExisting, setCropExisting] = useState(false);
+  const [pending, setPending] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const finish = async (file: File) => {
@@ -71,10 +72,19 @@ export function ImageInput({ value, onChange, onFile, placeholder, aspect = 1 }:
       </div>
        <label className="inline-flex h-10 cursor-pointer items-center rounded-full border border-border bg-background px-3 text-xs font-medium">
          {uploading ? "Uploading…" : "Choose image"}
-         <input type="file" accept="image/*" disabled={uploading} onChange={async (e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) await finish(f); }} className="sr-only" />
+         <input type="file" accept="image/*" disabled={uploading} onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) setPending(f); }} className="sr-only" />
        </label>
       {value && <button type="button" onClick={() => setCropExisting(true)} className="text-xs font-semibold text-primary">Crop</button>}
       {value && <button type="button" onClick={() => onChange(null)} className="text-xs text-muted-foreground hover:text-destructive">{placeholder ?? "Clear"}</button>}
+      {/* A freshly chosen picture opens the crop box first; skipping it keeps the original. */}
+      {pending && (
+        <ImageCropper
+          file={pending}
+          aspect={aspect}
+          onCancel={async () => { const original = pending; setPending(null); if (original) await finish(original); }}
+          onDone={async (f) => { setPending(null); await finish(f); }}
+        />
+      )}
       {cropExisting && value && (
          <ImageCropper src={value} aspect={aspect} onCancel={() => setCropExisting(false)} onDone={async (f) => { await finish(f); setCropExisting(false); }} />
       )}

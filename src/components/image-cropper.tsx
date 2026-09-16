@@ -161,7 +161,7 @@ export function ImageCropper({
         {error && <p className="mt-3 text-xs text-destructive">{error}</p>}
         <div className="mt-4 flex justify-end gap-2">
           <button className="inline-flex h-9 items-center rounded-full border border-border px-3 text-xs font-medium" onClick={onCancel}>Cancel</button>
-          {!failed && <button disabled={busy || !img} className="inline-flex h-9 items-center rounded-full bg-primary px-4 text-xs font-semibold text-primary-foreground disabled:opacity-60" onClick={commit}>{busy ? "Saving…" : "Use crop"}</button>}
+          {!failed && <button disabled={busy || !img} className="inline-flex h-9 items-center rounded-full bg-primary px-4 text-xs font-semibold text-primary-foreground disabled:opacity-60" onClick={commit}>{busy ? "Saving…" : img ? "Use crop" : "Loading…"}</button>}
         </div>
       </div>
     </div>
