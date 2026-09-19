@@ -13,7 +13,6 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { ThemeProvider } from "../components/theme-provider";
 import { IntroSplash } from "../components/intro-splash";
-import { InstallPrompt } from "../components/install-prompt";
 import { initNativePush } from "../lib/native-push";
 import { I18nProvider } from "../lib/i18n";
 import { CurrencyProvider } from "../lib/currency";
@@ -161,7 +160,6 @@ function RootComponent() {
               <AutoTranslateProvider>
                 <IntroSplash />
                 <LanguageReadyGate><Outlet /></LanguageReadyGate>
-                <InstallPrompt />
               </AutoTranslateProvider>
             </HeightUnitProvider>
           </CurrencyProvider>
