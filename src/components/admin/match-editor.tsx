@@ -1031,3 +1031,19 @@ function EventForm({
 
 
 export { btnDanger };
+/** Players for both sides of a match; national teams use their call-ups (club players keep their club). */
+async function loadMatchPlayers(teamIds: string[], teams: { id: string; is_national?: boolean | null }[]): Promise<Player[]> {
+  const { data } = await supabase.from("players").select("*").in("team_id", teamIds);
+  const clubPlayers = (data ?? []) as Player[];
+  const nationalIds = teamIds.filter((id) => teams.find((t) => t.id === id)?.is_national);
+  if (nationalIds.length === 0) return clubPlayers;
+  const calls = await fetchCallUps(nationalIds);
+  const { data: called } = calls.length
+    ? await supabase.from("players").select("*").in("id", calls.map((c) => c.player_id))
+    : { data: [] as Player[] };
+  const nationals = calls.flatMap((call) => {
+    const player = (called ?? []).find((p) => p.id === call.player_id) as Player | undefined;
+    return player ? [{ ...applyCallUp(player, call), team_id: call.team_id }] : [];
+  });
+  return [...clubPlayers.filter((p) => !nationalIds.includes(p.team_id ?? "")), ...nationals] as Player[];
+}
