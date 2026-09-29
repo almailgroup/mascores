@@ -82,15 +82,21 @@ export async function fetchCompetitionStats(competitionId: string, season: strin
     if (m.away_team_id) teamIds.add(m.away_team_id);
   }
 
-  const [playersRes, teamsRes] = await Promise.all([
+  const [playersRes, teamsRes, callUpsRes] = await Promise.all([
     playerIds.size
       ? supabase.from("players").select("id,name,photo_url,team_id").in("id", [...playerIds])
       : Promise.resolve({ data: [] as { id: string; name: string; photo_url: string | null; team_id: string | null }[] }),
     teamIds.size
       ? supabase.from("teams").select("id,name,logo_url").in("id", [...teamIds])
       : Promise.resolve({ data: [] as { id: string; name: string; logo_url: string | null }[] }),
+    teamIds.size && playerIds.size
+      ? supabase.from("national_team_players").select("team_id,player_id,photo_url").in("team_id", [...teamIds]).in("player_id", [...playerIds])
+      : Promise.resolve({ data: [] as { team_id: string; player_id: string; photo_url: string | null }[] }),
   ]);
   const teamById = new Map((teamsRes.data ?? []).map((t) => [t.id, t]));
+  const nationalPhotoByPlayerTeam = new Map(
+    (callUpsRes.data ?? []).map((callUp) => [`${callUp.team_id}:${callUp.player_id}`, callUp.photo_url]),
+  );
 
   // Which team each player represented in this competition (from lineups, falling back to his club).
   const playerTeam = new Map<string, string>();
@@ -148,10 +154,11 @@ export async function fetchCompetitionStats(competitionId: string, season: strin
   const players: PlayerStat[] = (playersRes.data ?? []).map((p) => {
     const teamId = playerTeam.get(p.id) ?? p.team_id ?? null;
     const team = teamId ? teamById.get(teamId) : undefined;
+    const nationalPhoto = teamId ? nationalPhotoByPlayerTeam.get(`${teamId}:${p.id}`) : null;
     return {
       player_id: p.id,
       name: p.name,
-      photo_url: p.photo_url,
+      photo_url: nationalPhoto ?? p.photo_url,
       team_id: teamId,
       team_name: team?.name ?? null,
       team_logo: team?.logo_url ?? null,
