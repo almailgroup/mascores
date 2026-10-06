@@ -11,11 +11,13 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TransfersRouteImport } from './routes/transfers'
 import { Route as TicketsRouteImport } from './routes/tickets'
+import { Route as SupportRouteImport } from './routes/support'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SecretadminsafhaRouteImport } from './routes/secretadminsafha'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as ScannerRouteImport } from './routes/scanner'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as PrivacypolicyRouteImport } from './routes/privacypolicy'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as ContributeRouteImport } from './routes/contribute'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -44,6 +46,11 @@ const TicketsRoute = TicketsRouteImport.update({
   path: '/tickets',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SupportRoute = SupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -67,6 +74,11 @@ const ScannerRoute = ScannerRouteImport.update({
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacypolicyRoute = PrivacypolicyRouteImport.update({
+  id: '/privacypolicy',
+  path: '/privacypolicy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FavoritesRoute = FavoritesRouteImport.update({
@@ -161,11 +173,13 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/contribute': typeof ContributeRoute
   '/favorites': typeof FavoritesRoute
+  '/privacypolicy': typeof PrivacypolicyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/scanner': typeof ScannerRoute
   '/search': typeof SearchRoute
   '/secretadminsafha': typeof SecretadminsafhaRoute
   '/settings': typeof SettingsRoute
+  '/support': typeof SupportRoute
   '/tickets': typeof TicketsRoute
   '/transfers': typeof TransfersRoute
   '/coaches/$id': typeof CoachesIdRoute
@@ -187,11 +201,13 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/contribute': typeof ContributeRoute
   '/favorites': typeof FavoritesRoute
+  '/privacypolicy': typeof PrivacypolicyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/scanner': typeof ScannerRoute
   '/search': typeof SearchRoute
   '/secretadminsafha': typeof SecretadminsafhaRoute
   '/settings': typeof SettingsRoute
+  '/support': typeof SupportRoute
   '/tickets': typeof TicketsRoute
   '/transfers': typeof TransfersRoute
   '/coaches/$id': typeof CoachesIdRoute
@@ -214,11 +230,13 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/contribute': typeof ContributeRoute
   '/favorites': typeof FavoritesRoute
+  '/privacypolicy': typeof PrivacypolicyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/scanner': typeof ScannerRoute
   '/search': typeof SearchRoute
   '/secretadminsafha': typeof SecretadminsafhaRoute
   '/settings': typeof SettingsRoute
+  '/support': typeof SupportRoute
   '/tickets': typeof TicketsRoute
   '/transfers': typeof TransfersRoute
   '/coaches/$id': typeof CoachesIdRoute
@@ -242,11 +260,13 @@ export interface FileRouteTypes {
     | '/auth'
     | '/contribute'
     | '/favorites'
+    | '/privacypolicy'
     | '/reset-password'
     | '/scanner'
     | '/search'
     | '/secretadminsafha'
     | '/settings'
+    | '/support'
     | '/tickets'
     | '/transfers'
     | '/coaches/$id'
@@ -268,11 +288,13 @@ export interface FileRouteTypes {
     | '/auth'
     | '/contribute'
     | '/favorites'
+    | '/privacypolicy'
     | '/reset-password'
     | '/scanner'
     | '/search'
     | '/secretadminsafha'
     | '/settings'
+    | '/support'
     | '/tickets'
     | '/transfers'
     | '/coaches/$id'
@@ -294,11 +316,13 @@ export interface FileRouteTypes {
     | '/auth'
     | '/contribute'
     | '/favorites'
+    | '/privacypolicy'
     | '/reset-password'
     | '/scanner'
     | '/search'
     | '/secretadminsafha'
     | '/settings'
+    | '/support'
     | '/tickets'
     | '/transfers'
     | '/coaches/$id'
@@ -321,11 +345,13 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ContributeRoute: typeof ContributeRoute
   FavoritesRoute: typeof FavoritesRoute
+  PrivacypolicyRoute: typeof PrivacypolicyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ScannerRoute: typeof ScannerRoute
   SearchRoute: typeof SearchRoute
   SecretadminsafhaRoute: typeof SecretadminsafhaRoute
   SettingsRoute: typeof SettingsRoute
+  SupportRoute: typeof SupportRoute
   TicketsRoute: typeof TicketsRoute
   TransfersRoute: typeof TransfersRoute
   CoachesIdRoute: typeof CoachesIdRoute
@@ -356,6 +382,13 @@ declare module '@tanstack/react-router' {
       path: '/tickets'
       fullPath: '/tickets'
       preLoaderRoute: typeof TicketsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/support': {
+      id: '/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof SupportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -391,6 +424,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacypolicy': {
+      id: '/privacypolicy'
+      path: '/privacypolicy'
+      fullPath: '/privacypolicy'
+      preLoaderRoute: typeof PrivacypolicyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/favorites': {
@@ -521,11 +561,13 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ContributeRoute: ContributeRoute,
   FavoritesRoute: FavoritesRoute,
+  PrivacypolicyRoute: PrivacypolicyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ScannerRoute: ScannerRoute,
   SearchRoute: SearchRoute,
   SecretadminsafhaRoute: SecretadminsafhaRoute,
   SettingsRoute: SettingsRoute,
+  SupportRoute: SupportRoute,
   TicketsRoute: TicketsRoute,
   TransfersRoute: TransfersRoute,
   CoachesIdRoute: CoachesIdRoute,
