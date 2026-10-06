@@ -9,91 +9,36 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AdminRouteImport } from './routes/admin'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as ContributeRouteImport } from './routes/contribute'
-import { Route as FavoritesRouteImport } from './routes/favorites'
-import { Route as PrivacypolicyRouteImport } from './routes/privacypolicy'
-import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as ScannerRouteImport } from './routes/scanner'
-import { Route as SearchRouteImport } from './routes/search'
-import { Route as SecretadminsafhaRouteImport } from './routes/secretadminsafha'
-import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as SupportRouteImport } from './routes/support'
-import { Route as TicketsRouteImport } from './routes/tickets'
 import { Route as TransfersRouteImport } from './routes/transfers'
-import { Route as CoachesIdRouteImport } from './routes/coaches.$id'
-import { Route as CompetitionsIndexRouteImport } from './routes/competitions.index'
-import { Route as CompetitionsSlugRouteImport } from './routes/competitions.$slug'
-import { Route as MatchesIdRouteImport } from './routes/matches.$id'
-import { Route as NewsIndexRouteImport } from './routes/news.index'
-import { Route as NewsSlugRouteImport } from './routes/news.$slug'
-import { Route as PlayersIdRouteImport } from './routes/players.$id'
-import { Route as TeamsIdRouteImport } from './routes/teams.$id'
-import { Route as UUsernameRouteImport } from './routes/u.$username'
-import { Route as VenuesIdRouteImport } from './routes/venues.$id'
+import { Route as TicketsRouteImport } from './routes/tickets'
+import { Route as SupportRouteImport } from './routes/support'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as SecretadminsafhaRouteImport } from './routes/secretadminsafha'
+import { Route as SearchRouteImport } from './routes/search'
+import { Route as ScannerRouteImport } from './routes/scanner'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as PrivacypolicyRouteImport } from './routes/privacypolicy'
+import { Route as FavoritesRouteImport } from './routes/favorites'
+import { Route as ContributeRouteImport } from './routes/contribute'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as VoiceIndexRouteImport } from './routes/voice/index'
+import { Route as NewsIndexRouteImport } from './routes/news.index'
+import { Route as CompetitionsIndexRouteImport } from './routes/competitions.index'
 import { Route as VoiceIdRouteImport } from './routes/voice/$id'
+import { Route as VenuesIdRouteImport } from './routes/venues.$id'
+import { Route as UUsernameRouteImport } from './routes/u.$username'
+import { Route as TeamsIdRouteImport } from './routes/teams.$id'
+import { Route as PlayersIdRouteImport } from './routes/players.$id'
+import { Route as NewsSlugRouteImport } from './routes/news.$slug'
+import { Route as MatchesIdRouteImport } from './routes/matches.$id'
+import { Route as CompetitionsSlugRouteImport } from './routes/competitions.$slug'
+import { Route as CoachesIdRouteImport } from './routes/coaches.$id'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ContributeRoute = ContributeRouteImport.update({
-  id: '/contribute',
-  path: '/contribute',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FavoritesRoute = FavoritesRouteImport.update({
-  id: '/favorites',
-  path: '/favorites',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PrivacypolicyRoute = PrivacypolicyRouteImport.update({
-  id: '/privacypolicy',
-  path: '/privacypolicy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ScannerRoute = ScannerRouteImport.update({
-  id: '/scanner',
-  path: '/scanner',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SearchRoute = SearchRouteImport.update({
-  id: '/search',
-  path: '/search',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SecretadminsafhaRoute = SecretadminsafhaRouteImport.update({
-  id: '/secretadminsafha',
-  path: '/secretadminsafha',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SettingsRoute = SettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SupportRoute = SupportRouteImport.update({
-  id: '/support',
-  path: '/support',
+const TransfersRoute = TransfersRouteImport.update({
+  id: '/transfers',
+  path: '/transfers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TicketsRoute = TicketsRouteImport.update({
@@ -101,59 +46,64 @@ const TicketsRoute = TicketsRouteImport.update({
   path: '/tickets',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TransfersRoute = TransfersRouteImport.update({
-  id: '/transfers',
-  path: '/transfers',
+const SupportRoute = SupportRouteImport.update({
+  id: '/support',
+  path: '/support',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CoachesIdRoute = CoachesIdRouteImport.update({
-  id: '/coaches/$id',
-  path: '/coaches/$id',
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CompetitionsIndexRoute = CompetitionsIndexRouteImport.update({
-  id: '/competitions/',
-  path: '/competitions/',
+const SecretadminsafhaRoute = SecretadminsafhaRouteImport.update({
+  id: '/secretadminsafha',
+  path: '/secretadminsafha',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CompetitionsSlugRoute = CompetitionsSlugRouteImport.update({
-  id: '/competitions/$slug',
-  path: '/competitions/$slug',
+const SearchRoute = SearchRouteImport.update({
+  id: '/search',
+  path: '/search',
   getParentRoute: () => rootRouteImport,
 } as any)
-const MatchesIdRoute = MatchesIdRouteImport.update({
-  id: '/matches/$id',
-  path: '/matches/$id',
+const ScannerRoute = ScannerRouteImport.update({
+  id: '/scanner',
+  path: '/scanner',
   getParentRoute: () => rootRouteImport,
 } as any)
-const NewsIndexRoute = NewsIndexRouteImport.update({
-  id: '/news/',
-  path: '/news/',
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const NewsSlugRoute = NewsSlugRouteImport.update({
-  id: '/news/$slug',
-  path: '/news/$slug',
+const PrivacypolicyRoute = PrivacypolicyRouteImport.update({
+  id: '/privacypolicy',
+  path: '/privacypolicy',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PlayersIdRoute = PlayersIdRouteImport.update({
-  id: '/players/$id',
-  path: '/players/$id',
+const FavoritesRoute = FavoritesRouteImport.update({
+  id: '/favorites',
+  path: '/favorites',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TeamsIdRoute = TeamsIdRouteImport.update({
-  id: '/teams/$id',
-  path: '/teams/$id',
+const ContributeRoute = ContributeRouteImport.update({
+  id: '/contribute',
+  path: '/contribute',
   getParentRoute: () => rootRouteImport,
 } as any)
-const UUsernameRoute = UUsernameRouteImport.update({
-  id: '/u/$username',
-  path: '/u/$username',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const VenuesIdRoute = VenuesIdRouteImport.update({
-  id: '/venues/$id',
-  path: '/venues/$id',
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const VoiceIndexRoute = VoiceIndexRouteImport.update({
@@ -161,9 +111,59 @@ const VoiceIndexRoute = VoiceIndexRouteImport.update({
   path: '/voice/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NewsIndexRoute = NewsIndexRouteImport.update({
+  id: '/news/',
+  path: '/news/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompetitionsIndexRoute = CompetitionsIndexRouteImport.update({
+  id: '/competitions/',
+  path: '/competitions/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const VoiceIdRoute = VoiceIdRouteImport.update({
   id: '/voice/$id',
   path: '/voice/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VenuesIdRoute = VenuesIdRouteImport.update({
+  id: '/venues/$id',
+  path: '/venues/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UUsernameRoute = UUsernameRouteImport.update({
+  id: '/u/$username',
+  path: '/u/$username',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeamsIdRoute = TeamsIdRouteImport.update({
+  id: '/teams/$id',
+  path: '/teams/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlayersIdRoute = PlayersIdRouteImport.update({
+  id: '/players/$id',
+  path: '/players/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewsSlugRoute = NewsSlugRouteImport.update({
+  id: '/news/$slug',
+  path: '/news/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MatchesIdRoute = MatchesIdRouteImport.update({
+  id: '/matches/$id',
+  path: '/matches/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompetitionsSlugRoute = CompetitionsSlugRouteImport.update({
+  id: '/competitions/$slug',
+  path: '/competitions/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CoachesIdRoute = CoachesIdRouteImport.update({
+  id: '/coaches/$id',
+  path: '/coaches/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -370,88 +370,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/contribute': {
-      id: '/contribute'
-      path: '/contribute'
-      fullPath: '/contribute'
-      preLoaderRoute: typeof ContributeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/favorites': {
-      id: '/favorites'
-      path: '/favorites'
-      fullPath: '/favorites'
-      preLoaderRoute: typeof FavoritesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/privacypolicy': {
-      id: '/privacypolicy'
-      path: '/privacypolicy'
-      fullPath: '/privacypolicy'
-      preLoaderRoute: typeof PrivacypolicyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/scanner': {
-      id: '/scanner'
-      path: '/scanner'
-      fullPath: '/scanner'
-      preLoaderRoute: typeof ScannerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/search': {
-      id: '/search'
-      path: '/search'
-      fullPath: '/search'
-      preLoaderRoute: typeof SearchRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/secretadminsafha': {
-      id: '/secretadminsafha'
-      path: '/secretadminsafha'
-      fullPath: '/secretadminsafha'
-      preLoaderRoute: typeof SecretadminsafhaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/support': {
-      id: '/support'
-      path: '/support'
-      fullPath: '/support'
-      preLoaderRoute: typeof SupportRouteImport
+    '/transfers': {
+      id: '/transfers'
+      path: '/transfers'
+      fullPath: '/transfers'
+      preLoaderRoute: typeof TransfersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tickets': {
@@ -461,81 +384,88 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TicketsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/transfers': {
-      id: '/transfers'
-      path: '/transfers'
-      fullPath: '/transfers'
-      preLoaderRoute: typeof TransfersRouteImport
+    '/support': {
+      id: '/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof SupportRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/coaches/$id': {
-      id: '/coaches/$id'
-      path: '/coaches/$id'
-      fullPath: '/coaches/$id'
-      preLoaderRoute: typeof CoachesIdRouteImport
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/competitions/': {
-      id: '/competitions/'
-      path: '/competitions'
-      fullPath: '/competitions/'
-      preLoaderRoute: typeof CompetitionsIndexRouteImport
+    '/secretadminsafha': {
+      id: '/secretadminsafha'
+      path: '/secretadminsafha'
+      fullPath: '/secretadminsafha'
+      preLoaderRoute: typeof SecretadminsafhaRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/competitions/$slug': {
-      id: '/competitions/$slug'
-      path: '/competitions/$slug'
-      fullPath: '/competitions/$slug'
-      preLoaderRoute: typeof CompetitionsSlugRouteImport
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/matches/$id': {
-      id: '/matches/$id'
-      path: '/matches/$id'
-      fullPath: '/matches/$id'
-      preLoaderRoute: typeof MatchesIdRouteImport
+    '/scanner': {
+      id: '/scanner'
+      path: '/scanner'
+      fullPath: '/scanner'
+      preLoaderRoute: typeof ScannerRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/news/': {
-      id: '/news/'
-      path: '/news'
-      fullPath: '/news/'
-      preLoaderRoute: typeof NewsIndexRouteImport
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/news/$slug': {
-      id: '/news/$slug'
-      path: '/news/$slug'
-      fullPath: '/news/$slug'
-      preLoaderRoute: typeof NewsSlugRouteImport
+    '/privacypolicy': {
+      id: '/privacypolicy'
+      path: '/privacypolicy'
+      fullPath: '/privacypolicy'
+      preLoaderRoute: typeof PrivacypolicyRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/players/$id': {
-      id: '/players/$id'
-      path: '/players/$id'
-      fullPath: '/players/$id'
-      preLoaderRoute: typeof PlayersIdRouteImport
+    '/favorites': {
+      id: '/favorites'
+      path: '/favorites'
+      fullPath: '/favorites'
+      preLoaderRoute: typeof FavoritesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/teams/$id': {
-      id: '/teams/$id'
-      path: '/teams/$id'
-      fullPath: '/teams/$id'
-      preLoaderRoute: typeof TeamsIdRouteImport
+    '/contribute': {
+      id: '/contribute'
+      path: '/contribute'
+      fullPath: '/contribute'
+      preLoaderRoute: typeof ContributeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/u/$username': {
-      id: '/u/$username'
-      path: '/u/$username'
-      fullPath: '/u/$username'
-      preLoaderRoute: typeof UUsernameRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/venues/$id': {
-      id: '/venues/$id'
-      path: '/venues/$id'
-      fullPath: '/venues/$id'
-      preLoaderRoute: typeof VenuesIdRouteImport
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/voice/': {
@@ -545,11 +475,81 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VoiceIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/news/': {
+      id: '/news/'
+      path: '/news'
+      fullPath: '/news/'
+      preLoaderRoute: typeof NewsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/competitions/': {
+      id: '/competitions/'
+      path: '/competitions'
+      fullPath: '/competitions/'
+      preLoaderRoute: typeof CompetitionsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/voice/$id': {
       id: '/voice/$id'
       path: '/voice/$id'
       fullPath: '/voice/$id'
       preLoaderRoute: typeof VoiceIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/venues/$id': {
+      id: '/venues/$id'
+      path: '/venues/$id'
+      fullPath: '/venues/$id'
+      preLoaderRoute: typeof VenuesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/u/$username': {
+      id: '/u/$username'
+      path: '/u/$username'
+      fullPath: '/u/$username'
+      preLoaderRoute: typeof UUsernameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teams/$id': {
+      id: '/teams/$id'
+      path: '/teams/$id'
+      fullPath: '/teams/$id'
+      preLoaderRoute: typeof TeamsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/players/$id': {
+      id: '/players/$id'
+      path: '/players/$id'
+      fullPath: '/players/$id'
+      preLoaderRoute: typeof PlayersIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/news/$slug': {
+      id: '/news/$slug'
+      path: '/news/$slug'
+      fullPath: '/news/$slug'
+      preLoaderRoute: typeof NewsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/matches/$id': {
+      id: '/matches/$id'
+      path: '/matches/$id'
+      fullPath: '/matches/$id'
+      preLoaderRoute: typeof MatchesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/competitions/$slug': {
+      id: '/competitions/$slug'
+      path: '/competitions/$slug'
+      fullPath: '/competitions/$slug'
+      preLoaderRoute: typeof CompetitionsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/coaches/$id': {
+      id: '/coaches/$id'
+      path: '/coaches/$id'
+      fullPath: '/coaches/$id'
+      preLoaderRoute: typeof CoachesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
