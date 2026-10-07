@@ -21,6 +21,18 @@ if (!appUrl) {
 
 const appHost = new URL(appUrl).host;
 
+// Every host the site may redirect between (bare/www/lovable.app). If the
+// shell lands on a host not listed here, iOS opens it in Safari instead.
+const ownHosts = Array.from(
+  new Set([
+    appHost,
+    "mascores.live",
+    "www.mascores.live",
+    "mascores.lovable.app",
+    "*.mascores.live",
+  ]),
+);
+
 const config: CapacitorConfig = {
   appId: "com.almailgroup.mascores",
   appName: "Mansour Almail Scores",
