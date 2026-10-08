@@ -22,12 +22,18 @@ function AuthCallbackPage() {
 
     if (isNativeReturn) {
       params.delete("native");
-      const target = `com.almailgroup.mascores://auth/callback?${params.toString()}`;
+      const target = `com.almailgroup.mascores://auth/callback?${params.toString()}${window.location.hash}`;
       setMessage("Returning to the app…");
       window.location.replace(target);
       return;
     }
 
+    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    const at = hash.get("access_token"), rt = hash.get("refresh_token");
+    if (at && rt) {
+      void supabase.auth.setSession({ access_token: at, refresh_token: rt }).then(({ error }) => error ? setMessage(error.message) : navigate({ to: "/" }));
+      return;
+    }
     const code = params.get("code");
     if (!code) {
       setMessage("Missing sign-in code. You can close this page and try again.");
