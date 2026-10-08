@@ -117,20 +117,24 @@ function TransfersPage() {
               </div>
               <div className="overflow-hidden rounded-2xl border border-border bg-card">
                 {list.map((r, i) => (
-                  <div key={r.id} className={`flex items-center gap-3 p-3 ${i > 0 ? "border-t border-border" : ""}`}>
-                    <PlayerAvatar src={r.player?.photo_url} name={r.player?.name} className="h-11 w-11" />
+                    <div key={r.id} className={`flex items-center gap-3 p-3 ${i > 0 ? "border-t border-border" : ""}`}>
+                    <PlayerAvatar src={r.player?.photo_url} name={r.player?.name} className="h-10 w-10 sm:h-11 sm:w-11" />
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-sm font-bold">
                         {r.person_type === "player" && r.player
                           ? <Link to="/players/$id" params={{ id: r.person_id }} className="hover:text-primary">{tx(r.player.name)}</Link>
                           : (tx(r.player?.name) ?? tx("Unknown"))}
                       </div>
-                      <div className="mt-1 flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
-                        {r.from_club_logo_url ? <img src={r.from_club_logo_url} alt="" className="h-4 w-4 shrink-0 object-contain" /> : null}
-                        <span className="truncate">{tx(r.from_club) ?? "Free agent"}</span>
+                      <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-muted-foreground">
+                        <span className="flex min-w-0 max-w-full items-center gap-1">
+                          {r.from_club_logo_url ? <img src={r.from_club_logo_url} alt="" className="h-4 w-4 shrink-0 object-contain" /> : null}
+                          <span className="truncate">{tx(r.from_club) ?? "Free agent"}</span>
+                        </span>
                         <ArrowRight className="h-3.5 w-3.5 shrink-0 text-primary" />
-                        {r.to_club_logo_url ? <img src={r.to_club_logo_url} alt="" className="h-4 w-4 shrink-0 object-contain" /> : null}
-                        <span className="truncate font-semibold text-foreground">{tx(r.to_club) ?? "—"}</span>
+                        <span className="flex min-w-0 max-w-full items-center gap-1">
+                          {r.to_club_logo_url ? <img src={r.to_club_logo_url} alt="" className="h-4 w-4 shrink-0 object-contain" /> : null}
+                          <span className="truncate font-semibold text-foreground">{tx(r.to_club) ?? "—"}</span>
+                        </span>
                       </div>
                     </div>
                     <div className="shrink-0 text-right">
