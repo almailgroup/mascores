@@ -90,7 +90,8 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
     enabled: !!competitionId,
     queryKey: ["standings-competition-name", competitionId],
     queryFn: async () => {
-      const { data } = await supabase.from("competitions").select("name").eq("id", competitionId!).maybeSingle();
+      if (!competitionId) return null;
+      const { data } = await supabase.from("competitions").select("name").eq("id", competitionId).maybeSingle();
       return data?.name ?? null;
     },
   });
@@ -110,6 +111,7 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
       ))}
     </div>
     <ShareCardButton
+      disabled={competition.isLoading}
       title={shareTitle}
       render={() => drawStandingsCard({
         title: shareTitle,

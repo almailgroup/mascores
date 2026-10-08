@@ -1,4 +1,5 @@
 import { TeamCrest } from "@/components/team-crest";
+import { PlayerAvatar } from "@/components/player-avatar";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -336,7 +337,7 @@ function FavoriteMatches() {
     {view === "all" && <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
       {others.data?.competitions.map((c) => <Link key={c.id} to="/competitions/$slug" params={{ slug: c.slug }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 hover:border-primary">{c.logo_url ? <img src={c.logo_url} alt="" className="h-8 w-8 object-contain" /> : <Trophy className="h-6 w-6 text-primary" />}<span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(c.name)}</span></Link>)}
       {others.data?.teams.map((team) => <Link key={team.id} to="/teams/$id" params={{ id: team.id }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 hover:border-primary"><TeamCrest name={team.name} logo={team.logo_url} className="h-8 w-8" /><span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(team.name)}</span></Link>)}
-      {others.data?.players.map((player) => <Link key={player.id} to="/players/$id" params={{ id: player.id }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 hover:border-primary"><span className="h-8 w-8 overflow-hidden rounded-full bg-muted">{player.photo_url && <img src={player.photo_url} alt="" className="h-full w-full object-cover" />}</span><span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(player.name)}</span></Link>)}
+      {others.data?.players.map((player) => <Link key={player.id} to="/players/$id" params={{ id: player.id }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 hover:border-primary"><PlayerAvatar src={player.photo_url} name={player.name} className="h-8 w-8" /><span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(player.name)}</span></Link>)}
       <Link to="/favorites" className="flex items-center justify-center rounded-xl border border-dashed border-border p-3 text-sm font-semibold text-primary">{tx("Open favorites")}</Link>
     </div>}
   </section>;

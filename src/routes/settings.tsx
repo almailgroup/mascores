@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button';
 
 
 export const Route = createFileRoute("/settings")({
-  head: () => ({ meta: [{ title: "Settings — MansourAlmailScores" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Settings — MansourAlmailScores" }, { name: "robots", content: "noindex" }, { name: "description", content: "Manage your MA Scores account and preferences." }, { property: "og:title", content: "Settings — MansourAlmailScores" }, { property: "og:description", content: "Manage your MA Scores account and preferences." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: SettingsPage,
 });
 

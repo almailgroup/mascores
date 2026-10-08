@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { PlayerAvatar } from "@/components/player-avatar";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, EmptyState, LoadingSkeleton } from "@/components/app-shell";
@@ -117,9 +118,7 @@ function TransfersPage() {
               <div className="overflow-hidden rounded-2xl border border-border bg-card">
                 {list.map((r, i) => (
                   <div key={r.id} className={`flex items-center gap-3 p-3 ${i > 0 ? "border-t border-border" : ""}`}>
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-muted text-xs font-bold">
-                      {r.player?.photo_url ? <img src={r.player.photo_url} alt="" className="h-full w-full object-cover" /> : (r.player?.name ?? "?").slice(0, 1)}
-                    </div>
+                    <PlayerAvatar src={r.player?.photo_url} name={r.player?.name} className="h-11 w-11" />
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-sm font-bold">
                         {r.person_type === "player" && r.player

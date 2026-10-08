@@ -6,8 +6,7 @@ export const Route = createFileRoute("/secretadminsafha")({
     meta: [
       { title: "Owner — Mansour Almail Scores" },
       { name: "robots", content: "noindex" },
-      { name: "description", content: "Owner control centre." },
-    ],
+      { name: "description", content: "Owner control centre." }, { property: "og:title", content: "Owner — Mansour Almail Scores" }, { property: "og:description", content: "Owner control centre." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }],
   }),
   component: () => <AdminConsole owner />,
 });

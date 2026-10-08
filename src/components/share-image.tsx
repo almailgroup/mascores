@@ -1,98 +1,104 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Share2, X, ImageDown, Download, Mail } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
+import { Share2, X, ImageDown, Download, LoaderCircle, Check, RefreshCw } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { Button } from "@/components/ui/button";
+import { downloadPhoto, savePhoto } from "@/lib/save-photo";
 
-/**
- * Share sheet for a purpose-built picture. The caller draws the picture, so the
- * result is a designed card - never a screenshot of the page.
- */
-export function ShareCardButton({ render, title, label: buttonLabel }: {
+/** One accessible, memory-safe image sheet for results, lineups and standings. */
+export function ShareCardButton({ render, title, label: buttonLabel, iconOnly = false, disabled = false }: {
   render: () => Promise<Blob | null>;
   title: string;
   label?: string;
+  iconOnly?: boolean;
+  disabled?: boolean;
 }) {
   const { lang } = useI18n();
-  const label = (en: string, ar: string) => (lang === "ar" ? ar : en);
+  const label = (en: string, ar: string) => lang === "ar" ? ar : en;
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [retry, setRetry] = useState(0);
   const [preview, setPreview] = useState<string | null>(null);
   const blobRef = useRef<Blob | null>(null);
+  const renderRef = useRef(render);
+  renderRef.current = render;
   const fileName = `${title.replace(/[^\w\u0600-\u06FF -]/g, "").replace(/\s+/g, "-") || "image"}.png`;
 
-  const build = useCallback(async () => {
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    let url: string | null = null;
+    blobRef.current = null;
+    setPreview(null);
     setBusy(true);
-    try {
-      const blob = await render();
+    setError(false);
+    setSaved(false);
+    setNotice(null);
+    void renderRef.current().then(blob => {
+      if (cancelled) return;
+      if (!blob) throw new Error("No image");
       blobRef.current = blob;
-      setPreview(blob ? URL.createObjectURL(blob) : null);
-    } finally { setBusy(false); }
-  }, [render]);
+      url = URL.createObjectURL(blob);
+      setPreview(url);
+    }).catch(() => { if (!cancelled) setError(true); })
+      .finally(() => { if (!cancelled) setBusy(false); });
+    return () => {
+      cancelled = true;
+      blobRef.current = null;
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [open, retry]);
 
-  useEffect(() => { if (open) void build(); }, [open, build]);
-
-  const saveToFile = () => {
-    const blob = blobRef.current;
-    if (!blob) return;
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = fileName;
-    link.click();
-  };
-
-  /** The share sheet is where "Save Image" puts it in the camera roll. */
   const saveToPhotos = async () => {
     const blob = blobRef.current;
-    if (!blob) return;
-    const file = new File([blob], fileName, { type: "image/png" });
-    const nav = navigator as Navigator & { canShare?: (data: ShareData) => boolean };
-    if (nav.share && nav.canShare?.({ files: [file] })) {
-      try { await nav.share({ files: [file], title }); return; } catch { return; }
-    }
-    saveToFile();
-  };
-
-  const sendByEmail = () => {
-    saveToFile();
-    const body = `${title}\n\n${label("The image has been saved to your device - attach it to this email.", "تم حفظ الصورة على جهازك - أضفها كمرفق لهذه الرسالة.")}`;
-    window.location.href = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
+    if (!blob || saving) return;
+    setSaving(true);
+    setNotice(null);
+    try {
+      const result = await savePhoto(blob, fileName, title);
+      setSaved(result === "saved");
+      if (result === "unsupported") setNotice(label("Saving to Photos isn’t available on this device. You can download the image below.", "الحفظ في الصور غير متاح على هذا الجهاز. يمكنك تنزيل الصورة أدناه."));
+    } catch {
+      setNotice(label("Couldn’t save the photo. Check photo permissions and try again.", "تعذّر حفظ الصورة. تحقق من إذن الوصول إلى الصور وحاول مرة أخرى."));
+    } finally { setSaving(false); }
   };
 
   return (
-    <>
-      <button type="button" onClick={() => setOpen(true)} aria-label={label("Share image", "مشاركة صورة")}
-        className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-xs font-bold">
-        <Share2 className="h-3.5 w-3.5" /> {buttonLabel ?? label("Share", "مشاركة")}
-      </button>
-      {open && (
-        <div className="fixed inset-0 z-[120] flex items-end justify-center bg-black/60 sm:items-center sm:p-6" onClick={() => setOpen(false)}>
-          <div className="max-h-[88vh] w-full max-w-md overflow-y-auto rounded-t-3xl border border-border bg-card p-5 shadow-2xl sm:rounded-3xl" onClick={(e) => e.stopPropagation()}>
-            <div className="mb-3 flex items-center justify-between">
-              <div className="text-sm font-bold">{title}</div>
-              <button type="button" onClick={() => setOpen(false)} className="grid h-9 w-9 place-items-center rounded-full bg-muted"><X className="h-4 w-4" /></button>
-            </div>
-            <div className="overflow-hidden rounded-2xl border border-border bg-muted">
-              {busy || !preview
-                ? <div className="grid h-56 place-items-center text-xs text-muted-foreground">{label("Creating image…", "جارٍ إنشاء الصورة…")}</div>
-                : <img src={preview} alt="" className="mx-auto max-h-[34vh] w-full object-contain" />}
-            </div>
-            <button type="button" disabled={busy || !preview} onClick={saveToPhotos}
-              className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-bold text-primary-foreground disabled:opacity-50">
-              <ImageDown className="h-4 w-4" /> {label("Save to photos", "حفظ في الصور")}
-            </button>
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              <button type="button" disabled={busy || !preview} onClick={sendByEmail}
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-border px-4 py-2.5 text-sm font-semibold disabled:opacity-50">
-                <Mail className="h-4 w-4" /> {label("Email image", "إرسال بالبريد")}
-              </button>
-              <button type="button" disabled={busy || !preview} onClick={saveToFile}
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-border px-4 py-2.5 text-sm font-semibold disabled:opacity-50">
-                <Download className="h-4 w-4" /> {label("Save file", "حفظ الملف")}
-              </button>
-            </div>
-            <div className="h-24 sm:h-0" style={{ paddingBottom: "env(safe-area-inset-bottom)" }} />
+    <Dialog.Root open={open} onOpenChange={setOpen}>
+      <Dialog.Trigger asChild>
+        <Button disabled={disabled} variant="outline" size={iconOnly ? "icon" : "sm"} aria-label={buttonLabel ?? label("Share image", "مشاركة صورة")}
+          className={iconOnly ? "rounded-full border-primary-foreground/20 bg-primary-foreground/15 text-primary-foreground hover:bg-primary-foreground/25 hover:text-primary-foreground" : "rounded-full"}>
+          <Share2 />{!iconOnly && (buttonLabel ?? label("Share", "مشاركة"))}
+        </Button>
+      </Dialog.Trigger>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-[120] bg-foreground/60 data-[state=open]:animate-in data-[state=open]:fade-in-0 duration-150" />
+        <Dialog.Content aria-describedby={undefined} className="fixed left-1/2 top-1/2 z-[121] flex max-h-[calc(100dvh-3rem)] w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-lg border border-border bg-card p-5 shadow-xl">
+          <div className="mb-4 flex shrink-0 items-center justify-between gap-3">
+            <Dialog.Title className="min-w-0 text-sm font-bold">{title}</Dialog.Title>
+            <Dialog.Close asChild><Button variant="ghost" size="icon" aria-label={label("Close", "إغلاق")} className="shrink-0"><X /></Button></Dialog.Close>
           </div>
-        </div>
-      )}
-    </>
+          <div className="min-h-0 overflow-y-auto overscroll-contain">
+            <div className="overflow-hidden rounded-lg border border-border bg-muted">
+              {error ? <div className="flex h-56 flex-col items-center justify-center gap-3 text-sm text-muted-foreground"><span>{label("Couldn’t create the image", "تعذّر إنشاء الصورة")}</span><Button variant="outline" onClick={() => setRetry(n => n + 1)}><RefreshCw />{label("Try again", "حاول مجددًا")}</Button></div>
+                : busy || !preview ? <div className="grid h-56 place-items-center" role="status"><LoaderCircle className="h-6 w-6 animate-spin text-primary" /><span className="sr-only">{label("Creating image", "جارٍ إنشاء الصورة")}</span></div>
+                : <img src={preview} alt={title} className="mx-auto max-h-[45dvh] w-full object-contain" />}
+            </div>
+            {notice && <p role="status" className="mt-3 text-sm text-muted-foreground">{notice}</p>}
+          </div>
+          <div className="mt-4 shrink-0 space-y-2">
+            <Button disabled={busy || !preview || saving} onClick={saveToPhotos} className="h-12 w-full rounded-lg text-sm font-bold transition-colors">
+              {saving ? <LoaderCircle className="animate-spin" /> : saved ? <Check /> : <ImageDown />}
+              {saving ? label("Saving…", "جارٍ الحفظ…") : saved ? label("Saved to Photos", "تم الحفظ في الصور") : label("Save to photos", "حفظ في الصور")}
+            </Button>
+            <Button variant="ghost" disabled={busy || !preview || saving} onClick={() => { if (blobRef.current) downloadPhoto(blobRef.current, fileName); }} className="w-full text-xs text-muted-foreground"><Download />{label("Download image", "تنزيل الصورة")}</Button>
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }

@@ -1,3 +1,4 @@
+import { PlayerAvatar } from "@/components/player-avatar";
 import { TeamCrest } from "@/components/team-crest";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -64,7 +65,7 @@ function formationRows(formation: string | null | undefined): string[][] {
 }
 
 export const Route = createFileRoute("/matches/$id")({
-  head: ({ params }) => ({ meta: [{ title: `Match — MansourAlmailScores` }, { name: "description", content: `Match center ${params.id}` }] }),
+  head: ({ params }) => ({ meta: [{ title: `Match — MansourAlmailScores` }, { name: "description", content: `Match center ${params.id}` }, { property: "og:title", content: `Match — MansourAlmailScores` }, { property: "og:description", content: `Match center ${params.id}` }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: MatchPage,
 });
 
@@ -409,7 +410,7 @@ function MatchPage() {
             formation: activeFormation,
             coach: (side === "home" ? coachNames.data?.home : coachNames.data?.away) ?? null,
             rows: formationRows(activeFormation).map((row) =>
-              row.map((slot) => starters.find((s) => s.position_code === slot)).filter(Boolean).map((lu) => shortOf(lu!))),
+              row.map((slot) => starters.find((s) => s.position_code === slot)).filter((lu): lu is (typeof starters)[number] => lu !== undefined).map(shortOf)),
             bench: bench.map(shortOf),
           },
         };
@@ -440,9 +441,7 @@ function MatchPage() {
                       return (
                         <Link key={slot} to="/players/$id" params={{ id: lu.player_id }} className="relative z-10 flex w-16 flex-col items-center gap-0.5 overflow-visible text-center">
                           <span className="relative block h-11 w-11 overflow-visible">
-                            <span className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border-2 border-white/70 bg-muted text-xs font-bold">
-                              {lu.player?.photo_url ? <img src={lu.player.photo_url} alt="" className="h-full w-full object-cover" /> : num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}
-                            </span>
+                            <PlayerAvatar src={lu.player?.photo_url} name={lu.player?.name} className="h-11 w-11 border-2" />
                             {(lu.shirt_number ?? lu.player?.shirt_number) != null && (
                               <span className="absolute -left-1 -top-1 z-30 flex h-4 min-w-4 items-center justify-center rounded-full bg-background px-1 text-[0.6rem] font-black leading-none text-foreground shadow ring-1 ring-border">{num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}</span>
                             )}
@@ -468,7 +467,7 @@ function MatchPage() {
                 return (
                   <Link key={lu.id} to="/players/$id" params={{ id: lu.player_id }} className="flex items-center gap-3 border-t border-border py-2 first:border-0">
                     <span className="w-6 shrink-0 text-center text-xs font-bold tabular-nums text-muted-foreground">{num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}</span>
-                    <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-muted">{lu.player?.photo_url && <img src={lu.player.photo_url} alt="" className="h-full w-full object-cover" />}</div>
+                    <PlayerAvatar src={lu.player?.photo_url} name={lu.player?.name} className="h-9 w-9" />
                     <span className="min-w-0 flex-1 truncate font-semibold">{tx(lu.player?.name)}</span>
                     {marks.length > 0 && <span className="flex shrink-0 items-center gap-1">{marks.slice(0, 4).map((t, k) => <EventArt key={k} type={t} className="h-4 w-4" />)}</span>}
                     {rating != null && <span className={`shrink-0 rounded px-2 py-1 text-xs font-black ${ratingClass(Number(rating))}`}>{num(formatRating(rating))}</span>}
@@ -520,7 +519,8 @@ function TeamCoach({ teamId, coachId }: { teamId: string | undefined; coachId?: 
     enabled: !!teamId || !!coachId,
     queryFn: async () => {
       if (coachId) return (await supabase.from("coaches").select("id,name,photo_url,nationality").eq("id", coachId).maybeSingle()).data;
-      return (await supabase.from("coaches").select("id,name,photo_url,nationality").eq("team_id", teamId!).limit(1).maybeSingle()).data;
+      if (!teamId) return null;
+      return (await supabase.from("coaches").select("id,name,photo_url,nationality").eq("team_id", teamId).limit(1).maybeSingle()).data;
     },
   });
   if (!q.data) return null;
@@ -528,7 +528,7 @@ function TeamCoach({ teamId, coachId }: { teamId: string | undefined; coachId?: 
     <div className="mt-3">
       <h4 className="mb-1 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Coach")}</h4>
       <Link to="/coaches/$id" params={{ id: q.data.id }} className="flex items-center gap-3 py-2 hover:text-primary">
-        <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-muted">{q.data.photo_url && <img src={q.data.photo_url} alt="" className="h-full w-full object-cover" />}</div>
+        <PlayerAvatar src={q.data.photo_url} name={q.data.name} className="h-9 w-9" />
         <span className="min-w-0 flex-1 truncate font-semibold">{tx(q.data.name)}</span>
         <span className="shrink-0 text-xs text-muted-foreground">{tx(q.data.nationality) ?? ""}</span>
       </Link>

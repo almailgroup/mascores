@@ -10,8 +10,7 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "Sign in — MansourAlmailScores" },
-      { name: "description", content: "Sign in or create your MansourAlmailScores account to follow live football scores, favorites, and personalized coverage." },
-    ],
+      { name: "description", content: "Sign in or create your MansourAlmailScores account to follow live football scores, favorites, and personalized coverage." }, { property: "og:title", content: "Sign in — MansourAlmailScores" }, { property: "og:description", content: "Sign in or create your MansourAlmailScores account to follow live football scores, favorites, and personalized coverage." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }],
   }),
   component: AuthPage,
 });

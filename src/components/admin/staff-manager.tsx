@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PlayerAvatar } from "@/components/player-avatar";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -53,7 +54,7 @@ export function StaffManager({ teamId }: { teamId: string }) {
       <div className="space-y-2">
         {(staff.data ?? []).map((person) => (
           <div key={person.id} className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-2">
-            {person.photo_url && <img src={person.photo_url} alt="" className="h-9 w-9 shrink-0 rounded-full object-cover" />}
+            <PlayerAvatar src={person.photo_url} name={person.name} className="h-9 w-9" />
             <div className="min-w-0 flex-1 basis-[55%]">
               <div className="truncate text-sm font-semibold">{person.name}</div>
               <div className="truncate text-[0.7rem] text-muted-foreground">{person.role}</div>

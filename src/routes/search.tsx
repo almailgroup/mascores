@@ -3,6 +3,7 @@ import logoLight from "@/assets/logo-mark-v2.png.asset.json";
 import logoDark from "@/assets/logo-mark-dark.png";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { PlayerAvatar } from "@/components/player-avatar";
 import { AppShell, EmptyState } from "@/components/app-shell";
 import { supabase } from "@/lib/db";
 import { FlagIcon } from "@/components/flag";
@@ -11,7 +12,7 @@ import { useCompact, useReverseTranslate, useTx } from "@/lib/auto-translate";
 import { COUNTRIES } from "@/lib/countries";
 
 export const Route = createFileRoute("/search")({
-  head: () => ({ meta: [{ title: "Search — MansourAlmailScores" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Search — MansourAlmailScores" }, { name: "robots", content: "noindex" }, { name: "description", content: "Find teams, players, competitions and venues on MA Scores." }, { property: "og:title", content: "Search — MansourAlmailScores" }, { property: "og:description", content: "Find teams, players, competitions and venues on MA Scores." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: SearchPage,
 });
 
@@ -285,7 +286,8 @@ function TeamSquadResults({ teamId }: { teamId: string }) {
       if (ids.length === 0) return [];
       const { data } = await supabase.from("players").select("id,name,position,shirt_number,photo_url").in("id", ids);
       return (data ?? []).map((p) => {
-        const call = (calls.data ?? []).find((c) => c.player_id === p.id)!;
+        const call = (calls.data ?? []).find((c) => c.player_id === p.id);
+        if (!call) return p;
         return { ...p, shirt_number: call.shirt_number ?? p.shirt_number, photo_url: call.photo_url ?? p.photo_url, position: call.position ?? p.position };
       });
     },
@@ -297,9 +299,7 @@ function TeamSquadResults({ teamId }: { teamId: string }) {
       {squad.data.map((p) => (
         <Link key={p.id} to="/players/$id" params={{ id: p.id }}
           className="flex items-center gap-2 rounded-xl border border-border bg-card/60 px-2.5 py-2 hover:border-primary/50">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-muted/40 text-[0.6rem] font-bold">
-            {p.photo_url ? <img src={p.photo_url} alt="" className="h-full w-full object-cover" /> : (p.shirt_number ?? "")}
-          </span>
+          <PlayerAvatar src={p.photo_url} name={p.name} className="h-7 w-7" />
           <span className="min-w-0 flex-1">
             <span className="block truncate text-xs font-semibold">{tx(p.name)}</span>
             <span className="block truncate text-[0.6rem] text-muted-foreground">{[p.shirt_number != null ? `#${p.shirt_number}` : null, tx(p.position)].filter(Boolean).join(" · ")}</span>
