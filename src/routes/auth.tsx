@@ -28,6 +28,13 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  // Inside the iOS app, web sign-in with Google/Apple escapes to Safari and
+  // never returns, so only email sign-in is offered there.
+  const [isNativeApp, setIsNativeApp] = useState(false);
+  useEffect(() => {
+    const cap = (window as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor;
+    setIsNativeApp(cap?.isNativePlatform?.() === true);
+  }, []);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -99,7 +106,7 @@ function AuthPage() {
   return (
     <div className="relative min-h-screen bg-background text-foreground">
       <div className="pointer-events-none absolute inset-0 opacity-60 [background:radial-gradient(circle_at_50%_0%,color-mix(in_oklab,var(--primary)_30%,transparent),transparent_50%)]" />
-      <div className="relative z-10 mx-auto flex max-w-md flex-col px-6 py-8">
+      <div className="relative z-10 mx-auto flex max-w-md flex-col px-6 pb-8" style={{ paddingTop: "calc(env(safe-area-inset-top) + 2.5rem)" }}>
         <div className="flex items-center justify-between gap-2">
           <Link
             to="/"
@@ -126,7 +133,7 @@ function AuthPage() {
                 : "Sign in to continue to MansourAlmailScores."}
           </p>
 
-          {mode !== "forgot" && (
+          {mode !== "forgot" && !isNativeApp && (
             <div className="mt-6 grid gap-2">
               <button
                 type="button"
