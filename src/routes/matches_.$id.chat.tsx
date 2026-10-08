@@ -4,7 +4,7 @@ import { MatchChat } from "@/components/match-chat";
 import { useTx } from "@/lib/auto-translate";
 import { MessageCircle } from "lucide-react";
 
-export const Route = createFileRoute("/matches/$id/chat")({
+export const Route = createFileRoute("/matches_/$id/chat")({
   head: () => ({
     meta: [
       { title: "Match chat — MA Scores" },
