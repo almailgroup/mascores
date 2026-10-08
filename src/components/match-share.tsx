@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Share2, X, Download, ImageDown } from "lucide-react";
+import { ShareCardButton } from "@/components/share-image";
 import { useI18n } from "@/lib/i18n";
 
 export type ShareTeam = { name?: string | null; logo_url?: string | null };
@@ -38,8 +37,9 @@ function loadImage(url?: string | null): Promise<HTMLImageElement | null> {
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = "anonymous";
-    img.onload = () => resolve(img);
-    img.onerror = () => resolve(null);
+    const timeout = window.setTimeout(() => { img.src = ""; resolve(null); }, 8000);
+    img.onload = () => { window.clearTimeout(timeout); resolve(img); };
+    img.onerror = () => { window.clearTimeout(timeout); resolve(null); };
     img.src = url;
   });
 }
@@ -258,113 +258,12 @@ async function drawCard(data: MatchShareData, mode: "result" | "lineups"): Promi
   return new Promise((resolve) => canvas.toBlob((blob) => resolve(blob), "image/png", 0.95));
 }
 
-/** Share control plus the "looks like you took a screenshot" prompt. */
+/** Result and lineup cards share the same save-to-Photos experience. */
 export function MatchShare({ data, mode }: { data: MatchShareData; mode: "result" | "lineups" }) {
   const { lang } = useI18n();
-  const [open, setOpen] = useState(false);
-  const [preview, setPreview] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const blobRef = useRef<Blob | null>(null);
-  const label = (en: string, ar: string) => (lang === "ar" ? ar : en);
-
-  const build = useCallback(async () => {
-    setBusy(true);
-    const blob = await drawCard(data, mode);
-    blobRef.current = blob;
-    setPreview(blob ? URL.createObjectURL(blob) : null);
-    setBusy(false);
-  }, [data, mode]);
-
-  useEffect(() => {
-    if (open) void build();
-  }, [open, build]);
-
-  // Screenshot hints: desktop print-screen / macOS capture shortcuts, and the
-  // quick blur-then-focus that iOS produces while the capture flash happens.
-  useEffect(() => {
-    let blurAt = 0;
-    const onKey = (event: KeyboardEvent) => {
-      const macCapture = (event.metaKey && event.shiftKey && ["3", "4", "5"].includes(event.key));
-      if (event.key === "PrintScreen" || macCapture) setOpen(true);
-    };
-    const onBlur = () => { blurAt = Date.now(); };
-    const onFocus = () => { if (blurAt && Date.now() - blurAt < 1200) setOpen(true); blurAt = 0; };
-    window.addEventListener("keyup", onKey);
-    window.addEventListener("blur", onBlur);
-    window.addEventListener("focus", onFocus);
-    return () => { window.removeEventListener("keyup", onKey); window.removeEventListener("blur", onBlur); window.removeEventListener("focus", onFocus); };
-  }, []);
-
-  const title = `${data.home.name ?? ""} ${data.homeScore}-${data.awayScore} ${data.away.name ?? ""}`.trim();
-  const fileName = `${title.replace(/[^\w\u0600-\u06FF -]/g, "").replace(/\s+/g, "-") || "match"}.png`;
-
-  const saveToFile = () => {
-    const blob = blobRef.current;
-    if (!blob) return;
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = fileName;
-    link.click();
-  };
-
-  /** iOS/Android share sheet: this is where "Save Image" adds it to the camera roll. */
-  const saveToPhotos = async () => {
-    const blob = blobRef.current;
-    if (!blob) return;
-    const file = new File([blob], fileName, { type: "image/png" });
-    const nav = navigator as Navigator & { canShare?: (data: ShareData) => boolean };
-    if (nav.share && nav.canShare?.({ files: [file] })) {
-      try { await nav.share({ files: [file], title }); return; } catch { return; /* cancelled */ }
-    }
-    saveToFile();
-  };
-
-
-
-
-  return (
-    <>
-      {mode === "lineups" ? (
-        <button type="button" onClick={() => setOpen(true)}
-          className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3.5 py-2 text-xs font-bold text-foreground transition hover:border-primary hover:text-primary">
-          <Share2 className="h-4 w-4" /> {label("Share line-ups", "مشاركة التشكيلة")}
-        </button>
-      ) : (
-        <button type="button" onClick={() => setOpen(true)} aria-label={label("Share match", "مشاركة المباراة")}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-white transition hover:bg-white/25">
-          <Share2 className="h-4 w-4" />
-        </button>
-      )}
-      {open && (
-        <div className="fixed inset-0 z-[120] flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-6" onClick={() => setOpen(false)}>
-          <div className="max-h-[88vh] w-full max-w-md overflow-y-auto rounded-t-3xl border border-border bg-card p-5 shadow-2xl sm:rounded-3xl" onClick={(event) => event.stopPropagation()}>
-            <div className="mb-3 flex items-center justify-between">
-              <div>
-                <div className="text-sm font-bold">{label("Share this match?", "مشاركة هذه المباراة؟")}</div>
-                <div className="text-xs text-muted-foreground">
-                  {mode === "lineups" ? label("Line-ups image", "صورة التشكيلة") : label("Result image", "صورة النتيجة")}
-                </div>
-              </div>
-              <button type="button" onClick={() => setOpen(false)} className="grid h-9 w-9 place-items-center rounded-full bg-muted"><X className="h-4 w-4" /></button>
-            </div>
-            <div className="overflow-hidden rounded-2xl border border-border bg-muted">
-              {busy || !preview
-                ? <div className="grid h-56 place-items-center text-xs text-muted-foreground">{label("Creating image…", "جارٍ إنشاء الصورة…")}</div>
-                : <img src={preview} alt="" className="mx-auto max-h-[34vh] w-full object-contain" />}
-            </div>
-            <button type="button" disabled={busy || !preview} onClick={saveToPhotos}
-              className="sticky bottom-0 mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-bold text-primary-foreground disabled:opacity-50">
-              <ImageDown className="h-4 w-4" /> {label("Save to photos", "حفظ في الصور")}
-            </button>
-            <button type="button" disabled={busy || !preview} onClick={saveToFile}
-              className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full border border-border px-4 py-2.5 text-sm font-semibold disabled:opacity-50">
-              <Download className="h-4 w-4" /> {label("Save file", "حفظ الملف")}
-            </button>
-            {/* Clears the bottom navigation bar so the actions stay tappable. */}
-            <div className="h-24 sm:h-0" style={{ paddingBottom: "env(safe-area-inset-bottom)" }} />
-          </div>
-        </div>
-      )}
-    </>
-  );
+  const title = mode === "lineups"
+    ? `${data.lineup?.teamName ?? data.home.name ?? ""} · ${lang === "ar" ? "التشكيلة" : "Lineup"}`
+    : `${data.home.name ?? ""} ${data.homeScore}-${data.awayScore} ${data.away.name ?? ""}`.trim();
+  return <ShareCardButton render={() => drawCard(data, mode)} title={title} iconOnly={mode === "result"}
+    label={mode === "lineups" ? (lang === "ar" ? "مشاركة التشكيلة" : "Share line-ups") : (lang === "ar" ? "مشاركة المباراة" : "Share match")} />;
 }
