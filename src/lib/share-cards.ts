@@ -298,3 +298,128 @@ export async function drawLineupCard(input: {
   footer(ctx, W, H);
   return toBlob(canvas);
 }
+
+export type LeaderboardCardRow = { name: string; sub?: string | null; image?: string | null; value: string };
+
+/** Top-10 statistic leaderboard (goals, assists, ratings, cards) as a branded picture. */
+export async function drawLeaderboardCard(input: { title: string; subtitle?: string | null; rows: LeaderboardCardRow[]; accent?: string | null }): Promise<Blob | null> {
+  const W = 1080;
+  const rowH = 92;
+  const rows = input.rows.slice(0, 10);
+  const H = Math.max(900, 290 + rows.length * rowH + 110);
+  const made = surface(W, H, input.accent || "#1d4ed8");
+  if (!made) return null;
+  const { canvas, ctx } = made;
+  ctx.textAlign = "left";
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `800 62px ${FONT}`;
+  ctx.fillText(input.title.slice(0, 26), 60, 135);
+  if (input.subtitle) {
+    ctx.font = `500 32px ${FONT}`;
+    ctx.fillStyle = "rgba(255,255,255,0.7)";
+    ctx.fillText(input.subtitle.slice(0, 46), 60, 188);
+  }
+  const images = await Promise.all(rows.map((r) => loadImage(r.image)));
+  rows.forEach((row, i) => {
+    const top = 250 + i * rowH;
+    const leader = i === 0;
+    ctx.fillStyle = leader ? "rgba(255,255,255,0.18)" : i % 2 === 0 ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.035)";
+    roundRect(ctx, 50, top, W - 100, rowH - 12, 22);
+    ctx.fill();
+    ctx.textAlign = "center";
+    ctx.font = `800 30px ${FONT}`;
+    ctx.fillStyle = leader ? "#facc15" : "rgba(255,255,255,0.75)";
+    ctx.fillText(String(i + 1), 92, top + 50);
+    // round avatar
+    const cx = 170, cy = top + 40, r = 30;
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.closePath();
+    ctx.fillStyle = "rgba(255,255,255,0.12)"; ctx.fill(); ctx.clip();
+    const img = images[i];
+    if (img) {
+      const s = Math.max((r * 2) / img.width, (r * 2) / img.height);
+      ctx.drawImage(img, cx - (img.width * s) / 2, cy - r, img.width * s, img.height * s);
+    } else {
+      ctx.fillStyle = "rgba(255,255,255,0.55)";
+      ctx.beginPath(); ctx.arc(cx, cy - 8, 11, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(cx, cy + 26, 22, Math.PI, 0); ctx.fill();
+    }
+    ctx.restore();
+    ctx.textAlign = "left";
+    ctx.font = `700 32px ${FONT}`;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(row.name.slice(0, 24), 220, top + (row.sub ? 38 : 50));
+    if (row.sub) {
+      ctx.font = `500 24px ${FONT}`;
+      ctx.fillStyle = "rgba(255,255,255,0.6)";
+      ctx.fillText(row.sub.slice(0, 30), 220, top + 68);
+    }
+    ctx.textAlign = "center";
+    ctx.fillStyle = leader ? "#facc15" : "rgba(255,255,255,0.14)";
+    roundRect(ctx, W - 190, top + 18, 110, 46, 14);
+    ctx.fill();
+    ctx.font = `800 30px ${FONT}`;
+    ctx.fillStyle = leader ? "#0b1020" : "#ffffff";
+    ctx.fillText(row.value, W - 135, top + 52);
+  });
+  footer(ctx, W, H);
+  return toBlob(canvas);
+}
+
+function wrapLines(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, maxLines: number) {
+  const words = text.split(/\s+/).filter(Boolean);
+  const lines: string[] = [];
+  let line = "";
+  for (const word of words) {
+    const test = line ? `${line} ${word}` : word;
+    if (ctx.measureText(test).width > maxWidth && line) { lines.push(line); line = word; } else line = test;
+    if (lines.length === maxLines) break;
+  }
+  if (lines.length < maxLines && line) lines.push(line);
+  if (lines.length === maxLines && words.join(" ").length > lines.join(" ").length) lines[maxLines - 1] = `${lines[maxLines - 1].replace(/\s+\S*$/, "")}…`;
+  return lines;
+}
+
+/** News story card: cover photo on top, headline and summary below. */
+export async function drawNewsCard(input: { title: string; summary?: string | null; date?: string | null; cover?: string | null; rtl?: boolean }): Promise<Blob | null> {
+  const W = 1080, H = 1350;
+  const made = surface(W, H, "#1d4ed8");
+  if (!made) return null;
+  const { canvas, ctx } = made;
+  const img = await loadImage(input.cover);
+  const coverH = 640;
+  if (img) {
+    ctx.save();
+    roundRect(ctx, 50, 50, W - 100, coverH, 32); ctx.clip();
+    const s = Math.max((W - 100) / img.width, coverH / img.height);
+    ctx.drawImage(img, W / 2 - (img.width * s) / 2, 50 + coverH / 2 - (img.height * s) / 2, img.width * s, img.height * s);
+    const fade = ctx.createLinearGradient(0, 50 + coverH - 200, 0, 50 + coverH);
+    fade.addColorStop(0, "rgba(11,16,32,0)"); fade.addColorStop(1, "rgba(11,16,32,0.85)");
+    ctx.fillStyle = fade; ctx.fillRect(50, 50, W - 100, coverH);
+    ctx.restore();
+  }
+  let y = img ? coverH + 140 : 220;
+  ctx.direction = input.rtl ? "rtl" : "ltr";
+  ctx.textAlign = input.rtl ? "right" : "left";
+  const x = input.rtl ? W - 70 : 70;
+  ctx.font = `800 26px ${FONT}`;
+  ctx.fillStyle = "#facc15";
+  ctx.fillText(input.rtl ? "أخبار" : "NEWS", x, y - 50);
+  ctx.font = `800 58px ${FONT}`;
+  ctx.fillStyle = "#ffffff";
+  for (const line of wrapLines(ctx, input.title, W - 140, 4)) { ctx.fillText(line, x, y); y += 72; }
+  if (input.summary) {
+    y += 16;
+    ctx.font = `500 32px ${FONT}`;
+    ctx.fillStyle = "rgba(255,255,255,0.72)";
+    for (const line of wrapLines(ctx, input.summary, W - 140, 4)) { ctx.fillText(line, x, y); y += 46; }
+  }
+  if (input.date) {
+    ctx.font = `600 26px ${FONT}`;
+    ctx.fillStyle = "rgba(255,255,255,0.5)";
+    ctx.fillText(input.date, x, H - 110);
+  }
+  ctx.direction = "ltr";
+  footer(ctx, W, H);
+  return toBlob(canvas);
+}
