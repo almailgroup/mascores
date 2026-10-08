@@ -2,7 +2,9 @@ import UIKit
 import Capacitor
 import Photos
 
-@objc(PhotoLibraryPlugin)
+// Named after its JS name so Capacitor can also load it on demand
+// (NSClassFromString("PhotoLibrary")) even if registration was skipped.
+@objc(PhotoLibrary)
 public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin {
     public let identifier = "PhotoLibraryPlugin"
     public let jsName = "PhotoLibrary"

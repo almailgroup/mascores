@@ -1,6 +1,5 @@
-import { Capacitor, registerPlugin } from "@capacitor/core";
+import { Capacitor } from "@capacitor/core";
 
-const PhotoLibrary = registerPlugin<{ save(options: { base64: string }): Promise<void> }>("PhotoLibrary");
 
 export type SaveResult = "saved" | "shared" | "cancelled" | "update-app" | "unsupported";
 
@@ -18,10 +17,15 @@ function isUnimplemented(error: unknown) {
   return e?.code === "UNIMPLEMENTED" || /not implemented|unimplemented/i.test(e?.message ?? "");
 }
 
-function withTimeout<T>(p: Promise<T>, ms = 20000) {
+const TIMEOUT = "SAVE_TIMEOUT";
+function isTimeout(error: unknown) {
+  return (error as { code?: string } | null)?.code === TIMEOUT;
+}
+
+function withTimeout<T>(p: Promise<T>, ms: number) {
   return Promise.race([
     p,
-    new Promise<T>((_, reject) => setTimeout(() => reject(new Error("Saving took too long. Check Photos permission in iPhone Settings and try again.")), ms)),
+    new Promise<T>((_, reject) => setTimeout(() => reject({ code: TIMEOUT }), ms)),
   ]);
 }
 
@@ -42,20 +46,14 @@ export async function savePhoto(blob: Blob, fileName: string, title: string): Pr
   const native = Capacitor.isNativePlatform() && Capacitor.getPlatform() === "ios";
   if (native) {
     const base64 = await toBase64(blob);
-    // Call the native bridge directly first: plugins registered at runtime are
-    // often missing from the JS plugin list, which made us wrongly say "update app".
+    // The native side never answers a call to a plugin it doesn't have, so a
+    // missing bridge shows up as a timeout — treat that as "update the app".
     try {
-      await withTimeout(callNativeSave(base64));
+      await withTimeout(callNativeSave(base64), 12000);
       return "saved";
     } catch (error) {
-      if (!isUnimplemented(error)) throw error;
-    }
-    try {
-      await withTimeout(PhotoLibrary.save({ base64 }));
-      return "saved";
-    } catch (error) {
-      if (!isUnimplemented(error)) throw error;
-      return "update-app";
+      if (isUnimplemented(error) || isTimeout(error)) return "update-app";
+      throw error;
     }
   }
   const file = new File([blob], fileName, { type: "image/png" });
