@@ -38,12 +38,17 @@ export function NewsSubmissionsPanel() {
   const suspend = useServerFn(setUserSuspension);
   const viewIdentity = useServerFn(viewReporterIdentity);
   const [identityUrl, setIdentityUrl] = useState<string | null>(null);
+  const [banTarget, setBanTarget] = useState<{ userId: string; permanent: boolean } | null>(null);
+  const [banReason, setBanReason] = useState('');
+  const [banning, setBanning] = useState(false);
   const banReporter = async (userId: string, permanent: boolean) => {
-    const reason = permanent ? "Permanently banned after a news request." : "Banned for 30 days after a news request.";
-    if (!window.confirm(permanent ? "Permanently ban this person?" : "Ban this person for 30 days?")) return;
+    const reason = banReason.trim();
+    if (!reason) return;
+    setBanning(true);
     setReporterError(null);
-    try { const result = await suspend({ data: { userId, banned: permanent, days: 30, reason } }); setReporterError(result.banned ? "Permanently banned." : "Banned for 30 days."); qc.invalidateQueries({ queryKey: ['ban-history', userId] }); qc.invalidateQueries({ queryKey: ['admin-users'] }); }
+    try { const result = await suspend({ data: { userId, banned: permanent, days: 1, reason } }); setReporterError(result.banned ? "Permanently banned." : `Banned until ${new Date(result.suspendedUntil!).toLocaleString()}.`); qc.invalidateQueries({ queryKey: ['ban-history', userId] }); qc.invalidateQueries({ queryKey: ['admin-users'] }); setBanTarget(null); }
     catch (e) { setReporterError(e instanceof Error ? e.message : "Could not ban."); }
+    finally { setBanning(false); }
   };
 
   const q = useQuery({
@@ -147,8 +152,8 @@ export function NewsSubmissionsPanel() {
             <span className="shrink-0 text-xs font-semibold uppercase text-muted-foreground">{r.status}</span>
             <button className={btnGhost} onClick={() => generateCode(r.id)}><KeyRound className="h-3.5 w-3.5" /> Generate code</button>
             <button className={btnGhost} onClick={() => setReporter(r.id, "active")}><Check className="h-3.5 w-3.5" /> Activate</button>
-            <button className={btnGhost} onClick={() => banReporter(r.user_id, false)}><Ban className="h-3.5 w-3.5" /> Ban 30 days</button>
-            <button className={btnDanger} onClick={() => banReporter(r.user_id, true)}><Ban className="h-3.5 w-3.5" /> Ban forever</button>
+            <button className={btnGhost} onClick={() => { setBanReason(''); setBanTarget({ userId: r.user_id, permanent: false }); }}><Ban className="h-3.5 w-3.5" /> Ban / next strike</button>
+            <button className={btnDanger} onClick={() => { setBanReason(''); setBanTarget({ userId: r.user_id, permanent: true }); }}><Ban className="h-3.5 w-3.5" /> Ban forever</button>
             <button className={btnDanger} onClick={() => rejectReporter(r.id)}><Trash2 className="h-3.5 w-3.5" /> Reject &amp; delete</button>
           </div>
         ))}
@@ -177,6 +182,14 @@ export function NewsSubmissionsPanel() {
       </Modal>
       <Modal open={!!identityUrl} onClose={() => setIdentityUrl(null)} title="Civil ID photo">
         {identityUrl && <img src={identityUrl} alt="Applicant civil ID" className="max-h-[65vh] w-full object-contain" />}
+      </Modal>
+      <Modal open={!!banTarget} onClose={() => { if (!banning) setBanTarget(null); }} title={banTarget?.permanent ? 'Permanent ban' : 'Ban / next strike'}>
+        {banTarget && <div className="space-y-3">
+          <BanHistory userId={banTarget.userId} />
+          <p className="text-xs text-muted-foreground">First strike: 1 day. Second strike: 1 week. Third strike: permanent. Ban history remains after restrictions expire or are lifted.</p>
+          <textarea aria-label="Ban reason" className={inputCls} placeholder="Reason shown to this user" value={banReason} onChange={(event) => setBanReason(event.target.value)} />
+          <Button variant="destructive" disabled={banning || !banReason.trim()} onClick={() => banReporter(banTarget.userId, banTarget.permanent)}>{banning ? 'Saving…' : 'Confirm ban'}</Button>
+        </div>}
       </Modal>
     </div>
   );
