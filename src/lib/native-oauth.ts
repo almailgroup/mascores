@@ -1,3 +1,4 @@
+import { Capacitor } from "@capacitor/core";
 import { App } from "@capacitor/app";
 import { Browser } from "@capacitor/browser";
 import { isNativeApp } from "@/lib/native-notify";
@@ -18,6 +19,9 @@ const CALLBACK_URL = "https://mascores.live/auth/callback?native=1";
  */
 export async function nativeOAuthSignIn(provider: "google" | "apple"): Promise<{ handled: boolean; error?: string }> {
   if (!isNativeApp()) return { handled: false };
+  // Builds without the Browser plugin: use the in-app web sign-in instead of
+  // failing with "Browser plugin is not implemented on ios".
+  if (!Capacitor.isPluginAvailable("Browser")) return { handled: false };
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
@@ -49,8 +53,11 @@ export async function nativeOAuthSignIn(provider: "google" | "apple"): Promise<{
       }
     });
 
-    void Browser.open({ url: data.url, presentationStyle: "popover" }).catch((e) => {
-      finish({ handled: true, error: e instanceof Error ? e.message : "Could not open sign-in" });
+    void Browser.open({ url: data.url, presentationStyle: "popover" }).catch(() => {
+      // Sheet unavailable: continue sign-in inside the app's own view.
+      settled = true;
+      void listener.then((l) => l.remove());
+      window.location.href = data.url;
     });
 
     // If the user dismisses the sheet without signing in, unblock the UI.

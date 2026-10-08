@@ -208,6 +208,13 @@
   /* No Safari-style link/photo preview on press-and-hold in the app. */
   a, img { -webkit-touch-callout: none; }
 
+  /* Phones and tablets: no text selection or copy menu on press-and-hold.
+     Computers (mouse/trackpad) keep normal selection; form fields always do. */
+  @media (hover: none) and (pointer: coarse) {
+    body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+    input, textarea, select, [contenteditable="true"] { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
+  }
+
   * {
     border-color: var(--color-border);
   }

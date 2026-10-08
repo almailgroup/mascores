@@ -106,7 +106,7 @@ function TransfersPage() {
       {q.isLoading ? <LoadingSkeleton /> : grouped.length === 0 ? (
         <EmptyState title={`${tx("No transfers yet")} — ${num(season)}`} />
       ) : (
-        <div className="grid gap-6">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
           {grouped.map(([day, list]) => (
             <section key={day}>
               <div className="mb-2 flex items-center gap-3">
@@ -135,7 +135,7 @@ function TransfersPage() {
                     </div>
                     <div className="shrink-0 text-right">
                       {r.transfer_type && (
-                        <span className={`rounded-full px-2.5 py-1 text-[0.6rem] font-bold uppercase tracking-wider ${KIND_TONE[r.transfer_type] ?? "bg-primary/15 text-primary"}`}>
+                        <span className={`inline-block whitespace-nowrap rounded-full px-2.5 py-1 text-[0.6rem] font-bold uppercase tracking-wider ${KIND_TONE[r.transfer_type] ?? "bg-primary/15 text-primary"}`}>
                            {tx(r.transfer_type)}
                         </span>
                       )}
