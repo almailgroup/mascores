@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useTx } from "@/lib/auto-translate";
 import { toast } from "sonner";
+import { isNativeApp, nativeSchedule, nativeCancel, nativeNotify, ensureNativePermission } from "@/lib/native-notify";
 
 const PRESETS = [45, 30, 15];
 
@@ -29,8 +30,10 @@ export function MatchReminders({ matchId, kickoffAt }: { matchId: string; kickof
     if (!user) { toast.error(tx("Sign in to set a reminder")); return; }
     if (chosen.has(minutes)) {
       await supabase.from("match_reminders").delete().eq("match_id", matchId).eq("user_id", user.id).eq("minutes_before", minutes);
+      void nativeCancel([`reminder:${matchId}:${minutes}`]);
     } else {
-      if ("Notification" in window && Notification.permission === "default") await Notification.requestPermission();
+      if (isNativeApp()) await ensureNativePermission();
+      else if ("Notification" in window && Notification.permission === "default") await Notification.requestPermission();
       await supabase.from("match_reminders").insert({ match_id: matchId, user_id: user.id, minutes_before: minutes });
       toast.success(tx("Reminder set"));
     }
@@ -88,12 +91,20 @@ export function useReminderAlerts() {
       for (const row of data ?? []) {
         const match = row.match as { id: string; kickoff_at: string | null; home: { name: string } | null; away: { name: string } | null } | null;
         if (!match?.kickoff_at || fired.has(row.id)) continue;
+        if (isNativeApp()) {
+          // Scheduled on the phone itself, so it fires even with the app closed.
+          const at = new Date(new Date(match.kickoff_at).getTime() - row.minutes_before * 60000);
+          void nativeSchedule(`reminder:${match.id}:${row.minutes_before}`, at,
+            `⏰ ${match.home?.name ?? "Home"} vs ${match.away?.name ?? "Away"}`,
+            `Kick-off in ${row.minutes_before} minutes`, `/matches/${match.id}`);
+        }
         const minutesLeft = (new Date(match.kickoff_at).getTime() - Date.now()) / 60000;
         if (minutesLeft <= row.minutes_before && minutesLeft > row.minutes_before - 2) {
           fired.add(row.id);
           const title = `${match.home?.name ?? "Home"} vs ${match.away?.name ?? "Away"}`;
           const body = `Kick-off in ${Math.max(1, Math.round(minutesLeft))} minutes`;
-          if ("Notification" in window && Notification.permission === "granted") new Notification(title, { body });
+          if (isNativeApp()) { if (!(await nativeNotify(title, body, `reminder-now:${row.id}`))) toast.info(`${title} — ${body}`); }
+          else if ("Notification" in window && Notification.permission === "granted") new Notification(title, { body });
           else toast.info(`${title} — ${body}`);
         }
       }

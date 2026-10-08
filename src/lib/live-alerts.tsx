@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useFavorites } from "@/hooks/use-favorites";
+import { isNativeApp, nativeNotify, ensureNativePermission } from "@/lib/native-notify";
 import { playAlertSound, soundFor, type AlertEventKey, type AlertSoundMap } from "@/lib/alert-sounds";
 
 
@@ -64,8 +65,9 @@ const STATUS_TEXT: Record<string, { emoji: string; label: string }> = {
 
 type AlertPreferences = { goals?: boolean; cards?: boolean; kickoff?: boolean; final?: boolean; sound?: string; sounds?: AlertSoundMap };
 
-function announce(title: string, body: string, sound?: string) {
+async function announce(title: string, body: string, sound?: string, path?: string) {
   playAlertSound(sound);
+  if (isNativeApp() && (await nativeNotify(title, body, title + body, path))) return;
 
   try {
     if ("Notification" in window && Notification.permission === "granted") {
@@ -169,7 +171,7 @@ export function useLiveEventAlerts() {
         [minute, who, row.description].filter(Boolean).join(" · "),
       ].filter(Boolean).join("\n");
       const soundKey: AlertEventKey = ["penalty", "penalty_goal", "penalty_missed", "missed_penalty"].includes(row.type) ? "penalty" : category === "cards" ? "card" : category === "goals" ? "goal" : "kickoff";
-      announce(title, body, soundFor(preferences.sounds, soundKey));
+      void announce(title, body, soundFor(preferences.sounds, soundKey), `/matches/${row.match_id}`);
 
     };
 
@@ -190,7 +192,7 @@ export function useLiveEventAlerts() {
       seen.current.add(key);
       info.set(row.id, { ...(m as Info), homeScore: row.home_score, awayScore: row.away_score });
       const score = row.home_score != null && row.away_score != null ? `${row.home_score} - ${row.away_score}` : "vs";
-      announce(`${meta.emoji} ${meta.label}`, `${m?.home ?? "Home"} ${score} ${m?.away ?? "Away"}`, soundFor(preferences.sounds, category === "final" ? "final" : "kickoff"));
+      void announce(`${meta.emoji} ${meta.label}`, `${m?.home ?? "Home"} ${score} ${m?.away ?? "Away"}`, soundFor(preferences.sounds, category === "final" ? "final" : "kickoff"), `/matches/${row.id}`);
     };
 
     loadAlerts();
@@ -225,6 +227,7 @@ export function useAskForAlerts() {
   const follows = favorites.team.length + favorites.match.length > 0;
   useEffect(() => {
     if (!ready || !follows) return;
+    if (isNativeApp()) { void ensureNativePermission(); return; }
     if (!("Notification" in window) || Notification.permission !== "default") return;
     const asked = localStorage.getItem("mas.alerts_asked");
     if (asked) return;

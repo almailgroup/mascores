@@ -41,6 +41,8 @@ const config: CapacitorConfig = {
     // The site paints its own dark background; avoid a white flash on push/pop.
     backgroundColor: "#0a1628",
     contentInset: "never",
+    // No Safari-style link preview when pressing and holding.
+    allowsLinkPreview: false,
   },
   server: {
     url: appUrl,
@@ -55,6 +57,9 @@ const config: CapacitorConfig = {
       backgroundColor: "#0a1628",
       showSpinner: false,
       launchAutoHide: true,
+    },
+    LocalNotifications: {
+      iconColor: "#2563eb",
     },
     PushNotifications: {
       // Show goal alerts even while the app is open and in the foreground.
