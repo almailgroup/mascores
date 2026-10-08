@@ -22,7 +22,7 @@ export async function nativeOAuthSignIn(provider: "google" | "apple"): Promise<{
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
-      redirectTo: CALLBACK_SCHEME,
+      redirectTo: CALLBACK_URL,
       skipBrowserRedirect: true,
       ...(provider === "google" ? { queryParams: { prompt: "select_account" } } : {}),
     },
