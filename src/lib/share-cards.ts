@@ -12,8 +12,9 @@ function loadImage(url?: string | null): Promise<HTMLImageElement | null> {
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = "anonymous";
-    img.onload = () => resolve(img);
-    img.onerror = () => resolve(null);
+    const timeout = window.setTimeout(() => { img.src = ""; resolve(null); }, 8000);
+    img.onload = () => { window.clearTimeout(timeout); resolve(img); };
+    img.onerror = () => { window.clearTimeout(timeout); resolve(null); };
     img.src = url;
   });
 }
