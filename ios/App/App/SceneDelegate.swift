@@ -11,20 +11,35 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin {
     @objc func save(_ call: CAPPluginCall) {
         guard let base64 = call.getString("base64"),
               let data = Data(base64Encoded: base64),
-              let image = UIImage(data: data) else {
+              UIImage(data: data) != nil else {
             call.reject("Could not read image")
             return
         }
-        PHPhotoLibrary.requestAuthorization(for: .addOnly) { status in
-            guard status == .authorized || status == .limited else {
-                call.reject("Allow MA Scores to add photos in iPhone Settings, then try again.")
-                return
-            }
+        let write = {
             PHPhotoLibrary.shared().performChanges({
-                PHAssetChangeRequest.creationRequestForAsset(from: image)
+                let request = PHAssetCreationRequest.forAsset()
+                request.addResource(with: .photo, data: data, options: nil)
             }) { success, error in
-                if success { call.resolve() }
-                else { call.reject(error?.localizedDescription ?? "Could not save photo") }
+                DispatchQueue.main.async {
+                    if success { call.resolve() }
+                    else { call.reject(error?.localizedDescription ?? "Could not save photo") }
+                }
+            }
+        }
+        let status = PHPhotoLibrary.authorizationStatus(for: .addOnly)
+        if status == .authorized || status == .limited { write(); return }
+        if status == .denied || status == .restricted {
+            call.reject("Allow MA Scores to add photos in iPhone Settings, then try again.")
+            return
+        }
+        DispatchQueue.main.async {
+            PHPhotoLibrary.requestAuthorization(for: .addOnly) { newStatus in
+                if newStatus == .authorized || newStatus == .limited { write() }
+                else {
+                    DispatchQueue.main.async {
+                        call.reject("Allow MA Scores to add photos in iPhone Settings, then try again.")
+                    }
+                }
             }
         }
     }

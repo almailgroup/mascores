@@ -18,6 +18,13 @@ function isUnimplemented(error: unknown) {
   return e?.code === "UNIMPLEMENTED" || /not implemented|unimplemented/i.test(e?.message ?? "");
 }
 
+function withTimeout<T>(p: Promise<T>, ms = 20000) {
+  return Promise.race([
+    p,
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error("Saving took too long. Check Photos permission in iPhone Settings and try again.")), ms)),
+  ]);
+}
+
 /** Calls the native bridge directly, in case the plugin header wasn't exported to JS. */
 function callNativeSave(base64: string) {
   const cap = (window as unknown as { Capacitor?: { nativePromise?: (p: string, m: string, o: unknown) => Promise<void> } }).Capacitor;
@@ -35,14 +42,17 @@ export async function savePhoto(blob: Blob, fileName: string, title: string): Pr
   const native = Capacitor.isNativePlatform() && Capacitor.getPlatform() === "ios";
   if (native) {
     const base64 = await toBase64(blob);
+    const hasPlugin = Capacitor.isPluginAvailable("PhotoLibrary");
     try {
-      await PhotoLibrary.save({ base64 });
+      if (!hasPlugin) throw { code: "UNIMPLEMENTED" };
+      await withTimeout(PhotoLibrary.save({ base64 }));
       return "saved";
     } catch (error) {
       if (!isUnimplemented(error)) throw error;
     }
     try {
-      await callNativeSave(base64);
+      if (!hasPlugin) throw { code: "UNIMPLEMENTED" };
+      await withTimeout(callNativeSave(base64));
       return "saved";
     } catch (error) {
       if (!isUnimplemented(error)) throw error;
