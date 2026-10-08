@@ -53,6 +53,8 @@ export function ShareCardButton({ render, title, label: buttonLabel, iconOnly = 
     };
   }, [open, retry]);
 
+  const [holdToSave, setHoldToSave] = useState(false);
+  const holdNotice = label("Press and hold the image above, then choose “Save to Photos”.", "اضغط مطولاً على الصورة أعلاه ثم اختر «حفظ في الصور».");
   const saveToPhotos = async () => {
     const blob = blobRef.current;
     if (!blob || saving) return;
@@ -61,9 +63,10 @@ export function ShareCardButton({ render, title, label: buttonLabel, iconOnly = 
     try {
       const result = await savePhoto(blob, fileName, title);
       setSaved(result === "saved");
-      if (result === "unsupported") setNotice(label("Saving to Photos isn’t available on this device. You can download the image below.", "الحفظ في الصور غير متاح على هذا الجهاز. يمكنك تنزيل الصورة أدناه."));
+      if (result === "unsupported") { setHoldToSave(true); setNotice(holdNotice); }
     } catch {
-      setNotice(label("Couldn’t save the photo. Check photo permissions and try again.", "تعذّر حفظ الصورة. تحقق من إذن الوصول إلى الصور وحاول مرة أخرى."));
+      setHoldToSave(true);
+      setNotice(holdNotice);
     } finally { setSaving(false); }
   };
 
@@ -86,7 +89,7 @@ export function ShareCardButton({ render, title, label: buttonLabel, iconOnly = 
             <div className="overflow-hidden rounded-lg border border-border bg-muted">
               {error ? <div className="flex h-56 flex-col items-center justify-center gap-3 text-sm text-muted-foreground"><span>{label("Couldn’t create the image", "تعذّر إنشاء الصورة")}</span><Button variant="outline" onClick={() => setRetry(n => n + 1)}><RefreshCw />{label("Try again", "حاول مجددًا")}</Button></div>
                 : busy || !preview ? <div className="grid h-56 place-items-center" role="status"><LoaderCircle className="h-6 w-6 animate-spin text-primary" /><span className="sr-only">{label("Creating image", "جارٍ إنشاء الصورة")}</span></div>
-                : <img src={preview} alt={title} className="mx-auto max-h-[45dvh] w-full object-contain" />}
+                : <img src={preview} alt={title} style={holdToSave ? { WebkitTouchCallout: "default" } : undefined} className="mx-auto max-h-[45dvh] w-full object-contain" />}
             </div>
             {notice && <p role="status" className="mt-3 text-sm text-muted-foreground">{notice}</p>}
           </div>
@@ -95,7 +98,6 @@ export function ShareCardButton({ render, title, label: buttonLabel, iconOnly = 
               {saving ? <LoaderCircle className="animate-spin" /> : saved ? <Check /> : <ImageDown />}
               {saving ? label("Saving…", "جارٍ الحفظ…") : saved ? label("Saved to Photos", "تم الحفظ في الصور") : label("Save to photos", "حفظ في الصور")}
             </Button>
-            <Button variant="ghost" disabled={busy || !preview || saving} onClick={() => { if (blobRef.current) downloadPhoto(blobRef.current, fileName); }} className="w-full text-xs text-muted-foreground"><Download />{label("Download image", "تنزيل الصورة")}</Button>
           </div>
         </Dialog.Content>
       </Dialog.Portal>

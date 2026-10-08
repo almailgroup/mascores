@@ -194,7 +194,7 @@ function MatchPage() {
   const shareData = {
     competition: [tx(match.competition?.name) ?? "", roundLabel(match.round_number, match.round) ? tx(roundLabel(match.round_number, match.round)) : ""].filter(Boolean).join(" · "),
     kickoff: dates.kickoff(match.kickoff_at),
-    status: match.status === "live" ? formatClock(clock) : ["scheduled", "postponed", "cancelled"].includes(match.status) && match.status === "scheduled" ? dates.kickoff(match.kickoff_at) : tx(STATUS_LABELS[match.status] ?? match.status) ?? match.status,
+    status: match.status === "live" ? formatClock(clock) : match.status === "scheduled" ? dates.kickoff(match.kickoff_at) : tx(STATUS_LABELS[match.status] ?? match.status) ?? match.status,
     home: { name: tx(match.home?.name) ?? "TBD", logo_url: match.home?.logo_url ?? null },
     away: { name: tx(match.away?.name) ?? "TBD", logo_url: match.away?.logo_url ?? null },
     homeScore: ["scheduled", "postponed", "cancelled"].includes(match.status) ? "" : String(match.home_score ?? 0),
