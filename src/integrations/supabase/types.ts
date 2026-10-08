@@ -1422,13 +1422,17 @@ export type Database = {
         Row: {
           access_code: string | null
           code_redeemed_at: string | null
+          company_name: string | null
           created_at: string
           email: string | null
+          entity_type: string
           full_name: string | null
           handle: string
           id: string
+          national_id: string | null
           phone: string | null
           platform: string
+          social_links: Json
           status: string
           subscription_status: string
           updated_at: string
@@ -1437,13 +1441,17 @@ export type Database = {
         Insert: {
           access_code?: string | null
           code_redeemed_at?: string | null
+          company_name?: string | null
           created_at?: string
           email?: string | null
+          entity_type?: string
           full_name?: string | null
           handle: string
           id?: string
+          national_id?: string | null
           phone?: string | null
           platform?: string
+          social_links?: Json
           status?: string
           subscription_status?: string
           updated_at?: string
@@ -1452,13 +1460,17 @@ export type Database = {
         Update: {
           access_code?: string | null
           code_redeemed_at?: string | null
+          company_name?: string | null
           created_at?: string
           email?: string | null
+          entity_type?: string
           full_name?: string | null
           handle?: string
           id?: string
+          national_id?: string | null
           phone?: string | null
           platform?: string
+          social_links?: Json
           status?: string
           subscription_status?: string
           updated_at?: string
