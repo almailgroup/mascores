@@ -36,7 +36,7 @@ import { Route as UUsernameRouteImport } from './routes/u.$username'
 import { Route as VenuesIdRouteImport } from './routes/venues.$id'
 import { Route as VoiceIndexRouteImport } from './routes/voice/index'
 import { Route as VoiceIdRouteImport } from './routes/voice/$id'
-import { Route as MatchesIdChatRouteImport } from './routes/matches.$id.chat'
+import { Route as MatchesIdChatRouteImport } from './routes/matches_.$id.chat'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -174,9 +174,9 @@ const VoiceIdRoute = VoiceIdRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const MatchesIdChatRoute = MatchesIdChatRouteImport.update({
-  id: '/chat',
-  path: '/chat',
-  getParentRoute: () => MatchesIdRoute,
+  id: '/matches_/$id/chat',
+  path: '/matches/$id/chat',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -197,7 +197,7 @@ export interface FileRoutesByFullPath {
   '/auth/callback': typeof AuthCallbackRoute
   '/coaches/$id': typeof CoachesIdRoute
   '/competitions/$slug': typeof CompetitionsSlugRoute
-  '/matches/$id': typeof MatchesIdRouteWithChildren
+  '/matches/$id': typeof MatchesIdRoute
   '/news/$slug': typeof NewsSlugRoute
   '/players/$id': typeof PlayersIdRoute
   '/teams/$id': typeof TeamsIdRoute
@@ -227,7 +227,7 @@ export interface FileRoutesByTo {
   '/auth/callback': typeof AuthCallbackRoute
   '/coaches/$id': typeof CoachesIdRoute
   '/competitions/$slug': typeof CompetitionsSlugRoute
-  '/matches/$id': typeof MatchesIdRouteWithChildren
+  '/matches/$id': typeof MatchesIdRoute
   '/news/$slug': typeof NewsSlugRoute
   '/players/$id': typeof PlayersIdRoute
   '/teams/$id': typeof TeamsIdRoute
@@ -258,7 +258,7 @@ export interface FileRoutesById {
   '/auth/callback': typeof AuthCallbackRoute
   '/coaches/$id': typeof CoachesIdRoute
   '/competitions/$slug': typeof CompetitionsSlugRoute
-  '/matches/$id': typeof MatchesIdRouteWithChildren
+  '/matches/$id': typeof MatchesIdRoute
   '/news/$slug': typeof NewsSlugRoute
   '/players/$id': typeof PlayersIdRoute
   '/teams/$id': typeof TeamsIdRoute
@@ -268,7 +268,7 @@ export interface FileRoutesById {
   '/competitions/': typeof CompetitionsIndexRoute
   '/news/': typeof NewsIndexRoute
   '/voice/': typeof VoiceIndexRoute
-  '/matches/$id/chat': typeof MatchesIdChatRoute
+  '/matches_/$id/chat': typeof MatchesIdChatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -360,7 +360,7 @@ export interface FileRouteTypes {
     | '/competitions/'
     | '/news/'
     | '/voice/'
-    | '/matches/$id/chat'
+    | '/matches_/$id/chat'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -380,7 +380,7 @@ export interface RootRouteChildren {
   TransfersRoute: typeof TransfersRoute
   CoachesIdRoute: typeof CoachesIdRoute
   CompetitionsSlugRoute: typeof CompetitionsSlugRoute
-  MatchesIdRoute: typeof MatchesIdRouteWithChildren
+  MatchesIdRoute: typeof MatchesIdRoute
   NewsSlugRoute: typeof NewsSlugRoute
   PlayersIdRoute: typeof PlayersIdRoute
   TeamsIdRoute: typeof TeamsIdRoute
@@ -390,6 +390,7 @@ export interface RootRouteChildren {
   CompetitionsIndexRoute: typeof CompetitionsIndexRoute
   NewsIndexRoute: typeof NewsIndexRoute
   VoiceIndexRoute: typeof VoiceIndexRoute
+  MatchesIdChatRoute: typeof MatchesIdChatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -583,12 +584,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VoiceIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/matches/$id/chat': {
-      id: '/matches/$id/chat'
-      path: '/chat'
+    '/matches_/$id/chat': {
+      id: '/matches_/$id/chat'
+      path: '/matches/$id/chat'
       fullPath: '/matches/$id/chat'
       preLoaderRoute: typeof MatchesIdChatRouteImport
-      parentRoute: typeof MatchesIdRoute
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -602,18 +603,6 @@ const AuthRouteChildren: AuthRouteChildren = {
 }
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
-
-interface MatchesIdRouteChildren {
-  MatchesIdChatRoute: typeof MatchesIdChatRoute
-}
-
-const MatchesIdRouteChildren: MatchesIdRouteChildren = {
-  MatchesIdChatRoute: MatchesIdChatRoute,
-}
-
-const MatchesIdRouteWithChildren = MatchesIdRoute._addFileChildren(
-  MatchesIdRouteChildren,
-)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -632,7 +621,7 @@ const rootRouteChildren: RootRouteChildren = {
   TransfersRoute: TransfersRoute,
   CoachesIdRoute: CoachesIdRoute,
   CompetitionsSlugRoute: CompetitionsSlugRoute,
-  MatchesIdRoute: MatchesIdRouteWithChildren,
+  MatchesIdRoute: MatchesIdRoute,
   NewsSlugRoute: NewsSlugRoute,
   PlayersIdRoute: PlayersIdRoute,
   TeamsIdRoute: TeamsIdRoute,
@@ -642,6 +631,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompetitionsIndexRoute: CompetitionsIndexRoute,
   NewsIndexRoute: NewsIndexRoute,
   VoiceIndexRoute: VoiceIndexRoute,
+  MatchesIdChatRoute: MatchesIdChatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
