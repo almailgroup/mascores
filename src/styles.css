@@ -225,6 +225,16 @@
   }
 }
 
+/* iOS zooms the page in when a focused field is under 16px, then snaps
+   back out while typing. Kept outside @layer so it wins over text-sm. */
+@media (hover: none) and (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="file"]):not([type="hidden"]),
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
 /* ---- Match rating chips -------------------------------------------------
  * Rating bands requested by the editorial team:
  * 0.1–4.0 purple · 4.1–5.9 red · 6.0–6.9 orange · 7.0–7.9 light green

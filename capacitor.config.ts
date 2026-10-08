@@ -33,6 +33,21 @@ const ownHosts = Array.from(
   ]),
 );
 
+// Google and Apple sign-in leave mascores.live for these hosts, then return.
+// A host missing from allowNavigation is opened in Safari and the session
+// never comes back into the app.
+const authHosts = [
+  "oauth.lovable.app",
+  "*.lovable.app",
+  "accounts.google.com",
+  "*.google.com",
+  "*.googleusercontent.com",
+  "*.gstatic.com",
+  "accounts.youtube.com",
+  "appleid.apple.com",
+  "*.apple.com",
+];
+
 const config: CapacitorConfig = {
   appId: "com.almailgroup.mascores",
   appName: "Mansour Almail Scores",
@@ -45,9 +60,9 @@ const config: CapacitorConfig = {
   server: {
     url: appUrl,
     cleartext: false,
-    // Keep in-app navigation to our own origin; anything else opens in Safari,
-    // which is also what OAuth requires — Google blocks sign-in inside webviews.
-    allowNavigation: [appHost],
+    // lovable.app 302s to mascores.live, and sign-in continues on the auth
+    // hosts above. Keep both inside the WebView so login returns to the app.
+    allowNavigation: [...ownHosts, ...authHosts],
   },
   plugins: {
     SplashScreen: {

@@ -160,7 +160,7 @@ function AuthPage() {
                   placeholder="Display name"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                  className="w-full bg-transparent text-base outline-none placeholder:text-muted-foreground"
                   autoComplete="name"
                 />
               </Field>
@@ -172,7 +172,7 @@ function AuthPage() {
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                className="w-full bg-transparent text-base outline-none placeholder:text-muted-foreground"
                 autoComplete="email"
               />
             </Field>
@@ -184,7 +184,7 @@ function AuthPage() {
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                  className="w-full bg-transparent text-base outline-none placeholder:text-muted-foreground"
                   autoComplete={mode === "signup" ? "new-password" : "current-password"}
                   minLength={6}
                 />

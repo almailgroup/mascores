@@ -52,7 +52,7 @@ function ResetPassword() {
               placeholder="New password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-transparent text-sm outline-none"
+              className="w-full bg-transparent text-base outline-none"
             />
           </div>
           {error && <div className="text-xs text-destructive">{error}</div>}
