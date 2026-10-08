@@ -18,12 +18,22 @@ const AuthSheet = registerPlugin<{
 async function finishWithReturnUrl(url: string): Promise<{ handled: boolean; error?: string }> {
   let code: string | null = null;
   let providerError: string | null = null;
+  let access: string | null = null;
+  let refresh: string | null = null;
   try {
     const parsed = new URL(url);
-    code = parsed.searchParams.get("code");
-    providerError = parsed.searchParams.get("error_description") ?? parsed.searchParams.get("error");
+    const all = new URLSearchParams(parsed.search);
+    new URLSearchParams(parsed.hash.replace(/^#/, "")).forEach((v, k) => all.set(k, v));
+    code = all.get("code");
+    access = all.get("access_token");
+    refresh = all.get("refresh_token");
+    providerError = all.get("error_description") ?? all.get("error");
   } catch {
     /* fall through */
+  }
+  if (access && refresh) {
+    const { error } = await supabase.auth.setSession({ access_token: access, refresh_token: refresh });
+    return error ? { handled: true, error: error.message } : { handled: true };
   }
   if (!code) return { handled: true, error: providerError ?? "Sign-in failed. Please try again." };
   const { error } = await supabase.auth.exchangeCodeForSession(code);
@@ -47,15 +57,15 @@ export async function nativeOAuthSignIn(provider: "google" | "apple"): Promise<{
   // failing with "plugin is not implemented on ios".
   if (!hasSheet && !hasBrowser) return { handled: false };
 
-  const { data, error } = await supabase.auth.signInWithOAuth({
+  // Use the app's managed sign-in service (the same one the website uses).
+  // Calling Google directly fails with "400 malformed request".
+  const params = new URLSearchParams({
     provider,
-    options: {
-      redirectTo: CALLBACK_URL,
-      skipBrowserRedirect: true,
-      ...(provider === "google" ? { queryParams: { prompt: "select_account" } } : {}),
-    },
+    redirect_uri: CALLBACK_URL,
+    state: Math.random().toString(36).slice(2) + Date.now().toString(36),
+    ...(provider === "google" ? { prompt: "select_account" } : {}),
   });
-  if (error || !data?.url) return { handled: true, error: error?.message ?? "Could not start sign-in" };
+  const data = { url: `${new URL(CALLBACK_URL).origin}/~oauth/initiate?${params.toString()}` };
 
   if (hasSheet) {
     try {

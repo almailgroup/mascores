@@ -7,3 +7,4 @@
 - [x] Camera-roll saving: show installed build in message, avoid duplicate app screen (needs new TestFlight build)
 - [x] Voice room: mic not working (iPhone needs new build)
 - [x] Voice room: emoji reaction shows as one emoji on my own avatar
+- [ ] Google 400 on iPhone, sign-in sheet size, mic 'cannot capture', save stuck, reminders not working (Oct 8)

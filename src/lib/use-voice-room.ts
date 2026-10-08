@@ -152,7 +152,9 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
   const startMicrophone = useCallback(async () => {
     if (localRef.current?.getAudioTracks().length) return true;
     if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
-      setMicError("This browser cannot capture the microphone here. Open the site over https and try again.");
+      setMicError(/Safari\/604/.test(navigator.userAgent) && (window as unknown as { Capacitor?: unknown }).Capacitor
+        ? "This installed app version can't use the microphone yet. Install the newest TestFlight build, then allow the microphone."
+        : "This browser cannot capture the microphone here. Open the site over https and try again.");
       return false;
     }
     try {

@@ -42,7 +42,9 @@ export function MatchReminders({ matchId, kickoffAt }: { matchId: string; kickof
     if (at.getTime() <= Date.now()) { toast.error(tx("That time has already passed — pick a shorter reminder.")); return; }
 
     let allowed = true;
-    if (isNativeApp()) allowed = await ensureNativePermission();
+    // Older app builds never answer, so never wait more than a few seconds.
+    const within = <T,>(p: Promise<T>, fallback: T) => Promise.race([p, new Promise<T>((r) => setTimeout(() => r(fallback), 4000))]);
+    if (isNativeApp()) allowed = await within(ensureNativePermission(), false);
     else if ("Notification" in window) {
       if (Notification.permission === "default") await Notification.requestPermission();
       allowed = Notification.permission === "granted";
@@ -58,9 +60,9 @@ export function MatchReminders({ matchId, kickoffAt }: { matchId: string; kickof
         .select("home:teams!matches_home_team_id_fkey(name),away:teams!matches_away_team_id_fkey(name)")
         .eq("id", matchId).maybeSingle();
       const names = m as { home: { name: string } | null; away: { name: string } | null } | null;
-      const ok = await nativeSchedule(reminderKey, at,
+      const ok = await within(nativeSchedule(reminderKey, at,
         `⏰ ${names?.home?.name ?? "Home"} vs ${names?.away?.name ?? "Away"}`,
-        `Kick-off in ${minutes} minutes`, `/matches/${matchId}`);
+        `Kick-off in ${minutes} minutes`, `/matches/${matchId}`), false);
       if (!ok) {
         toast.warning(allowed
           ? tx("Reminder saved, but this app version can't schedule alerts. Install the latest TestFlight build.")
@@ -85,15 +87,15 @@ export function MatchReminders({ matchId, kickoffAt }: { matchId: string; kickof
       </div>
       <div className="flex flex-wrap items-center gap-2 p-4">
         {PRESETS.map((m) => (
-          <button key={m} onClick={() => toggle(m)}
-            className={`inline-flex h-9 items-center gap-1.5 rounded-full px-4 text-xs font-bold ${chosen.has(m) ? "bg-primary text-primary-foreground" : "border border-border bg-background"}`}>
+          <button key={m} onClick={() => toggle(m)} disabled={!chosen.has(m) && new Date(kickoffAt).getTime() - m * 60000 <= Date.now()}
+            className={`disabled:opacity-40 inline-flex h-9 items-center gap-1.5 rounded-full px-4 text-xs font-bold ${chosen.has(m) ? "bg-primary text-primary-foreground" : "border border-border bg-background"}`}>
             <Bell className="h-3.5 w-3.5" /> {m} {tx("min")}
           </button>
         ))}
         <div className="flex items-center gap-1.5">
           <input inputMode="numeric" value={custom} onChange={(e) => setCustom(e.target.value.replace(/\D/g, ""))}
             placeholder={tx("Custom")} className="h-9 w-24 rounded-full border border-border bg-background px-3 text-xs outline-none focus:border-primary" />
-          <button onClick={() => { const m = Number(custom); if (m > 0) { toggle(m); setCustom(""); } }}
+          <button onClick={() => { const m = Number(custom); if (!(m > 0)) { toast.error(tx("Type the minutes first, e.g. 10")); return; } void toggle(m); setCustom(""); }}
             className="h-9 rounded-full border border-border px-3 text-xs font-bold">{tx("Add")}</button>
         </div>
       </div>
