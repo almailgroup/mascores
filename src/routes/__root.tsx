@@ -13,7 +13,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { ThemeProvider } from "../components/theme-provider";
-import { IntroSplash } from "../components/intro-splash";
+import { onNativeNotificationTap } from "../lib/native-notify";
 import { initNativePush } from "../lib/native-push";
 import { I18nProvider } from "../lib/i18n";
 import { CurrencyProvider } from "../lib/currency";
@@ -150,6 +150,7 @@ function RootComponent() {
     // permission and registers the device for match alerts. A tapped alert
     // carries the path to open, so a full navigation is the simplest handoff.
     void initNativePush((path) => window.location.assign(path));
+    void onNativeNotificationTap((path) => window.location.assign(path));
   }, []);
 
   return (
@@ -159,7 +160,6 @@ function RootComponent() {
           <CurrencyProvider>
             <HeightUnitProvider>
               <AutoTranslateProvider>
-                <IntroSplash />
                 <LanguageReadyGate><Outlet /></LanguageReadyGate>
               </AutoTranslateProvider>
             </HeightUnitProvider>

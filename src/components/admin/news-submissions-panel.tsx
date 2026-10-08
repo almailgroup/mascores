@@ -5,6 +5,8 @@ import { Modal, inputCls, btnPrimary, btnGhost, btnDanger } from "./ui";
 import { Check, X, FileText, ExternalLink, KeyRound, Trash2 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { deleteReporter } from "@/lib/reporter-admin.functions";
+import { setUserSuspension } from "@/lib/moderation.functions";
+import { Ban } from "lucide-react";
 
 type Submission = {
   id: string;
@@ -30,6 +32,14 @@ export function NewsSubmissionsPanel() {
   const [note, setNote] = useState("");
   const [reporterError, setReporterError] = useState<string | null>(null);
   const removeReporter = useServerFn(deleteReporter);
+  const suspend = useServerFn(setUserSuspension);
+  const banReporter = async (userId: string, permanent: boolean) => {
+    const reason = permanent ? "Permanently banned after a news request." : "Banned for 30 days after a news request.";
+    if (!window.confirm(permanent ? "Permanently ban this person?" : "Ban this person for 30 days?")) return;
+    setReporterError(null);
+    try { await suspend({ data: { userId, banned: permanent, days: 30, reason } }); setReporterError(permanent ? "Permanently banned." : "Banned for 30 days."); }
+    catch (e) { setReporterError(e instanceof Error ? e.message : "Could not ban."); }
+  };
 
   const q = useQuery({
     queryKey: ["admin", "news-submissions"],
@@ -114,7 +124,7 @@ export function NewsSubmissionsPanel() {
         {q.data && q.data.length === 0 && <div className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">No submissions yet.</div>}
       </div>
 
-      <h3 className="mb-3 mt-8 text-base font-bold">Reporter accounts</h3>
+      <h3 className="mb-3 mt-8 text-base font-bold">News requests</h3>
       {reporterError && <p className="mb-2 text-xs font-semibold text-destructive">{reporterError}</p>}
       <div className="grid gap-2">
         {(reporters.data ?? []).map((r) => (
@@ -122,11 +132,16 @@ export function NewsSubmissionsPanel() {
             <div className="min-w-0 flex-1">
               <div className="truncate font-semibold">{r.full_name ? `${r.full_name} · ` : ""}@{r.handle} <span className="text-xs font-normal text-muted-foreground">· {r.platform}</span></div>
               <div className="text-xs text-muted-foreground">{[r.phone, r.email].filter(Boolean).join(" · ") || "No contact supplied"}</div>
+              {(() => { const x = r as typeof r & { national_id?: string | null; entity_type?: string | null; company_name?: string | null; social_links?: Record<string, string> | null };
+                const socials = Object.entries(x.social_links ?? {}).map(([k, v]) => `${k}: @${v}`).join(" · ");
+                return (<div className="text-xs text-muted-foreground">{x.entity_type === "company" ? `Company${x.company_name ? ` · ${x.company_name}` : ""}` : "Individual"}{x.national_id ? ` · ID ${x.national_id}` : ""}{socials ? ` · ${socials}` : ""}</div>); })()}
               <div className="text-xs text-muted-foreground">Code: <span className="font-mono">{r.access_code ?? "—"}</span>{r.code_redeemed_at ? " · redeemed" : ""}</div>
             </div>
             <span className="shrink-0 text-xs font-semibold uppercase text-muted-foreground">{r.status}</span>
             <button className={btnGhost} onClick={() => generateCode(r.id)}><KeyRound className="h-3.5 w-3.5" /> Generate code</button>
             <button className={btnGhost} onClick={() => setReporter(r.id, "active")}><Check className="h-3.5 w-3.5" /> Activate</button>
+            <button className={btnGhost} onClick={() => banReporter(r.user_id, false)}><Ban className="h-3.5 w-3.5" /> Ban 30 days</button>
+            <button className={btnDanger} onClick={() => banReporter(r.user_id, true)}><Ban className="h-3.5 w-3.5" /> Ban forever</button>
             <button className={btnDanger} onClick={() => rejectReporter(r.id)}><Trash2 className="h-3.5 w-3.5" /> Reject &amp; delete</button>
           </div>
         ))}
