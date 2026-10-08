@@ -233,7 +233,7 @@ async function drawCard(data: MatchShareData, mode: "result" | "lineups"): Promi
 
   ctx.fillStyle = "#ffffff";
   ctx.font = "800 92px system-ui, -apple-system, sans-serif";
-  ctx.fillText(`${data.homeScore} - ${data.awayScore}`, W / 2, 320);
+  ctx.fillText(data.homeScore === "" ? "VS" : `${data.homeScore} - ${data.awayScore}`, W / 2, 320);
   ctx.font = "600 30px system-ui, sans-serif";
   ctx.fillStyle = "rgba(255,255,255,0.75)";
   ctx.fillText(data.status, W / 2, 368);
@@ -263,7 +263,7 @@ export function MatchShare({ data, mode }: { data: MatchShareData; mode: "result
   const { lang } = useI18n();
   const title = mode === "lineups"
     ? `${data.lineup?.teamName ?? data.home.name ?? ""} · ${lang === "ar" ? "التشكيلة" : "Lineup"}`
-    : `${data.home.name ?? ""} ${data.homeScore}-${data.awayScore} ${data.away.name ?? ""}`.trim();
+    : `${data.home.name ?? ""} ${data.homeScore === "" ? "vs" : `${data.homeScore}-${data.awayScore}`} ${data.away.name ?? ""}`.trim();
   return <ShareCardButton render={() => drawCard(data, mode)} title={title} iconOnly={mode === "result"}
     label={mode === "lineups" ? (lang === "ar" ? "مشاركة التشكيلة" : "Share line-ups") : (lang === "ar" ? "مشاركة المباراة" : "Share match")} />;
 }
