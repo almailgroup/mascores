@@ -15,6 +15,7 @@ import { Save, LogOut, Loader2, LogIn, Camera, Trash2, BellRing } from "lucide-r
 import { ImageCropper } from "@/components/image-cropper";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import type { AlertSoundMap } from "@/lib/alert-sounds";
+import { Button } from '@/components/ui/button';
 
 
 export const Route = createFileRoute("/settings")({
@@ -218,17 +219,11 @@ function SettingsPage() {
 
       <FeedbackBox />
 
-      {user && <section className="mt-10 rounded-2xl border border-destructive/30 bg-destructive/5 px-4 py-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="min-w-0">
-            <div className="text-xs font-semibold text-destructive">{t("settings.deleteAccount")}</div>
-            <p className="text-[0.65rem] text-muted-foreground">{t("settings.deleteAccountHint")}</p>
-          </div>
-          <button disabled={deleting} onClick={() => setConfirmDelete(true)}
-            className="inline-flex h-7 items-center gap-1.5 rounded-full border border-destructive/50 bg-destructive/10 px-3 text-[0.7rem] font-semibold text-destructive disabled:opacity-60">
+      {user && <section className="mt-5">
+          <Button variant="link" size="sm" disabled={deleting} onClick={() => setConfirmDelete(true)}
+            className="px-0 text-xs text-destructive">
             {deleting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />} {t("settings.deleteAccount")}
-          </button>
-        </div>
+          </Button>
         <ConfirmDelete
           open={confirmDelete}
           title={t("settings.deleteAccount")}

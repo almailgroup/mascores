@@ -1,5 +1,10 @@
 # Roadmap
 
+## Current request — October 8
+- [ ] Compact background-free Delete account control.
+- [ ] Private civil ID photo in news applications and owner review; professional misconduct warning.
+- [ ] Persistent ban history and automatic escalation for repeat bans.
+
 ## A. Bug fixes (done)
 - [x] Rating colour bands (purple → shiny gold) + always one decimal (7.0)
 - [x] ft/in height unit working globally (settings + player profile)

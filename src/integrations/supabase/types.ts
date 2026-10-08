@@ -1421,6 +1421,7 @@ export type Database = {
       news_reporters: {
         Row: {
           access_code: string | null
+          civil_id_photo_path: string | null
           code_redeemed_at: string | null
           company_name: string | null
           created_at: string
@@ -1440,6 +1441,7 @@ export type Database = {
         }
         Insert: {
           access_code?: string | null
+          civil_id_photo_path?: string | null
           code_redeemed_at?: string | null
           company_name?: string | null
           created_at?: string
@@ -1459,6 +1461,7 @@ export type Database = {
         }
         Update: {
           access_code?: string | null
+          civil_id_photo_path?: string | null
           code_redeemed_at?: string | null
           company_name?: string | null
           created_at?: string
@@ -2473,6 +2476,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_ban_history: {
+        Row: {
+          action: string
+          banned: boolean
+          created_at: string
+          id: string
+          moderator_id: string | null
+          reason: string | null
+          strike: number
+          suspended_until: string | null
+          user_id: string
+        }
+        Insert: {
+          action?: string
+          banned?: boolean
+          created_at?: string
+          id?: string
+          moderator_id?: string | null
+          reason?: string | null
+          strike?: number
+          suspended_until?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          banned?: boolean
+          created_at?: string
+          id?: string
+          moderator_id?: string | null
+          reason?: string | null
+          strike?: number
+          suspended_until?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       user_suspensions: {
         Row: {

@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Loader2, ShieldOff, ShieldCheck, Search } from "lucide-react";
 import { listModeratedUsers, setUserSuspension, clearUserSuspension, type ModeratedUser } from "@/lib/moderation.functions";
 import { Field, inputCls, btnPrimary, btnGhost, btnDanger, Modal } from "./ui";
+import { BanHistory } from './ban-history';
 
 /** Admin moderation: ban an account for good or suspend it for a set number of days. */
 export function UsersPanel() {
@@ -21,7 +22,7 @@ export function UsersPanel() {
 
   const term = search.trim().toLowerCase();
   const rows = (users.data ?? []).filter((user) => !term || (user.email ?? "").toLowerCase().includes(term) || (user.displayName ?? "").toLowerCase().includes(term));
-  const refresh = () => qc.invalidateQueries({ queryKey: ["admin-users"] });
+  const refresh = () => { qc.invalidateQueries({ queryKey: ["admin-users"] }); qc.invalidateQueries({ queryKey: ['ban-history'] }); };
 
   const state = (user: ModeratedUser) => {
     if (user.banned) return "Banned";
@@ -55,6 +56,7 @@ export function UsersPanel() {
               <div className={`mt-0.5 text-[0.65rem] font-semibold ${user.banned || user.suspendedUntil ? "text-destructive" : "text-muted-foreground"}`}>
                 {state(user)}{user.reason ? ` · ${user.reason}` : ""}
               </div>
+              <BanHistory userId={user.id} />
             </div>
             {(user.banned || user.suspendedUntil) ? (
               <button className={btnGhost} onClick={async () => { await clear({ data: { userId: user.id } }); refresh(); }}>
@@ -79,7 +81,7 @@ function RestrictModal({ user, onClose, onDone, save }: {
   save: (args: { data: { userId: string; banned: boolean; days: number; reason?: string } }) => Promise<unknown>;
 }) {
   const [mode, setMode] = useState<"suspend" | "ban">("suspend");
-  const [days, setDays] = useState("7");
+  const [days, setDays] = useState("1");
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -97,6 +99,8 @@ function RestrictModal({ user, onClose, onDone, save }: {
   return (
     <Modal open onClose={onClose} title={`Restrict ${user.displayName ?? user.email ?? "account"}`}>
       <div className="space-y-3">
+        <BanHistory userId={user.id} />
+        <p className="text-xs text-muted-foreground">First ban: chosen duration (default 1 day). Second ban: at least 7 days. Third ban: permanent. Previous strikes remain after a ban is lifted.</p>
         <div className="flex gap-2">
           {(["suspend", "ban"] as const).map((k) => (
             <button key={k} onClick={() => setMode(k)}
