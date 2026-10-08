@@ -25,8 +25,11 @@ export function ensureNativePermission(): Promise<boolean> {
         const ln = await plugin();
         let s = await ln.checkPermissions();
         if (s.display !== "granted") s = await ln.requestPermissions();
-        return s.display === "granted";
+        const ok = s.display === "granted";
+        if (!ok) ready = null; // ask again next time (e.g. after enabling in Settings)
+        return ok;
       } catch {
+        ready = null;
         return false;
       }
     })();
@@ -54,13 +57,17 @@ export async function nativeNotify(title: string, body: string, key = title + bo
 }
 
 /** Schedules an alert for later — fires even if the app is closed. */
-export async function nativeSchedule(key: string, at: Date, title: string, body: string, path?: string): Promise<void> {
-  if (at.getTime() <= Date.now()) return;
-  if (!(await ensureNativePermission())) return;
+/** Returns true when the phone accepted the alert. */
+export async function nativeSchedule(key: string, at: Date, title: string, body: string, path?: string): Promise<boolean> {
+  if (at.getTime() <= Date.now()) return false;
+  if (!(await ensureNativePermission())) return false;
   try {
     const ln = await plugin();
-    await ln.schedule({ notifications: [{ id: notifId(key), title, body, schedule: { at, allowWhileIdle: true }, extra: path ? { path } : undefined }] });
-  } catch { /* plugin missing in an older build */ }
+    await ln.schedule({ notifications: [{ id: notifId(key), title, body, sound: "default", schedule: { at, allowWhileIdle: true }, extra: path ? { path } : undefined }] });
+    return true;
+  } catch {
+    return false; /* plugin missing in an older build */
+  }
 }
 
 export async function nativeCancel(keys: string[]): Promise<void> {
