@@ -34,7 +34,7 @@ function AuthCallbackPage() {
       return;
     }
     supabase.auth
-      .exchangeCodeForSession(window.location.href)
+      .exchangeCodeForSession(code)
       .then(({ error }) => {
         if (error) {
           setMessage(error.message);

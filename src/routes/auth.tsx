@@ -94,6 +94,8 @@ function AuthPage() {
       // a Done button, fits the screen, and returns here automatically.
       const native = await nativeOAuthSignIn(provider);
       if (native.handled) {
+        // Closing the sheet with Cancel just returns to this page quietly.
+        if (native.error === "Sign in was cancelled") return;
         if (native.error) throw new Error(native.error);
         navigate({ to: "/" });
         return;

@@ -15,7 +15,10 @@ export type VoicePeer = {
   self?: boolean;
 };
 
-type SignalPayload = { from: string; to: string; kind: "offer" | "answer" | "ice"; data: unknown };
+/** `sid`/`toSid` identify each side's current session, so a reload or role change never talks to a stale connection. */
+type SignalPayload = { from: string; to: string; sid: string; toSid?: string; kind: "offer" | "answer" | "ice"; data: unknown };
+
+const newSid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
 
 type Me = { userId: string; name: string; avatar: string | null; role: VoiceRole };
 
@@ -58,6 +61,8 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const recordStartRef = useRef(0);
+  const sidRef = useRef(newSid());
+  const remoteSidRef = useRef<Map<string, string>>(new Map());
 
   meRef.current = me;
   mutedRef.current = muted;
@@ -77,6 +82,7 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
       name: current.name,
       avatar: current.avatar,
       role: current.role,
+      sid: sidRef.current,
       muted: mutedRef.current,
       hand: handRef.current,
     });
@@ -86,6 +92,7 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
     pcsRef.current.get(userId)?.close();
     pcsRef.current.delete(userId);
     pendingIceRef.current.delete(userId);
+    remoteSidRef.current.delete(userId);
     setRemote((prev) => prev.filter((entry) => entry.userId !== userId));
   }, []);
 
@@ -107,7 +114,7 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
 
     pc.onicecandidate = (event) => {
       if (!event.candidate) return;
-      void channel.send({ type: "broadcast", event: "signal", payload: { from: current.userId, to: otherId, kind: "ice", data: event.candidate.toJSON() } satisfies SignalPayload });
+      void channel.send({ type: "broadcast", event: "signal", payload: { from: current.userId, to: otherId, sid: sidRef.current, toSid: remoteSidRef.current.get(otherId), kind: "ice", data: event.candidate.toJSON() } satisfies SignalPayload });
     };
     pc.ontrack = (event) => {
       const stream = event.streams[0] ?? new MediaStream([event.track]);
@@ -134,7 +141,7 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
     try {
       const offer = await pc.createOffer({ iceRestart: force });
       await pc.setLocalDescription(offer);
-      await channel.send({ type: "broadcast", event: "signal", payload: { from: current.userId, to: otherId, kind: "offer", data: pc.localDescription ?? offer } satisfies SignalPayload });
+      await channel.send({ type: "broadcast", event: "signal", payload: { from: current.userId, to: otherId, sid: sidRef.current, toSid: remoteSidRef.current.get(otherId), kind: "offer", data: pc.localDescription ?? offer } satisfies SignalPayload });
     } finally {
       makingOfferRef.current.delete(otherId);
     }
@@ -154,12 +161,26 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
       localRef.current = stream;
       setAudioReady(true);
       setMicError(null);
-      pcsRef.current.forEach((pc) => pc.close());
-      pcsRef.current.clear();
-      setRemote([]);
+      const micTrack = stream.getAudioTracks()[0]!;
+      // Plug the mic into every open connection without dropping anyone's audio.
+      for (const [otherId, pc] of pcsRef.current) {
+        const transceiver = pc.getTransceivers().find((t) => t.receiver.track?.kind === "audio");
+        const role = (peersRef.current.find((p) => p.userId === otherId)?.role ?? "listener") as VoiceRole;
+        if (!transceiver) {
+          pc.addTrack(micTrack, stream);
+          void negotiateRef.current(otherId, role, true);
+          continue;
+        }
+        await transceiver.sender.replaceTrack(micTrack).catch(() => undefined);
+        try { transceiver.sender.setStreams?.(stream); } catch { /* optional */ }
+        if (transceiver.direction !== "sendrecv") {
+          transceiver.direction = "sendrecv";
+          void negotiateRef.current(otherId, role, true);
+        }
+      }
       await sendPresence();
       peersRef.current.forEach((peer) => {
-        if (peer.userId !== meRef.current?.userId) void negotiateRef.current(peer.userId, peer.role, true);
+        if (peer.userId !== meRef.current?.userId && !pcsRef.current.has(peer.userId)) void negotiateRef.current(peer.userId, peer.role, true);
       });
       return true;
     } catch (error) {
@@ -196,6 +217,7 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
   // Presence + signalling channel.
   useEffect(() => {
     if (!enabled || !me) return;
+    sidRef.current = newSid();
     const channel = supabase.channel(`voice:${roomId}`, { config: { presence: { key: me.userId } } });
     channelRef.current = channel;
 
@@ -207,6 +229,13 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
         if (entry?.userId) list.push(entry);
       });
       setPeers(list);
+      // Someone reloaded or rejoined: drop the old connection so a fresh one is made.
+      list.forEach((peer) => {
+        const sid = (peer as VoicePeer & { sid?: string }).sid;
+        const known = remoteSidRef.current.get(peer.userId);
+        if (sid && known && known !== sid) closePeer(peer.userId);
+        if (sid) remoteSidRef.current.set(peer.userId, sid);
+      });
       const ids = new Set(list.map((p) => p.userId));
       pcsRef.current.forEach((_, id) => { if (!ids.has(id)) closePeer(id); });
       list.forEach((peer) => { if (peer.userId !== me.userId) void negotiate(peer.userId, peer.role); });
@@ -215,6 +244,13 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
     channel.on("broadcast", { event: "signal" }, async ({ payload }) => {
       const signal = payload as SignalPayload;
       if (signal.to !== me.userId) return;
+      if (signal.toSid && signal.toSid !== sidRef.current) return; // meant for an old session of mine
+      const knownSid = remoteSidRef.current.get(signal.from);
+      if (signal.sid && knownSid && knownSid !== signal.sid) {
+        if (signal.kind !== "offer") return; // stale answer/ice from their old session
+        closePeer(signal.from);
+      }
+      if (signal.sid) remoteSidRef.current.set(signal.from, signal.sid);
       const otherRole = (peersRef.current.find((p) => p.userId === signal.from)?.role ?? "speaker") as VoiceRole;
       const pc = ensurePeer(signal.from, otherRole);
       if (!pc) return;
@@ -224,7 +260,7 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
           await pc.setRemoteDescription(new RTCSessionDescription(signal.data as RTCSessionDescriptionInit));
           const answer = await pc.createAnswer();
           await pc.setLocalDescription(answer);
-          await channel.send({ type: "broadcast", event: "signal", payload: { from: me.userId, to: signal.from, kind: "answer", data: pc.localDescription ?? answer } satisfies SignalPayload });
+          await channel.send({ type: "broadcast", event: "signal", payload: { from: me.userId, to: signal.from, sid: sidRef.current, toSid: signal.sid, kind: "answer", data: pc.localDescription ?? answer } satisfies SignalPayload });
           const waiting = pendingIceRef.current.get(signal.from) ?? [];
           for (const candidate of waiting) await pc.addIceCandidate(new RTCIceCandidate(candidate));
           pendingIceRef.current.delete(signal.from);

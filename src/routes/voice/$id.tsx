@@ -12,7 +12,7 @@ import { useVoiceRoom, type VoiceRole } from "@/lib/use-voice-room";
 import { suspensionMessage, useMySuspension } from "@/lib/suspension";
 import { uploadMedia } from "@/components/admin/upload";
 import { VoiceRoomChat } from "@/components/voice-room-chat";
-import { VoiceReactions } from "@/components/voice-reactions";
+import { VoiceReactions, useVoiceReactions } from "@/components/voice-reactions";
 
 export const Route = createFileRoute("/voice/$id")({
   head: () => ({
@@ -134,6 +134,8 @@ function VoiceRoomPage() {
     : null;
 
   const { roster, remote, muted, toggleMute, forceMute, hand, setHand, micError, retryMic, connected, audioReady, speakerCount, listenerCount, recording, startRecording, stopRecording } = useVoiceRoom({ roomId: id, me, enabled: !!me && live, storedPeers: participants.data ?? [] });
+
+  const { latest: reactions, react } = useVoiceReactions(id, user?.id);
 
   // Join the room roster (host joins automatically when the room is created).
   const join = async (anonymous = false) => {
@@ -363,7 +365,7 @@ function VoiceRoomPage() {
               <h2 className="text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Speakers")} ({speakerCount})</h2>
               <div className="mt-2 grid grid-cols-3 gap-3 sm:grid-cols-5">
                 {speakers.map((peer) => (
-                  <PeerTile key={peer.userId} peer={peer} canManage={isHost && !peer.self} onDemote={() => manage(peer.userId, "demote")} onMute={() => manage(peer.userId, "mute")} onRemove={() => manage(peer.userId, "remove")} />
+                  <PeerTile key={peer.userId} peer={peer} reaction={reactions[peer.userId]} canManage={isHost && !peer.self} onDemote={() => manage(peer.userId, "demote")} onMute={() => manage(peer.userId, "mute")} onRemove={() => manage(peer.userId, "remove")} />
                 ))}
                 {speakers.length === 0 && <p className="col-span-full text-xs text-muted-foreground">{tx("No one is speaking yet.")}</p>}
               </div>
@@ -385,7 +387,7 @@ function VoiceRoomPage() {
               <h2 className="mt-5 text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Listeners")} ({listenerCount})</h2>
               <div className="mt-2 grid grid-cols-4 gap-3 sm:grid-cols-6">
                 {listeners.map((peer) => (
-                  <PeerTile key={peer.userId} peer={peer} small canManage={isHost && !peer.self} onPromote={() => manage(peer.userId, "promote")} onRemove={() => manage(peer.userId, "remove")} />
+                  <PeerTile key={peer.userId} peer={peer} reaction={reactions[peer.userId]} small canManage={isHost && !peer.self} onPromote={() => manage(peer.userId, "promote")} onRemove={() => manage(peer.userId, "remove")} />
                 ))}
                 {listeners.length === 0 && <p className="col-span-full text-xs text-muted-foreground">{tx("No listeners yet.")}</p>}
               </div>
@@ -396,7 +398,7 @@ function VoiceRoomPage() {
 
       {/* Written messages sit under the speakers so listeners can join in silently. */}
       <div className="mt-4 pb-40 md:pb-6">
-        {live && joined && <VoiceReactions roomId={id} userId={user?.id} />}
+        {live && joined && <VoiceReactions onReact={(emoji) => void react(emoji)} />}
         <VoiceRoomChat roomId={id} />
       </div>
 
@@ -437,9 +439,9 @@ function VoiceRoomPage() {
   );
 }
 
-function PeerTile({ peer, small = false, canManage = false, onPromote, onDemote, onMute, onRemove }: {
+function PeerTile({ peer, reaction, small = false, canManage = false, onPromote, onDemote, onMute, onRemove }: {
   peer: { userId: string; name: string; avatar: string | null; role: VoiceRole; muted: boolean; speaking: boolean; hand: boolean; self?: boolean };
-  small?: boolean; canManage?: boolean; onPromote?: () => void; onDemote?: () => void; onMute?: () => void; onRemove?: () => void;
+  reaction?: string; small?: boolean; canManage?: boolean; onPromote?: () => void; onDemote?: () => void; onMute?: () => void; onRemove?: () => void;
 }) {
   const tx = useTx();
   const size = small ? "h-11 w-11" : "h-16 w-16";
@@ -451,6 +453,9 @@ function PeerTile({ peer, small = false, canManage = false, onPromote, onDemote,
           : <span className={`${size} inline-flex items-center justify-center rounded-full bg-muted text-sm font-bold`}>{peer.name.slice(0, 1).toUpperCase()}</span>}
         {peer.role !== "listener" && peer.muted && (
           <span className="absolute -bottom-0.5 -end-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-background text-muted-foreground shadow"><MicOff className="h-3 w-3" /></span>
+        )}
+        {reaction && (
+          <span key={reaction} className="absolute -top-2 -start-2 inline-flex h-7 w-7 animate-in zoom-in-50 items-center justify-center rounded-full bg-background text-base shadow-md" aria-label={reaction}>{reaction}</span>
         )}
         {peer.hand && <span className="absolute -top-1 -end-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground shadow"><Hand className="h-3 w-3" /></span>}
       </div>
