@@ -28,16 +28,50 @@ export function MatchReminders({ matchId, kickoffAt }: { matchId: string; kickof
 
   const toggle = async (minutes: number) => {
     if (!user) { toast.error(tx("Sign in to set a reminder")); return; }
+    const reminderKey = `reminder:${matchId}:${minutes}`;
     if (chosen.has(minutes)) {
-      await supabase.from("match_reminders").delete().eq("match_id", matchId).eq("user_id", user.id).eq("minutes_before", minutes);
-      void nativeCancel([`reminder:${matchId}:${minutes}`]);
-    } else {
-      if (isNativeApp()) await ensureNativePermission();
-      else if ("Notification" in window && Notification.permission === "default") await Notification.requestPermission();
-      await supabase.from("match_reminders").insert({ match_id: matchId, user_id: user.id, minutes_before: minutes });
-      toast.success(tx("Reminder set"));
+      const { error } = await supabase.from("match_reminders").delete().eq("match_id", matchId).eq("user_id", user.id).eq("minutes_before", minutes);
+      if (error) { toast.error(tx("Could not remove the reminder. Please try again.")); return; }
+      void nativeCancel([reminderKey]);
+      toast.success(tx("Reminder removed"));
+      qc.invalidateQueries({ queryKey: key });
+      return;
     }
+    if (!kickoffAt) return;
+    const at = new Date(new Date(kickoffAt).getTime() - minutes * 60000);
+    if (at.getTime() <= Date.now()) { toast.error(tx("That time has already passed — pick a shorter reminder.")); return; }
+
+    let allowed = true;
+    if (isNativeApp()) allowed = await ensureNativePermission();
+    else if ("Notification" in window) {
+      if (Notification.permission === "default") await Notification.requestPermission();
+      allowed = Notification.permission === "granted";
+    }
+
+    const { error } = await supabase.from("match_reminders").insert({ match_id: matchId, user_id: user.id, minutes_before: minutes });
+    if (error && error.code !== "23505") { toast.error(tx("Could not save the reminder. Please try again.")); return; }
     qc.invalidateQueries({ queryKey: key });
+
+    if (isNativeApp()) {
+      // Schedule on the phone right away so it fires even if the app is closed.
+      const { data: m } = await supabase.from("matches")
+        .select("home:teams!matches_home_team_id_fkey(name),away:teams!matches_away_team_id_fkey(name)")
+        .eq("id", matchId).maybeSingle();
+      const names = m as { home: { name: string } | null; away: { name: string } | null } | null;
+      const ok = await nativeSchedule(reminderKey, at,
+        `⏰ ${names?.home?.name ?? "Home"} vs ${names?.away?.name ?? "Away"}`,
+        `Kick-off in ${minutes} minutes`, `/matches/${matchId}`);
+      if (!ok) {
+        toast.warning(allowed
+          ? tx("Reminder saved, but this app version can't schedule alerts. Install the latest TestFlight build.")
+          : tx("Reminder saved. Turn on notifications for MA Scores in iPhone Settings to get it."));
+        return;
+      }
+    } else if (!allowed) {
+      toast.success(tx("Reminder set — you'll see it here while the site is open. Allow notifications to get a pop-up."));
+      return;
+    }
+    toast.success(tx("Reminder set"));
   };
 
   if (!kickoffAt) return null;
@@ -77,40 +111,69 @@ export function MatchReminders({ matchId, kickoffAt }: { matchId: string; kickof
   );
 }
 
-/** While the app is open, fires the reminders the signed-in user asked for. */
+const FIRED_KEY = "mas.reminders.fired";
+function loadFired(): Set<string> {
+  try { return new Set(JSON.parse(localStorage.getItem(FIRED_KEY) ?? "[]")); } catch { return new Set(); }
+}
+function saveFired(set: Set<string>) {
+  try { localStorage.setItem(FIRED_KEY, JSON.stringify([...set].slice(-200))); } catch { /* ignore */ }
+}
+
+/**
+ * Keeps the signed-in user's reminders working: on the phone they're scheduled
+ * as real alerts (fire with the app closed); on the website they pop up while
+ * the site is open.
+ */
 export function useReminderAlerts() {
   const { user } = useAuth();
   useEffect(() => {
     if (!user) return;
-    const fired = new Set<string>();
+    const fired = loadFired();
+    const scheduled = new Map<string, boolean>();
+    let running = false;
     const tick = async () => {
-      const { data } = await supabase
-        .from("match_reminders")
-        .select("id,minutes_before,match:matches(id,kickoff_at,home:teams!matches_home_team_id_fkey(name),away:teams!matches_away_team_id_fkey(name))")
-        .eq("user_id", user.id);
-      for (const row of data ?? []) {
-        const match = row.match as { id: string; kickoff_at: string | null; home: { name: string } | null; away: { name: string } | null } | null;
-        if (!match?.kickoff_at || fired.has(row.id)) continue;
-        if (isNativeApp()) {
-          // Scheduled on the phone itself, so it fires even with the app closed.
-          const at = new Date(new Date(match.kickoff_at).getTime() - row.minutes_before * 60000);
-          void nativeSchedule(`reminder:${match.id}:${row.minutes_before}`, at,
-            `⏰ ${match.home?.name ?? "Home"} vs ${match.away?.name ?? "Away"}`,
-            `Kick-off in ${row.minutes_before} minutes`, `/matches/${match.id}`);
-        }
-        const minutesLeft = (new Date(match.kickoff_at).getTime() - Date.now()) / 60000;
-        if (minutesLeft <= row.minutes_before && minutesLeft > row.minutes_before - 2) {
-          fired.add(row.id);
+      if (running) return;
+      running = true;
+      try {
+        const { data, error } = await supabase
+          .from("match_reminders")
+          .select("id,minutes_before,match:matches(id,kickoff_at,home:teams!matches_home_team_id_fkey(name),away:teams!matches_away_team_id_fkey(name))")
+          .eq("user_id", user.id);
+        if (error) return;
+        for (const row of data ?? []) {
+          const match = row.match as { id: string; kickoff_at: string | null; home: { name: string } | null; away: { name: string } | null } | null;
+          if (!match?.kickoff_at || fired.has(row.id)) continue;
           const title = `${match.home?.name ?? "Home"} vs ${match.away?.name ?? "Away"}`;
-          const body = `Kick-off in ${Math.max(1, Math.round(minutesLeft))} minutes`;
-          if (isNativeApp()) { if (!(await nativeNotify(title, body, `reminder-now:${row.id}`))) toast.info(`${title} — ${body}`); }
-          else if ("Notification" in window && Notification.permission === "granted") new Notification(title, { body });
-          else toast.info(`${title} — ${body}`);
+          const kickoff = new Date(match.kickoff_at).getTime();
+          const at = new Date(kickoff - row.minutes_before * 60000);
+          const schedKey = `${row.id}:${match.kickoff_at}`;
+
+          if (isNativeApp() && !scheduled.has(schedKey) && at.getTime() > Date.now()) {
+            // Real phone alert; re-done when the kickoff time changes.
+            scheduled.set(schedKey, await nativeSchedule(`reminder:${match.id}:${row.minutes_before}`, at,
+              `⏰ ${title}`, `Kick-off in ${row.minutes_before} minutes`, `/matches/${match.id}`));
+          }
+
+          const minutesLeft = (kickoff - Date.now()) / 60000;
+          if (minutesLeft <= row.minutes_before && minutesLeft > -5) {
+            fired.add(row.id);
+            saveFired(fired);
+            // The phone already showed its scheduled alert.
+            if (isNativeApp() && scheduled.get(schedKey)) continue;
+            const body = minutesLeft > 0 ? `Kick-off in ${Math.max(1, Math.round(minutesLeft))} minutes` : "Kick-off now";
+            if (isNativeApp()) { if (!(await nativeNotify(`⏰ ${title}`, body, `reminder-now:${row.id}`, `/matches/${match.id}`))) toast.info(`${title} — ${body}`); }
+            else if ("Notification" in window && Notification.permission === "granted") new Notification(title, { body });
+            else toast.info(`${title} — ${body}`, { duration: 15000 });
+          }
         }
+      } finally {
+        running = false;
       }
     };
-    tick();
-    const timer = setInterval(tick, 60_000);
-    return () => clearInterval(timer);
+    void tick();
+    const timer = setInterval(tick, 30_000);
+    const onVisible = () => { if (document.visibilityState === "visible") void tick(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => { clearInterval(timer); document.removeEventListener("visibilitychange", onVisible); };
   }, [user]);
 }
