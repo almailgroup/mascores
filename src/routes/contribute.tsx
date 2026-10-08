@@ -28,7 +28,7 @@ export const Route = createFileRoute("/contribute")({
   component: ContributePage,
 });
 
-const PLATFORMS = ["tiktok", "instagram", "x", "youtube", "facebook", "other"] as const;
+const PLATFORMS = ["instagram", "tiktok", "x", "snapchat", "youtube", "facebook", "other"] as const;
 const inputCls = "w-full rounded-xl border border-border bg-background px-4 py-2.5 text-base outline-none focus:border-primary sm:text-sm";
 
 function ContributePage() {
@@ -36,11 +36,15 @@ function ContributePage() {
   const { t } = useI18n();
   const qc = useQueryClient();
 
-  const [platform, setPlatform] = useState<string>("tiktok");
+  const [platform, setPlatform] = useState<string>("instagram");
   const [handle, setHandle] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [contactEmail, setContactEmail] = useState("");
+  const [nationalId, setNationalId] = useState("");
+  const [entityType, setEntityType] = useState<"individual" | "company">("individual");
+  const [companyName, setCompanyName] = useState("");
+  const [socials, setSocials] = useState<Record<string, string>>({});
   const [applying, setApplying] = useState(false);
   const [applyError, setApplyError] = useState<string | null>(null);
   const [code, setCode] = useState("");
@@ -80,8 +84,10 @@ function ContributePage() {
     },
   });
 
+  const canApply = !!handle.trim() && !!fullName.trim() && phone.trim().length >= 6 && /^\S+@\S+\.\S+$/.test(contactEmail.trim()) && !!nationalId.trim() && (entityType === "individual" || !!companyName.trim());
   const apply = async () => {
-    if (!user || !handle.trim() || !fullName.trim() || (!phone.trim() && !contactEmail.trim())) return;
+    if (!canApply || !user) return;
+    const social_links = Object.fromEntries(Object.entries(socials).map(([k, v]) => [k, v.trim().replace(/^@/, "")]).filter(([, v]) => v));
     setApplying(true); setApplyError(null);
     const { error: insertError } = await supabase.from("news_reporters").insert({
       user_id: user.id,
@@ -89,7 +95,11 @@ function ContributePage() {
       handle: handle.replace(/^@/, ""),
       full_name: fullName.trim(),
       phone: phone.trim() || null,
-      email: contactEmail.trim() || null,
+      email: contactEmail.trim(),
+      national_id: nationalId.trim(),
+      entity_type: entityType,
+      company_name: entityType === "company" ? companyName.trim() : null,
+      social_links,
     } as never);
     setApplying(false);
     if (insertError) { setApplyError(insertError.message); return; }
@@ -183,6 +193,27 @@ function ContributePage() {
                 <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Full name</label>
                 <input className={`${inputCls} mt-1`} maxLength={120} placeholder="Your name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
               </div>
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">You are</label>
+                <div className="mt-1 grid grid-cols-2 gap-2">
+                  {(["individual", "company"] as const).map((k) => (
+                    <button key={k} type="button" onClick={() => setEntityType(k)}
+                      className={`h-10 rounded-xl border text-sm font-semibold ${entityType === k ? "border-primary text-primary" : "border-border text-muted-foreground"}`}>
+                      {k === "individual" ? "Individual" : "Company"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {entityType === "company" && (
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Company name</label>
+                  <input className={`${inputCls} mt-1`} maxLength={160} value={companyName} onChange={(e) => setCompanyName(e.target.value)} />
+                </div>
+              )}
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{entityType === "company" ? "Company registration / ID" : "Civil ID"}</label>
+                <input className={`${inputCls} mt-1`} maxLength={40} value={nationalId} onChange={(e) => setNationalId(e.target.value)} />
+              </div>
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
                   <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Phone</label>
@@ -205,10 +236,21 @@ function ContributePage() {
                   <input className={`${inputCls} mt-1`} placeholder="@username" value={handle} onChange={(e) => setHandle(e.target.value)} />
                 </div>
               </div>
-              <button disabled={applying || !handle.trim() || !fullName.trim() || (!phone.trim() && !contactEmail.trim())} onClick={apply} className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground disabled:opacity-60">
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Other social media (optional)</label>
+                <div className="mt-1 grid gap-2 sm:grid-cols-2">
+                  {PLATFORMS.filter((p) => p !== "other" && p !== platform).map((p) => (
+                    <div key={p} className="flex items-center gap-2">
+                      <span className="w-20 shrink-0 text-xs font-semibold capitalize text-muted-foreground">{p === "x" ? "X" : p}</span>
+                      <input className={inputCls} placeholder="@username" value={socials[p] ?? ""} onChange={(e) => setSocials((s) => ({ ...s, [p]: e.target.value }))} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <button disabled={applying || !canApply} onClick={apply} className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground disabled:opacity-60">
                 {applying ? <Loader2 className="h-4 w-4 animate-spin" /> : <BadgeCheck className="h-4 w-4" />} Send my details
               </button>
-              <p className="text-[0.7rem] text-muted-foreground">A phone number or an email is required so the admin can respond to you. If you have not heard back within 2 days, email <a href="mailto:mansouralmailscores@gmail.com" className="font-semibold text-primary">mansouralmailscores@gmail.com</a>.</p>
+              <p className="text-[0.7rem] text-muted-foreground">Name, ID, phone and email are all required so the admin can check and reply to you. If you have not heard back within 2 days, email <a href="mailto:mansouralmailscores@gmail.com" className="font-semibold text-primary">mansouralmailscores@gmail.com</a>.</p>
               {applyError && <p className="text-xs text-destructive">{applyError}</p>}
             </div>
           </section>

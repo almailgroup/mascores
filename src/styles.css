@@ -205,6 +205,9 @@
 }
 
 @layer base {
+  /* No Safari-style link/photo preview on press-and-hold in the app. */
+  a, img { -webkit-touch-callout: none; }
+
   * {
     border-color: var(--color-border);
   }
