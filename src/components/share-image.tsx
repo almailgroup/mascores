@@ -54,7 +54,6 @@ export function ShareCardButton({ render, title, label: buttonLabel, iconOnly = 
   }, [open, retry]);
 
   const [holdToSave, setHoldToSave] = useState(false);
-  const holdNotice = label("Press and hold the image above, then choose “Save to Photos”.", "اضغط مطولاً على الصورة أعلاه ثم اختر «حفظ في الصور».");
   const saveToPhotos = async () => {
     const blob = blobRef.current;
     if (!blob || saving) return;
@@ -63,10 +62,18 @@ export function ShareCardButton({ render, title, label: buttonLabel, iconOnly = 
     try {
       const result = await savePhoto(blob, fileName, title);
       setSaved(result === "saved");
-      if (result === "unsupported") { setHoldToSave(true); setNotice(holdNotice); }
-    } catch {
-      setHoldToSave(true);
-      setNotice(holdNotice);
+      if (result === "update-app") {
+        setHoldToSave(true);
+        setNotice(label("Saving to your camera roll needs the latest MA Scores update. Install the newest version, then tap Save again.", "الحفظ في ألبوم الكاميرا يحتاج آخر تحديث لتطبيق MA Scores. ثبّت أحدث نسخة ثم اضغط حفظ مجددًا."));
+      } else if (result === "unsupported") {
+        setHoldToSave(true);
+        setNotice(label("This browser can’t save to Photos. Open MA Scores on your iPhone to save it to your camera roll.", "هذا المتصفح لا يدعم الحفظ في الصور. افتح MA Scores على جهازك لحفظها في ألبوم الكاميرا."));
+      }
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : "";
+      setNotice(/Allow MA Scores/i.test(msg)
+        ? label("Allow MA Scores to add photos: iPhone Settings → MA Scores → Photos → Add Photos Only.", "اسمح لـ MA Scores بإضافة الصور: الإعدادات ← MA Scores ← الصور ← إضافة الصور فقط.")
+        : label("Couldn’t save the photo. Please try again.", "تعذّر حفظ الصورة. حاول مرة أخرى."));
     } finally { setSaving(false); }
   };
 
