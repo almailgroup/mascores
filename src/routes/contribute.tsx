@@ -10,7 +10,8 @@ import { uploadMedia } from "@/components/admin/upload";
 import { createArticleDraftWithAlmail } from "@/lib/almail-ai.functions";
 import { readAiImages, type AiImageInput } from "@/lib/image-files";
 import { NewsLinkPicker, type NewsLinks } from "@/components/admin/news-link-picker";
-import { redeemReporterCode } from "@/lib/reporter.functions";
+import { redeemReporterCode, applyAsReporter } from "@/lib/reporter.functions";
+import { Button } from '@/components/ui/button';
 import { Loader2, LogIn, Sparkles, ImagePlus, Send, BadgeCheck, Mail, KeyRound, Share2, CheckCircle2 } from "lucide-react";
 
 export const Route = createFileRoute("/contribute")({
@@ -41,7 +42,7 @@ function ContributePage() {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [contactEmail, setContactEmail] = useState("");
-  const [nationalId, setNationalId] = useState("");
+  const [identityFile, setIdentityFile] = useState<File | null>(null);
   const [entityType, setEntityType] = useState<"individual" | "company">("individual");
   const [companyName, setCompanyName] = useState("");
   const [socials, setSocials] = useState<Record<string, string>>({});
@@ -51,6 +52,7 @@ function ContributePage() {
   const [codeMsg, setCodeMsg] = useState<string | null>(null);
   const [codeBusy, setCodeBusy] = useState(false);
   const redeem = useServerFn(redeemReporterCode);
+  const sendApplication = useServerFn(applyAsReporter);
 
   const [title, setTitle] = useState("");
   const [excerpt, setExcerpt] = useState("");
@@ -70,7 +72,8 @@ function ContributePage() {
     enabled: !!user,
     queryKey: ["reporter", user?.id],
     queryFn: async () => {
-      const { data } = await supabase.from("news_reporters").select("*").eq("user_id", user!.id).maybeSingle();
+      if (!user) return null;
+      const { data } = await supabase.from("news_reporters").select("*").eq("user_id", user.id).maybeSingle();
       return data;
     },
   });
@@ -84,26 +87,25 @@ function ContributePage() {
     },
   });
 
-  const canApply = !!handle.trim() && !!fullName.trim() && phone.trim().length >= 6 && /^\S+@\S+\.\S+$/.test(contactEmail.trim()) && !!nationalId.trim() && (entityType === "individual" || !!companyName.trim());
+  const canApply = !!handle.trim() && !!fullName.trim() && phone.trim().length >= 6 && /^\S+@\S+\.\S+$/.test(contactEmail.trim()) && !!identityFile && (entityType === "individual" || !!companyName.trim());
   const apply = async () => {
     if (!canApply || !user) return;
     const social_links = Object.fromEntries(Object.entries(socials).map(([k, v]) => [k, v.trim().replace(/^@/, "")]).filter(([, v]) => v));
     setApplying(true); setApplyError(null);
-    const { error: insertError } = await supabase.from("news_reporters").insert({
-      user_id: user.id,
-      platform,
-      handle: handle.replace(/^@/, ""),
-      full_name: fullName.trim(),
-      phone: phone.trim() || null,
-      email: contactEmail.trim(),
-      national_id: nationalId.trim(),
-      entity_type: entityType,
-      company_name: entityType === "company" ? companyName.trim() : null,
-      social_links,
-    } as never);
-    setApplying(false);
-    if (insertError) { setApplyError(insertError.message); return; }
-    await qc.invalidateQueries({ queryKey: ["reporter", user.id] });
+    try {
+      if (!identityFile || !['image/jpeg', 'image/png', 'image/webp'].includes(identityFile.type) || identityFile.size > 5 * 1024 * 1024) throw new Error('Choose a JPG, PNG or WebP civil ID photo under 5 MB.');
+      const extension = identityFile.type === 'image/png' ? 'png' : identityFile.type === 'image/webp' ? 'webp' : 'jpg';
+      const path = `${user.id}/${crypto.randomUUID()}.${extension}`;
+      const { error: uploadError } = await supabase.storage.from('reporter-identity').upload(path, identityFile, { contentType: identityFile.type });
+      if (uploadError) throw uploadError;
+      await sendApplication({ data: {
+        platform: platform as typeof PLATFORMS[number], handle: handle.replace(/^@/, ''), full_name: fullName.trim(),
+        phone: phone.trim(), email: contactEmail.trim(), civil_id_photo_path: path,
+        entity_type: entityType, company_name: entityType === 'company' ? companyName.trim() : null, social_links,
+      } });
+      await qc.invalidateQueries({ queryKey: ['reporter', user.id] });
+    } catch (error) { setApplyError(error instanceof Error ? error.message : 'Could not send your details.'); }
+    finally { setApplying(false); }
   };
 
   const submitCode = async () => {
@@ -211,8 +213,9 @@ function ContributePage() {
                 </div>
               )}
               <div>
-                <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{entityType === "company" ? "Company registration / ID" : "Civil ID"}</label>
-                <input className={`${inputCls} mt-1`} maxLength={40} value={nationalId} onChange={(e) => setNationalId(e.target.value)} />
+                <label htmlFor="civil-id-photo" className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Civil ID photo</label>
+                <input id="civil-id-photo" type="file" accept="image/jpeg,image/png,image/webp" className={`${inputCls} mt-1`} onChange={(e) => { setIdentityFile(e.target.files?.[0] ?? null); setApplyError(null); }} />
+                <p className="mt-1 text-xs text-muted-foreground">Private · visible only to you and the main admin. JPG, PNG or WebP, up to 5 MB.</p>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
@@ -247,10 +250,11 @@ function ContributePage() {
                   ))}
                 </div>
               </div>
-              <button disabled={applying || !canApply} onClick={apply} className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground disabled:opacity-60">
+              <Button disabled={applying || !canApply} onClick={apply}>
                 {applying ? <Loader2 className="h-4 w-4 animate-spin" /> : <BadgeCheck className="h-4 w-4" />} Send my details
-              </button>
-              <p className="text-[0.7rem] text-muted-foreground">Name, ID, phone and email are all required so the admin can check and reply to you. If you have not heard back within 2 days, email <a href="mailto:mansouralmailscores@gmail.com" className="font-semibold text-primary">mansouralmailscores@gmail.com</a>.</p>
+              </Button>
+              <p className="text-[0.7rem] text-muted-foreground">Name, civil ID photo, phone and email are required for verification.</p>
+              <p className="text-xs text-muted-foreground">False information, impersonation or deliberate misuse of the news service will result in an account ban. Repeated violations lead to longer bans and ultimately a permanent ban.</p>
               {applyError && <p className="text-xs text-destructive">{applyError}</p>}
             </div>
           </section>
@@ -353,6 +357,7 @@ function ContributePage() {
                 className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground disabled:opacity-60">
                 {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} Send for review
               </button>
+              <p className="text-xs text-muted-foreground">False information, impersonation or deliberate misuse of the news service will result in an account ban. Repeated violations lead to longer bans and ultimately a permanent ban.</p>
             </div>
           </div>
 

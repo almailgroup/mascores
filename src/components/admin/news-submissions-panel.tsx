@@ -7,6 +7,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { deleteReporter } from "@/lib/reporter-admin.functions";
 import { setUserSuspension } from "@/lib/moderation.functions";
 import { Ban } from "lucide-react";
+import { BanHistory } from './ban-history';
+import { viewReporterIdentity } from '@/lib/reporter.functions';
+import { Button } from '@/components/ui/button';
 
 type Submission = {
   id: string;
@@ -33,11 +36,13 @@ export function NewsSubmissionsPanel() {
   const [reporterError, setReporterError] = useState<string | null>(null);
   const removeReporter = useServerFn(deleteReporter);
   const suspend = useServerFn(setUserSuspension);
+  const viewIdentity = useServerFn(viewReporterIdentity);
+  const [identityUrl, setIdentityUrl] = useState<string | null>(null);
   const banReporter = async (userId: string, permanent: boolean) => {
     const reason = permanent ? "Permanently banned after a news request." : "Banned for 30 days after a news request.";
     if (!window.confirm(permanent ? "Permanently ban this person?" : "Ban this person for 30 days?")) return;
     setReporterError(null);
-    try { await suspend({ data: { userId, banned: permanent, days: 30, reason } }); setReporterError(permanent ? "Permanently banned." : "Banned for 30 days."); }
+    try { const result = await suspend({ data: { userId, banned: permanent, days: 30, reason } }); setReporterError(result.banned ? "Permanently banned." : "Banned for 30 days."); qc.invalidateQueries({ queryKey: ['ban-history', userId] }); qc.invalidateQueries({ queryKey: ['admin-users'] }); }
     catch (e) { setReporterError(e instanceof Error ? e.message : "Could not ban."); }
   };
 
@@ -136,7 +141,9 @@ export function NewsSubmissionsPanel() {
                 const socials = Object.entries(x.social_links ?? {}).map(([k, v]) => `${k}: @${v}`).join(" · ");
                 return (<div className="text-xs text-muted-foreground">{x.entity_type === "company" ? `Company${x.company_name ? ` · ${x.company_name}` : ""}` : "Individual"}{x.national_id ? ` · ID ${x.national_id}` : ""}{socials ? ` · ${socials}` : ""}</div>); })()}
               <div className="text-xs text-muted-foreground">Code: <span className="font-mono">{r.access_code ?? "—"}</span>{r.code_redeemed_at ? " · redeemed" : ""}</div>
+              <BanHistory userId={r.user_id} />
             </div>
+            {r.civil_id_photo_path && <Button variant="outline" size="sm" onClick={async () => { setReporterError(null); try { const result = await viewIdentity({ data: { id: r.id } }); setIdentityUrl(result.url); } catch (error) { setReporterError(error instanceof Error ? error.message : 'Could not open photo.'); } }}>Civil ID photo</Button>}
             <span className="shrink-0 text-xs font-semibold uppercase text-muted-foreground">{r.status}</span>
             <button className={btnGhost} onClick={() => generateCode(r.id)}><KeyRound className="h-3.5 w-3.5" /> Generate code</button>
             <button className={btnGhost} onClick={() => setReporter(r.id, "active")}><Check className="h-3.5 w-3.5" /> Activate</button>
@@ -167,6 +174,9 @@ export function NewsSubmissionsPanel() {
             </div>
           </div>
         )}
+      </Modal>
+      <Modal open={!!identityUrl} onClose={() => setIdentityUrl(null)} title="Civil ID photo">
+        {identityUrl && <img src={identityUrl} alt="Applicant civil ID" className="max-h-[65vh] w-full object-contain" />}
       </Modal>
     </div>
   );
