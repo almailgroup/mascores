@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import { downloadPhoto, savePhoto } from "@/lib/save-photo";
 
 /** One accessible, memory-safe image sheet for results, lineups and standings. */
-export function ShareCardButton({ render, title, label: buttonLabel, iconOnly = false }: {
+export function ShareCardButton({ render, title, label: buttonLabel, iconOnly = false, disabled = false }: {
   render: () => Promise<Blob | null>;
   title: string;
   label?: string;
   iconOnly?: boolean;
+  disabled?: boolean;
 }) {
   const { lang } = useI18n();
   const label = (en: string, ar: string) => lang === "ar" ? ar : en;
@@ -69,7 +70,7 @@ export function ShareCardButton({ render, title, label: buttonLabel, iconOnly = 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
-        <Button variant="outline" size={iconOnly ? "icon" : "sm"} aria-label={buttonLabel ?? label("Share image", "مشاركة صورة")}
+        <Button disabled={disabled} variant="outline" size={iconOnly ? "icon" : "sm"} aria-label={buttonLabel ?? label("Share image", "مشاركة صورة")}
           className={iconOnly ? "rounded-full border-primary-foreground/20 bg-primary-foreground/15 text-primary-foreground hover:bg-primary-foreground/25 hover:text-primary-foreground" : "rounded-full"}>
           <Share2 />{!iconOnly && (buttonLabel ?? label("Share", "مشاركة"))}
         </Button>
