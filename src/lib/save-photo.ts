@@ -42,21 +42,19 @@ export async function savePhoto(blob: Blob, fileName: string, title: string): Pr
   const native = Capacitor.isNativePlatform() && Capacitor.getPlatform() === "ios";
   if (native) {
     const base64 = await toBase64(blob);
-    const hasPlugin = Capacitor.isPluginAvailable("PhotoLibrary");
+    // Call the native bridge directly first: plugins registered at runtime are
+    // often missing from the JS plugin list, which made us wrongly say "update app".
     try {
-      if (!hasPlugin) throw { code: "UNIMPLEMENTED" };
-      await withTimeout(PhotoLibrary.save({ base64 }));
+      await withTimeout(callNativeSave(base64));
       return "saved";
     } catch (error) {
       if (!isUnimplemented(error)) throw error;
     }
     try {
-      if (!hasPlugin) throw { code: "UNIMPLEMENTED" };
-      await withTimeout(callNativeSave(base64));
+      await withTimeout(PhotoLibrary.save({ base64 }));
       return "saved";
     } catch (error) {
       if (!isUnimplemented(error)) throw error;
-      // The installed build predates the camera-roll bridge.
       return "update-app";
     }
   }
