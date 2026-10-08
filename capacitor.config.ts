@@ -44,12 +44,25 @@ const config: CapacitorConfig = {
     // No Safari-style link preview when pressing and holding.
     allowsLinkPreview: false,
   },
+  // Present as mobile Safari so Google allows its sign-in page inside the app.
+  overrideUserAgent:
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1",
   server: {
     url: appUrl,
     cleartext: false,
-    // Keep in-app navigation to our own origin; anything else opens in Safari,
-    // which is also what OAuth requires — Google blocks sign-in inside webviews.
-    allowNavigation: [appHost],
+    // Our own hosts plus the sign-in hosts, so Google/Apple sign-in stays
+    // inside the app and returns the session to it instead of Safari.
+    allowNavigation: [
+      ...ownHosts,
+      "oauth.lovable.app",
+      "*.lovable.app",
+      "accounts.google.com",
+      "*.google.com",
+      "*.gstatic.com",
+      "appleid.apple.com",
+      "*.apple.com",
+      "*.supabase.co",
+    ],
   },
   plugins: {
     SplashScreen: {

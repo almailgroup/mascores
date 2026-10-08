@@ -132,7 +132,7 @@ function AuthPage() {
                 : "Sign in to continue to MansourAlmailScores."}
           </p>
 
-          {mode !== "forgot" && !isNativeApp && (
+          {mode !== "forgot" && (
             <div className="mt-6 grid gap-2">
               <button
                 type="button"
