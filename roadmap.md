@@ -1,10 +1,11 @@
 # Roadmap
 
 ## Current request — smoother app and photo saving
-- [ ] Fix rough share interactions and loading/cleanup.
-- [ ] Person icons for missing/broken player photos across lineups and squads.
-- [ ] Polished Save to photos with native iOS camera-roll saving.
-- [ ] Verify public sharing and player views.
+- [x] Fix rough share interactions and loading/cleanup.
+- [x] Person icons for missing/broken player photos across lineups and squads.
+- [x] Polished Save to photos with native iOS camera-roll saving.
+- [x] Verify public sharing and player views.
+- Native iOS saving requires a new Xcode/TestFlight build and physical-device verification.
 - Main-page sentence was incomplete; no additional main-page change specified.
 
 ## Previous request — October 8
