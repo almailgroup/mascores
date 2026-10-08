@@ -153,6 +153,32 @@ function RootComponent() {
     void onNativeNotificationTap((path) => window.location.assign(path));
   }, []);
 
+  useEffect(() => {
+    // After an update, an open tab may request page files that no longer
+    // exist ("Importing a module script failed"). Reload once to fetch fresh ones.
+    const KEY = "mas-chunk-reload";
+    const recover = () => {
+      const last = Number(sessionStorage.getItem(KEY) || 0);
+      if (Date.now() - last < 10_000) return;
+      sessionStorage.setItem(KEY, String(Date.now()));
+      window.location.reload();
+    };
+    const onPreload = (e: Event) => {
+      e.preventDefault();
+      recover();
+    };
+    const onRejection = (e: PromiseRejectionEvent) => {
+      const msg = String((e.reason as Error)?.message ?? e.reason ?? "");
+      if (/Importing a module script failed|Failed to fetch dynamically imported module|error loading dynamically imported module/i.test(msg)) recover();
+    };
+    window.addEventListener("vite:preloadError", onPreload);
+    window.addEventListener("unhandledrejection", onRejection);
+    return () => {
+      window.removeEventListener("vite:preloadError", onPreload);
+      window.removeEventListener("unhandledrejection", onRejection);
+    };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
