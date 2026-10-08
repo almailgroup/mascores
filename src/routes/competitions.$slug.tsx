@@ -425,15 +425,22 @@ function CompetitionMatches({ data }: { data: MatchWithTeams[] }) {
     bucket.matches.push(m);
     buckets.set(key, bucket);
   });
-  // Grouped cards run A, B, C…; rounds inside a group keep their order and any
-  // card without a group (knockout, qualifying) stays where the calendar puts it.
+  // Cards follow the calendar: each card sits where its earliest match falls,
+  // so Group A and Group B rounds interleave by date instead of all of Group A
+  // running before Group B. Ties fall back to group then round order.
+  const firstDate = (b: { matches: MatchWithTeams[] }) =>
+    Math.min(...b.matches.map((m) => new Date(m.kickoff_at ?? 0).getTime()));
+  for (const bucket of buckets.values()) {
+    bucket.matches.sort((a, b) => new Date(a.kickoff_at ?? 0).getTime() - new Date(b.kickoff_at ?? 0).getTime());
+  }
   const list = [...buckets.values()].sort((a, b) => {
+    const byDate = firstDate(a) - firstDate(b);
+    if (byDate) return byDate;
     const byGroup = compareGroupLabels(a.group, b.group, false);
     if (byGroup) return byGroup;
     const ra = a.round.startsWith("#") ? Number(a.round.slice(1)) : null;
     const rb = b.round.startsWith("#") ? Number(b.round.slice(1)) : null;
     if (ra != null && rb != null && ra !== rb) return ra - rb;
-    // The list arrives in date order, so the first card seen keeps its place.
     return a.order - b.order;
   });
   return (
