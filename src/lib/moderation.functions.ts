@@ -11,10 +11,10 @@ const suspendSchema = z.object({
 });
 const clearSchema = z.object({ userId: z.string().uuid() });
 
-async function assertAdmin(userId: string) {
+async function assertAdmin(userId: string, client: { rpc: (name: 'is_admin', args: { _uid: string }) => PromiseLike<{ data: boolean | null; error: unknown }> }) {
+  const { data: allowed, error } = await client.rpc('is_admin', { _uid: userId });
+  if (error || !allowed) throw new Error("Admins only.");
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data } = await supabaseAdmin.from("admins").select("user_id").eq("user_id", userId).maybeSingle();
-  if (!data) throw new Error("Admins only.");
   return supabaseAdmin;
 }
 
@@ -34,7 +34,7 @@ export const listModeratedUsers = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => searchSchema.parse(input ?? {}))
   .handler(async ({ data, context }): Promise<ModeratedUser[]> => {
-    const admin = await assertAdmin(context.userId);
+    const admin = await assertAdmin(context.userId, context.supabase);
     const { data: list } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
     const users = list?.users ?? [];
     const ids = users.map((user) => user.id);
@@ -69,7 +69,7 @@ export const setUserSuspension = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => suspendSchema.parse(input))
   .handler(async ({ data, context }) => {
-    const admin = await assertAdmin(context.userId);
+    const admin = await assertAdmin(context.userId, context.supabase);
     if (data.userId === context.userId) throw new Error("You cannot suspend your own account.");
     const until = data.banned || data.days === 0 ? null : new Date(Date.now() + data.days * 86400000).toISOString();
     const { data: saved, error } = await admin
@@ -85,14 +85,14 @@ export const setUserSuspension = createServerFn({ method: "POST" })
         },
         { onConflict: "user_id" },
       )
-      .select("id")
+      .select("id,banned,suspended_until")
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!saved) throw new Error("The restriction could not be saved. Please try again.");
     // They stay signed in on purpose: the app shows them the notice and the reason,
     // and simply stops them posting, hosting and chatting.
     await admin.auth.admin.updateUserById(data.userId, { ban_duration: "none" }).catch(() => null);
-    return { ok: true };
+    return { ok: true, banned: saved.banned, suspendedUntil: saved.suspended_until };
   });
 
 /** Lift a ban or suspension. */
@@ -100,7 +100,7 @@ export const clearUserSuspension = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => clearSchema.parse(input))
   .handler(async ({ data, context }) => {
-    const admin = await assertAdmin(context.userId);
+    const admin = await assertAdmin(context.userId, context.supabase);
     const { error } = await admin.from("user_suspensions").delete().eq("user_id", data.userId);
     if (error) throw new Error(error.message);
     // Unlock the account itself too, otherwise they still cannot sign in.
