@@ -429,9 +429,9 @@ function CompetitionMatches({ data }: { data: MatchWithTeams[] }) {
   // so Group A and Group B rounds interleave by date instead of all of Group A
   // running before Group B. Ties fall back to group then round order.
   const firstDate = (b: { matches: MatchWithTeams[] }) =>
-    Math.min(...b.matches.map((m) => new Date(m.kickoff_at ?? m.match_date ?? 0).getTime()));
+    Math.min(...b.matches.map((m) => new Date(m.kickoff_at ?? 0).getTime()));
   for (const bucket of buckets.values()) {
-    bucket.matches.sort((a, b) => new Date(a.kickoff_at ?? a.match_date ?? 0).getTime() - new Date(b.kickoff_at ?? b.match_date ?? 0).getTime());
+    bucket.matches.sort((a, b) => new Date(a.kickoff_at ?? 0).getTime() - new Date(b.kickoff_at ?? 0).getTime());
   }
   const list = [...buckets.values()].sort((a, b) => {
     const byDate = firstDate(a) - firstDate(b);
