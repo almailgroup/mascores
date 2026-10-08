@@ -10,4 +10,6 @@
 <!-- LOVABLE:END -->
 
 - Store reporter identity photos in private user-scoped storage and issue short-lived owner-authorized links; identity documents must never have public URLs.
+- Keep shared-image generation and saving in one share dialog, with cancellable rendering and revoked preview URLs, to prevent redundant work and memory leaks.
+- Save images on iOS through the add-only PhotoLibrary bridge registered by the scene controller; web uses file sharing with an explicit download alternative so camera-roll actions never silently download.
 - Record and escalate bans with database triggers and per-user transaction locks, retaining history after restrictions are lifted; every write path must follow the same strike rules.

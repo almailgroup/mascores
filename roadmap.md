@@ -1,9 +1,16 @@
 # Roadmap
 
-## Current request — October 8
-- [ ] Compact background-free Delete account control.
-- [ ] Private civil ID photo in news applications and owner review; professional misconduct warning.
-- [ ] Persistent ban history and automatic escalation for repeat bans.
+## Current request — smoother app and photo saving
+- [ ] Fix rough share interactions and loading/cleanup.
+- [ ] Person icons for missing/broken player photos across lineups and squads.
+- [ ] Polished Save to photos with native iOS camera-roll saving.
+- [ ] Verify public sharing and player views.
+- Main-page sentence was incomplete; no additional main-page change specified.
+
+## Previous request — October 8
+- [x] Compact background-free Delete account control.
+- [x] Private civil ID photo in news applications and owner review; professional misconduct warning.
+- [x] Persistent ban history and automatic escalation for repeat bans.
 
 ## A. Bug fixes (done)
 - [x] Rating colour bands (purple → shiny gold) + always one decimal (7.0)
