@@ -5,5 +5,5 @@
 - [x] Google/Apple sign-in: compact sheet with Cancel button (needs new TestFlight build)
 - [x] Kickoff reminders: saving errors, immediate phone scheduling, clear messages
 - [x] Camera-roll saving: show installed build in message, avoid duplicate app screen (needs new TestFlight build)
-- [ ] Voice room: mic not working
-- [ ] Voice room: emoji reaction shows as one emoji on my own avatar
+- [x] Voice room: mic not working (iPhone needs new build)
+- [x] Voice room: emoji reaction shows as one emoji on my own avatar
