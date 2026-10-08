@@ -361,7 +361,11 @@ function MatchPage() {
 
           {match.highlight_url && <a href={match.highlight_url} target="_blank" rel="noreferrer" className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4 font-semibold hover:border-primary"><PlayCircle className="h-5 w-5 text-primary" /> {tx("Watch match highlights")}</a>}
           <MatchVoice matchId={id} />
-          <MatchChat matchId={id} />
+          <Link to="/matches/$id/chat" params={{ id }} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4 font-semibold transition hover:border-primary">
+            <MessageCircle className="h-5 w-5 shrink-0 text-primary" />
+            <span className="flex-1">{tx("Match chat")}</span>
+            <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground rtl:rotate-180" />
+          </Link>
         </div>
       </div>}
 
