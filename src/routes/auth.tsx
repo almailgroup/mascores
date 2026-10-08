@@ -89,6 +89,14 @@ function AuthPage() {
     setError(null);
     setBusy(true);
     try {
+      // On the iPhone app, open sign-in in the system Safari sheet so it has
+      // a Done button, fits the screen, and returns here automatically.
+      const native = await nativeOAuthSignIn(provider);
+      if (native.handled) {
+        if (native.error) throw new Error(native.error);
+        navigate({ to: "/" });
+        return;
+      }
       const result = await lovable.auth.signInWithOAuth(provider, {
         redirect_uri: window.location.origin,
         ...(provider === "google" ? { extraParams: { prompt: "select_account" } } : {}),
