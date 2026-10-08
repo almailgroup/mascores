@@ -64,7 +64,14 @@ export function ShareCardButton({ render, title, label: buttonLabel, iconOnly = 
       setSaved(result === "saved");
       if (result === "update-app") {
         setHoldToSave(true);
-        setNotice(label("Saving to your camera roll needs the latest MA Scores update. Install the newest version, then tap Save again.", "الحفظ في ألبوم الكاميرا يحتاج آخر تحديث لتطبيق MA Scores. ثبّت أحدث نسخة ثم اضغط حفظ مجددًا."));
+        // Show the installed build so it's clear whether the new one is on the phone.
+        let build = "";
+        try {
+          const { App } = await import("@capacitor/app");
+          const info = await App.getInfo();
+          build = ` (${info.version} · ${info.build})`;
+        } catch { /* unknown */ }
+        setNotice(label(`This installed app${build} doesn't include the camera-roll saver. Delete it, install the newest TestFlight build, then tap Save again.`, `هذه النسخة المثبتة${build} لا تحتوي على ميزة الحفظ في ألبوم الكاميرا. احذف التطبيق وثبّت أحدث نسخة من TestFlight ثم اضغط حفظ مجددًا.`));
       } else if (result === "unsupported") {
         setHoldToSave(true);
         setNotice(label("This browser can’t save to Photos. Open MA Scores on your iPhone to save it to your camera roll.", "هذا المتصفح لا يدعم الحفظ في الصور. افتح MA Scores على جهازك لحفظها في ألبوم الكاميرا."));

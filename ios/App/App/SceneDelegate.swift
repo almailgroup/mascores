@@ -106,8 +106,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = scene as? UIWindowScene else { return }
 
-        window = UIWindow(windowScene: windowScene)
-        window?.rootViewController = MASBridgeViewController()
+        // The Main storyboard already creates the app's screen; only build one
+        // here if it didn't, so the app never runs two copies side by side.
+        if window == nil || !(window?.rootViewController is MASBridgeViewController) {
+            window = UIWindow(windowScene: windowScene)
+            window?.rootViewController = MASBridgeViewController()
+        }
         window?.makeKeyAndVisible()
 
         SceneDelegateProxy.shared.scene(scene, willConnectTo: session, options: connectionOptions)
