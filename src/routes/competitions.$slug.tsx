@@ -35,7 +35,7 @@ function groupsOf(rows: Row[]): [string | null, Row[]][] {
 }
 
 export const Route = createFileRoute("/competitions/$slug")({
-  head: ({ params }) => ({ meta: [{ title: `${params.slug} — MansourAlmailScores` }] }),
+  head: ({ params }) => ({ meta: [{ title: `${params.slug} — MansourAlmailScores` }, { name: "description", content: "Competition fixtures, standings, squads and statistics on MA Scores." }, { property: "og:title", content: `${params.slug} — MansourAlmailScores` }, { property: "og:description", content: "Competition fixtures, standings, squads and statistics on MA Scores." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: CompetitionPage,
 });
 

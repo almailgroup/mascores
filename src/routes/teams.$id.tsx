@@ -573,7 +573,7 @@ function TeamMatches({ data, teamId, nextId }: { data: MatchWithTeams[]; teamId:
   useEffect(() => {
     if (!nextId || !box.current) return;
     const row = box.current.querySelector(`a[href*="/matches/${nextId}"]`);
-    row?.scrollIntoView({ block: "center" });
+    row?.scrollIntoView({ block: "center", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
   }, [nextId]);
   return <div ref={box}><MatchGroups data={data} highlightTeamId={teamId} /></div>;
 }

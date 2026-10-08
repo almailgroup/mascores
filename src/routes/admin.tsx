@@ -35,7 +35,7 @@ import { AdminAbilityProvider } from "@/lib/admin-ability";
 import { SeasonMenu } from "@/components/season-menu";
 
 export const Route = createFileRoute("/admin")({
-  head: () => ({ meta: [{ title: "Admin — Mansour Almail Scores" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Admin — Mansour Almail Scores" }, { name: "robots", content: "noindex" }, { name: "description", content: "Manage football content and access in MA Scores." }, { property: "og:title", content: "Admin — Mansour Almail Scores" }, { property: "og:description", content: "Manage football content and access in MA Scores." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: () => <AdminConsole />,
 });
 
