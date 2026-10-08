@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Share2, X, ImageDown, Download, LoaderCircle, Check, RefreshCw } from "lucide-react";
+import { Share2, X, ImageDown, LoaderCircle, Check, RefreshCw } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
-import { downloadPhoto, savePhoto } from "@/lib/save-photo";
+import { savePhoto } from "@/lib/save-photo";
 
 /** One accessible, memory-safe image sheet for results, lineups and standings. */
 export function ShareCardButton({ render, title, label: buttonLabel, iconOnly = false, disabled = false }: {
