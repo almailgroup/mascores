@@ -3,7 +3,9 @@ import { Browser } from "@capacitor/browser";
 import { isNativeApp } from "@/lib/native-notify";
 import { supabase } from "@/integrations/supabase/client";
 
-const CALLBACK_SCHEME = "com.almailgroup.mascores://auth/callback";
+// Must be on the auth allow-list (https), so the sheet lands on our callback
+// page, which hands the code back to the app via the custom URL scheme.
+const CALLBACK_URL = "https://mascores.live/auth/callback?native=1";
 
 /**
  * Native iOS OAuth: open the provider sign-in in the system Safari sheet
