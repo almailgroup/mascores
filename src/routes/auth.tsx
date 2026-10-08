@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { nativeOAuthSignIn } from "@/lib/native-oauth";
 import { BrandLogo } from "@/components/brand-logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Loader2, Mail, Lock, User as UserIcon, ArrowLeft } from "lucide-react";
@@ -89,6 +90,14 @@ function AuthPage() {
     setError(null);
     setBusy(true);
     try {
+      // On the iPhone app, open sign-in in the system Safari sheet so it has
+      // a Done button, fits the screen, and returns here automatically.
+      const native = await nativeOAuthSignIn(provider);
+      if (native.handled) {
+        if (native.error) throw new Error(native.error);
+        navigate({ to: "/" });
+        return;
+      }
       const result = await lovable.auth.signInWithOAuth(provider, {
         redirect_uri: window.location.origin,
         ...(provider === "google" ? { extraParams: { prompt: "select_account" } } : {}),

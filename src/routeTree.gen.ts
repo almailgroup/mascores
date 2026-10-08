@@ -23,6 +23,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as TicketsRouteImport } from './routes/tickets'
 import { Route as TransfersRouteImport } from './routes/transfers'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as CoachesIdRouteImport } from './routes/coaches.$id'
 import { Route as CompetitionsIndexRouteImport } from './routes/competitions.index'
 import { Route as CompetitionsSlugRouteImport } from './routes/competitions.$slug'
@@ -106,6 +107,11 @@ const TransfersRoute = TransfersRouteImport.update({
   path: '/transfers',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/callback',
+  path: '/callback',
+  getParentRoute: () => AuthRoute,
+} as any)
 const CoachesIdRoute = CoachesIdRouteImport.update({
   id: '/coaches/$id',
   path: '/coaches/$id',
@@ -170,7 +176,7 @@ const VoiceIdRoute = VoiceIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/contribute': typeof ContributeRoute
   '/favorites': typeof FavoritesRoute
   '/privacypolicy': typeof PrivacypolicyRoute
@@ -182,6 +188,7 @@ export interface FileRoutesByFullPath {
   '/support': typeof SupportRoute
   '/tickets': typeof TicketsRoute
   '/transfers': typeof TransfersRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/coaches/$id': typeof CoachesIdRoute
   '/competitions/$slug': typeof CompetitionsSlugRoute
   '/matches/$id': typeof MatchesIdRoute
@@ -198,7 +205,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/contribute': typeof ContributeRoute
   '/favorites': typeof FavoritesRoute
   '/privacypolicy': typeof PrivacypolicyRoute
@@ -210,6 +217,7 @@ export interface FileRoutesByTo {
   '/support': typeof SupportRoute
   '/tickets': typeof TicketsRoute
   '/transfers': typeof TransfersRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/coaches/$id': typeof CoachesIdRoute
   '/competitions/$slug': typeof CompetitionsSlugRoute
   '/matches/$id': typeof MatchesIdRoute
@@ -227,7 +235,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/contribute': typeof ContributeRoute
   '/favorites': typeof FavoritesRoute
   '/privacypolicy': typeof PrivacypolicyRoute
@@ -239,6 +247,7 @@ export interface FileRoutesById {
   '/support': typeof SupportRoute
   '/tickets': typeof TicketsRoute
   '/transfers': typeof TransfersRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/coaches/$id': typeof CoachesIdRoute
   '/competitions/$slug': typeof CompetitionsSlugRoute
   '/matches/$id': typeof MatchesIdRoute
@@ -269,6 +278,7 @@ export interface FileRouteTypes {
     | '/support'
     | '/tickets'
     | '/transfers'
+    | '/auth/callback'
     | '/coaches/$id'
     | '/competitions/$slug'
     | '/matches/$id'
@@ -297,6 +307,7 @@ export interface FileRouteTypes {
     | '/support'
     | '/tickets'
     | '/transfers'
+    | '/auth/callback'
     | '/coaches/$id'
     | '/competitions/$slug'
     | '/matches/$id'
@@ -325,6 +336,7 @@ export interface FileRouteTypes {
     | '/support'
     | '/tickets'
     | '/transfers'
+    | '/auth/callback'
     | '/coaches/$id'
     | '/competitions/$slug'
     | '/matches/$id'
@@ -342,7 +354,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
-  AuthRoute: typeof AuthRoute
+  AuthRoute: typeof AuthRouteWithChildren
   ContributeRoute: typeof ContributeRoute
   FavoritesRoute: typeof FavoritesRoute
   PrivacypolicyRoute: typeof PrivacypolicyRoute
@@ -468,6 +480,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TransfersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof AuthRoute
+    }
     '/coaches/$id': {
       id: '/coaches/$id'
       path: '/coaches/$id'
@@ -555,10 +574,20 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthRouteChildren {
+  AuthCallbackRoute: typeof AuthCallbackRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthCallbackRoute: AuthCallbackRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
-  AuthRoute: AuthRoute,
+  AuthRoute: AuthRouteWithChildren,
   ContributeRoute: ContributeRoute,
   FavoritesRoute: FavoritesRoute,
   PrivacypolicyRoute: PrivacypolicyRoute,
