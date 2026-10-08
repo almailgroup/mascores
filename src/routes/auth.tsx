@@ -91,6 +91,7 @@ function AuthPage() {
     try {
       const result = await lovable.auth.signInWithOAuth(provider, {
         redirect_uri: window.location.origin,
+        ...(provider === "google" ? { extraParams: { prompt: "select_account" } } : {}),
       });
       if (result.error) throw result.error;
       if (result.redirected) return;
