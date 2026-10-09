@@ -18,6 +18,7 @@ import { FlagIcon } from "@/components/flag";
 import { EventIcon as EventArt, hasEventArt } from "@/components/event-icon";
 import { nationalOverrideMap, applyCallUp } from "@/lib/national";
 import { useLogoAccent } from "@/lib/logo-accent";
+import { SportsHeaderBackground } from "@/components/sports-header-background";
 import { StandingsTable, type PublicStandingRow } from "@/components/standings-table";
 import { MatchShare } from "@/components/match-share";
 import { displayShortName } from "@/lib/short-name";
@@ -157,12 +158,6 @@ function MatchPage() {
   // The hero blends both badges: home colour on the left, away colour on the right.
   const homeAccent = useLogoAccent(m.data?.home?.logo_url ?? null);
   const awayAccent = useLogoAccent(m.data?.away?.logo_url ?? null);
-  // Both halves are deepened so the header never glares on a phone screen.
-  const homeColor = `color-mix(in oklab, ${homeAccent?.color ?? awayAccent?.color ?? "#16224a"} 68%, #05070d 32%)`;
-  const awayColor = `color-mix(in oklab, ${awayAccent?.color ?? homeAccent?.color ?? "#070a12"} 68%, #05070d 32%)`;
-  // Two solid halves joined by a thin seam in a slightly shifted tone - never a blend of both colours.
-  const seamColor = `color-mix(in oklab, ${homeColor} 50%, #000 25%)`;
-  const heroBackground = `linear-gradient(100deg, ${homeColor} 0%, ${homeColor} 49.4%, ${seamColor} 49.4%, ${seamColor} 50.6%, ${awayColor} 50.6%, ${awayColor} 100%)`;
   const { add: addFavorite } = useFavorites();
   const [, tickClock] = useState(0);
   useEffect(() => {
@@ -222,9 +217,8 @@ function MatchPage() {
 
   return (
     <AppShell>
-      {/* Slim hero split between both clubs' badge colours. */}
-      <div ref={heroRef} dir="ltr" className="match-hero -mx-4 mb-4 overflow-hidden px-4 pb-0 text-match-foreground sm:-mx-6 sm:px-6"
-        style={{ background: heroBackground }}>
+      <div ref={heroRef} dir="ltr" className="match-hero sports-header -mx-4 mb-4 overflow-hidden px-4 pb-0 text-match-foreground sm:-mx-6 sm:px-6">
+        <SportsHeaderBackground start={homeAccent?.color} end={awayAccent?.color} />
         <div className="relative flex items-center justify-between px-1 pb-1">
           {/* plain arrow only, matching a native phone header */}
           <BackButton iconOnly className="text-match-foreground" />

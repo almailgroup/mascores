@@ -1,4 +1,6 @@
 # Roadmap
+- [x] Match reference-style soft backgrounds across club, competition and match headers, with compact full-name competition layout
+- [x] Check header appearance, full-name fit and scrolling on phone and desktop
 - [x] Remove news/photo watermarks and restore original event artwork with theme contrast only
 - [x] Make club/competition headers collapse and move with the full page; match the reference match-header animation
 - [x] Verify headers and full-page pulling in the browser; original artwork restored, native iPhone verification remains pending
