@@ -25,11 +25,12 @@ function publish(next: FavoritesState) {
 
 export function useFavorites() {
   const { user } = useAuth();
-  const [favorites, setFavorites] = useState<FavoritesState>(shared ?? { team: [], player: [], competition: [], match: [] });
-  const [ready, setReady] = useState(shared !== null);
+  const [favorites, setFavorites] = useState<FavoritesState>({ team: [], player: [], competition: [], match: [] });
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     listeners.add(setFavorites);
+    if (shared) setFavorites(shared);
     return () => { listeners.delete(setFavorites); };
   }, []);
 
