@@ -3,6 +3,15 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/auth/callback")({
+  head: () => ({ meta: [
+    { title: "Completing sign-in — MaScores" },
+    { name: "description", content: "Complete your MaScores sign-in and return to the app." },
+    { property: "og:title", content: "Completing sign-in — MaScores" },
+    { property: "og:description", content: "Complete your MaScores sign-in and return to the app." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+    { name: "robots", content: "noindex" },
+  ] }),
   component: AuthCallbackPage,
 });
 
