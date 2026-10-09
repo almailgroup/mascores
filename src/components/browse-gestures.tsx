@@ -35,7 +35,8 @@ export function BrowseGestures() {
 
   useEffect(() => {
     const surface = document.querySelector<HTMLElement>("[data-browse-surface]");
-    const content = document.querySelector<HTMLElement>("[data-browse-content]");
+    // Move the entire browsing page, including its header, but not the fixed tab bar.
+    const content = document.querySelector<HTMLElement>("[data-browse-page]");
     if (!surface || !content) return;
     let start: { x: number; y: number; edge: boolean; top: boolean } | null = null;
     let distance = 0;
