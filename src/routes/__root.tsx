@@ -139,7 +139,7 @@ function RootShell({ children }: { children: ReactNode }) {
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){var R=/Importing a module script failed|Failed to fetch dynamically imported module|error loading dynamically imported module|Unable to preload CSS/i,K="mas-chunk-reload";function go(m){if(!R.test(String(m||"")))return;try{var l=+sessionStorage.getItem(K)||0;if(Date.now()-l<10000)return;sessionStorage.setItem(K,String(Date.now()))}catch(e){}location.reload()}addEventListener("error",function(e){go(e&&(e.message||(e.error&&e.error.message)))},true);addEventListener("unhandledrejection",function(e){go(e&&e.reason&&(e.reason.message||e.reason))});addEventListener("vite:preloadError",function(e){e.preventDefault&&e.preventDefault();go("Unable to preload CSS")})})();`,
+            __html: `(function(){var R=/Importing a module script failed|Failed to fetch dynamically imported module|error loading dynamically imported module|Unable to preload CSS/i,K="mas-chunk-reload";function go(m){if(!R.test(String(m||"")))return;try{var l=+sessionStorage.getItem(K)||0;if(Date.now()-l<10000)return;sessionStorage.setItem(K,String(Date.now()))}catch(e){}location.reload()}addEventListener("error",function(e){var t=e&&e.target;if(t&&(t.tagName==="SCRIPT"||(t.tagName==="LINK"&&t.rel==="modulepreload"))){go("Importing a module script failed");return}go(e&&(e.message||(e.error&&e.error.message)))},true);addEventListener("unhandledrejection",function(e){go(e&&e.reason&&(e.reason.message||e.reason))});addEventListener("vite:preloadError",function(e){e.preventDefault&&e.preventDefault();go("Unable to preload CSS")})})();`,
           }}
         />
         <HeadContent />
