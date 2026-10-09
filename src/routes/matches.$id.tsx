@@ -245,9 +245,9 @@ function MatchPage() {
         <div className="relative flex items-center justify-between px-1 pb-1">
           {/* plain arrow only, matching a native phone header */}
           <BackButton iconOnly className="text-match-foreground" />
-          <div className="match-compact-score absolute left-1/2 flex -translate-x-1/2 items-center gap-2 text-sm font-bold tabular-nums" aria-hidden="true">
+          <div className="match-compact-score absolute left-[40%] flex -translate-x-1/2 items-center gap-2 text-sm font-bold tabular-nums" aria-hidden="true">
             <TeamCrest name={match.home?.name} logo={match.home?.logo_url} className="h-6 w-6" />
-            <span className={isLive ? "text-match-live" : ""}>{hasStarted ? `${num(match.home_score ?? 0)} – ${num(match.away_score ?? 0)}` : num(new Date(match.kickoff_at).toLocaleTimeString(dates.locale, { hour: "2-digit", minute: "2-digit" }))}</span>
+            <span className={isLive ? "text-match-live" : ""}>{hasStarted ? `${num(match.home_score ?? 0)} – ${num(match.away_score ?? 0)}` : match.kickoff_at ? num(new Date(match.kickoff_at).toLocaleTimeString(dates.locale, { hour: "2-digit", minute: "2-digit" })) : "–"}</span>
             <TeamCrest name={match.away?.name} logo={match.away?.logo_url} className="h-6 w-6" />
           </div>
           <div className="flex items-center gap-1 [&_button]:h-8 [&_button]:w-8 [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-match-foreground [&_svg]:h-4 [&_svg]:w-4">

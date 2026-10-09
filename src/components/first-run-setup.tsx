@@ -6,6 +6,7 @@ import { useFavorites } from "@/hooks/use-favorites";
 import { useI18n, type Lang } from "@/lib/i18n";
 import { BrandLogo } from "@/components/brand-logo";
 import { Button } from "@/components/ui/button";
+import { useTx } from "@/lib/auto-translate";
 
 const COMPLETED = "mas.setup.completed";
 
@@ -16,6 +17,7 @@ export function FirstRunSetup({ children }: { children: ReactNode }) {
   const [selected, setSelected] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const { lang, setLang } = useI18n();
+  const tx = useTx();
   const { addTeams } = useFavorites();
   useEffect(() => {
     try {
@@ -29,7 +31,7 @@ export function FirstRunSetup({ children }: { children: ReactNode }) {
   const teams = useQuery({
     queryKey: ["welcome-teams"], enabled: stage === "teams",
     queryFn: async () => {
-      const { data, error } = await supabase.from("teams").select("id,name,name_ar,logo_url,country").order("name");
+      const { data, error } = await supabase.from("teams").select("id,name,logo_url,country").order("name");
       if (error) throw error;
       return data ?? [];
     },
@@ -44,7 +46,7 @@ export function FirstRunSetup({ children }: { children: ReactNode }) {
   };
   if (stage === "done") return children;
   const ar = lang === "ar";
-  const visible = (teams.data ?? []).filter((team) => `${team.name} ${team.name_ar ?? ""} ${team.country ?? ""}`.toLowerCase().includes(query.toLowerCase()));
+  const visible = (teams.data ?? []).filter((team) => `${team.name} ${tx(team.name)} ${team.country ?? ""}`.toLowerCase().includes(query.toLowerCase()));
   return <>
     <div hidden inert>{children}</div>
     <div data-no-gesture className="fixed inset-0 z-[110] overflow-y-auto bg-background text-foreground" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
@@ -59,7 +61,7 @@ export function FirstRunSetup({ children }: { children: ReactNode }) {
               const active = selected.includes(team.id);
               return <Button key={team.id} variant="outline" aria-pressed={active} onClick={() => setSelected((prev) => active ? prev.filter((id) => id !== team.id) : [...prev, team.id])} className={`h-auto min-h-24 flex-col gap-2 whitespace-normal px-3 py-4 text-center ${active ? "border-primary bg-primary/10 text-primary" : "bg-card"}`}>
                 <span className="relative">{team.logo_url ? <img src={team.logo_url} alt="" className="h-10 w-10 object-contain" /> : <Shield className="h-10 w-10 text-muted-foreground" />}{active && <span className="absolute -end-3 -top-1 grid h-5 w-5 place-items-center rounded-full bg-primary text-primary-foreground"><Check className="h-3 w-3" /></span>}</span>
-                <span className="text-xs leading-4">{ar ? team.name_ar ?? team.name : team.name}</span>
+                <span className="text-xs leading-4">{tx(team.name)}</span>
               </Button>;
             })}
           </div>
