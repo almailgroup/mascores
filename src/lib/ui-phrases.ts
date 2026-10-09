@@ -21,6 +21,7 @@ export const UI_AR: Record<string, string> = {
   "Competitions": "المسابقات",
   "Competition": "المسابقة",
   "Players": "اللاعبون",
+  "Include players": "تضمين اللاعبين",
   "Player": "لاعب",
   "Coaches": "المدربون",
   "Coach": "المدرب",

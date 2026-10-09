@@ -17,3 +17,5 @@
 - Keep account/settings public and reachable from the Home profile icon; signed-out visitors enter the existing authentication page through an explicit account CTA, so local preferences remain accessible without a session.
 - Serve optimized portrait asset copies through a shared portrait resolver while retaining original URLs as fallbacks; this reduces repeated photo transfers without changing stored originals.
 - Scope reporter news uploads to their user-ID folder and active reporter storage policies; administrator upload access stays separate.
+- Keep first-run setup completion device-local and retain guest team favourites with idempotent profile merging on sign-in, so onboarding works without an account and never repeats on ordinary launches.
+- Use one text-free branded loading overlay for both language directions, keeping underlying pages mounted to preserve navigation and form state.

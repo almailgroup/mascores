@@ -296,7 +296,7 @@ function TeamSquadResults({ teamId }: { teamId: string }) {
     },
   });
 
-  if (!expanded) return <Button variant="ghost" size="sm" className="ms-3 text-primary" onClick={() => setExpanded(true)}>{tx("Add players")}</Button>;
+  if (!expanded) return <Button variant="ghost" size="sm" className="ms-3 text-primary" onClick={() => setExpanded(true)}>{tx("Include players")}</Button>;
   if (!squad.data) return <span className="ms-3 text-xs text-muted-foreground">{tx("Loading")}</span>;
   if (squad.data.length === 0) return <span className="ms-3 text-xs text-muted-foreground">{tx("No players")}</span>;
   return (

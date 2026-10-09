@@ -15,11 +15,12 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { ThemeProvider } from "../components/theme-provider";
 import { onNativeNotificationTap } from "../lib/native-notify";
 import { initNativePush } from "../lib/native-push";
-import { I18nProvider } from "../lib/i18n";
+import { I18nProvider, useI18n } from "../lib/i18n";
 import { CurrencyProvider } from "../lib/currency";
 import { HeightUnitProvider } from "../lib/units";
 import { AutoTranslateProvider, useTranslationReady } from "../lib/auto-translate";
-import { BrandLogo } from "../components/brand-logo";
+import { BrandLoading } from "../components/brand-loading";
+import { FirstRunSetup } from "../components/first-run-setup";
 import { isChunkLoadError, reloadForFreshFiles } from "../lib/chunk-recovery";
 
 function NotFoundComponent() {
@@ -113,8 +114,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "MansourAlmailScores — Live Football Scores" },
       { name: "twitter:description", content: "Live scores, match centers, lineups, and coverage of the best leagues of the world." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/eab9f645-fd29-4918-b6f6-f8760815f669/id-preview-291137d6--552dae1c-a8e4-4697-9e43-5a409c40ae78.lovable.app-1784632724087.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/eab9f645-fd29-4918-b6f6-f8760815f669/id-preview-291137d6--552dae1c-a8e4-4697-9e43-5a409c40ae78.lovable.app-1784632724087.png" },
     ],
     links: [
       {
@@ -189,7 +188,7 @@ function RootComponent() {
           <CurrencyProvider>
             <HeightUnitProvider>
               <AutoTranslateProvider>
-                <LanguageReadyGate><Outlet /></LanguageReadyGate>
+                <LanguageReadyGate><FirstRunSetup><Outlet /></FirstRunSetup></LanguageReadyGate>
               </AutoTranslateProvider>
             </HeightUnitProvider>
           </CurrencyProvider>
@@ -201,18 +200,12 @@ function RootComponent() {
 
 function LanguageReadyGate({ children }: { children: ReactNode }) {
   const ready = useTranslationReady();
+  const { switching } = useI18n();
+  const loading = !ready || switching;
   return (
     <>
-      <div className={ready ? "contents" : "pointer-events-none select-none opacity-0"}>{children}</div>
-      {!ready && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background text-foreground" role="status" aria-live="polite">
-          <div className="flex flex-col items-center gap-4">
-            <BrandLogo className="h-14" />
-            <span className="h-7 w-7 animate-spin rounded-full border-2 border-border border-t-primary" />
-            <p className="text-sm font-semibold">جارٍ تجهيز النسخة العربية…</p>
-          </div>
-        </div>
-      )}
+      <div inert={loading} className={loading ? "pointer-events-none select-none opacity-0" : "contents"}>{children}</div>
+      {loading && <BrandLoading />}
     </>
   );
 }

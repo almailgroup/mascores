@@ -1,4 +1,8 @@
 # Roadmap
+- [x] Improve dark event icons and blue match accents; compact scrolling header and stadium only in details
+- [x] Rename Include players; symmetric branded language loading
+- [x] First-install team selection/skip, language choice and persistent completion
+- [x] Verify setup persistence, language switches, search and match collapse in browser
 - [x] Shorten competition background without crowding controls, show past club fixtures, move full headers during refresh
 - [x] Voice bottom tab, two-item More layout, public profile/settings entry before sign-in
 - [x] Verify these page, gesture and signed-out account flows in phone-sized browser; native iPhone verification remains below

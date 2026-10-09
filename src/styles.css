@@ -107,6 +107,9 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-event-ink: var(--event-ink);
+  --color-match-foreground: var(--match-foreground);
+  --color-match-live: var(--match-live);
   --color-ring-offset-background: var(--background);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -125,6 +128,9 @@
 
 :root {
   --radius: 0.625rem;
+  --event-ink: oklch(0.2 0.03 260);
+  --match-foreground: oklch(0.98 0.005 240);
+  --match-live: oklch(0.78 0.14 250);
   /* MansourAlmailScores — Light mode */
   --background: oklch(0.985 0.005 240);
   --foreground: oklch(0.18 0.05 260);
@@ -165,6 +171,7 @@
 }
 
 .dark {
+  --event-ink: oklch(0.98 0.005 240);
   /* MansourAlmailScores — Dark mode (stadium night) */
   --background: oklch(0.16 0.03 260);
   --foreground: oklch(0.98 0.005 240);
@@ -320,3 +327,15 @@ a:has([aria-label*="match notifications"]):active { filter: none; transform: non
   .search-field-enter { animation: none; }
   ::view-transition-group(*) { animation-duration: 0s; }
 }
+
+.brand-loading-mark { animation: brand-breathe 1.5s ease-in-out infinite; }
+.brand-loading-track { width: 72px; height: 3px; overflow: hidden; background: var(--border); border-radius: 2px; }
+.brand-loading-track span { display: block; width: 50%; height: 100%; background: var(--primary); animation: brand-sweep 1.1s ease-in-out infinite alternate; }
+@keyframes brand-breathe { 50% { opacity: .65; transform: scale(.94); } }
+@keyframes brand-sweep { to { transform: translateX(100%); } }
+.match-hero { --collapse: 0; --hero-expanded-height: 240px; position: sticky; top: 0; z-index: 35; margin-top: calc(-1 * (env(safe-area-inset-top, 0px) + 2rem)); padding-top: calc(env(safe-area-inset-top, 0px) + .5rem); }
+.match-hero-body { max-height: calc(var(--hero-expanded-height) * (1 - var(--collapse))); overflow: hidden; opacity: calc(1 - var(--collapse)); transform: translateY(calc(-12px * var(--collapse))); }
+.match-compact-score { opacity: var(--collapse); pointer-events: none; }
+.match-hero .match-tabs { margin-top: calc(12px * (1 - var(--collapse))); }
+.match-hero [role="img"] { color: var(--match-foreground); }
+@media (min-width: 640px) { .match-hero { margin-top: -1.5rem; } }

@@ -7,6 +7,8 @@ import { toast } from "sonner";
 export type FavoriteKind = "team" | "player" | "competition" | "match";
 
 const MATCH_KEY = "mas.favorite_match_ids";
+const TEAM_KEY = "mas.favorite_team_ids";
+const TEAM_SYNC_KEY = "mas.favorite_teams_pending";
 const ALERT_KEY = "mas.match_notification_ids";
 const PREF_KEY = "mas.notification_preferences";
 
@@ -23,11 +25,12 @@ function publish(next: FavoritesState) {
 
 export function useFavorites() {
   const { user } = useAuth();
-  const [favorites, setFavorites] = useState<FavoritesState>(shared ?? { team: [], player: [], competition: [], match: [] });
-  const [ready, setReady] = useState(shared !== null);
+  const [favorites, setFavorites] = useState<FavoritesState>({ team: [], player: [], competition: [], match: [] });
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     listeners.add(setFavorites);
+    if (shared) setFavorites(shared);
     return () => { listeners.delete(setFavorites); };
   }, []);
 
@@ -37,7 +40,7 @@ export function useFavorites() {
       const match = safeReadLocal(MATCH_KEY);
       if (!user) {
         if (!cancel) {
-          publish({ team: [], player: [], competition: [], match });
+          publish({ team: safeReadLocal(TEAM_KEY), player: [], competition: [], match });
           setReady(true);
         }
         return;
@@ -47,9 +50,15 @@ export function useFavorites() {
         .select("favorite_team_ids, favorite_player_ids, favorite_competition_ids, favorite_match_ids")
         .eq("id", user.id)
         .maybeSingle();
+      const pendingTeams = safeReadLocal(TEAM_SYNC_KEY);
+      const team = [...new Set([...(data?.favorite_team_ids ?? []), ...pendingTeams])];
+      if (pendingTeams.length > 0 && data) {
+        const { error } = await supabase.from("profiles").update({ favorite_team_ids: team }).eq("id", user.id);
+        if (!error) { try { localStorage.removeItem(TEAM_SYNC_KEY); } catch { /* optional */ } }
+      }
       if (!cancel) {
         publish({
-          team: data?.favorite_team_ids ?? [],
+          team,
           player: data?.favorite_player_ids ?? [],
           competition: data?.favorite_competition_ids ?? [],
           match: data?.favorite_match_ids ?? match,
@@ -73,6 +82,9 @@ export function useFavorites() {
       const has = favorites[kind].includes(strId);
       const next = has ? favorites[kind].filter((x) => x !== strId) : [...favorites[kind], strId];
       publish({ ...favorites, [kind]: next });
+      if (kind === "team") {
+        try { localStorage.setItem(TEAM_KEY, JSON.stringify(next)); if (!user) localStorage.setItem(TEAM_SYNC_KEY, JSON.stringify(next)); } catch { /* optional */ }
+      }
       if (kind === "match") {
         try {
           localStorage.setItem(MATCH_KEY, JSON.stringify(next));
@@ -101,7 +113,17 @@ export function useFavorites() {
     [favorites, toggle],
   );
 
-  return { favorites, isFavorite, toggle, add, ready };
+  const addTeams = useCallback(async (ids: string[]) => {
+    if (ids.length === 0) return;
+    const team = [...new Set([...(shared?.team ?? []), ...safeReadLocal(TEAM_KEY), ...ids])];
+    publish({ ...(shared ?? favorites), team });
+    try { localStorage.setItem(TEAM_KEY, JSON.stringify(team)); localStorage.setItem(TEAM_SYNC_KEY, JSON.stringify(team)); } catch { /* optional */ }
+    if (user) {
+      const { error } = await supabase.from("profiles").update({ favorite_team_ids: team }).eq("id", user.id);
+      if (!error) { try { localStorage.removeItem(TEAM_SYNC_KEY); } catch { /* optional */ } }
+    }
+  }, [favorites, user]);
+  return { favorites, isFavorite, toggle, add, addTeams, ready };
 }
 
 function safeReadLocal(key: string): string[] {
@@ -118,7 +140,7 @@ export function FavoriteButton({ kind, id, size = "sm", onFollow }: { kind: Favo
   const { user } = useAuth();
   const { isFavorite, toggle } = useFavorites();
   const active = isFavorite(kind, id);
-  const disabled = kind !== "match" && !user;
+  const disabled = kind !== "match" && kind !== "team" && !user;
   const dim = size === "md" ? "h-10 w-10" : "h-8 w-8";
   return (
     <button
