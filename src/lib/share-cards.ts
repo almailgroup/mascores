@@ -5,7 +5,6 @@
  */
 
 const FONT = "system-ui, -apple-system, Segoe UI, sans-serif";
-const BRAND = "Mansour Almail Scores";
 
 function loadImage(url?: string | null): Promise<HTMLImageElement | null> {
   if (!url) return Promise.resolve(null);
@@ -49,12 +48,6 @@ function surface(width: number, height: number, accent: string) {
   return { canvas, ctx };
 }
 
-function footer(ctx: CanvasRenderingContext2D, width: number, height: number) {
-  ctx.textAlign = "center";
-  ctx.font = `700 26px ${FONT}`;
-  ctx.fillStyle = "rgba(255,255,255,0.55)";
-  ctx.fillText(BRAND, width / 2, height - 40);
-}
 
 function crest(ctx: CanvasRenderingContext2D, img: HTMLImageElement | null, name: string, cx: number, cy: number, size: number) {
   if (img) {
@@ -190,7 +183,6 @@ export async function drawStandingsCard(input: {
     y += group.rows.length * rowH + 28;
   }
 
-  footer(ctx, W, H);
   return toBlob(canvas);
 }
 
@@ -295,7 +287,6 @@ export async function drawLineupCard(input: {
     });
   }
 
-  footer(ctx, W, H);
   return toBlob(canvas);
 }
 
@@ -362,7 +353,6 @@ export async function drawLeaderboardCard(input: { title: string; subtitle?: str
     ctx.fillStyle = leader ? "#0b1020" : "#ffffff";
     ctx.fillText(row.value, W - 135, top + 52);
   });
-  footer(ctx, W, H);
   return toBlob(canvas);
 }
 
@@ -420,6 +410,5 @@ export async function drawNewsCard(input: { title: string; summary?: string | nu
     ctx.fillText(input.date, x, H - 110);
   }
   ctx.direction = "ltr";
-  footer(ctx, W, H);
   return toBlob(canvas);
 }

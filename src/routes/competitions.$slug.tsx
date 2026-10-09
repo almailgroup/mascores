@@ -21,6 +21,7 @@ import { StandingsTable } from "@/components/standings-table";
 import { useCompetitionLogo } from "@/lib/comp-logo";
 import { useLogoAccent } from "@/lib/logo-accent";
 import { compareGroupLabels } from "@/lib/group-order";
+import { useCollapsingHeader } from "@/hooks/use-collapsing-header";
 
 type PositionLabel = Database["public"]["Tables"]["standings_position_labels"]["Row"];
 type Row = StandingRow & { team: Team | null };
@@ -297,6 +298,7 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
   const tx = useTx();
   const num = useNum();
   const compact = useCompact();
+  const headerRef = useCollapsingHeader(c.id);
   const { t, lang } = useI18n();
   const accent = useLogoAccent(hero ? null : logo);
   // No custom hero and no logo to sample: use a clean white band instead of navy.
@@ -335,8 +337,12 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
   const chip = onLight ? "bg-black/10" : "bg-white/15";
 
   return (
-    <div className="comp-hero -mx-4 -mt-6 mb-4 px-4 pb-0 pt-0 sm:-mx-6 sm:px-6" style={{ background, color: fg }}>
-      <div className="flex items-center gap-2">
+    <div ref={headerRef} className="comp-hero collapsing-comp-header -mx-4 -mt-6 mb-4 px-4 pb-0 pt-0 sm:-mx-6 sm:px-6" style={{ background, color: fg }}>
+      <div className="relative flex items-center gap-2">
+        <div className="profile-compact-identity pointer-events-none absolute inset-y-0 start-10 end-24 flex items-center gap-2">
+          {logo && <img src={logo} alt="" className="h-7 w-7 shrink-0 object-contain" />}
+          <span className="truncate text-sm font-bold">{lang === "ar" && c.name_ar ? c.name_ar : tx(c.name)}</span>
+        </div>
         <button
           onClick={() => { if (router.history.canGoBack()) router.history.back(); else router.navigate({ to: "/competitions" }); }}
           aria-label={tx("Back")}
@@ -360,7 +366,7 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
         </button>
       </div>
 
-      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
+      <div className="profile-expanded-identity grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-1 shadow-md">
           {logo ? <img src={logo} alt="" className="h-full w-full object-contain" /> : <Trophy className="h-6 w-6 text-primary" />}
         </div>

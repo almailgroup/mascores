@@ -140,7 +140,6 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
         </nav>
       </header>}
 
-      <BrowseGestures />
       {!bare && <LiveVoiceAlert />}
 
       {/* Extra bottom room so the iPhone home bar never covers page actions. */}
@@ -156,6 +155,7 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
       </main>
       </div>
 
+      <BrowseGestures />
       {!bare && <nav data-no-gesture aria-label="Main navigation" className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/60 bg-background/95 backdrop-blur-xl md:hidden" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
         <div className="mx-auto flex max-w-7xl items-center justify-around px-2 py-2">
           {PRIMARY_NAV.map((item) => {

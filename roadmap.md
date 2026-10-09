@@ -1,4 +1,7 @@
 # Roadmap
+- [x] Remove news/photo watermarks and restore original event artwork with theme contrast only
+- [x] Make club/competition headers collapse and move with the full page; match the reference match-header animation
+- [x] Verify headers and full-page pulling in the browser; original artwork restored, native iPhone verification remains pending
 - [x] Improve dark event icons and blue match accents; compact scrolling header and stadium only in details
 - [x] Rename Include players; symmetric branded language loading
 - [x] First-install team selection/skip, language choice and persistent completion

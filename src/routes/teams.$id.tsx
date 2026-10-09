@@ -21,6 +21,7 @@ import { SeasonMenu } from "@/components/season-menu";
 import { StandingsTable } from "@/components/standings-table";
 import { Button } from "@/components/ui/button";
 import type { Database } from "@/integrations/supabase/types";
+import { useCollapsingHeader } from "@/hooks/use-collapsing-header";
 
 export const Route = createFileRoute("/teams/$id")({
   head: () => ({
@@ -52,6 +53,7 @@ function TeamPage() {
     const { data } = await supabase.from("teams").select("*").eq("id", id).maybeSingle();
     return data as Team | null;
   }});
+  const headerRef = useCollapsingHeader(`${id}:${team.isLoading}`);
   const squad = useQuery({ queryKey: ["squad", id], queryFn: async () => {
     const { data } = await supabase.from("players").select("*").eq("team_id", id).order("shirt_number");
     return (data ?? []) as Player[];
@@ -132,8 +134,16 @@ function TeamPage() {
 
   return (
     <AppShell>
-      <BackButton iconOnly className="mb-2" />
-      <div className="mb-4 flex items-center gap-3 rounded-2xl border border-border bg-card p-3 sm:gap-4 sm:p-5">
+      <div ref={headerRef} className="club-profile-header -mx-4 mb-5 px-4 sm:-mx-6 sm:px-6">
+      <div className="relative flex h-10 items-center justify-between">
+        <BackButton iconOnly />
+        <div className="profile-compact-identity pointer-events-none absolute inset-y-0 start-12 end-12 flex items-center gap-2">
+          <TeamCrest name={t.name} logo={t.logo_url} className="h-7 w-7 shrink-0" />
+          <span className="truncate text-sm font-bold">{tx(t.name)}</span>
+        </div>
+        <FavoriteButton kind="team" id={t.id} size="md" />
+      </div>
+      <div className="profile-expanded-identity flex items-center gap-3 py-3 sm:gap-4">
         <TeamCrest name={t.name} logo={t.logo_url} className="h-11 w-11 shrink-0 sm:h-14 sm:w-14" rounded="rounded-xl" />
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-base font-bold leading-tight sm:text-2xl">{tx(t.name)}</h1>
@@ -144,10 +154,9 @@ function TeamPage() {
             </div>
           )}
         </div>
-        <FavoriteButton kind="team" id={t.id} size="md" />
       </div>
 
-      <div className="club-tabs sticky z-30 -mx-4 mb-5 border-b border-border bg-background/95 px-4 py-2 backdrop-blur-xl">
+      <div className="border-b border-border py-2">
       <SwipeTabs className=" gap-1 rounded-full border border-border bg-card p-1 text-xs">
         {TABS.map((k) => (
           <button key={k} onClick={() => setTab(k)}
@@ -156,6 +165,7 @@ function TeamPage() {
           </button>
         ))}
       </SwipeTabs>
+      </div>
       </div>
 
 
