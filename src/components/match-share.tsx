@@ -60,7 +60,6 @@ function safeColor(value: string | undefined, fallback: string) {
   return /^(#|rgb|hsl)/i.test(value.trim()) ? value : fallback;
 }
 
-const BRAND = "Mansour Almail Scores";
 
 /** Draws the branded share card: match result, or one club's line-up on a pitch. */
 async function drawCard(data: MatchShareData, mode: "result" | "lineups"): Promise<Blob | null> {
@@ -180,10 +179,6 @@ async function drawCard(data: MatchShareData, mode: "result" | "lineups"): Promi
       });
     }
 
-    ctx.textAlign = "center";
-    ctx.font = "700 28px system-ui, sans-serif";
-    ctx.fillStyle = "rgba(255,255,255,0.7)";
-    ctx.fillText(BRAND, W / 2, H - 34);
     return new Promise((resolve) => canvas.toBlob((blob) => resolve(blob), "image/png", 0.95));
   }
 
@@ -250,10 +245,6 @@ async function drawCard(data: MatchShareData, mode: "result" | "lineups"): Promi
   ctx.textAlign = "left";
   data.awayScorers.slice(0, 8).forEach((scorer, index) => ctx.fillText(`${scorer.name} ${scorer.minute}`, W / 2 + 60, 540 + index * 46));
 
-  ctx.textAlign = "center";
-  ctx.font = "700 28px system-ui, sans-serif";
-  ctx.fillStyle = "rgba(255,255,255,0.7)";
-  ctx.fillText(BRAND, W / 2, H2 - 50);
 
   return new Promise((resolve) => canvas.toBlob((blob) => resolve(blob), "image/png", 0.95));
 }
