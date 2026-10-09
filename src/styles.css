@@ -295,6 +295,7 @@ a:has([aria-label*="match notifications"]):active { filter: none; transform: non
 [aria-label*="match notifications"]:active { filter: none !important; transform: none !important; }
 
 [data-browse-surface] { z-index: 1; }
+[data-browse-page] { overflow-anchor: none; }
 .browse-back-underlay { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background: var(--background); }
 .browse-back-underlay .mas-search-field { view-transition-name: none; }
 .mas-search-field { view-transition-name: mas-search; transition: border-color 180ms ease, box-shadow 180ms ease; }
