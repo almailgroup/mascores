@@ -93,7 +93,6 @@ const SECONDARY_NAV: NavItem[] = [
   { to: "/voice", labelKey: "nav.voice", icon: Radio },
   { to: "/transfers", labelKey: "nav.transfers", icon: ArrowLeftRight },
   { to: "/tickets", labelKey: "nav.tickets", icon: Ticket },
-  { to: "/search", labelKey: "nav.search", icon: Search },
 ];
 const NAV: NavItem[] = [...PRIMARY_NAV, ...SECONDARY_NAV];
 
@@ -102,7 +101,7 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
   const { t } = useI18n();
   const location = useLocation();
   const router = useRouter();
-  const hideHeader = bare || location.pathname === "/search" || location.pathname.startsWith("/competitions");
+  const hideHeader = bare || location.pathname !== "/";
   const [moreOpen, setMoreOpen] = useState(false);
   useEffect(() => { void user; }, [user]);
   useReminderAlerts();
@@ -156,7 +155,7 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
         {children}
       </main>
 
-      {!bare && <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/60 bg-background/95 backdrop-blur-xl md:hidden" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
+      {!bare && <nav data-no-gesture aria-label="Main navigation" className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/60 bg-background/95 backdrop-blur-xl md:hidden" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
         <div className="mx-auto flex max-w-7xl items-center justify-around px-2 py-2">
           {PRIMARY_NAV.map((item) => {
             const active = item.exact ? location.pathname === item.to : location.pathname.startsWith(item.to);
@@ -173,21 +172,22 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
               </Link>
             );
           })}
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={() => setMoreOpen(true)}
-            className={`flex flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-1 text-[0.6rem] font-medium ${
+            className={`flex h-auto flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-1 text-[0.6rem] font-medium ${
               SECONDARY_NAV.some((item) => location.pathname.startsWith(item.to)) ? "text-primary" : "text-muted-foreground"
             }`}
           >
             <MoreHorizontal className="h-5 w-5" />
             {t("nav.more")}
-          </button>
+          </Button>
         </div>
       </nav>}
 
       {!bare && moreOpen && (
-        <div className="fixed inset-0 z-50 flex items-end bg-black/50 md:hidden" onClick={() => setMoreOpen(false)}>
+        <div data-no-gesture className="fixed inset-0 z-50 flex items-end bg-black/50 md:hidden" onClick={() => setMoreOpen(false)}>
           <div className="w-full rounded-t-3xl border-t border-border bg-background p-4" style={{ paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))" }} onClick={(e) => e.stopPropagation()}>
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-sm font-bold">{t("nav.more")}</h2>

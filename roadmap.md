@@ -1,4 +1,5 @@
 # Roadmap
+- [x] Home-only main header, remove Search from More, stop ordinary scrolling from displacing bottom navigation
 - [x] Hide header on competitions/search, revise bottom tabs and animate MaScores search
 - [x] Finger-following cancellable back swipe and elastic page-displacing pull refresh
 - [x] Verify navigation, animated gestures and search on phone-sized preview
