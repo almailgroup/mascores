@@ -12,6 +12,7 @@ export function BrowseGestures() {
   useEffect(() => {
     let start: { x: number; y: number; edge: boolean; top: boolean } | null = null;
     let distance = 0;
+    let axis: "back" | "refresh" | null = null;
     const onStart = (event: TouchEvent) => {
       const target = event.target instanceof Element ? event.target : null;
       if (event.touches.length !== 1 || target?.closest('input,textarea,select,[role="dialog"],[data-no-gesture]')) return;
@@ -24,6 +25,7 @@ export function BrowseGestures() {
       if (!touch) return;
       start = { x: touch.clientX, y: touch.clientY, edge: touch.clientX <= 24, top: window.scrollY <= 0 };
       distance = 0;
+      axis = null;
     };
     const onMove = (event: TouchEvent) => {
       const touch = event.touches[0];
@@ -33,9 +35,11 @@ export function BrowseGestures() {
       if (start.edge && dx > 12 && Math.abs(dx) > Math.abs(dy) * 1.5) {
         if (event.cancelable) event.preventDefault();
         distance = dx;
+        axis = "back";
       } else if (start.top && dy > 12 && dy > Math.abs(dx) * 1.5) {
         if (event.cancelable) event.preventDefault();
         distance = dy;
+        axis = "refresh";
         setPull(Math.min(80, dy * 0.4));
       }
     };
@@ -44,9 +48,9 @@ export function BrowseGestures() {
       const previous = start;
       start = null;
       setPull(0);
-      if (previous.edge && distance > 80) {
+      if (axis === "back" && previous.edge && distance > 80) {
         if (router.history.canGoBack()) router.history.back();
-      } else if (previous.top && distance > 150 && !busy.current) {
+      } else if (axis === "refresh" && previous.top && distance > 150 && !busy.current) {
         busy.current = true;
         setRefreshing(true);
         void Promise.all([qc.invalidateQueries(), router.invalidate()]).finally(() => { busy.current = false; setRefreshing(false); });

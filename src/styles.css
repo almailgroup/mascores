@@ -224,13 +224,13 @@
        stray wide element create a sideways scroll. */
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    overflow-x: hidden;
+    overflow-x: clip;
     -webkit-tap-highlight-color: transparent;
   }
 
