@@ -1,6 +1,5 @@
 import { User } from "lucide-react";
 import { useState } from "react";
-import { MediaWatermark } from "@/components/media-watermark";
 import { portraitSource } from "@/lib/portrait-source";
 
 const SIZES = { sm: "h-10 w-10", md: "h-14 w-14", lg: "h-24 w-24" } as const;
@@ -15,7 +14,6 @@ export function PlayerAvatar({ src, name, size = "sm", className = "" }: { src?:
   return (
     <div className={`relative flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-muted ${SIZES[size]} ${className}`}>
       {hasPhoto ? <img src={resolvedSrc ?? undefined} alt={name ?? ""} width={size === "lg" ? 96 : 56} height={size === "lg" ? 96 : 56} loading={size === "lg" ? "eager" : "lazy"} fetchPriority={size === "lg" ? "high" : "auto"} decoding="async" draggable={false} onDragStart={(event) => event.preventDefault()} onContextMenu={(event) => event.preventDefault()} onError={() => { if (resolvedSrc !== src) setFailedOptimizedSrc(src ?? null); else setFailedSrc(src ?? null); }} className="pointer-events-none h-full w-full object-cover" /> : <User aria-label={name ?? "Player"} className={`${ICONS[size]} text-muted-foreground`} />}
-      {hasPhoto && size === "lg" && <MediaWatermark compact />}
     </div>
   );
 }

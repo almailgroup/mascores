@@ -1,6 +1,5 @@
 import { ShareCardButton } from "@/components/share-image";
 import { drawNewsCard } from "@/lib/share-cards";
-import { MediaWatermark } from "@/components/media-watermark";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, BackButton, EmptyState, LoadingSkeleton } from "@/components/app-shell";
@@ -45,7 +44,6 @@ function ArticlePage() {
         {n.cover_url && (
           <div className="relative flex w-full items-center justify-center bg-gradient-to-br from-primary/25 via-card to-background">
             <img src={n.cover_url} alt="" className="max-h-[70vh] w-full object-contain" />
-            <MediaWatermark />
           </div>
         )}
 
