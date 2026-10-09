@@ -336,7 +336,7 @@ a:has([aria-label*="match notifications"]):active { filter: none; transform: non
 @keyframes brand-sweep { to { transform: translateX(100%); } }
 .match-hero { --collapse: 0; position: sticky; top: 0; z-index: 35; margin-top: calc(-1 * (env(safe-area-inset-top, 0px) + 2rem)); padding-top: calc(env(safe-area-inset-top, 0px) + .5rem); }
 .match-hero-body { position: relative; padding-top: calc(8px * (1 - var(--collapse))); padding-bottom: calc(8px * (1 - var(--collapse))); }
-.match-score-row { height: calc(104px - 76px * var(--collapse)); transform: translateY(calc(-34px * var(--collapse))); margin-bottom: calc(-28px * var(--collapse)); margin-left: calc(40px * var(--collapse)); margin-right: calc(96px * var(--collapse)); }
+.match-score-row { height: calc(104px - 76px * var(--collapse)); transform: translateY(calc(-34px * var(--collapse))); margin-bottom: calc(-28px * var(--collapse)); margin-left: calc(32px * var(--collapse)); margin-right: calc(128px * var(--collapse)); gap: calc(12px - 8px * var(--collapse)); }
 .match-team-crest { height: calc(64px - 36px * var(--collapse)); width: calc(64px - 36px * var(--collapse)); }
 .match-team-star { width: calc(40px * (1 - var(--collapse))); opacity: calc(1 - var(--collapse)); overflow: hidden; }
 .match-score { font-size: calc(36px - 20px * var(--collapse)); }
