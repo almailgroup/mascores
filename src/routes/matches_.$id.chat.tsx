@@ -11,6 +11,8 @@ export const Route = createFileRoute("/matches_/$id/chat")({
       { name: "description", content: "Join the live match chat with other supporters." },
       { property: "og:title", content: "Match chat — MA Scores" },
       { property: "og:description", content: "Join the live match chat with other supporters." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: MatchChatPage,
