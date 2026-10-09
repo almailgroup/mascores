@@ -1,7 +1,7 @@
 # Roadmap
-- [ ] Hide header on competitions/search, revise bottom tabs and animate MaScores search
-- [ ] Finger-following cancellable back swipe and elastic page-displacing pull refresh
-- [ ] Verify navigation, animated gestures and search on phone-sized preview
+- [x] Hide header on competitions/search, revise bottom tabs and animate MaScores search
+- [x] Finger-following cancellable back swipe and elastic page-displacing pull refresh
+- [x] Verify navigation, animated gestures and search on phone-sized preview
 - [x] Speed up player portraits and block photo drag/long-press menus
 - [x] Remove reporter AI, repair reporter photo/proof upload permission, fit admin news actions on iPhone
 - [x] Profile-left/logo-only header with long search; opt-in squad search
