@@ -30,7 +30,7 @@ export function BrowseGestures() {
       if (event.target instanceof Element && event.target.closest('a[href]')) capture();
     };
     document.addEventListener("click", onClick, true);
-    return () => { capture(); document.removeEventListener("click", onClick, true); };
+    return () => { document.removeEventListener("click", onClick, true); };
   }, [location.pathname]);
 
   useEffect(() => {
