@@ -21,6 +21,7 @@ import { StandingsTable } from "@/components/standings-table";
 import { useCompetitionLogo } from "@/lib/comp-logo";
 import { useLogoAccent } from "@/lib/logo-accent";
 import { compareGroupLabels } from "@/lib/group-order";
+import { useCollapsingHeader } from "@/hooks/use-collapsing-header";
 
 type PositionLabel = Database["public"]["Tables"]["standings_position_labels"]["Row"];
 type Row = StandingRow & { team: Team | null };

@@ -2,7 +2,7 @@ import { PlayerAvatar } from "@/components/player-avatar";
 import { TeamCrest } from "@/components/team-crest";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { AppShell, BackButton, EmptyState, LoadingSkeleton, SwipeTabs } from "@/components/app-shell";
 import { supabase, STATUS_LABELS, roundLabel, matchClockSeconds, formatClock, eventLabel, ratingClass, formatRating, type Match, type Team, type MatchEvent, type Lineup, type Player, type StandingRow } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
