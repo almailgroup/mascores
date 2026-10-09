@@ -146,7 +146,7 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
       {/* Extra bottom room so the iPhone home bar never covers page actions. */}
       <main
         data-browse-content
-        className={`relative z-10 mx-auto max-w-7xl px-4 pt-6 sm:px-6 ${hideHeader ? "shell-no-header" : ""}`}
+        className={`relative z-10 mx-auto max-w-7xl px-4 sm:px-6 ${hideHeader ? "shell-no-header pt-[calc(env(safe-area-inset-top,0px)+2rem)] sm:pt-6" : "pt-6"}`}
         style={{
           paddingBottom: "calc(7rem + env(safe-area-inset-bottom))",
         }}
@@ -201,7 +201,7 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
                   key={item.to}
                   to={item.to}
                   onClick={() => setMoreOpen(false)}
-                  className={`flex items-center gap-2 rounded-2xl border p-3 text-sm font-semibold ${
+                  className={`flex min-w-0 items-center gap-2 rounded-2xl border p-3 text-sm font-semibold ${item.to === "/tickets" ? "col-span-2" : ""} ${
                     location.pathname.startsWith(item.to) ? "border-primary bg-primary/10 text-primary" : "border-border bg-card"
                   }`}
                 >
