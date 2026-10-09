@@ -29,8 +29,8 @@ export function BrowseGestures() {
     const onClick = (event: MouseEvent) => {
       if (event.target instanceof Element && event.target.closest('a[href]')) capture();
     };
-    document.addEventListener("click", onClick, true);
-    return () => { document.removeEventListener("click", onClick, true); };
+    document.addEventListener("pointerdown", onClick, true);
+    return () => { document.removeEventListener("pointerdown", onClick, true); };
   }, [location.pathname]);
 
   useEffect(() => {
