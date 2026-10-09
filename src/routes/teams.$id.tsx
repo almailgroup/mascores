@@ -577,15 +577,13 @@ function TeamNewsTeaser({ teamId, onMore }: { teamId: string; onMore: () => void
 function TeamMatches({ data, teamId, nextId }: { data: MatchWithTeams[]; teamId: string; nextId: string | null }) {
   const tx = useTx();
   const top = useRef<HTMLDivElement>(null);
-  const [showPast, setShowPast] = useState(false);
   const timestamp = (m: MatchWithTeams) => m.kickoff_at ? new Date(m.kickoff_at).getTime() : 0;
   const day = new Date(); day.setHours(0, 0, 0, 0);
   const forward = data.filter((m) => timestamp(m) >= day.getTime() || ["live", "ht"].includes(m.status)).sort((a, b) => timestamp(a) - timestamp(b));
   const past = data.filter((m) => !forward.some((next) => next.id === m.id)).sort((a, b) => timestamp(b) - timestamp(a));
   return <div ref={top} className="scroll-mt-40">
     {forward.length > 0 && <MatchGroups data={forward} highlightTeamId={teamId} />}
-    {past.length > 0 && <Button variant="outline" className="my-4" onClick={() => setShowPast((value) => !value)}>{tx(showPast ? "Hide past matches" : "Past matches")}</Button>}
-    {(showPast || forward.length === 0) && <MatchGroups data={past} highlightTeamId={teamId} />}
-    <Button variant="outline" onClick={() => { setShowPast(false); top.current?.scrollIntoView({ block: "start", behavior: "instant" }); }} className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] left-1/2 z-30 -translate-x-1/2 rounded-full border-primary bg-background text-primary shadow">{tx("Today")} ↑</Button>
+    {past.length > 0 && <MatchGroups data={past} highlightTeamId={teamId} />}
+    <Button variant="outline" onClick={() => { top.current?.scrollIntoView({ block: "start", behavior: "instant" }); }} className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] left-1/2 z-30 -translate-x-1/2 rounded-full border-primary bg-background text-primary shadow">{tx("Today")} ↑</Button>
   </div>;
 }

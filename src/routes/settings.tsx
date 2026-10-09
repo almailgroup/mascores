@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useI18n, type Lang } from "@/lib/i18n";
 import { useTheme } from "@/components/theme-provider";
 import { VoiceReplays } from "@/components/voice-replays";
-import { AppShell } from "@/components/app-shell";
+import { AppShell, BackButton } from "@/components/app-shell";
 import { uploadMedia } from "@/components/admin/upload";
 import { CURRENCIES, useCurrency } from "@/lib/currency";
 import { useHeightUnit } from "@/lib/units";
@@ -88,6 +88,7 @@ function SettingsPage() {
 
   return (
     <AppShell>
+      <BackButton iconOnly className="mb-3" />
       <h1 className="text-3xl font-bold tracking-tight">{t("settings.title")}</h1>
       {user && <p className="mt-1 text-sm text-muted-foreground">{user.email}</p>}
 
@@ -130,9 +131,9 @@ function SettingsPage() {
         ) : (
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-muted-foreground">{t("settings.signInHint")}</p>
-            <Link to="/auth" className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground">
-              <LogIn className="h-4 w-4" /> {t("nav.signIn")}
-            </Link>
+            <Button asChild className="rounded-full">
+              <Link to="/auth"><LogIn className="h-4 w-4" /> {lang === "ar" ? "تسجيل الدخول / إنشاء حساب" : "Sign in / Log in"}</Link>
+            </Button>
           </div>
         )}
       </section>

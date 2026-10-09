@@ -86,11 +86,10 @@ const PRIMARY_NAV: NavItem[] = [
   { to: "/", labelKey: "nav.home", icon: Home, exact: true },
   { to: "/competitions", labelKey: "nav.competitions", icon: Trophy },
   { to: "/news", labelKey: "nav.news", icon: Newspaper },
-  { to: "/settings", labelKey: "nav.settings", icon: Settings },
+  { to: "/voice", labelKey: "nav.voice", icon: Radio },
 ];
 /** Reached from the "More" sheet on mobile, always visible on desktop. */
 const SECONDARY_NAV: NavItem[] = [
-  { to: "/voice", labelKey: "nav.voice", icon: Radio },
   { to: "/transfers", labelKey: "nav.transfers", icon: ArrowLeftRight },
   { to: "/tickets", labelKey: "nav.tickets", icon: Ticket },
 ];
@@ -127,9 +126,10 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
     <div data-browse-surface className="relative min-h-screen bg-background text-foreground">
       <div className="pointer-events-none fixed inset-0 opacity-40 [background:radial-gradient(circle_at_10%_-10%,color-mix(in_oklab,var(--primary)_25%,transparent),transparent_55%),radial-gradient(circle_at_100%_100%,color-mix(in_oklab,var(--primary)_15%,transparent),transparent_60%)]" />
 
+      <div data-browse-page>
       {!hideHeader && <header data-shell-header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
         <div dir="ltr" className="mx-auto grid min-h-16 max-w-7xl grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-3 px-4 py-2 sm:px-6">
-          <Link to={user ? "/settings" : "/auth"} aria-label={user ? t("nav.settings") : t("nav.signIn")} className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full border border-border bg-card text-sm font-bold text-primary">
+          <Link to="/settings" aria-label={t("nav.settings")} className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full border border-border bg-card text-sm font-bold text-primary">
             {user && profile.data?.avatar_url ? <img src={profile.data.avatar_url} alt="" className="h-full w-full object-cover" /> : user ? <span>{initials}</span> : <User className="h-6 w-6" />}
           </Link>
           <Link to="/" aria-label="MA Scores" className="shrink-0"><BrandLogo showWordmark={false} className="h-10 w-10 object-contain" /></Link>
@@ -154,6 +154,7 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
 
         {children}
       </main>
+      </div>
 
       {!bare && <nav data-no-gesture aria-label="Main navigation" className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/60 bg-background/95 backdrop-blur-xl md:hidden" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
         <div className="mx-auto flex max-w-7xl items-center justify-around px-2 py-2">
@@ -201,7 +202,7 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
                   key={item.to}
                   to={item.to}
                   onClick={() => setMoreOpen(false)}
-                  className={`flex min-w-0 items-center gap-2 rounded-2xl border p-3 text-sm font-semibold ${item.to === "/tickets" ? "col-span-2" : ""} ${
+                  className={`flex min-w-0 items-center gap-2 rounded-2xl border p-3 text-sm font-semibold ${
                     location.pathname.startsWith(item.to) ? "border-primary bg-primary/10 text-primary" : "border-border bg-card"
                   }`}
                 >
