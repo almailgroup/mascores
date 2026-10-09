@@ -267,30 +267,37 @@ const dict: Record<Lang, Record<string, string>> = {
   },
 };
 
-type Ctx = { lang: Lang; setLang: (l: Lang) => void; t: (key: string) => string };
+type Ctx = { lang: Lang; switching: boolean; setLang: (l: Lang) => void; t: (key: string) => string };
 const I18nContext = createContext<Ctx | null>(null);
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>(() => {
-    if (typeof window === "undefined") return "en";
-    return (localStorage.getItem("mas.lang") as Lang) || "en";
-  });
+  const [lang, setLangState] = useState<Lang>("en");
+  const [switching, setSwitching] = useState(false);
+  useEffect(() => {
+    try { const saved = localStorage.getItem("mas.lang"); if (saved === "ar" || saved === "en") setLangState(saved); } catch { /* optional */ }
+  }, []);
+  useEffect(() => {
+    if (!switching) return;
+    const timer = window.setTimeout(() => setSwitching(false), 800);
+    return () => window.clearTimeout(timer);
+  }, [switching, lang]);
   useEffect(() => {
     if (typeof document === "undefined") return;
     document.documentElement.setAttribute("lang", lang);
     document.documentElement.setAttribute("dir", lang === "ar" ? "rtl" : "ltr");
   }, [lang]);
   const setLang = useCallback((l: Lang) => {
+    setSwitching(true);
     setLangState(l);
     try { localStorage.setItem("mas.lang", l); } catch { /* ignore */ }
   }, []);
   const t = useCallback((key: string) => dict[lang][key] ?? dict.en[key] ?? key, [lang]);
-  const value = useMemo(() => ({ lang, setLang, t }), [lang, setLang, t]);
+  const value = useMemo(() => ({ lang, switching, setLang, t }), [lang, switching, setLang, t]);
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
 
 export function useI18n() {
   const ctx = useContext(I18nContext);
-  if (!ctx) return { lang: "en" as Lang, setLang: () => {}, t: (k: string) => dict.en[k] ?? k };
+  if (!ctx) return { lang: "en" as Lang, switching: false, setLang: () => {}, t: (k: string) => dict.en[k] ?? k };
   return ctx;
 }
