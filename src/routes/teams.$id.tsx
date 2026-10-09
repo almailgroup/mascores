@@ -145,7 +145,7 @@ function TeamPage() {
           <TeamCrest name={t.name} logo={t.logo_url} className="h-7 w-7 shrink-0" />
           <span className="truncate text-sm font-bold">{tx(t.name)}</span>
         </div>
-        <div className="[&_button]:text-match-foreground"><FavoriteButton kind="team" id={t.id} size="md" /></div>
+        <div className="[&_button]:border-0 [&_button]:bg-transparent [&_button]:text-match-foreground"><FavoriteButton kind="team" id={t.id} size="md" /></div>
       </div>
       <div className="profile-expanded-identity flex items-center gap-3 py-3 sm:gap-4">
         <TeamCrest name={t.name} logo={t.logo_url} className="h-10 w-10 shrink-0 sm:h-12 sm:w-12" rounded="rounded-xl" />
