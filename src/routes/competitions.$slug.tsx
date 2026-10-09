@@ -24,6 +24,8 @@ import { compareGroupLabels } from "@/lib/group-order";
 import { useCollapsingHeader } from "@/hooks/use-collapsing-header";
 import { SportsHeaderBackground } from "@/components/sports-header-background";
 import { Button } from "@/components/ui/button";
+import { CompetitionRoundTeam } from "@/components/competition-round-team";
+import { CompetitionTitleHistory } from "@/components/competition-title-history";
 
 type PositionLabel = Database["public"]["Tables"]["standings_position_labels"]["Row"];
 type Row = StandingRow & { team: Team | null };
@@ -188,6 +190,7 @@ function CompetitionPage() {
 
 
 
+       <div data-refresh-body>
        {activeTab === "overview" && <CompetitionOverviewTab c={c} season={season} teams={teams.data ?? []} titleHolder={friendly ? null : (titleHolder ?? null)} titles={friendly ? [] : (compTitles.data ?? [])} divisions={friendly ? [] : (divisions.data ?? [])} matches={matches.data ?? []} media={media.data ?? []} friendly={friendly} />}
 
       {activeTab === "matches" && <><SectionHeader title={t("tab.matches")} />
@@ -218,6 +221,7 @@ function CompetitionPage() {
       {activeTab === "awards" && !friendly && <AwardsBoard awards={awards.data ?? []} />}
       {activeTab === "media" && <>{media.data && media.data.length > 0 ? <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{media.data.map((item) => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="rounded-lg border border-border bg-card p-4 hover:border-primary"><div className="text-xs font-bold uppercase text-primary">{item.source}</div><div className="mt-1 font-semibold">{tx(item.title) || tx("Open media")}</div><div className="mt-1 truncate text-xs text-muted-foreground">{item.url}</div></a>)}</div> : <EmptyState title={tx("No competition media yet")} />}</>}
       {activeTab === "news" && <LinkedNews kind="competition" id={c.id} />}
+       </div>
       </div>
     </AppShell>
   );
@@ -333,7 +337,7 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
   const router = useRouter();
 
   return (
-    <div ref={headerRef} className="comp-hero collapsing-comp-header sports-header -mx-4 -mt-6 mb-4 px-4 pb-0 pt-0 sm:-mx-6 sm:px-6">
+    <div ref={headerRef} data-refresh-header className="comp-hero collapsing-comp-header sports-header -mx-4 -mt-6 mb-4 px-4 pb-0 pt-0 sm:-mx-6 sm:px-6">
       <SportsHeaderBackground start={accent?.color} background={hero} />
       <div className="relative flex items-center gap-2">
         <div className="profile-compact-identity pointer-events-none absolute inset-y-0 start-10 end-24 flex items-center gap-2">
@@ -521,6 +525,7 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
         <div className="mt-3"><DurationBar startsOn={c.starts_on} endsOn={c.ends_on} /></div>
       </section>
 
+      {!friendly && <CompetitionRoundTeam competitionId={c.id} season={season ?? c.season ?? null} />}
       {/* Key numbers strip — plain neutral cards. */}
       <section className="overflow-hidden rounded-2xl border border-border bg-card p-3 shadow-sm sm:p-4">
         <div className={`grid gap-2 ${friendly ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6"}`}>
@@ -576,6 +581,7 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
         </section>
       )}
 
+      {!friendly && <CompetitionTitleHistory competitionId={c.id} />}
       {showHonours && winners.length > 0 && (
         <section className="overflow-hidden rounded-xl border border-border bg-card">
           <div className="border-b border-border bg-muted/40 px-3 py-2 text-[0.7rem] font-bold uppercase tracking-wide text-muted-foreground">{tx("Title winners")}</div>

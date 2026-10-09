@@ -137,7 +137,7 @@ function TeamPage() {
 
   return (
     <AppShell>
-      <div ref={headerRef} className="club-profile-header sports-header -mx-4 mb-5 px-4 sm:-mx-6 sm:px-6">
+      <div ref={headerRef} data-refresh-header className="club-profile-header sports-header -mx-4 mb-5 px-4 sm:-mx-6 sm:px-6">
       <SportsHeaderBackground start={headerAccent?.color} />
       <div className="relative flex h-10 items-center justify-between">
         <BackButton iconOnly className="text-match-foreground" />
@@ -173,6 +173,7 @@ function TeamPage() {
       </div>
 
 
+      <div data-refresh-body>
       {tab === "matches" && (
         matches.data && matches.data.length > 0
           ? <TeamMatches data={matches.data} teamId={id} nextId={upcoming[0]?.id ?? null} />
@@ -335,6 +336,7 @@ function TeamPage() {
       )}
 
       {tab === "news" && <LinkedNews kind="team" id={t.id} />}
+      </div>
     </AppShell>
   );
 }
