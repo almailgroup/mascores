@@ -463,6 +463,45 @@ export type Database = {
           },
         ]
       }
+      competition_title_history: {
+        Row: {
+          competition_id: string
+          created_at: string
+          id: string
+          season: string
+          team_id: string
+        }
+        Insert: {
+          competition_id: string
+          created_at?: string
+          id?: string
+          season: string
+          team_id: string
+        }
+        Update: {
+          competition_id?: string
+          created_at?: string
+          id?: string
+          season?: string
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competition_title_history_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competition_title_history_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       competitions: {
         Row: {
           category: string | null
@@ -1071,6 +1110,7 @@ export type Database = {
           away_team_id: string | null
           city: string | null
           competition_id: string
+          completed_at: string | null
           created_at: string
           highlight_url: string | null
           home_coach_id: string | null
@@ -1106,6 +1146,7 @@ export type Database = {
           away_team_id?: string | null
           city?: string | null
           competition_id: string
+          completed_at?: string | null
           created_at?: string
           highlight_url?: string | null
           home_coach_id?: string | null
@@ -1141,6 +1182,7 @@ export type Database = {
           away_team_id?: string | null
           city?: string | null
           competition_id?: string
+          completed_at?: string | null
           created_at?: string
           highlight_url?: string | null
           home_coach_id?: string | null
@@ -2835,6 +2877,10 @@ export type Database = {
       competition_follower_count: {
         Args: { _competition_id: string }
         Returns: number
+      }
+      competition_round_teams: {
+        Args: { _competition_id: string; _season?: string }
+        Returns: Json
       }
       fuzzy_search: {
         Args: { _limit?: number; _q: string }

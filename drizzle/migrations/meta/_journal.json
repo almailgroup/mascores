@@ -22,6 +22,13 @@
       "when": 1791580633827,
       "tag": "0002_reporter_scoped_news_uploads",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791586505577,
+      "tag": "0003_round_team_and_title_history",
+      "breakpoints": true
     }
   ]
 }
