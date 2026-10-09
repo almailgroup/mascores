@@ -84,16 +84,16 @@ type NavItem = { to: "/" | "/search" | "/competitions" | "/news" | "/transfers" 
 /** Shown in the mobile tab bar. */
 const PRIMARY_NAV: NavItem[] = [
   { to: "/", labelKey: "nav.home", icon: Home, exact: true },
-  { to: "/search", labelKey: "nav.search", icon: Search },
   { to: "/competitions", labelKey: "nav.competitions", icon: Trophy },
   { to: "/news", labelKey: "nav.news", icon: Newspaper },
+  { to: "/settings", labelKey: "nav.settings", icon: Settings },
 ];
 /** Reached from the "More" sheet on mobile, always visible on desktop. */
 const SECONDARY_NAV: NavItem[] = [
   { to: "/voice", labelKey: "nav.voice", icon: Radio },
   { to: "/transfers", labelKey: "nav.transfers", icon: ArrowLeftRight },
   { to: "/tickets", labelKey: "nav.tickets", icon: Ticket },
-  { to: "/settings", labelKey: "nav.settings", icon: Settings },
+  { to: "/search", labelKey: "nav.search", icon: Search },
 ];
 const NAV: NavItem[] = [...PRIMARY_NAV, ...SECONDARY_NAV];
 
@@ -101,6 +101,8 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
   const { user, loading } = useAuth();
   const { t } = useI18n();
   const location = useLocation();
+  const router = useRouter();
+  const hideHeader = bare || location.pathname === "/search" || location.pathname.startsWith("/competitions");
   const [moreOpen, setMoreOpen] = useState(false);
   useEffect(() => { void user; }, [user]);
   useReminderAlerts();
@@ -123,16 +125,16 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
   if (suspension.data) return <SuspendedScreen text={suspensionMessage(suspension.data)} />;
 
   return (
-    <div className="relative min-h-screen bg-background text-foreground">
+    <div data-browse-surface className="relative min-h-screen bg-background text-foreground">
       <div className="pointer-events-none fixed inset-0 opacity-40 [background:radial-gradient(circle_at_10%_-10%,color-mix(in_oklab,var(--primary)_25%,transparent),transparent_55%),radial-gradient(circle_at_100%_100%,color-mix(in_oklab,var(--primary)_15%,transparent),transparent_60%)]" />
 
-      {!bare && <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
+      {!hideHeader && <header data-shell-header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
         <div dir="ltr" className="mx-auto grid min-h-16 max-w-7xl grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-3 px-4 py-2 sm:px-6">
           <Link to={user ? "/settings" : "/auth"} aria-label={user ? t("nav.settings") : t("nav.signIn")} className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full border border-border bg-card text-sm font-bold text-primary">
             {user && profile.data?.avatar_url ? <img src={profile.data.avatar_url} alt="" className="h-full w-full object-cover" /> : user ? <span>{initials}</span> : <User className="h-6 w-6" />}
           </Link>
           <Link to="/" aria-label="MA Scores" className="shrink-0"><BrandLogo showWordmark={false} className="h-10 w-10 object-contain" /></Link>
-          <Link to="/search" className="flex h-11 min-w-0 items-center gap-2 rounded-full border border-border bg-card px-4 text-muted-foreground" aria-label="Search MA Scores"><Search className="h-5 w-5 shrink-0" /><span className="truncate text-sm">Search MA Scores</span></Link>
+          <Link to="/search" onClick={(event) => { if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return; if (document.startViewTransition && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) { event.preventDefault(); document.startViewTransition(() => router.navigate({ to: "/search" })); } }} className="mas-search-field flex h-11 min-w-0 items-center gap-2 rounded-full border border-border bg-card px-4 text-muted-foreground" aria-label="Search MaScores"><Search className="h-5 w-5 shrink-0" /><span className="truncate text-sm">Search MaScores</span></Link>
         </div>
         <nav className="mx-auto hidden max-w-7xl items-center gap-1 px-6 pb-2 md:flex">
           {NAV.map((item) => <Link key={item.to} to={item.to} className={`inline-flex h-8 items-center gap-2 rounded-full px-3 text-xs font-medium ${location.pathname.startsWith(item.to) && (item.to !== "/" || location.pathname === "/") ? "bg-primary/15 text-primary" : "text-muted-foreground hover:bg-accent"}`}><item.icon className="h-4 w-4" />{t(item.labelKey)}</Link>)}
@@ -144,7 +146,8 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
 
       {/* Extra bottom room so the iPhone home bar never covers page actions. */}
       <main
-        className="relative z-10 mx-auto max-w-7xl px-4 pt-6 sm:px-6"
+        data-browse-content
+        className={`relative z-10 mx-auto max-w-7xl px-4 pt-6 sm:px-6 ${hideHeader ? "shell-no-header" : ""}`}
         style={{
           paddingBottom: "calc(7rem + env(safe-area-inset-bottom))",
         }}
