@@ -96,7 +96,6 @@ function MatchPage() {
   const { lang } = useI18n();
   const [tab, setTab] = useState<"details" | "lineups" | "stats" | "standings" | "previous" | "media">("details");
   const [lineupSide, setLineupSide] = useState<"home" | "away">("home");
-  const heroRef = useCollapsingHeader(`${id}:${mPlaceholder()}`);
   useRealtime(["matches", "match_events", "match_lineups", "player_ratings", "match_stats", "match_chat_messages", "media_items", "standings_rows"]);
   const m = useQuery({
     queryKey: ["match", id],
@@ -107,6 +106,7 @@ function MatchPage() {
       return data as (Match & { home: Team | null; away: Team | null; competition: { id: string; name: string; name_ar: string | null; slug: string; logo_url: string | null; sport: string; country: string | null; country_code: string | null } | null }) | null;
     },
   });
+  const heroRef = useCollapsingHeader(`${id}:${m.isLoading}`, 180);
   const events = useQuery({
     queryKey: ["match-events", id],
     queryFn: async () => {
@@ -170,23 +170,6 @@ function MatchPage() {
     const interval = window.setInterval(() => tickClock((value) => value + 1), 1000);
     return () => window.clearInterval(interval);
   }, [m.data?.timer_running]);
-  useEffect(() => {
-    const hero = heroRef.current;
-    const body = heroBodyRef.current;
-    if (!hero || !body) return;
-    let frame = 0;
-    const measure = () => hero.style.setProperty("--hero-expanded-height", `${body.scrollHeight}px`);
-    const update = () => {
-      frame = 0;
-      hero.style.setProperty("--collapse", String(Math.min(1, Math.max(0, window.scrollY / 160))));
-    };
-    const onScroll = () => { if (!frame) frame = requestAnimationFrame(update); };
-    const observer = new ResizeObserver(measure);
-    observer.observe(body);
-    measure(); update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => { observer.disconnect(); cancelAnimationFrame(frame); window.removeEventListener("scroll", onScroll); };
-  }, [m.data?.id, events.data, lang]);
 
   if (m.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;
   if (!m.data) return <AppShell><EmptyState title={tx("Match not found")} /></AppShell>;
@@ -245,11 +228,6 @@ function MatchPage() {
         <div className="relative flex items-center justify-between px-1 pb-1">
           {/* plain arrow only, matching a native phone header */}
           <BackButton iconOnly className="text-match-foreground" />
-          <div className="match-compact-score absolute left-[40%] flex -translate-x-1/2 items-center gap-2 text-sm font-bold tabular-nums" aria-hidden="true">
-            <TeamCrest name={match.home?.name} logo={match.home?.logo_url} className="h-6 w-6" />
-            <span className={isLive ? "text-match-live" : ""}>{hasStarted ? `${num(match.home_score ?? 0)} – ${num(match.away_score ?? 0)}` : match.kickoff_at ? num(new Date(match.kickoff_at).toLocaleTimeString(dates.locale, { hour: "2-digit", minute: "2-digit" })) : "–"}</span>
-            <TeamCrest name={match.away?.name} logo={match.away?.logo_url} className="h-6 w-6" />
-          </div>
           <div className="flex items-center gap-1 [&_button]:h-8 [&_button]:w-8 [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-match-foreground [&_svg]:h-4 [&_svg]:w-4">
             <MatchShare data={shareData} mode="result" />
             <MatchNotificationButton matchId={match.id} teamIds={[match.home_team_id, match.away_team_id]} withSettings />
@@ -257,31 +235,31 @@ function MatchPage() {
           </div>
         </div>
 
-        <div ref={heroBodyRef} className="match-hero-body">
-        <div className="mt-2 grid grid-cols-[minmax(0,1fr)_minmax(5.5rem,auto)_minmax(0,1fr)] items-center gap-3 px-1 sm:px-4">
+        <div className="match-hero-body">
+        <div className="match-score-row grid grid-cols-[minmax(0,1fr)_minmax(5.5rem,auto)_minmax(0,1fr)] items-center gap-3 px-1 sm:px-4">
           <HeroTeam team={match.home} onFollow={followMatch} starSide="start" />
           <div className="min-w-[5.5rem] text-center">
             {["scheduled", "postponed", "cancelled"].includes(match.status)
               ? <div className="text-sm font-bold leading-5">{tx(STATUS_LABELS[match.status] ?? match.status)}</div>
               : <>
                 {/* live matches show score and clock in red, like a broadcast ticker */}
-                <div className={`text-4xl font-black tabular-nums leading-none ${isLive ? "text-match-live" : ""}`}>
+                <div className={`match-score font-black tabular-nums leading-none ${isLive ? "text-match-live" : ""}`}>
                   {num(match.home_score ?? 0)} <span className={isLive ? "text-match-live/70" : "text-match-foreground/60"}>-</span> {num(match.away_score ?? 0)}
                 </div>
                 {match.status === "pen" && match.home_pen != null && match.away_pen != null && (
                   <div className="text-xs text-match-foreground/70">({num(match.home_pen)}–{num(match.away_pen)} {tx("pens")})</div>
                 )}
-                <div className={`mt-2 flex items-center justify-center gap-1.5 text-sm font-bold tabular-nums ${isLive ? "text-match-live" : "text-match-foreground/80"}`}>
+                <div className={`match-clock flex items-center justify-center gap-1.5 font-bold tabular-nums ${isLive ? "text-match-live" : "text-match-foreground/80"}`}>
                   {isLive && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-match-live" />}
                   {match.status === "live" ? num(formatClock(clock)) : tx(STATUS_LABELS[match.status] ?? match.status)}
                 </div>
               </>}
-            <div className="mt-2 text-[0.65rem] font-semibold uppercase text-match-foreground/70">{num(dates.kickoff(match.kickoff_at))}</div>
+            <div className="match-fading-detail mt-2 text-[0.65rem] font-semibold uppercase text-match-foreground/70">{num(dates.kickoff(match.kickoff_at))}</div>
           </div>
           <HeroTeam team={match.away} onFollow={followMatch} starSide="end" />
         </div>
 
-        <div className="mt-3 grid grid-cols-2 gap-8 px-5 text-center">
+        <div className="match-fading-detail mt-3 grid grid-cols-2 gap-8 px-5 text-center">
           <div className="min-w-0">
             <Link to="/teams/$id" params={{ id: match.home?.id ?? "" }} disabled={!match.home} className="block text-balance break-words text-sm font-bold leading-5 text-match-foreground">{tx(match.home?.name) ?? "TBD"}</Link>
           </div>
@@ -291,7 +269,7 @@ function MatchPage() {
         </div>
 
         {(homeScorers.length > 0 || awayScorers.length > 0) && (
-          <div className="mt-3 grid grid-cols-2 items-start gap-8 px-4 text-[0.72rem] text-match-foreground/85">
+          <div className="match-fading-detail mt-3 grid grid-cols-2 items-start gap-8 px-4 text-[0.72rem] text-match-foreground/85">
             <div className="space-y-1.5 text-end">{homeScorers.map((scorer, index) => <div key={index} className="flex min-w-0 items-center justify-end gap-1.5"><span className="truncate" dir={lang === "ar" ? "rtl" : "ltr"}>{scorer.name} {num(scorer.minute)}</span><EventIcon type={scorer.type} /></div>)}</div>
             <div className="space-y-1.5 text-start">{awayScorers.map((scorer, index) => <div key={index} className="flex min-w-0 items-center gap-1.5"><EventIcon type={scorer.type} /><span className="truncate" dir={lang === "ar" ? "rtl" : "ltr"}>{scorer.name} {num(scorer.minute)}</span></div>)}</div>
           </div>
