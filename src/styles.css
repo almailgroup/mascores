@@ -286,3 +286,19 @@ img { -webkit-user-drag: none; user-select: none; -webkit-user-select: none; -we
 @media (min-width: 768px) { .club-tabs { top: calc(6.5rem + env(safe-area-inset-top)); } }
 a:has([aria-label*="match notifications"]):active { filter: none; transform: none; }
 [aria-label*="match notifications"]:active { filter: none !important; transform: none !important; }
+
+[data-browse-surface] { z-index: 1; }
+.browse-back-underlay { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background: var(--background); }
+.browse-back-underlay .mas-search-field { view-transition-name: none; }
+.mas-search-field { view-transition-name: mas-search; transition: border-color 180ms ease, box-shadow 180ms ease; }
+.mas-search-field:active { filter: none !important; transform: none !important; }
+.search-field-enter { animation: search-expand 260ms cubic-bezier(.2,.8,.2,1) both; }
+@keyframes search-expand { from { transform: scaleX(.92); opacity: .7; } to { transform: scaleX(1); opacity: 1; } }
+::view-transition-group(mas-search) { animation-duration: 280ms; animation-timing-function: cubic-bezier(.2,.8,.2,1); }
+::view-transition-old(mas-search), ::view-transition-new(mas-search) { height: 100%; }
+::view-transition-group(root) { animation-duration: 180ms; }
+.shell-no-header .club-tabs { top: env(safe-area-inset-top); }
+@media (prefers-reduced-motion: reduce) {
+  .search-field-enter { animation: none; }
+  ::view-transition-group(*) { animation-duration: 0s; }
+}

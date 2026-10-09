@@ -44,6 +44,7 @@ export function BrowseGestures() {
     let timer: ReturnType<typeof setTimeout> | null = null;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const reset = () => {
+      timer = null;
       surface.style.transform = "";
       surface.style.transition = "";
       surface.style.boxShadow = "";
