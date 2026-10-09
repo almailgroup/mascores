@@ -1,10 +1,11 @@
 # Roadmap
-- [ ] Speed up player portraits and block photo drag/long-press menus
-- [ ] Remove reporter AI, repair reporter photo/proof uploads, fit admin news actions on iPhone
-- [ ] Profile-left/logo-only header with long search; opt-in squad search
-- [ ] Sticky club tabs, Today, upcoming-first matches and club-only standing groups
-- [ ] Back/home hold, edge swipe back, pull refresh and stable notification press appearance
-- [ ] Verify requested browsing and news flows
+- [x] Speed up player portraits and block photo drag/long-press menus
+- [x] Remove reporter AI, repair reporter photo/proof upload permission, fit admin news actions on iPhone
+- [x] Profile-left/logo-only header with long search; opt-in squad search
+- [x] Sticky club tabs, Today, upcoming-first matches and club-only standing groups
+- [x] Back/home hold, edge swipe back, pull refresh and stable notification press appearance
+- [x] Browser-check header, search, news actions and gestures; reporter form checked with mocked active status
+- [ ] Validate reporter upload end-to-end and native gestures on a real iPhone
 - [x] iOS sign-in Browser fallback + photo save timeout (in progress)
 - [x] Transfers: type labels cut off (e.g. "Loan return")
 - [x] Disable text selection/copy on iPhone app (keep on computer)

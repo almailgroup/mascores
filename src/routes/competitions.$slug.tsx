@@ -1,4 +1,5 @@
 import { TeamCrest } from "@/components/team-crest";
+import { PlayerAvatar } from "@/components/player-avatar";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -679,9 +680,7 @@ function AwardsBoard({ awards }: { awards: { id: string; award_type: string; rou
                 <Medal className="h-3 w-3" /> {tx("Player of the season")}
               </span>
               <div className="flex items-center gap-4">
-                {award.player?.photo_url
-                  ? <img src={award.player.photo_url} alt="" className="h-20 w-20 shrink-0 rounded-2xl object-cover ring-2 ring-amber-400/60" />
-                  : <div className="h-20 w-20 shrink-0 rounded-2xl bg-muted" />}
+                <PlayerAvatar src={award.player?.photo_url} name={award.player?.name} className="h-20 w-20 rounded-2xl ring-2 ring-amber-400/60" />
                 <div className="min-w-0">
                   <div className="truncate text-lg font-black leading-tight">{tx(award.player?.name) ?? tx("Player")}</div>
                   {award.season && <div className="mt-1 text-xs font-bold text-muted-foreground">{num(award.season)}</div>}
@@ -701,9 +700,7 @@ function AwardsBoard({ awards }: { awards: { id: string; award_type: string; rou
                 <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[0.7rem] font-black text-primary">
                   {award.round_number != null ? num(award.round_number) : "—"}
                 </span>
-                {award.player?.photo_url
-                  ? <img src={award.player.photo_url} alt="" className="h-10 w-10 shrink-0 rounded-full object-cover" />
-                  : <div className="h-10 w-10 shrink-0 rounded-full bg-muted" />}
+                <PlayerAvatar src={award.player?.photo_url} name={award.player?.name} />
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-bold">{tx(award.player?.name) ?? tx("Player")}</div>
                   <div className="truncate text-[0.7rem] text-muted-foreground">
