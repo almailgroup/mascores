@@ -40,8 +40,8 @@ export function BrowseGestures() {
     const content = document.querySelector<HTMLElement>("[data-browse-page]");
     if (!surface || !content) return;
     // Identity headers remain stationary on these pages; only their body opens below.
-    const refreshContent = content.querySelector<HTMLElement>("[data-refresh-body]") ?? content;
-    const refreshHeader = content.querySelector<HTMLElement>("[data-refresh-header]");
+    let refreshContent = content.querySelector<HTMLElement>("[data-refresh-body]") ?? content;
+    let refreshHeader = content.querySelector<HTMLElement>("[data-refresh-header]");
     let start: { x: number; y: number; edge: boolean; top: boolean } | null = null;
     let distance = 0;
     let axis: "back" | "refresh" | null = null;
@@ -86,6 +86,8 @@ export function BrowseGestures() {
       }
       const touch = event.touches[0];
       if (!touch) return;
+      refreshContent = content.querySelector<HTMLElement>("[data-refresh-body]") ?? content;
+      refreshHeader = content.querySelector<HTMLElement>("[data-refresh-header]");
       start = { x: touch.clientX, y: touch.clientY, edge: touch.clientX <= 28 && router.history.canGoBack(), top: window.scrollY <= 0 };
       setIndicatorTop(refreshHeader?.getBoundingClientRect().bottom ?? document.querySelector("[data-shell-header]")?.getBoundingClientRect().bottom ?? 0);
       distance = 0; axis = null;
