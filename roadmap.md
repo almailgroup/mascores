@@ -1,4 +1,8 @@
 # Roadmap
+- [ ] Keep club/competition refresh beneath the header as in the video
+- [ ] Add automatic rating-based Team of the Round after completed rounds
+- [ ] Add year-by-year title history above winners and competition settings editing
+- [ ] Verify refresh, round eligibility and title-history save/read flows
 - [x] Match reference-style soft backgrounds across club, competition and match headers, with compact full-name competition layout
 - [x] Check header appearance, full-name fit and scrolling on phone and desktop
 - [x] Remove news/photo watermarks and restore original event artwork with theme contrast only
