@@ -368,3 +368,7 @@ a:has([aria-label*="match notifications"]):active { filter: none; transform: non
 .sports-header .profile-title { font-size: 13px; font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; }
 .sports-header .profile-expanded-identity { overflow: visible; }
 @media (min-width: 640px) { .sports-header .profile-title { font-size: 18px; } .club-profile-header { margin-top: -1.5rem; } }
+
+.round-team-pitch { position: relative; background: var(--card); }
+.round-team-pitch::before { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(180deg, transparent 0 96px, color-mix(in oklab, var(--border) 50%, transparent) 96px 97px); pointer-events: none; }
+.round-team-pitch::after { content: ""; position: absolute; width: 80px; height: 80px; border: 1px solid var(--border); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; }

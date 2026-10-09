@@ -12,6 +12,7 @@ export function BrowseGestures() {
   const qc = useQueryClient();
   const [pull, setPull] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+  const [indicatorTop, setIndicatorTop] = useState(0);
   const busy = useRef(false);
   useLayoutEffect(() => {
     const surface = document.querySelector<HTMLElement>("[data-browse-surface]");
@@ -38,6 +39,9 @@ export function BrowseGestures() {
     // Move the entire browsing page, including its header, but not the fixed tab bar.
     const content = document.querySelector<HTMLElement>("[data-browse-page]");
     if (!surface || !content) return;
+    // Identity headers remain stationary on these pages; only their body opens below.
+    let refreshContent = content.querySelector<HTMLElement>("[data-refresh-body]") ?? content;
+    let refreshHeader = content.querySelector<HTMLElement>("[data-refresh-header]");
     let start: { x: number; y: number; edge: boolean; top: boolean } | null = null;
     let distance = 0;
     let axis: "back" | "refresh" | null = null;
@@ -51,6 +55,8 @@ export function BrowseGestures() {
       surface.style.boxShadow = "";
       content.style.transform = "";
       content.style.transition = "";
+      refreshContent.style.transform = "";
+      refreshContent.style.transition = "";
       document.documentElement.style.overscrollBehaviorY = "";
       underlay?.remove(); underlay = null;
       setPull(0);
@@ -62,9 +68,9 @@ export function BrowseGestures() {
         surface.style.transition = reduced ? "none" : "transform 240ms cubic-bezier(.2,.8,.2,1)";
         surface.style.transform = "";
       }
-      if (content.style.transform) {
-        content.style.transition = reduced ? "none" : "transform 280ms cubic-bezier(.2,.8,.2,1)";
-        content.style.transform = "";
+      if (refreshContent.style.transform) {
+        refreshContent.style.transition = reduced ? "none" : "transform 280ms cubic-bezier(.2,.8,.2,1)";
+        refreshContent.style.transform = "";
       }
       setPull(0);
       timer = setTimeout(reset, reduced ? 0 : 280);
@@ -80,7 +86,10 @@ export function BrowseGestures() {
       }
       const touch = event.touches[0];
       if (!touch) return;
+      refreshContent = content.querySelector<HTMLElement>("[data-refresh-body]") ?? content;
+      refreshHeader = content.querySelector<HTMLElement>("[data-refresh-header]");
       start = { x: touch.clientX, y: touch.clientY, edge: touch.clientX <= 28 && router.history.canGoBack(), top: window.scrollY <= 0 };
+      setIndicatorTop(refreshHeader?.getBoundingClientRect().bottom ?? document.querySelector("[data-shell-header]")?.getBoundingClientRect().bottom ?? 0);
       distance = 0; axis = null;
     };
     const onMove = (event: TouchEvent) => {
@@ -111,8 +120,8 @@ export function BrowseGestures() {
       } else {
         distance = Math.max(0, dy);
         const offset = 110 * (1 - Math.exp(-distance / 230));
-        content.style.transition = "none";
-        content.style.transform = `translateY(${offset}px)`;
+        refreshContent.style.transition = "none";
+        refreshContent.style.transform = `translateY(${offset}px)`;
         setPull(offset);
       }
     };
@@ -128,8 +137,8 @@ export function BrowseGestures() {
         timer = setTimeout(() => { reset(); timer = null; busy.current = false; router.history.back(); }, reduced ? 0 : 200);
       } else if (axis === "refresh" && distance >= 180) {
         busy.current = true; setRefreshing(true); setPull(64);
-        content.style.transition = "transform 180ms ease-out";
-        content.style.transform = "translateY(64px)";
+        refreshContent.style.transition = "transform 180ms ease-out";
+        refreshContent.style.transform = "translateY(64px)";
         void Promise.all([qc.invalidateQueries(), router.invalidate(), new Promise((resolve) => setTimeout(resolve, 500))]).catch(() => {}).finally(() => {
           busy.current = false; setRefreshing(false); settle();
         });
@@ -153,5 +162,5 @@ export function BrowseGestures() {
     };
   }, [router, qc, location.pathname]);
   if (!pull && !refreshing) return null;
-  return <div data-gesture-ui role="status" aria-label={refreshing ? "Refreshing" : "Pull to refresh"} className="browse-refresh-indicator pointer-events-none absolute inset-x-0 z-20 flex justify-center" style={{ top: document.querySelector("[data-shell-header]")?.getBoundingClientRect().height ?? 0, height: refreshing ? 64 : pull }}><Loader2 className={`h-5 w-5 self-center text-muted-foreground ${refreshing ? "animate-spin" : ""}`} style={{ transform: refreshing ? undefined : `rotate(${pull * 4}deg)`, opacity: Math.min(1, pull / 40) }} /></div>;
+  return <div data-gesture-ui role="status" aria-label={refreshing ? "Refreshing" : "Pull to refresh"} className="browse-refresh-indicator pointer-events-none fixed inset-x-0 z-20 flex justify-center" style={{ top: indicatorTop, height: refreshing ? 64 : pull }}><Loader2 className={`h-5 w-5 self-center text-muted-foreground ${refreshing ? "animate-spin" : ""}`} style={{ transform: refreshing ? undefined : `rotate(${pull * 4}deg)`, opacity: Math.min(1, pull / 40) }} /></div>;
 }
