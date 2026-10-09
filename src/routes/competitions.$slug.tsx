@@ -335,7 +335,7 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
   const chip = onLight ? "bg-black/10" : "bg-white/15";
 
   return (
-    <div className="-mx-4 -mt-6 mb-4 px-4 pb-0 pt-1 sm:-mx-6 sm:px-6" style={{ background, color: fg }}>
+    <div className="comp-hero -mx-4 -mt-6 mb-4 px-4 pb-0 pt-1 sm:-mx-6 sm:px-6" style={{ background, color: fg }}>
       <div className="flex items-center gap-1">
         <button
           onClick={() => { if (router.history.canGoBack()) router.history.back(); else router.navigate({ to: "/competitions" }); }}
