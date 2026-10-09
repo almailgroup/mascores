@@ -3,7 +3,9 @@ import logoLight from "@/assets/logo-mark-v2.png.asset.json";
 import logoDark from "@/assets/logo-mark-dark.png";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
 import { PlayerAvatar } from "@/components/player-avatar";
+import { portraitSource } from "@/lib/portrait-source";
 import { AppShell, EmptyState } from "@/components/app-shell";
 import { supabase } from "@/lib/db";
 import { FlagIcon } from "@/components/flag";
@@ -248,7 +250,7 @@ function ResultRow({ to, params, logo, fallback, title, sub, country, round, onO
     <Link to={to as never} params={params as never} onClick={onOpen}
       className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 transition hover:border-primary/50">
       <div className={`flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden ${round ? "rounded-full" : "rounded-xl"} border border-border bg-muted/40`}>
-        {logo ? <img src={logo} alt="" className={`h-full w-full ${round ? "object-cover" : "object-contain p-1"}`} /> : fallback}
+        {logo ? <img src={round ? portraitSource(logo) : logo} alt="" loading="lazy" decoding="async" draggable={false} className={`h-full w-full ${round ? "object-cover" : "object-contain p-1"}`} /> : fallback}
       </div>
       <div className="min-w-0 flex-1">
         <div className="truncate text-sm font-semibold">{title}</div>
@@ -276,7 +278,9 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
 /** The squad of a matched team, so searching a club also surfaces its players. */
 function TeamSquadResults({ teamId }: { teamId: string }) {
   const tx = useTx();
+  const [expanded, setExpanded] = useState(false);
   const squad = useQuery({
+    enabled: expanded,
     queryKey: ["search-squad", teamId],
     queryFn: async () => {
       const club = await supabase.from("players").select("id,name,position,shirt_number,photo_url").eq("team_id", teamId).order("shirt_number", { nullsFirst: false }).limit(40);
@@ -293,7 +297,9 @@ function TeamSquadResults({ teamId }: { teamId: string }) {
     },
   });
 
-  if (!squad.data || squad.data.length === 0) return null;
+  if (!expanded) return <Button variant="ghost" size="sm" className="ms-3 text-primary" onClick={() => setExpanded(true)}>{tx("Add players")}</Button>;
+  if (!squad.data) return <span className="ms-3 text-xs text-muted-foreground">{tx("Loading")}</span>;
+  if (squad.data.length === 0) return <span className="ms-3 text-xs text-muted-foreground">{tx("No players")}</span>;
   return (
     <div className="ms-3 grid gap-1.5 border-s border-border ps-3 sm:grid-cols-2 lg:grid-cols-3">
       {squad.data.map((p) => (

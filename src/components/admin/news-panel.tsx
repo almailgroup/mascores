@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { SearchBar, filterByText } from "./content-panels";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -81,9 +82,9 @@ export function NewsPanel() {
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:flex sm:justify-between">
         <h2 className="text-lg font-bold">News</h2>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap justify-end gap-2">
           <button className={btnGhost} onClick={() => { setAiError(null); setAiOpen(true); }}><Sparkles className="h-3.5 w-3.5" /> Write with Almail AI</button>
           <button className={btnPrimary} onClick={() => { setForm({}); setOpen(true); }}><Plus className="h-3.5 w-3.5" /> New post</button>
         </div>
@@ -110,15 +111,19 @@ export function NewsPanel() {
       <div className="grid gap-2">
         <SearchBar value={search} onChange={setSearch} placeholder="Search posts" />
         {filterByText(q.data, search, (n) => [n.title, n.title_ar, n.author_display, n.slug]).map((n) => (
-          <div key={n.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3">
-            {n.cover_url && <img src={n.cover_url} alt="" className="h-12 w-16 rounded object-cover" />}
+          <div key={n.id} className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-3 rounded-2xl border border-border bg-card p-3 sm:flex sm:items-center">
+            <div className="col-span-2 flex min-w-0 items-center gap-3 sm:flex-1">
+            {n.cover_url && <img src={n.cover_url} alt="" loading="lazy" className="h-12 w-16 shrink-0 rounded object-cover" />}
             <div className="min-w-0 flex-1">
               <div className="truncate font-semibold">{n.title}</div>
               <div className="truncate text-xs text-muted-foreground">{n.published_at ? `Published · ${new Date(n.published_at).toLocaleString()}` : "Draft"}</div>
             </div>
-            <button className={btnGhost} onClick={() => togglePublish(n)}>{n.published_at ? "Unpublish" : "Publish"}</button>
-            <button className={btnGhost} onClick={() => { setForm(n); setOpen(true); }}><Pencil className="h-3.5 w-3.5" /></button>
-            <button className={btnDanger} onClick={() => remove(n.id)}><Trash2 className="h-3.5 w-3.5" /></button>
+            </div>
+            <div className="col-span-2 flex shrink-0 justify-end gap-2">
+            <Button variant="outline" onClick={() => togglePublish(n)}>{n.published_at ? "Unpublish" : "Publish"}</Button>
+            <Button variant="outline" size="icon" aria-label={`Edit ${n.title}`} title="Edit" onClick={() => { setForm(n); setOpen(true); }}><Pencil /></Button>
+            <Button variant="destructive" size="icon" aria-label={`Delete ${n.title}`} title="Delete" onClick={() => remove(n.id)}><Trash2 /></Button>
+            </div>
           </div>
         ))}
         {q.data && q.data.length === 0 && <div className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">No posts yet.</div>}

@@ -15,6 +15,13 @@
       "when": 1791461027319,
       "tag": "0001_reporter_identity_and_ban_history",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791580633827,
+      "tag": "0002_reporter_scoped_news_uploads",
+      "breakpoints": true
     }
   ]
 }

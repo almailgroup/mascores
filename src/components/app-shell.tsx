@@ -1,5 +1,5 @@
 import { Link, useLocation, useRouter } from "@tanstack/react-router";
-import { Home, Search, Trophy, Newspaper, ArrowLeftRight, Ticket, Settings, LogIn, ArrowLeft, MoreHorizontal, Radio, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Home, Search, Trophy, Newspaper, ArrowLeftRight, Ticket, Settings, LogIn, ArrowLeft, MoreHorizontal, Radio, User, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +9,8 @@ import { BrandLogo } from "@/components/brand-logo";
 import { LiveVoiceAlert } from "@/components/live-voice-alert";
 import { useReminderAlerts } from "@/components/match-reminders";
 import { useAskForAlerts, useLiveEventAlerts } from "@/lib/live-alerts";
+import { Button } from "@/components/ui/button";
+import { BrowseGestures } from "@/components/browse-gestures";
 import { suspensionMessage, useMySuspension } from "@/lib/suspension";
 
 /**
@@ -110,7 +112,8 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
     enabled: !!user,
     queryKey: ["shell-profile", user?.id],
     queryFn: async () => {
-      const { data } = await supabase.from("profiles").select("display_name, avatar_url").eq("id", user!.id).maybeSingle();
+      if (!user) return null;
+      const { data } = await supabase.from("profiles").select("display_name, avatar_url").eq("id", user.id).maybeSingle();
       return data;
     },
   });
@@ -124,55 +127,19 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
       <div className="pointer-events-none fixed inset-0 opacity-40 [background:radial-gradient(circle_at_10%_-10%,color-mix(in_oklab,var(--primary)_25%,transparent),transparent_55%),radial-gradient(circle_at_100%_100%,color-mix(in_oklab,var(--primary)_15%,transparent),transparent_60%)]" />
 
       {!bare && <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
-        <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-3 px-4 py-2 sm:px-6">
-
-          <Link to="/" className="inline-flex shrink-0 items-center gap-2">
-            <BrandLogo className="h-10" />
+        <div dir="ltr" className="mx-auto grid min-h-16 max-w-7xl grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-3 px-4 py-2 sm:px-6">
+          <Link to={user ? "/settings" : "/auth"} aria-label={user ? t("nav.settings") : t("nav.signIn")} className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full border border-border bg-card text-sm font-bold text-primary">
+            {user && profile.data?.avatar_url ? <img src={profile.data.avatar_url} alt="" className="h-full w-full object-cover" /> : user ? <span>{initials}</span> : <User className="h-6 w-6" />}
           </Link>
-
-          <nav className="hidden items-center gap-0.5 md:flex">
-            {NAV.map((item) => {
-              const active = item.exact ? location.pathname === item.to : location.pathname.startsWith(item.to);
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className={`inline-flex h-9 items-center gap-2 rounded-full px-2.5 text-[0.82rem] font-medium transition ${
-                    active ? "bg-primary/15 text-primary" : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                  }`}
-                >
-                  <item.icon className="h-4 w-4" />
-                  {t(item.labelKey)}
-                </Link>
-              );
-            })}
-          </nav>
-
-          <div className="flex items-center gap-2">
-            {!loading && (
-              user ? (
-                <Link
-                  to="/settings"
-                  aria-label={t("nav.settings")}
-                  className="inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-border bg-card text-sm font-bold text-foreground shadow-sm transition hover:ring-2 hover:ring-primary/50"
-                >
-                  {profile.data?.avatar_url
-                    ? <img src={profile.data.avatar_url} alt="" className="h-full w-full object-cover" />
-                    : <span>{initials}</span>}
-                </Link>
-              ) : (
-                <Link
-                  to="/auth"
-                  className="inline-flex h-9 items-center gap-2 rounded-full bg-primary px-3 text-sm font-semibold text-primary-foreground shadow"
-                >
-                  <LogIn className="h-4 w-4" /> {t("nav.signIn")}
-                </Link>
-              )
-            )}
-          </div>
+          <Link to="/" aria-label="MA Scores" className="shrink-0"><BrandLogo showWordmark={false} className="h-10 w-10 object-contain" /></Link>
+          <Link to="/search" className="flex h-11 min-w-0 items-center gap-2 rounded-full border border-border bg-card px-4 text-muted-foreground" aria-label="Search MA Scores"><Search className="h-5 w-5 shrink-0" /><span className="truncate text-sm">Search MA Scores</span></Link>
         </div>
+        <nav className="mx-auto hidden max-w-7xl items-center gap-1 px-6 pb-2 md:flex">
+          {NAV.map((item) => <Link key={item.to} to={item.to} className={`inline-flex h-8 items-center gap-2 rounded-full px-3 text-xs font-medium ${location.pathname.startsWith(item.to) && (item.to !== "/" || location.pathname === "/") ? "bg-primary/15 text-primary" : "text-muted-foreground hover:bg-accent"}`}><item.icon className="h-4 w-4" />{t(item.labelKey)}</Link>)}
+        </nav>
       </header>}
 
+      <BrowseGestures />
       {!bare && <LiveVoiceAlert />}
 
       {/* Extra bottom room so the iPhone home bar never covers page actions. */}
@@ -259,24 +226,16 @@ export function SectionHeader({ title, action }: { title: string; action?: React
 export function BackButton({ className = "", iconOnly = false }: { className?: string; iconOnly?: boolean }) {
   const router = useRouter();
   const { lang } = useI18n();
-  const back = () => { if (router.history.canGoBack()) router.history.back(); else router.navigate({ to: "/" }); };
-  if (iconOnly) {
-    return (
-      <button type="button" onClick={back} aria-label={lang === "ar" ? "رجوع" : "Back"}
-        className={`inline-flex h-9 w-9 items-center justify-center transition hover:opacity-80 ${className}`}>
-        <ArrowLeft className="h-6 w-6" />
-      </button>
-    );
-  }
-  return (
-    <button
-      type="button"
-      onClick={back}
-      className={`mb-4 inline-flex h-9 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-sm font-medium text-muted-foreground transition hover:text-foreground ${className}`}
-    >
-      <ArrowLeft className="h-4 w-4" /> {lang === "ar" ? "رجوع" : "Back"}
-    </button>
-  );
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const held = useRef(false);
+  const clear = () => { if (timer.current) clearTimeout(timer.current); timer.current = null; };
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
+  const back = () => { clear(); if (held.current) { held.current = false; return; } if (router.history.canGoBack()) router.history.back(); else void router.navigate({ to: "/" }); };
+  return <Button type="button" variant="ghost" size={iconOnly ? "icon" : "default"} aria-label={lang === "ar" ? "رجوع" : "Back"} title="Back — hold to go home" onClick={back}
+    onContextMenu={(event) => event.preventDefault()}
+    onPointerDown={() => { clear(); held.current = false; timer.current = setTimeout(() => { held.current = true; void router.navigate({ to: "/" }); }, 1500); }}
+    onPointerUp={clear} onPointerCancel={clear} onPointerLeave={clear}
+    className={`${iconOnly ? "" : "mb-4"} ${className}`}><ArrowLeft />{!iconOnly && (lang === "ar" ? "رجوع" : "Back")}</Button>;
 }
 
 export function EmptyState({ title, description }: { title: string; description?: string }) {

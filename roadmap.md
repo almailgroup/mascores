@@ -1,4 +1,10 @@
 # Roadmap
+- [ ] Speed up player portraits and block photo drag/long-press menus
+- [ ] Remove reporter AI, repair reporter photo/proof uploads, fit admin news actions on iPhone
+- [ ] Profile-left/logo-only header with long search; opt-in squad search
+- [ ] Sticky club tabs, Today, upcoming-first matches and club-only standing groups
+- [ ] Back/home hold, edge swipe back, pull refresh and stable notification press appearance
+- [ ] Verify requested browsing and news flows
 - [x] iOS sign-in Browser fallback + photo save timeout (in progress)
 - [x] Transfers: type labels cut off (e.g. "Loan return")
 - [x] Disable text selection/copy on iPhone app (keep on computer)

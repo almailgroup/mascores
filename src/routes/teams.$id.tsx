@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { MediaGallery } from "@/components/media-gallery";
 import { AppShell, BackButton, EmptyState, LoadingSkeleton, SwipeTabs } from "@/components/app-shell";
@@ -19,6 +19,7 @@ import { useDates, useNum, useTx } from "@/lib/auto-translate";
 import { TeamStats, type TeamComp } from "@/components/team-stats";
 import { SeasonMenu } from "@/components/season-menu";
 import { StandingsTable } from "@/components/standings-table";
+import { Button } from "@/components/ui/button";
 import type { Database } from "@/integrations/supabase/types";
 
 export const Route = createFileRoute("/teams/$id")({
@@ -131,6 +132,7 @@ function TeamPage() {
 
   return (
     <AppShell>
+      <BackButton iconOnly className="mb-2" />
       <div className="mb-4 flex items-center gap-3 rounded-2xl border border-border bg-card p-3 sm:gap-4 sm:p-5">
         <TeamCrest name={t.name} logo={t.logo_url} className="h-11 w-11 shrink-0 sm:h-14 sm:w-14" rounded="rounded-xl" />
         <div className="min-w-0 flex-1">
@@ -145,7 +147,8 @@ function TeamPage() {
         <FavoriteButton kind="team" id={t.id} size="md" />
       </div>
 
-      <SwipeTabs className="mb-5 gap-1 rounded-full border border-border bg-card p-1 text-xs">
+      <div className="club-tabs sticky z-30 -mx-4 mb-5 border-b border-border bg-background/95 px-4 py-2 backdrop-blur-xl">
+      <SwipeTabs className=" gap-1 rounded-full border border-border bg-card p-1 text-xs">
         {TABS.map((k) => (
           <button key={k} onClick={() => setTab(k)}
             className={`whitespace-nowrap rounded-full px-4 py-1.5 font-semibold ${tab === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
@@ -153,6 +156,7 @@ function TeamPage() {
           </button>
         ))}
       </SwipeTabs>
+      </div>
 
 
       {tab === "matches" && (
@@ -407,7 +411,9 @@ function StandingsTabs({ rows, labels, teamId, tx }: {
   const availableSeasons = [...new Set(rows.filter((row) => row.competition_id === current?.competition_id).map((row) => row.season).filter((value): value is string => !!value))];
   const configuredSeason = current?.competition?.season;
   const activeSeason = current ? (selectedSeasons[current.competition_id] ?? (configuredSeason && availableSeasons.includes(configuredSeason) ? configuredSeason : availableSeasons[0]) ?? "") : "";
-  const list = rows.filter((r) => r.competition_id === current?.competition_id && (!activeSeason || r.season === activeSeason));
+  const seasonRows = rows.filter((r) => r.competition_id === current?.competition_id && (!activeSeason || r.season === activeSeason));
+  const ownGroups = new Set(seasonRows.filter((r) => r.team_id === teamId).map((r) => r.group_label ?? ""));
+  const list = seasonRows.filter((r) => ownGroups.has(r.group_label ?? ""));
   const currentLabels = labels.filter((label) => label.competition_id === current?.competition_id && (!activeSeason || label.season === activeSeason));
 
   return (
@@ -569,11 +575,17 @@ function TeamNewsTeaser({ teamId, onMore }: { teamId: string; onMore: () => void
  * jumps straight to the next upcoming match, so past games are just a scroll away.
  */
 function TeamMatches({ data, teamId, nextId }: { data: MatchWithTeams[]; teamId: string; nextId: string | null }) {
-  const box = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!nextId || !box.current) return;
-    const row = box.current.querySelector(`a[href*="/matches/${nextId}"]`);
-    row?.scrollIntoView({ block: "center", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
-  }, [nextId]);
-  return <div ref={box}><MatchGroups data={data} highlightTeamId={teamId} /></div>;
+  const tx = useTx();
+  const top = useRef<HTMLDivElement>(null);
+  const [showPast, setShowPast] = useState(false);
+  const timestamp = (m: MatchWithTeams) => m.kickoff_at ? new Date(m.kickoff_at).getTime() : 0;
+  const day = new Date(); day.setHours(0, 0, 0, 0);
+  const forward = data.filter((m) => timestamp(m) >= day.getTime() || ["live", "ht"].includes(m.status)).sort((a, b) => timestamp(a) - timestamp(b));
+  const past = data.filter((m) => !forward.some((next) => next.id === m.id)).sort((a, b) => timestamp(b) - timestamp(a));
+  return <div ref={top} className="scroll-mt-40">
+    {forward.length > 0 && <MatchGroups data={forward} highlightTeamId={teamId} />}
+    {past.length > 0 && <Button variant="outline" className="my-4" onClick={() => setShowPast((value) => !value)}>{tx(showPast ? "Hide past matches" : "Past matches")}</Button>}
+    {(showPast || forward.length === 0) && <MatchGroups data={past} highlightTeamId={teamId} />}
+    <Button variant="outline" onClick={() => { setShowPast(false); top.current?.scrollIntoView({ block: "start", behavior: "instant" }); }} className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] left-1/2 z-30 -translate-x-1/2 rounded-full border-primary bg-background text-primary shadow">{tx("Today")} ↑</Button>
+  </div>;
 }
