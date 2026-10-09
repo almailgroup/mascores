@@ -55,14 +55,21 @@ export function BrowseGestures() {
       setPull(0);
     };
     const settle = () => {
-      surface.style.transition = reduced ? "none" : "transform 240ms cubic-bezier(.2,.8,.2,1)";
-      content.style.transition = reduced ? "none" : "transform 280ms cubic-bezier(.2,.8,.2,1)";
-      surface.style.transform = "translateX(0px)";
-      content.style.transform = "translateY(0px)";
+      // A transform on the shell makes fixed navigation relative to the page.
+      // Only animate elements that actually moved, never ordinary scrolls/taps.
+      if (surface.style.transform) {
+        surface.style.transition = reduced ? "none" : "transform 240ms cubic-bezier(.2,.8,.2,1)";
+        surface.style.transform = "";
+      }
+      if (content.style.transform) {
+        content.style.transition = reduced ? "none" : "transform 280ms cubic-bezier(.2,.8,.2,1)";
+        content.style.transform = "";
+      }
       setPull(0);
       timer = setTimeout(reset, reduced ? 0 : 280);
     };
     const onStart = (event: TouchEvent) => {
+      start = null; axis = null; distance = 0;
       if (busy.current || timer) return;
       const target = event.target instanceof Element ? event.target : null;
       if (event.touches.length !== 1 || target?.closest('input,textarea,select,[role="dialog"],[data-no-gesture]')) return;
@@ -111,6 +118,7 @@ export function BrowseGestures() {
     const onEnd = () => {
       if (!start) return;
       start = null;
+      if (!axis) return;
       if (axis === "back" && distance >= window.innerWidth * 0.34) {
         busy.current = true;
         surface.style.transition = reduced ? "none" : "transform 200ms ease-out";
@@ -127,7 +135,7 @@ export function BrowseGestures() {
       } else settle();
       axis = null; distance = 0;
     };
-    const cancel = () => { start = null; axis = null; distance = 0; settle(); };
+    const cancel = () => { const moved = axis !== null; start = null; axis = null; distance = 0; if (moved) settle(); };
     document.addEventListener("touchstart", onStart, { passive: true });
     document.addEventListener("touchmove", onMove, { passive: false });
     document.addEventListener("touchend", onEnd);
