@@ -224,13 +224,13 @@
        stray wide element create a sideways scroll. */
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    overflow-x: hidden;
+    overflow-x: clip;
     -webkit-tap-highlight-color: transparent;
   }
 
@@ -279,3 +279,10 @@
     oklch(0.95 0.08 100) 100%);
   box-shadow: 0 0 0 1px oklch(0.72 0.13 85), 0 2px 8px oklch(0.8 0.15 85 / 45%);
 }
+
+/* Photo extraction menus and dragging are disabled; screenshots remain possible. */
+img { -webkit-user-drag: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.club-tabs { top: calc(4rem + env(safe-area-inset-top)); }
+@media (min-width: 768px) { .club-tabs { top: calc(6.5rem + env(safe-area-inset-top)); } }
+a:has([aria-label*="match notifications"]):active { filter: none; transform: none; }
+[aria-label*="match notifications"]:active { filter: none !important; transform: none !important; }

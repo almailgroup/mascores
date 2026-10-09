@@ -1,0 +1,1 @@
+CREATE POLICY "Active reporters upload own news media" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'news-covers' AND (storage.foldername(name))[1] = auth.uid()::text AND NOT public.is_suspended(auth.uid()) AND EXISTS (SELECT 1 FROM public.news_reporters WHERE user_id = auth.uid() AND status IN ('active', 'approved')));

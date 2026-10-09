@@ -7,12 +7,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import { uploadMedia } from "@/components/admin/upload";
-import { createArticleDraftWithAlmail } from "@/lib/almail-ai.functions";
-import { readAiImages, type AiImageInput } from "@/lib/image-files";
 import { NewsLinkPicker, type NewsLinks } from "@/components/admin/news-link-picker";
 import { redeemReporterCode, applyAsReporter } from "@/lib/reporter.functions";
 import { Button } from '@/components/ui/button';
-import { Loader2, LogIn, Sparkles, ImagePlus, Send, BadgeCheck, Mail, KeyRound, Share2, CheckCircle2 } from "lucide-react";
+import { Loader2, LogIn, ImagePlus, Send, BadgeCheck, Mail, KeyRound, Share2, CheckCircle2 } from "lucide-react";
 
 export const Route = createFileRoute("/contribute")({
   head: () => ({
@@ -61,12 +59,10 @@ function ContributePage() {
   const [links, setLinks] = useState<NewsLinks>({ team_id: null, competition_id: null, player_id: null });
   const [proofNote, setProofNote] = useState("");
   const [proofUrl, setProofUrl] = useState<string | null>(null);
-  const [aiNotes, setAiNotes] = useState("");
-  const [aiImages, setAiImages] = useState<AiImageInput[]>([]);
+  const [uploading, setUploading] = useState<"cover" | "proof" | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
-  const draft = useServerFn(createArticleDraftWithAlmail);
 
   const reporter = useQuery({
     enabled: !!user,
@@ -119,15 +115,17 @@ function ContributePage() {
     finally { setCodeBusy(false); }
   };
 
-  const generate = async () => {
-    if (!aiNotes.trim() && aiImages.length === 0) return;
-    setBusy(true); setError(null);
+  const uploadArticleFile = async (file: File, kind: "cover" | "proof") => {
+    if (!user) return;
+    setUploading(kind); setError(null);
     try {
-      const result = await draft({ data: { notes: aiNotes, images: aiImages } });
-      setTitle(result.title); setExcerpt(result.excerpt); setBody(result.body_markdown);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Almail AI could not draft this article.");
-    } finally { setBusy(false); }
+      if (kind === "cover" && !file.type.startsWith("image/")) throw new Error("Choose an image for your cover.");
+      if (file.size > 20 * 1024 * 1024) throw new Error("Choose a file smaller than 20 MB.");
+      const url = await uploadMedia("news-covers", file, user.id);
+      if (!url) throw new Error("The file could not be uploaded. Please try again.");
+      if (kind === "cover") setCover(url); else setProofUrl(url);
+    } catch (error) { setError(error instanceof Error ? error.message : "Could not upload the file."); }
+    finally { setUploading(null); }
   };
 
   const submit = async () => {
@@ -180,7 +178,6 @@ function ContributePage() {
               {[
                 "Publish football news that the main admin reviews before it goes live",
                 "Show your own social media username on every article you publish",
-                "Draft in English and Arabic instantly with Almail AI",
               ].map((line) => (
                 <li key={line} className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><span className="text-muted-foreground">{line}</span></li>
               ))}
@@ -290,24 +287,6 @@ function ContributePage() {
               {sent && <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-500">Sent for review</span>}
             </div>
 
-            <div className="mt-5 rounded-2xl border border-dashed border-primary/40 bg-primary/5 p-4">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary"><Sparkles className="h-3.5 w-3.5" /> Almail AI draft</div>
-              <textarea className={`${inputCls} mt-2`} rows={3} placeholder="Write your notes, or paste what happened — Almail AI turns it into an article."
-                value={aiNotes} onChange={(e) => setAiNotes(e.target.value)} />
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                <label className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-full border border-border bg-background px-4 text-xs font-semibold">
-                  <ImagePlus className="h-3.5 w-3.5" /> Add photos for the draft
-                  <input type="file" accept="image/*" multiple className="hidden"
-                    onChange={async (e) => setAiImages(await readAiImages(e.target.files ?? []))} />
-                </label>
-                {aiImages.length > 0 && <span className="text-xs text-muted-foreground">{aiImages.length} photo(s) attached</span>}
-                <button disabled={busy || (!aiNotes.trim() && aiImages.length === 0)} onClick={generate}
-                  className="inline-flex h-9 items-center gap-2 rounded-full bg-primary px-4 text-xs font-bold text-primary-foreground disabled:opacity-60">
-                  {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />} Draft it for me
-                </button>
-              </div>
-            </div>
-
             <div className="mt-5 grid gap-3">
               <div>
                 <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Headline</label>
@@ -326,20 +305,21 @@ function ContributePage() {
                 <div>
                   <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Cover photo</label>
                   <label className="mt-1 flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-border bg-background px-4 text-sm">
-                    <ImagePlus className="h-4 w-4 text-muted-foreground" /> {cover ? "Change photo" : "Choose photo"}
-                    <input type="file" accept="image/*" className="hidden"
-                      onChange={async (e) => { const f = e.target.files?.[0]; if (f) setCover(await uploadMedia("news-covers", f)); }} />
+                    <ImagePlus className="h-4 w-4 text-muted-foreground" /> {uploading === "cover" ? "Uploading…" : cover ? "Change photo" : "Choose photo"}
+                    <input type="file" accept="image/*" disabled={!!uploading} className="sr-only"
+                      onChange={async (e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) await uploadArticleFile(f, "cover"); }} />
                   </label>
                 </div>
                 <div>
                   <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Proof (photo or document)</label>
                   <label className="mt-1 flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-border bg-background px-4 text-sm">
-                    <ImagePlus className="h-4 w-4 text-muted-foreground" /> {proofUrl ? "Change file" : "Choose file"}
-                    <input type="file" className="hidden"
-                      onChange={async (e) => { const f = e.target.files?.[0]; if (f) setProofUrl(await uploadMedia("news-covers", f)); }} />
+                    <ImagePlus className="h-4 w-4 text-muted-foreground" /> {uploading === "proof" ? "Uploading…" : proofUrl ? "Change file" : "Choose file"}
+                    <input type="file" disabled={!!uploading} className="sr-only"
+                      onChange={async (e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) await uploadArticleFile(f, "proof"); }} />
                   </label>
                 </div>
               </div>
+              {proofUrl && <p className="text-xs text-success">Proof attached</p>}
               {cover && <img src={cover} alt="" className="max-h-60 w-full rounded-2xl bg-muted/60 object-contain" />}
 
               <div>
@@ -353,7 +333,7 @@ function ContributePage() {
               </div>
 
               {error && <p className="text-xs text-destructive">{error}</p>}
-              <button disabled={busy || !title.trim() || !body.trim()} onClick={submit}
+              <button disabled={busy || !!uploading || !title.trim() || !body.trim()} onClick={submit}
                 className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground disabled:opacity-60">
                 {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} Send for review
               </button>
