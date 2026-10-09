@@ -298,6 +298,15 @@ a:has([aria-label*="match notifications"]):active { filter: none; transform: non
 ::view-transition-old(mas-search), ::view-transition-new(mas-search) { height: 100%; }
 ::view-transition-group(root) { animation-duration: 180ms; }
 .shell-no-header .club-tabs { top: env(safe-area-inset-top); }
+/* On headerless pages the competition banner stretches up over the extra top
+   clearance so its background reaches the very top of the screen. */
+.shell-no-header .comp-hero {
+  margin-top: calc(-1 * (env(safe-area-inset-top, 0px) + 2rem));
+  padding-top: calc(env(safe-area-inset-top, 0px) + 2rem);
+}
+@media (min-width: 640px) {
+  .shell-no-header .comp-hero { margin-top: -1.5rem; padding-top: 0.25rem; }
+}
 @media (prefers-reduced-motion: reduce) {
   .search-field-enter { animation: none; }
   ::view-transition-group(*) { animation-duration: 0s; }
