@@ -121,7 +121,7 @@ function SearchPage() {
     <AppShell>
       {/* Focused search surface with the brand logo as a faint watermark:
           navy mark on light, white mark on dark — same pairing as BrandLogo. */}
-      <div className="relative -mx-4 mb-4 sticky top-[env(safe-area-inset-top,0px)] z-30 overflow-hidden border-b border-border bg-background px-4 pb-3 pt-1 text-foreground sm:rounded-b-3xl">
+      <div className="search-hero relative -mx-4 mb-4 sticky top-0 z-30 overflow-hidden border-b border-border bg-background px-4 pb-3 pt-1 text-foreground sm:rounded-b-3xl">
         {/* logo-mark-v2 (navy) belongs on light, logo-mark-dark (white) on dark. */}
         <img src={logoLight.url} alt="" aria-hidden className="pointer-events-none absolute -end-4 -top-5 h-36 w-36 rotate-[-8deg] opacity-25 dark:hidden" />
         <img src={logoLight.url} alt="" aria-hidden className="pointer-events-none absolute -bottom-10 -start-6 h-24 w-24 rotate-[12deg] opacity-15 dark:hidden" />

@@ -335,33 +335,33 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
   const chip = onLight ? "bg-black/10" : "bg-white/15";
 
   return (
-    <div className="comp-hero -mx-4 -mt-6 mb-4 px-4 pb-0 pt-1 sm:-mx-6 sm:px-6" style={{ background, color: fg }}>
+    <div className="comp-hero -mx-4 -mt-6 mb-4 px-4 pb-0 pt-0 sm:-mx-6 sm:px-6" style={{ background, color: fg }}>
       <div className="flex items-center gap-1">
         <button
           onClick={() => { if (router.history.canGoBack()) router.history.back(); else router.navigate({ to: "/competitions" }); }}
           aria-label={tx("Back")}
-          className={`-ms-2 me-auto inline-flex h-9 w-9 items-center justify-center rounded-full ${chip.replace("bg-", "hover:bg-")}`}
+          className={`-ms-2 me-auto inline-flex h-8 w-8 items-center justify-center rounded-full ${chip.replace("bg-", "hover:bg-")}`}
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
         <button
           onClick={toggleAlert}
           aria-label={tx("Notifications")}
-          className={`inline-flex h-9 w-9 items-center justify-center rounded-full ${chip.replace("bg-", "hover:bg-")} ${alerted ? "opacity-100" : "opacity-70"}`}
+          className={`inline-flex h-8 w-8 items-center justify-center rounded-full ${chip.replace("bg-", "hover:bg-")} ${alerted ? "opacity-100" : "opacity-70"}`}
         >
           <Bell className="h-5 w-5" fill={alerted ? "currentColor" : "none"} />
         </button>
         <button
           onClick={() => { onToggleFav(); setBump((v) => (faved ? v - 1 : v + 1)); }}
           aria-label={tx("Follow")}
-          className={`-me-2 inline-flex h-9 w-9 items-center justify-center rounded-full ${chip.replace("bg-", "hover:bg-")} ${faved ? "text-amber-400" : "opacity-70"}`}
+          className={`-me-2 inline-flex h-8 w-8 items-center justify-center rounded-full ${chip.replace("bg-", "hover:bg-")} ${faved ? "text-amber-400" : "opacity-70"}`}
         >
           <Star className="h-5 w-5" fill={faved ? "currentColor" : "none"} />
         </button>
       </div>
 
-      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-1 shadow-md">
+      <div className="-mt-1 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-1 shadow-md">
           {logo ? <img src={logo} alt="" className="h-full w-full object-contain" /> : <Trophy className="h-6 w-6 text-primary" />}
         </div>
         <div className="min-w-0">
