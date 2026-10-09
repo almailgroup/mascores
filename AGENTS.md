@@ -20,3 +20,4 @@
 - Keep first-run setup completion device-local and retain guest team favourites with idempotent profile merging on sign-in, so onboarding works without an account and never repeats on ordinary launches.
 - Use one text-free branded loading overlay for both language directions, keeping underlying pages mounted to preserve navigation and form state.
 - Use the shared scroll-driven collapsing-header hook for club, competition and match headers; keep identity and tabs in one sticky unit so refresh moves all of them together.
+- Use the shared SportsHeaderBackground with semantic surface tokens and sampled logo colours for sports identity headers; one backdrop keeps their visual treatment consistent without changing stored artwork.

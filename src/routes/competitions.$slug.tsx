@@ -14,7 +14,7 @@ import { CompetitionStats } from "@/components/competition-stats";
 import { useI18n } from "@/lib/i18n";
 import type { Database } from "@/integrations/supabase/types";
 import { ArrowLeft, CalendarDays, ChevronRight, Play, Trophy, Bell, Medal, Star, Users, Shapes, Globe2, Flag as FlagIco, ListOrdered } from "lucide-react";
-import { competitionTheme, DEFAULT_HERO } from "@/lib/competition-theme";
+import { competitionTheme } from "@/lib/competition-theme";
 import { useFavorites } from "@/hooks/use-favorites";
 import { SeasonMenu } from "@/components/season-menu";
 import { StandingsTable } from "@/components/standings-table";
@@ -22,6 +22,8 @@ import { useCompetitionLogo } from "@/lib/comp-logo";
 import { useLogoAccent } from "@/lib/logo-accent";
 import { compareGroupLabels } from "@/lib/group-order";
 import { useCollapsingHeader } from "@/hooks/use-collapsing-header";
+import { SportsHeaderBackground } from "@/components/sports-header-background";
+import { Button } from "@/components/ui/button";
 
 type PositionLabel = Database["public"]["Tables"]["standings_position_labels"]["Row"];
 type Row = StandingRow & { team: Team | null };
@@ -301,10 +303,6 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
   const headerRef = useCollapsingHeader(c.id);
   const { t, lang } = useI18n();
   const accent = useLogoAccent(hero ? null : logo);
-  // No custom hero and no logo to sample: use a clean white band instead of navy.
-  const noLogo = !hero && !logo;
-  const background = hero ?? (noLogo ? "linear-gradient(160deg, #ffffff 0%, #f1f5f9 100%)" : accent?.hero ?? DEFAULT_HERO);
-  const onLight = noLogo || (!hero && Boolean(accent?.onLight));
 
 
   const followers = useQuery({
@@ -333,45 +331,44 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
   };
 
   const router = useRouter();
-  const fg = onLight ? "oklch(0.2 0.04 260)" : "oklch(1 0 0)";
-  const chip = onLight ? "bg-black/10" : "bg-white/15";
 
   return (
-    <div ref={headerRef} className="comp-hero collapsing-comp-header -mx-4 -mt-6 mb-4 px-4 pb-0 pt-0 sm:-mx-6 sm:px-6" style={{ background, color: fg }}>
+    <div ref={headerRef} className="comp-hero collapsing-comp-header sports-header -mx-4 -mt-6 mb-4 px-4 pb-0 pt-0 sm:-mx-6 sm:px-6">
+      <SportsHeaderBackground start={accent?.color} background={hero} />
       <div className="relative flex items-center gap-2">
         <div className="profile-compact-identity pointer-events-none absolute inset-y-0 start-10 end-24 flex items-center gap-2">
           {logo && <img src={logo} alt="" className="h-7 w-7 shrink-0 object-contain" />}
           <span className="truncate text-sm font-bold">{lang === "ar" && c.name_ar ? c.name_ar : tx(c.name)}</span>
         </div>
-        <button
+        <Button variant="ghost" size="icon"
           onClick={() => { if (router.history.canGoBack()) router.history.back(); else router.navigate({ to: "/competitions" }); }}
           aria-label={tx("Back")}
-           className={`-ms-2 me-auto inline-flex h-10 w-10 items-center justify-center rounded-full ${chip.replace("bg-", "hover:bg-")}`}
+           className="sports-header-control -ms-2 me-auto h-10 w-10 text-match-foreground hover:text-match-foreground"
         >
           <ArrowLeft className="h-5 w-5" />
-        </button>
-        <button
+        </Button>
+        <Button variant="ghost" size="icon"
           onClick={toggleAlert}
           aria-label={tx("Notifications")}
-           className={`inline-flex h-10 w-10 items-center justify-center rounded-full ${chip.replace("bg-", "hover:bg-")} ${alerted ? "opacity-100" : "opacity-70"}`}
+           className={`sports-header-control h-10 w-10 text-match-foreground hover:text-match-foreground ${alerted ? "opacity-100" : "opacity-70"}`}
         >
           <Bell className="h-5 w-5" fill={alerted ? "currentColor" : "none"} />
-        </button>
-        <button
+        </Button>
+        <Button variant="ghost" size="icon"
           onClick={() => { onToggleFav(); setBump((v) => (faved ? v - 1 : v + 1)); }}
           aria-label={tx("Follow")}
-           className={`-me-2 inline-flex h-10 w-10 items-center justify-center rounded-full ${chip.replace("bg-", "hover:bg-")} ${faved ? "text-amber-400" : "opacity-70"}`}
+           className={`sports-header-control -me-2 h-10 w-10 hover:text-match-foreground ${faved ? "text-warning" : "text-match-foreground opacity-70"}`}
         >
           <Star className="h-5 w-5" fill={faved ? "currentColor" : "none"} />
-        </button>
+        </Button>
       </div>
 
-      <div className="profile-expanded-identity grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-1 shadow-md">
+      <div className="profile-expanded-identity grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-primary-foreground p-1">
           {logo ? <img src={logo} alt="" className="h-full w-full object-contain" /> : <Trophy className="h-6 w-6 text-primary" />}
         </div>
         <div className="min-w-0">
-          <h1 className="truncate text-base font-black leading-tight sm:text-xl">{lang === "ar" && c.name_ar ? c.name_ar : tx(c.name)}</h1>
+          <h1 className="profile-title">{lang === "ar" && c.name_ar ? c.name_ar : tx(c.name)}</h1>
           <div className="mt-0.5 flex min-w-0 items-center gap-2">
             {(c.seasons?.length ?? 0) > 0
               ? <SeasonMenu seasons={c.seasons} value={activeSeason} onChange={onSeason} onHero />
@@ -379,9 +376,9 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
             {!friendly && <FlagIcon value={c.country_code ?? c.country} />}
           </div>
         </div>
-        <div className={`shrink-0 rounded-xl px-2.5 py-1.5 text-center backdrop-blur-sm ${chip}`}>
-          <div className="text-sm font-black leading-none tabular-nums">{compact(followerCount)}</div>
-          <div className="mt-1 text-[0.6rem] font-semibold uppercase tracking-wide opacity-80">
+        <div className="sports-header-chip w-16 shrink-0 rounded-lg px-1.5 py-2 text-center">
+          <div className="text-xs font-semibold leading-none tabular-nums">{compact(followerCount)}</div>
+          <div className="mt-1 text-[0.6rem] leading-tight opacity-70">
             {tx(followerCount === 1 ? "Follower" : "Followers")}
           </div>
         </div>

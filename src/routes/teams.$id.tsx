@@ -22,6 +22,8 @@ import { StandingsTable } from "@/components/standings-table";
 import { Button } from "@/components/ui/button";
 import type { Database } from "@/integrations/supabase/types";
 import { useCollapsingHeader } from "@/hooks/use-collapsing-header";
+import { useLogoAccent } from "@/lib/logo-accent";
+import { SportsHeaderBackground } from "@/components/sports-header-background";
 
 export const Route = createFileRoute("/teams/$id")({
   head: () => ({
@@ -54,6 +56,7 @@ function TeamPage() {
     return data as Team | null;
   }});
   const headerRef = useCollapsingHeader(`${id}:${team.isLoading}`);
+  const headerAccent = useLogoAccent(team.data?.logo_url);
   const squad = useQuery({ queryKey: ["squad", id], queryFn: async () => {
     const { data } = await supabase.from("players").select("*").eq("team_id", id).order("shirt_number");
     return (data ?? []) as Player[];
@@ -134,21 +137,22 @@ function TeamPage() {
 
   return (
     <AppShell>
-      <div ref={headerRef} className="club-profile-header -mx-4 mb-5 px-4 sm:-mx-6 sm:px-6">
+      <div ref={headerRef} className="club-profile-header sports-header -mx-4 mb-5 px-4 sm:-mx-6 sm:px-6">
+      <SportsHeaderBackground start={headerAccent?.color} />
       <div className="relative flex h-10 items-center justify-between">
-        <BackButton iconOnly />
+        <BackButton iconOnly className="text-match-foreground" />
         <div className="profile-compact-identity pointer-events-none absolute inset-y-0 start-12 end-12 flex items-center gap-2">
           <TeamCrest name={t.name} logo={t.logo_url} className="h-7 w-7 shrink-0" />
           <span className="truncate text-sm font-bold">{tx(t.name)}</span>
         </div>
-        <FavoriteButton kind="team" id={t.id} size="md" />
+        <div className="[&_button]:text-match-foreground"><FavoriteButton kind="team" id={t.id} size="md" /></div>
       </div>
       <div className="profile-expanded-identity flex items-center gap-3 py-3 sm:gap-4">
-        <TeamCrest name={t.name} logo={t.logo_url} className="h-11 w-11 shrink-0 sm:h-14 sm:w-14" rounded="rounded-xl" />
+        <TeamCrest name={t.name} logo={t.logo_url} className="h-10 w-10 shrink-0 sm:h-12 sm:w-12" rounded="rounded-xl" />
         <div className="min-w-0 flex-1">
-          <h1 className="truncate text-base font-bold leading-tight sm:text-2xl">{tx(t.name)}</h1>
+          <h1 className="profile-title">{tx(t.name)}</h1>
           {t.is_national ? null : (
-            <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[0.7rem] text-muted-foreground sm:text-xs">
+            <div className="club-country mt-0.5 flex min-w-0 items-center gap-1.5 text-[0.7rem] sm:text-xs">
               <FlagIcon value={t.country_code ?? t.country} />
               <span className="truncate">{tx(t.country)}</span>
             </div>
@@ -156,11 +160,11 @@ function TeamPage() {
         </div>
       </div>
 
-      <div className="border-b border-border py-2">
-      <SwipeTabs className=" gap-1 rounded-full border border-border bg-card p-1 text-xs">
+      <div className="club-tabs-strip border-b pt-2">
+      <SwipeTabs className="gap-1 text-xs sm:text-sm">
         {TABS.map((k) => (
           <button key={k} onClick={() => setTab(k)}
-            className={`whitespace-nowrap rounded-full px-4 py-1.5 font-semibold ${tab === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+             className={`club-tab whitespace-nowrap px-3 py-2 font-semibold ${tab === k ? "club-tab-active" : ""}`}>
             {tr(`tab.${k}`)}
           </button>
         ))}
