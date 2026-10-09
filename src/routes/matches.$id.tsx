@@ -22,17 +22,18 @@ import { StandingsTable, type PublicStandingRow } from "@/components/standings-t
 import { MatchShare } from "@/components/match-share";
 import { displayShortName } from "@/lib/short-name";
 import { FavoriteButton, MatchNotificationButton, useFavorites } from "@/hooks/use-favorites";
+import { useCollapsingHeader } from "@/hooks/use-collapsing-header";
 
 /** Crest + name used inside the slim match hero. The follow star sits on the
  *  outer edge of each club: home star on the left, away star on the right. */
 function HeroTeam({ team, onFollow, starSide }: { team: Team | null; onFollow?: () => void; starSide: "start" | "end" }) {
   const reverse = starSide === "end";
   const star = team ? (
-    <span className="shrink-0 [&_button]:h-10 [&_button]:w-10 [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-match-foreground [&_svg]:h-6 [&_svg]:w-6">
+    <span className="match-team-star shrink-0 [&_button]:h-10 [&_button]:w-10 [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-match-foreground [&_svg]:h-6 [&_svg]:w-6">
       <FavoriteButton kind="team" id={team.id} onFollow={onFollow} />
     </span>
   ) : null;
-  const crest = <span className="grid h-16 w-16 shrink-0 place-items-center sm:h-[4.5rem] sm:w-[4.5rem]">
+  const crest = <span className="match-team-crest grid shrink-0 place-items-center">
     {team?.logo_url
       ? <img src={team.logo_url} alt="" className="h-full w-full object-contain drop-shadow-[0_3px_8px_rgba(0,0,0,0.35)]" />
       : <TeamCrest name={team?.name} logo={null} className="h-14 w-14" />}
@@ -95,8 +96,7 @@ function MatchPage() {
   const { lang } = useI18n();
   const [tab, setTab] = useState<"details" | "lineups" | "stats" | "standings" | "previous" | "media">("details");
   const [lineupSide, setLineupSide] = useState<"home" | "away">("home");
-  const heroRef = useRef<HTMLDivElement>(null);
-  const heroBodyRef = useRef<HTMLDivElement>(null);
+  const heroRef = useCollapsingHeader(`${id}:${mPlaceholder()}`);
   useRealtime(["matches", "match_events", "match_lineups", "player_ratings", "match_stats", "match_chat_messages", "media_items", "standings_rows"]);
   const m = useQuery({
     queryKey: ["match", id],
