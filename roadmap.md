@@ -1,4 +1,7 @@
 # Roadmap
+- [ ] Modernize club standings without Home/Away filters
+- [ ] Add club notification control next to the favourite star
+- [ ] Prevent completed first-run setup from flashing on launch
 - [ ] Keep club/competition refresh beneath the header as in the video
 - [ ] Add automatic rating-based Team of the Round after completed rounds
 - [ ] Add year-by-year title history above winners and competition settings editing
