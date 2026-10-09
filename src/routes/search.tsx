@@ -48,7 +48,7 @@ function SearchPage() {
   const router = useRouter();
   const reverse = useReverseTranslate();
   const [q, setQ] = useState("");
-  const [filter, setFilter] = useState<Filter>("all");
+  const [filter, setFilter] = useState<Filter>("clubs");
   const [history, setHistory] = useState<Visited[]>([]);
   useEffect(() => { setHistory(readHistory()); }, []);
   const writeHistory = (next: Visited[]) => {
