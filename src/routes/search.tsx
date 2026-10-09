@@ -119,15 +119,14 @@ function SearchPage() {
 
   return (
     <AppShell>
-      {/* Focused search surface: two-tone brand header (black→blue in light mode,
-          white→blue in dark mode) with the logo set as a faint watermark. */}
-      <div className="relative -mx-4 -mt-6 mb-4 sticky top-0 z-30 overflow-hidden border-b border-border bg-background px-4 pb-3 pt-[calc(1rem+env(safe-area-inset-top))] text-foreground sm:rounded-b-3xl">
-        {/* The light header is dark, so the white mark shows there; the dark
-            header is white, so the navy mark shows there. */}
-        <img src={logoDark} alt="" aria-hidden className="pointer-events-none absolute -end-4 -top-5 h-36 w-36 rotate-[-8deg] opacity-25 dark:hidden" />
-        <img src={logoDark} alt="" aria-hidden className="pointer-events-none absolute -bottom-10 -start-6 h-24 w-24 rotate-[12deg] opacity-15 dark:hidden" />
-        <img src={logoLight.url} alt="" aria-hidden className="pointer-events-none absolute -end-4 -top-5 hidden h-36 w-36 rotate-[-8deg] opacity-25 dark:block" />
-        <img src={logoLight.url} alt="" aria-hidden className="pointer-events-none absolute -bottom-10 -start-6 hidden h-24 w-24 rotate-[12deg] opacity-15 dark:block" />
+      {/* Focused search surface with the brand logo as a faint watermark:
+          navy mark on light, white mark on dark — same pairing as BrandLogo. */}
+      <div className="relative -mx-4 mb-4 sticky top-[env(safe-area-inset-top,0px)] z-30 overflow-hidden border-b border-border bg-background px-4 pb-3 pt-1 text-foreground sm:rounded-b-3xl">
+        {/* logo-mark-v2 (navy) belongs on light, logo-mark-dark (white) on dark. */}
+        <img src={logoLight.url} alt="" aria-hidden className="pointer-events-none absolute -end-4 -top-5 h-36 w-36 rotate-[-8deg] opacity-25 dark:hidden" />
+        <img src={logoLight.url} alt="" aria-hidden className="pointer-events-none absolute -bottom-10 -start-6 h-24 w-24 rotate-[12deg] opacity-15 dark:hidden" />
+        <img src={logoDark} alt="" aria-hidden className="pointer-events-none absolute -end-4 -top-5 hidden h-36 w-36 rotate-[-8deg] opacity-25 dark:block" />
+        <img src={logoDark} alt="" aria-hidden className="pointer-events-none absolute -bottom-10 -start-6 hidden h-24 w-24 rotate-[12deg] opacity-15 dark:block" />
         <div className="relative flex items-center gap-2">
           <button type="button" aria-label={tx("Back")} onClick={() => { if (router.history.canGoBack()) router.history.back(); else void router.navigate({ to: "/" }); }}
             className="grid h-9 w-9 shrink-0 place-items-center rounded-full hover:bg-accent">
