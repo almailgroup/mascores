@@ -227,7 +227,11 @@ export function MatchNotificationButton({ matchId, teamIds = [], withSettings = 
   const savePrefs = async (next: AlertPrefs) => {
     setPrefs(next);
     try { localStorage.setItem(PREF_KEY, JSON.stringify(next)); } catch { /* optional */ }
-    if (user) await supabase.from("profiles").update({ notification_preferences: next as never }).eq("id", user.id);
+    if (user) {
+      const { data } = await supabase.from("profiles").select("notification_preferences").eq("id", user.id).maybeSingle();
+      const saved = data?.notification_preferences;
+      await supabase.from("profiles").update({ notification_preferences: { ...(saved && typeof saved === "object" && !Array.isArray(saved) ? saved : {}), ...next } }).eq("id", user.id);
+    }
     window.dispatchEvent(new Event("mas:alerts-changed"));
   };
 

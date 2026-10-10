@@ -68,10 +68,12 @@ function SettingsPage() {
   const save = async () => {
     if (!user) return;
     setSaving(true);
+    const { data: savedProfile } = await supabase.from("profiles").select("notification_preferences").eq("id", user.id).maybeSingle();
+    const savedNotifications = savedProfile?.notification_preferences;
     const clean = username.trim().replace(/[^a-zA-Z0-9_.]/g, "").slice(0, 20);
     const { error } = await supabase.from("profiles").update({
       display_name: displayName, language: lang, theme, avatar_url: avatarUrl, height_unit: heightUnit,
-       username: clean || null, is_public: isPublic, notification_preferences: alertPrefs,
+       username: clean || null, is_public: isPublic, notification_preferences: { ...(savedNotifications && typeof savedNotifications === "object" && !Array.isArray(savedNotifications) ? savedNotifications : {}), ...alertPrefs },
     }).eq("id", user.id);
     setSaving(false);
     if (error) { setNotice("That username is already taken."); setTimeout(() => setNotice(null), 2500); return; }

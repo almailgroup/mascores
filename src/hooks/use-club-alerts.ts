@@ -27,13 +27,11 @@ export function useClubAlerts() {
   }, [user]);
   const setClubAlert = async (teamId: string, enabled: boolean) => {
     setSaving(true);
-    const next = { ...readClubAlerts(), [teamId]: enabled };
+    let next = { ...readClubAlerts(), [teamId]: enabled };
     if (user) {
-      const { data, error: readError } = await supabase.from("profiles").select("notification_preferences").eq("id", user.id).maybeSingle();
-      if (readError) { setSaving(false); throw readError; }
-      const prefs = data?.notification_preferences;
-      const { error } = await supabase.from("profiles").update({ notification_preferences: { ...(prefs && typeof prefs === "object" && !Array.isArray(prefs) ? prefs : {}), club_alert_overrides: next } }).eq("id", user.id);
+      const { data, error } = await supabase.rpc("set_club_notification", { _team_id: teamId, _enabled: enabled });
       if (error) { setSaving(false); throw error; }
+      if (data && typeof data === "object" && !Array.isArray(data)) next = data as Record<string, boolean>;
     }
     try { localStorage.setItem(CLUB_ALERT_KEY, JSON.stringify(next)); } catch { /* optional persistence */ }
     setOverrides(next); setSaving(false); window.dispatchEvent(new Event("mas:alerts-changed"));
