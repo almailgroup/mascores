@@ -33,10 +33,11 @@ function useForm(rows: PublicStandingRow[], enabled: boolean) {
     enabled: enabled && !!competitionId,
     queryKey: ["standings-form", competitionId, season],
     queryFn: async () => {
+      if (!competitionId) return {};
       let query = supabase
         .from("matches")
         .select("home_team_id,away_team_id,home_score,away_score,kickoff_at,status")
-        .eq("competition_id", competitionId!)
+        .eq("competition_id", competitionId)
         .in("status", ["ft", "aet", "pen", "awarded"])
         .order("kickoff_at", { ascending: false })
         .limit(400);
@@ -63,17 +64,17 @@ function useForm(rows: PublicStandingRow[], enabled: boolean) {
 }
 
 function FormStrip({ results }: { results: ("W" | "D" | "L")[] }) {
-  const tone = { W: "bg-emerald-500", D: "bg-muted-foreground/60", L: "bg-red-500" } as const;
+  const tone = { W: "bg-success text-success-foreground", D: "bg-muted-foreground text-background", L: "bg-destructive text-destructive-foreground" } as const;
   return (
     <span className="flex h-6 w-full max-w-[10rem] overflow-hidden rounded-md bg-muted">
       {results.map((result, index) => (
-        <span key={index} className={`grid w-7 shrink-0 place-items-center text-[0.65rem] font-bold text-white ${tone[result]}`}>{result}</span>
+        <span key={index} className={`grid w-7 shrink-0 place-items-center text-[0.65rem] font-bold ${tone[result]}`}>{result}</span>
       ))}
     </span>
   );
 }
 
-export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds, liveTeamIds, modern = false }: {
+export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds, liveTeamIds, modern = true }: {
   rows: PublicStandingRow[];
   labels: Label[];
   highlightTeamId?: string;
@@ -136,13 +137,18 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
     />
     </div>
     {grouped(rows).map(([group, groupRows]) => {
-      const groupLabels = labels.filter((label) => (label.group_label ?? null) === group);
-      const used = groupRows.map((_, index) => groupLabels.find((label) => label.position === index + 1)).filter((label): label is Label => !!label).filter((label, index, list) => list.findIndex((item) => item.label === label.label) === index);
+      const positionLabel = (index: number) => labels.find((label) => (label.group_label ?? null) === group && label.position === index + 1)
+        ?? labels.find((label) => !label.group_label && label.position === index + 1);
+      const rowLabel = (row: PublicStandingRow, index: number) => {
+        const saved = positionLabel(index);
+        return saved ? { label: saved.label, color: saved.color } : row.qualification_label ? { label: row.qualification_label, color: row.qualification_color } : null;
+      };
+      const used = groupRows.map(rowLabel).filter((label): label is { label: string; color: string | null } => !!label).filter((label, index, list) => list.findIndex((item) => item.label === label.label && item.color === label.color) === index);
       const cols = view === "full"
-        ? "grid-cols-[2.75rem_minmax(0,1fr)_1.75rem_1.75rem_1.75rem_1.75rem_2.75rem_2.5rem]"
+        ? "grid-cols-[1.75rem_minmax(0,1fr)_1.25rem_1.25rem_1.25rem_1.25rem_2.75rem_2rem]"
         : view === "form"
           ? "grid-cols-[2.75rem_minmax(0,1fr)_10rem]"
-           : modern ? "grid-cols-[1.5rem_minmax(0,1fr)_2rem_2.25rem_2.5rem]" : "grid-cols-[2.75rem_minmax(0,1fr)_2rem_2.25rem_2.5rem]";
+           : modern ? "grid-cols-[1.75rem_minmax(0,1fr)_2rem_2.25rem_2.5rem]" : "grid-cols-[2.75rem_minmax(0,1fr)_2rem_2.25rem_2.5rem]";
       return <section key={group ?? "single"}>
         <div className={modern ? "overflow-hidden rounded-lg border border-border bg-card" : "overflow-hidden rounded-3xl border border-border bg-card shadow-sm"}>
           {modern && group && <h3 className="px-3 pb-2 pt-4 text-xs font-bold">{tx(group)}</h3>}
@@ -155,13 +161,13 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
           </div>
           <div className="divide-y divide-border">
             {groupRows.map((row, index) => {
-              const label = groupLabels.find((item) => item.position === index + 1);
+              const label = rowLabel(row, index);
               const live = row.team_id ? (liveTeamIds ?? []).includes(row.team_id) : false;
               const selected = row.team_id ? highlights.includes(row.team_id) : false;
               const inner = <>
-                <span className="flex items-center gap-1.5">
-                  {!modern && <span className="h-6 w-1 rounded-full" style={{ backgroundColor: label?.color ?? "transparent" }} />}
-                  <span className={`grid h-6 w-6 place-items-center ${modern ? "" : "rounded-full bg-muted"} text-xs font-semibold tabular-nums`}>{num(index + 1)}</span>
+                <span className="flex items-center gap-1" title={label ? tx(label.label) : undefined}>
+                  <span aria-label={label ? tx(label.label) : undefined} className="h-6 w-1 shrink-0 rounded-full" style={{ backgroundColor: label?.color ?? "transparent" }} />
+                  <span className={`grid h-6 min-w-4 place-items-center ${modern ? "" : "rounded-full bg-muted"} text-xs font-semibold tabular-nums`}>{num(index + 1)}</span>
                 </span>
                 <span className="flex min-w-0 items-center gap-2">
                   <TeamCrest name={row.team?.name} logo={row.team?.logo_url ?? null} className={modern && view === "short" ? "h-7 w-7 shrink-0" : "h-6 w-6 shrink-0"} />
@@ -192,7 +198,7 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
             })}
           </div>
         </div>
-        {used.length > 0 && <div className="mt-2 flex flex-wrap gap-3 text-xs text-muted-foreground">{used.map((label) => <span key={label.id} className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: label.color }} />{tx(label.label)}</span>)}</div>}
+        {used.length > 0 && <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted-foreground">{used.map((label) => <span key={`${label.label}-${label.color}`} className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: label.color ?? undefined }} />{tx(label.label)}</span>)}</div>}
       </section>;
     })}
   </div>;
