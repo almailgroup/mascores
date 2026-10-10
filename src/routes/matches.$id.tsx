@@ -37,7 +37,7 @@ function HeroTeam({ team, onFollow, starSide }: { team: Team | null; onFollow?: 
   const crest = <span className="match-team-crest grid shrink-0 place-items-center">
     {team?.logo_url
       ? <img src={team.logo_url} alt="" className="h-full w-full object-contain drop-shadow-[0_3px_8px_rgba(0,0,0,0.35)]" />
-      : <TeamCrest name={team?.name} logo={null} className="h-12 w-12" />}
+      : <TeamCrest name={team?.name} logo={null} className="h-10 w-10" />}
   </span>;
   const column = team
     ? <Link to="/teams/$id" params={{ id: team.id }} className="flex min-w-0 flex-1 items-center justify-center">{crest}</Link>
