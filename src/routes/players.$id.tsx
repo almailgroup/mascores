@@ -1,7 +1,10 @@
 import { TeamCrest } from "@/components/team-crest";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { SportsHeaderBackground } from "@/components/sports-header-background";
+import { PlayerNotificationButton } from "@/components/player-notification-button";
+import { useLogoAccent } from "@/lib/logo-accent";
 import { MediaGallery } from "@/components/media-gallery";
 import { AppShell, BackButton, EmptyState, LoadingSkeleton, SwipeTabs } from "@/components/app-shell";
 import { supabase, formatKickoff, formatHeight, formatDob, type Player, type Team, type Match, type Transfer } from "@/lib/db";
@@ -59,6 +62,14 @@ function PlayerPage() {
   const { heightUnit } = useHeightUnit();
   const [tab, setTab] = useState<Tab>("details");
 
+  const qc = useQueryClient();
+  const teamLogoQ = useQuery({ queryKey: ["player-team-logo", id], enabled: false, queryFn: async () => null });
+  void teamLogoQ;
+  const followers = useQuery({ queryKey: ["player-followers", id], queryFn: async () => {
+    const { data, error } = await supabase.rpc("player_follower_count", { _player_id: id });
+    if (error) throw error;
+    return data ?? 0;
+  }});
   const q = useQuery({ queryKey: ["player", id], queryFn: async () => {
     const { data } = await supabase.from("players").select("*, team:team_id(id,name,logo_url)").eq("id", id).maybeSingle();
     return data as (Player & { team: Team | null }) | null;
@@ -104,30 +115,45 @@ function PlayerPage() {
     },
   });
 
+  const headerAccent = headerAccentRaw;
   if (q.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;
   if (!q.data) return <AppShell><EmptyState title={tx("Player not found")} /></AppShell>;
   const p = q.data;
   const nat = p.nationality_code ?? p.nationality;
+  const followerCount = followers.data ?? 0;
 
   return (
     <AppShell>
-      <BackButton />
-       <div className="mb-3 overflow-hidden rounded-lg border border-border bg-card p-3">
-         <div className="flex items-center gap-3">
-           <PlayerAvatar src={callUp?.photo_url ?? p.photo_url} name={p.name} size="md" className="border-2 border-border" />
-           <div className="min-w-0 flex-1">
-             <h1 className="text-base font-bold leading-snug break-words">{tx(p.name)}</h1>
-            {p.team ? (
-              <Link to="/teams/$id" params={{ id: p.team.id }} className="mt-0.5 inline-flex min-w-0 max-w-full items-center gap-1.5 text-[0.75rem] font-medium text-muted-foreground hover:text-primary">
-                <TeamCrest name={p.team.name} logo={p.team.logo_url} className="h-4 w-4 shrink-0" />
-                <span className="truncate">{tx(p.team.name)}</span>
-              </Link>
-            ) : <div className="mt-0.5 text-[0.75rem] font-medium text-muted-foreground">{tr("player.freeAgent")}</div>}
-          </div>
-          <FavoriteButton kind="player" id={p.id} size="md" />
+      <div data-refresh-header className="sports-header -mx-4 mb-4 px-4 sm:-mx-6 sm:px-6">
+      <SportsHeaderBackground start={headerAccent?.color} />
+      <div className="relative flex h-10 items-center justify-between">
+        <BackButton iconOnly className="text-match-foreground" />
+        <div data-no-gesture className="relative z-10 flex items-center gap-1 [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-current">
+          <PlayerNotificationButton playerId={p.id} />
+          <FavoriteButton kind="player" id={p.id} size="md" onFavoriteChange={(active) => {
+            void qc.cancelQueries({ queryKey: ["player-followers", id] });
+            qc.setQueryData<number>(["player-followers", id], (c) => Math.max(0, (c ?? 0) + (active ? 1 : -1)));
+          }} onFavoriteSaved={() => { void qc.invalidateQueries({ queryKey: ["player-followers", id] }); }} />
         </div>
+      </div>
+      <div className="relative flex items-center gap-3 py-3">
+        <PlayerAvatar src={callUp?.photo_url ?? p.photo_url} name={p.name} size="md" className="shrink-0" />
+        <div className="min-w-0 flex-1">
+          <h1 className="profile-title">{tx(p.name)}</h1>
+          {p.team ? (
+            <Link to="/teams/$id" params={{ id: p.team.id }} className="mt-0.5 inline-flex min-w-0 max-w-full items-center gap-1.5 text-[0.75rem] font-medium opacity-90">
+              <TeamCrest name={p.team.name} logo={p.team.logo_url} className="h-4 w-4 shrink-0" />
+              <span className="truncate">{tx(p.team.name)}</span>
+            </Link>
+          ) : <div className="mt-0.5 text-[0.75rem] font-medium opacity-80">{tr("player.freeAgent")}</div>}
+        </div>
+        <div className="sports-header-chip w-16 shrink-0 rounded-lg px-1.5 py-2 text-center">
+          <div className="text-xs font-semibold leading-none tabular-nums">{num(followerCount >= 1000 ? `${(followerCount / 1000).toFixed(1)}K` : followerCount)}</div>
+          <div className="mt-1 text-[0.6rem] leading-tight opacity-70">{tx(followerCount === 1 ? "Follower" : "Followers")}</div>
+        </div>
+      </div>
         {(national.data?.length ?? 0) > 0 && (
-           <div className="mt-2.5 flex flex-wrap gap-1.5 border-t border-border pt-2.5">
+           <div className="relative flex flex-wrap gap-1.5 pb-3">
             {national.data!.map((call) => call.team ? (
               <Link key={call.id} to="/teams/$id" params={{ id: call.team.id }}
                 className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-2.5 py-1 text-[0.65rem] font-semibold hover:border-primary">
@@ -151,19 +177,23 @@ function PlayerPage() {
 
       {tab === "details" && (
         <>
-          <div className="grid grid-cols-3 gap-2 lg:grid-cols-6">
+          <div className="grid grid-cols-3 gap-y-4 rounded-2xl border border-border bg-card px-2 py-4 text-center">
              {countryTeam.data ? (
                <Link to="/teams/$id" params={{ id: countryTeam.data.id }} className="block transition hover:opacity-80">
-                 <Stat label={tx("Nationality")} value={tx(p.nationality) ?? "—"} icon={<FlagIcon value={nat} size="md" />} />
+                 <Stat label={tx("Nationality")} value={(p.nationality_code ?? tx(p.nationality) ?? "—").toUpperCase()} icon={<FlagIcon value={nat} size="sm" className="!h-4 !w-4 rounded-full object-cover" />} />
                </Link>
              ) : (
-               <Stat label={tx("Nationality")} value={tx(p.nationality) ?? "—"} icon={<FlagIcon value={nat} size="md" />} />
+               <Stat label={tx("Nationality")} value={(p.nationality_code ?? tx(p.nationality) ?? "—").toUpperCase()} icon={<FlagIcon value={nat} size="sm" className="!h-4 !w-4 rounded-full object-cover" />} />
              )}
-             <Stat label={tx("Date of birth")} value={p.dob ? num(`${dates.dob(p.dob)}${age(p.dob) != null ? ` (${age(p.dob)})` : ""}`) : "—"} />
-             <Stat label={tx("Height")} value={tx(num(formatHeight(p.height_cm, heightUnit)))} />
+             <Stat label={p.dob ? num(dates.dob(p.dob)).toUpperCase() : tx("Age") ?? "Age"} value={p.dob && age(p.dob) != null ? num(`${age(p.dob)} ${tx("yrs") ?? "yrs"}`).toUpperCase() : "—"} />
+             <Stat label={tx("Height")} value={tx(num(formatHeight(p.height_cm, heightUnit))) ?? "—"} />
+             <Stat label={tx("Preferred foot")} value={tx((p as { preferred_foot?: string | null }).preferred_foot ?? null) ?? "—"} />
              <Stat label={tx("Position")} value={tx(p.position) ?? "—"} />
-             <Stat label={tx("Shirt")} value={p.shirt_number != null ? num(`#${p.shirt_number}`) : "—"} />
-             <Stat label={tx("Market value")} value={tx(num(formatMoney(p.market_value, currency)))} />
+             <Stat label={tx("Shirt number")} value={p.shirt_number != null ? num(String(p.shirt_number)) : "—"} />
+          </div>
+          <div className="mt-2 flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3">
+            <span className="text-[0.65rem] font-semibold uppercase tracking-wider text-muted-foreground">{tx("Market value")}</span>
+            <span className="text-sm font-bold">{tx(num(formatMoney(p.market_value, currency)))}</span>
           </div>
 
            <h2 className="mb-2 mt-6 text-xs font-bold uppercase text-muted-foreground">{tx("Transfer history")}</h2>
@@ -215,9 +245,9 @@ function PlayerPage() {
 
 function Stat({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) {
   return (
-     <div className="rounded-xl border border-border bg-card p-2.5">
-       <div className="text-[0.55rem] font-semibold uppercase tracking-widest text-muted-foreground">{label}</div>
-       <div className="mt-0.5 flex items-center gap-1.5 truncate text-xs font-bold">{icon}{value}</div>
+     <div className="min-w-0 px-1">
+       <div className="truncate text-[0.6rem] font-medium uppercase tracking-wide text-muted-foreground">{label}</div>
+       <div className="mt-0.5 flex items-center justify-center gap-1.5 truncate text-base font-bold">{icon}{value}</div>
     </div>
   );
 }
