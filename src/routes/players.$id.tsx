@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { SportsHeaderBackground } from "@/components/sports-header-background";
 import { PlayerNotificationButton } from "@/components/player-notification-button";
+import { SeasonMenu } from "@/components/season-menu";
 import { useLogoAccent } from "@/lib/logo-accent";
 import { MediaGallery } from "@/components/media-gallery";
 import { AppShell, BackButton, EmptyState, LoadingSkeleton, SwipeTabs } from "@/components/app-shell";
@@ -267,10 +268,9 @@ function PlayerMatches({ data, playerId, playerTeamId }: { data: PlayerMatchData
 
   return (
     <div className="space-y-3">
-      <select value={comp} onChange={(e) => setComp(e.target.value)} className="rounded-xl border border-border bg-card px-2.5 py-1.5 text-[0.7rem] font-semibold">
-        <option value="all">{tx("All competitions")}</option>
-        {comps.map((c) => <option key={c.id} value={c.id}>{tx(c.name)}</option>)}
-      </select>
+      <SeasonMenu label="Competition" seasons={["all", ...comps.map((c) => c.id)]} value={comp} onChange={setComp} className="min-w-0 max-w-full"
+        formatValue={(v) => v === "all" ? (tx("All competitions") ?? "All competitions") : (tx(comps.find((c) => c.id === v)?.name) ?? "")}
+        renderIcon={(v) => { const url = comps.find((c) => c.id === v)?.logo_url; return url ? <img src={url} alt="" className="h-5 w-5 shrink-0 object-contain" /> : null; }} />
 
       {groups.map((g, gi) => (
         <section key={`${g.comp?.id ?? "none"}-${gi}`} className="overflow-hidden rounded-2xl border border-border bg-card">
