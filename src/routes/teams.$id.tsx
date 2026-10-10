@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { MediaGallery } from "@/components/media-gallery";
 import { AppShell, BackButton, EmptyState, LoadingSkeleton, SwipeTabs } from "@/components/app-shell";
 import { supabase, formatKickoff, type Team, type Player, type Match, type StandingRow, type Coach, type Transfer } from "@/lib/db";
@@ -25,6 +25,7 @@ import { useCollapsingHeader } from "@/hooks/use-collapsing-header";
 import { useLogoAccent } from "@/lib/logo-accent";
 import { SportsHeaderBackground } from "@/components/sports-header-background";
 import { ClubNotificationButton } from "@/components/club-notification-button";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/teams/$id")({
   head: () => ({
@@ -44,10 +45,19 @@ type Tab = "info" | "matches" | "standings" | "squad" | "stats" | "media" | "tra
 const TABS: Tab[] = ["info", "matches", "standings", "squad", "stats", "media", "transfers", "news", "rabta"];
 
 function TeamPage() {
+  const { user } = useAuth();
+  const qc = useQueryClient();
   const tx = useTx();
   const num = useNum();
   const dates = useDates();
   const { id } = Route.useParams();
+  const followerBaseline = useRef<{ id: string; count: number } | null>(null);
+  const followers = useQuery({ queryKey: ["club-followers", id], queryFn: async () => {
+    const { data, error } = await supabase.rpc("club_follower_count", { _team_id: id });
+    if (error) throw error;
+    if (followerBaseline.current?.id !== id) followerBaseline.current = { id, count: data ?? 0 };
+    return data ?? 0;
+  }});
   const { t: tr } = useI18n();
   const [tab, setTab] = useState<Tab>("info");
   useRealtime(["teams", "players", "matches", "standings_rows", "transfers"]);
@@ -127,13 +137,14 @@ function TeamPage() {
   const losses = played.length - wins - draws;
   const gf = played.reduce((s, m) => s + (m.home_team_id === id ? m.home_score ?? 0 : m.away_score ?? 0), 0);
   const ga = played.reduce((s, m) => s + (m.home_team_id === id ? m.away_score ?? 0 : m.home_score ?? 0), 0);
-  const upcoming = [...(matches.data ?? [])].filter((m) => m.status === "scheduled" && m.kickoff_at).sort((a, b) => new Date(a.kickoff_at!).getTime() - new Date(b.kickoff_at!).getTime());
+  const upcoming = [...(matches.data ?? [])].filter((m) => m.status === "scheduled" && m.kickoff_at && new Date(m.kickoff_at).getTime() >= Date.now()).sort((a, b) => new Date(a.kickoff_at ?? 0).getTime() - new Date(b.kickoff_at ?? 0).getTime());
   const featured = upcoming[0] ?? matches.data?.[0] ?? null;
   const tournaments = [...new Map((matches.data ?? []).filter((m) => m.competition).map((m) => [m.competition!.slug, m.competition!])).values()];
   const statComps: TeamComp[] = [...new Map((matches.data ?? [])
     .filter((m) => m.competition_id && m.competition)
     .map((m) => [m.competition_id, { id: m.competition_id, name: m.competition!.name, logo_url: m.competition!.logo_url ?? null, season: (m as { season?: string | null }).season ?? null }] as const))
     .values()];
+  const followerCount = Math.max(0, (followers.data ?? 0) + (t.followers_override == null ? 0 : t.followers_override - (followerBaseline.current?.id === id ? followerBaseline.current.count : 0)));
 
 
   return (
@@ -146,7 +157,10 @@ function TeamPage() {
           <TeamCrest name={t.name} logo={t.logo_url} className="h-7 w-7 shrink-0" />
           <span className="truncate text-sm font-bold">{tx(t.name)}</span>
         </div>
-        <div className="flex items-center gap-1 [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-current"><ClubNotificationButton teamId={t.id} /><FavoriteButton kind="team" id={t.id} size="md" /></div>
+        <div data-no-gesture className="relative z-10 flex items-center gap-1 [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-current"><ClubNotificationButton teamId={t.id} /><FavoriteButton kind="team" id={t.id} size="md" onFavoriteChange={(active) => {
+          void qc.cancelQueries({ queryKey: ["club-followers", id] });
+          qc.setQueryData<number>(["club-followers", id], (count) => Math.max(0, (count ?? 0) + (active ? 1 : -1)));
+        }} onFavoriteSaved={() => { if (user) void qc.invalidateQueries({ queryKey: ["club-followers", id] }); }} /></div>
       </div>
       <div className="profile-expanded-identity flex items-center gap-3 py-3 sm:gap-4">
         <TeamCrest name={t.name} logo={t.logo_url} className="h-10 w-10 shrink-0 sm:h-12 sm:w-12" rounded="rounded-xl" />
@@ -158,6 +172,10 @@ function TeamPage() {
               <span className="truncate">{tx(t.country)}</span>
             </div>
           )}
+        </div>
+        <div className="sports-header-chip w-16 shrink-0 rounded-lg px-1.5 py-2 text-center">
+          <div data-club-followers className="text-xs font-semibold leading-none tabular-nums">{num(followerCount >= 1000 ? `${(followerCount / 1000).toFixed(1)}K` : followerCount)}</div>
+          <div className="mt-1 text-[0.6rem] leading-tight opacity-70">{tx(followerCount === 1 ? "Follower" : "Followers")}</div>
         </div>
       </div>
 
@@ -208,10 +226,10 @@ function TeamPage() {
                     {club?.club_name ? (
                       <>
                         <span aria-hidden>·</span>
-                        {club.club_logo ? <img src={club.club_logo} alt="" className="h-3.5 w-3.5 shrink-0 object-contain" /> : null}
+                        <TeamCrest name={club.club_name} logo={club.club_logo} className="h-4 w-4 shrink-0" />
                         <span className="truncate font-semibold text-foreground/80">{tx(club.club_name)}</span>
                       </>
-                    ) : null}
+                    ) : club ? <><span aria-hidden>·</span><span className="truncate">{tr("player.freeAgent")}</span></> : null}
                   </div>
                 </div>
               </Link>
@@ -231,6 +249,7 @@ function TeamPage() {
           ) : null}
 
           <RecentForm matches={matches.data ?? []} teamId={id} />
+
 
           <SocialLinksSection value={t.social_links} />
 
@@ -256,8 +275,8 @@ function TeamPage() {
                   <DetailRow icon={<PlayerAvatar src={coaches.data[0].photo_url} name={coaches.data[0].name} size="sm" />} label={tx("Coach")} value={tx(coaches.data[0].name)} />
                 </Link>
               ) : null}
+              {t.chairman && <ClubPresident team={t} />}
               {t.is_national && fifaRank.data ? <DetailRow icon={<Trophy className="h-5 w-5 text-muted-foreground" />} label={tx("FIFA world ranking")} value={`#${num(String(fifaRank.data.rank))} · ${num(String(fifaRank.data.points))} ${tx("pts")}`} /> : null}
-              {t.chairman ? <DetailRow icon={<Crown className="h-5 w-5 text-muted-foreground" />} label={tx("Chairman")} value={tx(t.chairman)} /> : null}
               {t.contact_phone ? <a href={`tel:${t.contact_phone}`} className="block hover:bg-accent"><DetailRow icon={<Phone className="h-5 w-5 text-muted-foreground" />} label={tx("Phone")} value={t.contact_phone} chevron /></a> : null}
               {t.contact_email ? <a href={`mailto:${t.contact_email}`} className="block hover:bg-accent"><DetailRow icon={<Mail className="h-5 w-5 text-muted-foreground" />} label={tx("Email")} value={t.contact_email} chevron /></a> : null}
               {t.contact_website ? <a href={/^https?:\/\//i.test(t.contact_website.trim()) ? t.contact_website.trim() : `https://${t.contact_website.trim()}`} target="_blank" rel="noreferrer" className="block hover:bg-accent"><DetailRow icon={<Globe className="h-5 w-5 text-muted-foreground" />} label={tx("Website")} value={t.contact_website.replace(/^https?:\/\//, "")} chevron /></a> : null}
@@ -346,13 +365,35 @@ function InfoCard({ label, value, icon }: { label: string; value: string; icon?:
   return InfoCardInner({ label, value, icon });
 }
 
+function ClubPresident({ team }: { team: Team }) {
+  const tx = useTx();
+  const { lang } = useI18n();
+  const president = useQuery({
+    queryKey: ["club-president", team.id, team.chairman],
+    queryFn: async () => {
+      const { data } = await supabase.from("team_staff").select("name,role,photo_url").eq("team_id", team.id);
+      return data?.find(person => person.name === team.chairman || /president|chairman|رئيس/i.test(person.role)) ?? null;
+    },
+  });
+  return <section aria-label={lang === "ar" ? "رئيس النادي" : "Club president"} className="flex items-center gap-3 px-4 py-3">
+    <div className="relative shrink-0">
+      <PlayerAvatar src={president.data?.photo_url} name={team.chairman} className="h-11 w-11 ring-2 ring-border" />
+      <span className="absolute -bottom-1 -end-1 flex h-4 w-4 items-center justify-center rounded-full bg-foreground text-background"><Crown className="h-2.5 w-2.5" /></span>
+    </div>
+    <div className="min-w-0 flex-1">
+      <div className="text-[0.65rem] font-semibold uppercase text-muted-foreground">{lang === "ar" ? "رئيس النادي" : "Club president"}</div>
+      <h2 className="break-words text-sm font-bold leading-snug">{tx(team.chairman)}</h2>
+    </div>
+  </section>;
+}
+
 function DetailRow({ icon, label, value, chevron }: { icon: React.ReactNode; label: string; value?: string | null; chevron?: boolean }) {
   return (
     <div className="flex items-center gap-3 px-4 py-3">
       <span className="flex h-9 w-9 shrink-0 items-center justify-center">{icon}</span>
       <span className="min-w-0 flex-1">
         <span className="block text-[0.65rem] font-semibold uppercase tracking-widest text-muted-foreground">{label}</span>
-        <span className="block truncate text-sm font-bold">{value ?? "—"}</span>
+        <span className="block break-words text-sm font-bold">{value ?? "—"}</span>
       </span>
       {chevron ? <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" /> : null}
     </div>
@@ -435,25 +476,12 @@ function StandingsTabs({ rows, labels, teamId, tx }: {
 
   return (
     <div>
-      {comps.length > 1 && (
-        <div className="mb-4 flex gap-1 overflow-x-auto border-b border-border pb-2">
-          {comps.map((c) => (
-            <button key={c.competition_id} onClick={() => setActive(c.competition_id)}
-              className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold ${c.competition_id === current?.competition_id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-              {c.competition?.logo_url && <img src={c.competition.logo_url} alt="" className="h-4 w-4 object-contain" />}
-              <span className="max-w-[9rem] truncate">{tx(c.competition?.name) ?? tx("Competition")}</span>
-            </button>
-          ))}
-        </div>
-      )}
       <div className="space-y-3">
-        <div className="flex items-center gap-2 py-2">
-        <Link to="/competitions/$slug" params={{ slug: current?.competition?.slug ?? "" }}
-          className="flex min-w-0 flex-1 items-center gap-2 text-sm font-bold hover:text-primary">
-          {current?.competition?.logo_url && <img src={current.competition.logo_url} alt="" className="h-6 w-6 shrink-0 object-contain" />}
-          <span className="min-w-0 flex-1 text-balance break-words text-xs leading-relaxed">{tx(current?.competition?.name) ?? tx("Competition")}</span>
-          <ArrowRight className="h-4 w-4 shrink-0" />
-        </Link>
+        <div data-no-gesture className="flex min-w-0 items-center gap-2 py-2">
+        <SeasonMenu label="Competition" seasons={comps.map(c => c.competition_id)} value={current?.competition_id} onChange={setActive} className="min-w-0 flex-1 justify-between [&>span]:flex-1 [&>span]:text-start" formatValue={value => tx(comps.find(c => c.competition_id === value)?.competition?.name) ?? "Competition"} renderIcon={value => {
+          const comp = comps.find(c => c.competition_id === value)?.competition;
+          return comp?.logo_url ? <img src={comp.logo_url} alt="" className="h-5 w-5 shrink-0 object-contain" /> : null;
+        }} />
         {availableSeasons.length > 0 && <SeasonMenu seasons={availableSeasons} value={activeSeason} onChange={(value) => current && setSelectedSeasons((previous) => ({ ...previous, [current.competition_id]: value }))} />}
         </div>
         <StandingsTable rows={list} labels={currentLabels} highlightTeamId={teamId} modern />
@@ -493,7 +521,7 @@ function YouthTeams({ team }: { team: Team }) {
             <TeamCrest name={row.name} logo={row.logo_url} className="h-9 w-9" />
             <span className="min-w-0 flex-1">
               <span className="block truncate text-sm font-semibold">{tx(row.name)}</span>
-              <span className="mt-0.5 inline-flex rounded-full bg-primary/10 px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wide text-primary">{tx(row.tag)}</span>
+              <span className="mt-1 block text-[0.65rem] font-medium text-muted-foreground">{tx(row.tag)}</span>
             </span>
             <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
           </Link>
@@ -596,13 +624,29 @@ function TeamNewsTeaser({ teamId, onMore }: { teamId: string; onMore: () => void
 function TeamMatches({ data, teamId, nextId }: { data: MatchWithTeams[]; teamId: string; nextId: string | null }) {
   const tx = useTx();
   const top = useRef<HTMLDivElement>(null);
+  const [showToday, setShowToday] = useState(false);
+  const resetPosition = useRef(0);
   const timestamp = (m: MatchWithTeams) => m.kickoff_at ? new Date(m.kickoff_at).getTime() : 0;
-  const day = new Date(); day.setHours(0, 0, 0, 0);
-  const forward = data.filter((m) => timestamp(m) >= day.getTime() || ["live", "ht"].includes(m.status)).sort((a, b) => timestamp(a) - timestamp(b));
-  const past = data.filter((m) => !forward.some((next) => next.id === m.id)).sort((a, b) => timestamp(b) - timestamp(a));
+  const ordered = [...data].sort((a, b) => timestamp(b) - timestamp(a));
+  const targetId = data.find((m) => ["live", "ht"].includes(m.status))?.id ?? nextId ?? ordered.find((m) => timestamp(m) <= Date.now())?.id ?? ordered[0]?.id;
+  const goToNext = () => {
+    const target = Array.from(top.current?.querySelectorAll<HTMLElement>("[data-fixture-id]") ?? []).find((node) => node.dataset.fixtureId === targetId);
+    if (!target) return;
+    const header = document.querySelector<HTMLElement>("[data-refresh-header]");
+    const offset = header?.getBoundingClientRect().height ?? 140;
+    window.scrollTo({ top: Math.max(0, window.scrollY + target.getBoundingClientRect().top - offset - 12), behavior: "instant" });
+    resetPosition.current = window.scrollY;
+    setShowToday(false);
+  };
+  useEffect(() => {
+    let secondFrame = 0;
+    const firstFrame = requestAnimationFrame(() => { secondFrame = requestAnimationFrame(goToNext); });
+    const onScroll = () => setShowToday(Math.abs(window.scrollY - resetPosition.current) > 40);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => { cancelAnimationFrame(firstFrame); cancelAnimationFrame(secondFrame); window.removeEventListener("scroll", onScroll); };
+  }, [targetId, teamId]);
   return <div ref={top} className="scroll-mt-40">
-    {forward.length > 0 && <MatchGroups data={forward} highlightTeamId={teamId} />}
-    {past.length > 0 && <MatchGroups data={past} highlightTeamId={teamId} />}
-    <Button variant="outline" onClick={() => { top.current?.scrollIntoView({ block: "start", behavior: "instant" }); }} className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] left-1/2 z-30 -translate-x-1/2 rounded-full border-primary bg-background text-primary shadow">{tx("Today")} ↑</Button>
+    <MatchGroups data={ordered} highlightTeamId={teamId} />
+    {showToday && <Button variant="outline" onClick={goToNext} className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] left-1/2 z-30 -translate-x-1/2 rounded-full border-border bg-background text-foreground shadow">{tx("Today")}</Button>}
   </div>;
 }

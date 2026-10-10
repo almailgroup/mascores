@@ -21,9 +21,19 @@
 - Use one text-free branded loading overlay for both language directions, keeping underlying pages mounted to preserve navigation and form state.
 - Use the shared scroll-driven collapsing-header hook for club, competition and match headers; identity and tabs remain one sticky unit for consistent scrolling.
 - Calculate round teams from terminal match completion timestamps and actual position ratings through the public read-only function, with a one-hour availability deadline; avoid recurring background polling.
+- Choose the complete legal round-team formation with the highest summed position ratings; expose published history plus only the earliest started unreleased round.
 - Keep season winners in owner-writable title history separate from cumulative title counts so editing a year never changes trophy totals.
 - Gate welcome UI until local completion is checked to prevent repeat setup flashes; keep rendering hydration-safe.
 - Store per-club alert overrides separately from favourites and preserve other notification preferences on writes, so the bell never changes the star.
 - Use the shared SportsHeaderBackground with semantic surface tokens and sampled logo colours for sports identity headers; one backdrop keeps their visual treatment consistent without changing stored artwork.
 - All public standings default to the shared modern StandingsTable with position-label and row-qualification fallbacks, so club, competition and match views stay consistent.
-- Use the shared portalled SeasonMenu for season selection so sticky headers cannot clip its keyboard-accessible menu.
+- Use the shared portalled SeasonMenu for season and round selection, with display formatting separate from stored values, so sticky headers cannot clip keyboard-accessible in-app menus.
+- Portal ticket overlays outside the browsing wrapper and lock background scrolling so page transforms and bottom navigation cannot clip ticket actions.
+- Enforce submission ownership and approval-state editing through database policies; deleting a submission removes the review record, not a separately published news article.
+- Use fixture row identifiers for club match scroll targets so Today and initial focus resolve the same next fixture in a descending chronological list.
+- Device-local language is authoritative on navigation; settings language changes sync immediately without reloading a stale profile language.
+- Resolve club president portraits from existing team staff by chairman name or president role; never invent identity images.
+- Club follower totals use a public aggregate-only function over private favourites; nullable admin overrides affect display only, never real favourite membership.
+- Use the portalled shared picker for club standings competition selection instead of a horizontally scrolling competition bar.
+- Use TeamCrest for missing club artwork and localized free-agent labels for unattached players so national call-ups never imply club membership.
+- Update favourites and club alerts optimistically with ordered writes and ignore stale profile hydration; exclude buttons from page gestures so one tap never locks navigation.

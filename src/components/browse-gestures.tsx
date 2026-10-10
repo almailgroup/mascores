@@ -79,7 +79,7 @@ export function BrowseGestures() {
       start = null; axis = null; distance = 0;
       if (busy.current || timer) return;
       const target = event.target instanceof Element ? event.target : null;
-      if (event.touches.length !== 1 || target?.closest('input,textarea,select,[role="dialog"],[data-no-gesture]')) return;
+      if (event.touches.length !== 1 || target?.closest('button,input,textarea,select,[role="button"],[role="dialog"],[data-no-gesture]')) return;
       for (let node = target; node && node !== document.body; node = node.parentElement) {
         const css = getComputedStyle(node);
         if ((/auto|scroll/.test(css.overflowY) && node.scrollHeight > node.clientHeight) || (/auto|scroll/.test(css.overflowX) && node.scrollWidth > node.clientWidth)) return;

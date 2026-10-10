@@ -129,7 +129,7 @@ export function MatchRow({ m, highlightTeamId }: { m: MatchWithTeams; highlightT
     </div>
   );
   return (
-    <Link to="/matches/$id" params={{ id: m.id }} className="flex items-center gap-3 px-4 py-2.5 hover:bg-accent">
+    <Link data-fixture-id={m.id} to="/matches/$id" params={{ id: m.id }} className="flex items-center gap-3 px-4 py-2.5 hover:bg-accent">
       <div className="w-14 shrink-0 text-center text-[0.7rem] leading-tight text-muted-foreground">
         {isLive ? (
            <span className="font-bold text-primary">{m.status === "live" ? `${num(minute)}'` : "HT"}</span>

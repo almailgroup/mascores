@@ -11,6 +11,7 @@ type Staff = { id: string; name: string; role: string; photo_url: string | null;
 
 /** The staff jobs an admin can pick from — no typing needed. */
 const STAFF_ROLES = [
+  "Club president",
   "Assistant coach",
   "Goalkeeping coach",
   "Fitness coach",
