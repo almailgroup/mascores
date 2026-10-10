@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Polish liquid-glass season selectors and replace native Team of the Round picker with an in-app menu
 - [ ] Add owner submission editing before approval and deletion at any status; separate cover/proof previews
 - [ ] Modernize first-team/youth labels and fix ticket sheet/list clipping
 - [ ] Restore descending club matches, next-fixture initial focus and scroll-triggered Today
