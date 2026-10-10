@@ -636,6 +636,42 @@ export type Database = {
           },
         ]
       }
+      deleted_records: {
+        Row: {
+          batch_id: number
+          data: Json
+          deleted_at: string
+          deleted_by: string | null
+          id: number
+          label: string | null
+          record_id: string | null
+          restored_at: string | null
+          table_name: string
+        }
+        Insert: {
+          batch_id?: number
+          data: Json
+          deleted_at?: string
+          deleted_by?: string | null
+          id?: number
+          label?: string | null
+          record_id?: string | null
+          restored_at?: string | null
+          table_name: string
+        }
+        Update: {
+          batch_id?: number
+          data?: Json
+          deleted_at?: string
+          deleted_by?: string | null
+          id?: number
+          label?: string | null
+          record_id?: string | null
+          restored_at?: string | null
+          table_name?: string
+        }
+        Relationships: []
+      }
       fifa_rankings: {
         Row: {
           created_at: string
@@ -2921,6 +2957,7 @@ export type Database = {
         Args: { _succeeded: boolean; _uid: string }
         Returns: undefined
       }
+      restore_deleted_batch: { Args: { _batch_id: number }; Returns: number }
       revoke_admin: { Args: { _uid: string }; Returns: undefined }
       search_profiles: {
         Args: { _limit?: number; _q: string }

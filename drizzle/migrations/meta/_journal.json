@@ -71,6 +71,13 @@
       "when": 1791661391174,
       "tag": "0009_player_followers_alerts",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791661929920,
+      "tag": "0010_recycle_bin",
+      "breakpoints": true
     }
   ]
 }
