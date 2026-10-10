@@ -64,6 +64,13 @@
       "when": 1791660792986,
       "tag": "0008_round_team_varied_formations",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791661391174,
+      "tag": "0009_player_followers_alerts",
+      "breakpoints": true
     }
   ]
 }

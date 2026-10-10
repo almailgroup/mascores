@@ -58,3 +58,4 @@
 - [ ] Google 400 on iPhone, sign-in sheet size, mic 'cannot capture', save stuck, reminders not working (Oct 8)
 - [x] Compact match page sizing (Sofascore-style, ref IMG_3674)
 - [x] Remove border around country flags
+- [x] Player matches: competition filter uses in-app SeasonMenu
