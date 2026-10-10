@@ -1,11 +1,11 @@
 # Roadmap
-- [ ] Modernize club standings without Home/Away filters
-- [ ] Add club notification control next to the favourite star
-- [ ] Prevent completed first-run setup from flashing on launch
-- [ ] Keep club/competition refresh beneath the header as in the video
-- [ ] Add automatic rating-based Team of the Round after completed rounds
-- [ ] Add year-by-year title history above winners and competition settings editing
-- [ ] Verify refresh, round eligibility and title-history save/read flows
+- [x] Modernize club standings without Home/Away filters
+- [x] Add club notification control next to the favourite star
+- [x] Prevent completed first-run setup from flashing on launch
+- [x] Keep club/competition refresh beneath the header as in the video
+- [x] Add automatic rating-based Team of the Round after completed rounds
+- [x] Add year-by-year title history above winners and competition settings editing
+- [x] Verify refresh, round eligibility and title-history save/read flows
 - [x] Match reference-style soft backgrounds across club, competition and match headers, with compact full-name competition layout
 - [x] Check header appearance, full-name fit and scrolling on phone and desktop
 - [x] Remove news/photo watermarks and restore original event artwork with theme contrast only
