@@ -63,8 +63,6 @@ function PlayerPage() {
   const [tab, setTab] = useState<Tab>("details");
 
   const qc = useQueryClient();
-  const teamLogoQ = useQuery({ queryKey: ["player-team-logo", id], enabled: false, queryFn: async () => null });
-  void teamLogoQ;
   const followers = useQuery({ queryKey: ["player-followers", id], queryFn: async () => {
     const { data, error } = await supabase.rpc("player_follower_count", { _player_id: id });
     if (error) throw error;
@@ -115,7 +113,7 @@ function PlayerPage() {
     },
   });
 
-  const headerAccent = headerAccentRaw;
+  const headerAccent = useLogoAccent(q.data?.team?.logo_url);
   if (q.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;
   if (!q.data) return <AppShell><EmptyState title={tx("Player not found")} /></AppShell>;
   const p = q.data;
