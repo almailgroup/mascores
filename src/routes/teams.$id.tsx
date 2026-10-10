@@ -24,6 +24,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { useCollapsingHeader } from "@/hooks/use-collapsing-header";
 import { useLogoAccent } from "@/lib/logo-accent";
 import { SportsHeaderBackground } from "@/components/sports-header-background";
+import { ClubNotificationButton } from "@/components/club-notification-button";
 
 export const Route = createFileRoute("/teams/$id")({
   head: () => ({
@@ -141,11 +142,11 @@ function TeamPage() {
       <SportsHeaderBackground start={headerAccent?.color} />
       <div className="relative flex h-10 items-center justify-between">
         <BackButton iconOnly className="text-match-foreground" />
-        <div className="profile-compact-identity pointer-events-none absolute inset-y-0 start-12 end-12 flex items-center gap-2">
+        <div className="profile-compact-identity pointer-events-none absolute inset-y-0 start-12 end-24 flex items-center gap-2">
           <TeamCrest name={t.name} logo={t.logo_url} className="h-7 w-7 shrink-0" />
           <span className="truncate text-sm font-bold">{tx(t.name)}</span>
         </div>
-        <div className="[&_button]:border-0 [&_button]:bg-transparent [&_button]:text-match-foreground"><FavoriteButton kind="team" id={t.id} size="md" /></div>
+        <div className="flex items-center gap-1 [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-current"><ClubNotificationButton teamId={t.id} /><FavoriteButton kind="team" id={t.id} size="md" /></div>
       </div>
       <div className="profile-expanded-identity flex items-center gap-3 py-3 sm:gap-4">
         <TeamCrest name={t.name} logo={t.logo_url} className="h-10 w-10 shrink-0 sm:h-12 sm:w-12" rounded="rounded-xl" />
@@ -435,7 +436,7 @@ function StandingsTabs({ rows, labels, teamId, tx }: {
   return (
     <div>
       {comps.length > 1 && (
-        <div className="mb-4 flex gap-1 overflow-x-auto rounded-full border border-border bg-card p-1">
+        <div className="mb-4 flex gap-1 overflow-x-auto border-b border-border pb-2">
           {comps.map((c) => (
             <button key={c.competition_id} onClick={() => setActive(c.competition_id)}
               className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold ${c.competition_id === current?.competition_id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
@@ -445,15 +446,15 @@ function StandingsTabs({ rows, labels, teamId, tx }: {
           ))}
         </div>
       )}
-      <div className="overflow-hidden rounded-2xl border border-border bg-card">
+      <div className="space-y-3">
         <Link to="/competitions/$slug" params={{ slug: current?.competition?.slug ?? "" }}
-          className="flex items-center gap-2 border-b border-border px-4 py-3 text-sm font-bold hover:text-primary">
+          className="flex items-center gap-2 py-2 text-sm font-bold hover:text-primary">
           {current?.competition?.logo_url && <img src={current.competition.logo_url} alt="" className="h-6 w-6 shrink-0 object-contain" />}
-          <span className="min-w-0 flex-1 truncate">{tx(current?.competition?.name) ?? tx("Competition")}</span>
+          <span className="min-w-0 flex-1 text-balance break-words text-xs leading-relaxed">{tx(current?.competition?.name) ?? tx("Competition")}</span>
           {availableSeasons.length > 0 && <span onClick={(event) => event.preventDefault()}><SeasonMenu seasons={availableSeasons} value={activeSeason} onChange={(value) => current && setSelectedSeasons((previous) => ({ ...previous, [current.competition_id]: value }))} /></span>}
           <ArrowRight className="h-4 w-4 shrink-0" />
         </Link>
-        <div className="p-3"><StandingsTable rows={list} labels={currentLabels} highlightTeamId={teamId} /></div>
+        <StandingsTable rows={list} labels={currentLabels} highlightTeamId={teamId} modern />
       </div>
     </div>
   );

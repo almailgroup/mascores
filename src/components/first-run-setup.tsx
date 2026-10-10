@@ -44,7 +44,8 @@ export function FirstRunSetup({ children }: { children: ReactNode }) {
     setStage("done");
     setSaving(false);
   };
-  if (stage === "done") return children;
+  // Do not render welcome branding or step numbers before device storage is checked.
+  if (stage === "done" || stage === "checking") return children;
   const ar = lang === "ar";
   const visible = (teams.data ?? []).filter((team) => `${team.name} ${tx(team.name)} ${team.country ?? ""}`.toLowerCase().includes(query.toLowerCase()));
   return <>
