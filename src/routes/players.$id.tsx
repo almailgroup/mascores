@@ -185,13 +185,9 @@ function PlayerPage() {
              )}
              <Stat label={p.dob ? num(dates.dob(p.dob)).toUpperCase() : tx("Age") ?? "Age"} value={p.dob && age(p.dob) != null ? num(`${age(p.dob)} ${tx("yrs") ?? "yrs"}`).toUpperCase() : "—"} />
              <Stat label={tx("Height")} value={tx(num(formatHeight(p.height_cm, heightUnit))) ?? "—"} />
-             <Stat label={tx("Preferred foot")} value={tx((p as { preferred_foot?: string | null }).preferred_foot ?? null) ?? "—"} />
+             <Stat label={tx("Market value")} value={tx(num(formatMoney(p.market_value, currency))) ?? "—"} />
              <Stat label={tx("Position")} value={tx(p.position) ?? "—"} />
              <Stat label={tx("Shirt number")} value={p.shirt_number != null ? num(String(p.shirt_number)) : "—"} />
-          </div>
-          <div className="mt-2 flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3">
-            <span className="text-[0.65rem] font-semibold uppercase tracking-wider text-muted-foreground">{tx("Market value")}</span>
-            <span className="text-sm font-bold">{tx(num(formatMoney(p.market_value, currency)))}</span>
           </div>
 
            <h2 className="mb-2 mt-6 text-xs font-bold uppercase text-muted-foreground">{tx("Transfer history")}</h2>
