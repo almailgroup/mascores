@@ -30,3 +30,5 @@
 - Portal ticket overlays outside the browsing wrapper and lock background scrolling so page transforms and bottom navigation cannot clip ticket actions.
 - Enforce submission ownership and approval-state editing through database policies; deleting a submission removes the review record, not a separately published news article.
 - Use fixture row identifiers for club match scroll targets so Today and initial focus resolve the same next fixture in a descending chronological list.
+- Device-local language is authoritative on navigation; settings language changes sync immediately without reloading a stale profile language.
+- Resolve club president portraits from existing team staff by chairman name or president role; never invent identity images.

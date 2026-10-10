@@ -232,6 +232,8 @@ function TeamPage() {
 
           <RecentForm matches={matches.data ?? []} teamId={id} />
 
+          {t.chairman && <ClubPresident team={t} />}
+
           <SocialLinksSection value={t.social_links} />
 
           <section className="overflow-hidden rounded-2xl border border-border bg-card">
@@ -257,7 +259,6 @@ function TeamPage() {
                 </Link>
               ) : null}
               {t.is_national && fifaRank.data ? <DetailRow icon={<Trophy className="h-5 w-5 text-muted-foreground" />} label={tx("FIFA world ranking")} value={`#${num(String(fifaRank.data.rank))} · ${num(String(fifaRank.data.points))} ${tx("pts")}`} /> : null}
-              {t.chairman ? <DetailRow icon={<Crown className="h-5 w-5 text-muted-foreground" />} label={tx("Chairman")} value={tx(t.chairman)} /> : null}
               {t.contact_phone ? <a href={`tel:${t.contact_phone}`} className="block hover:bg-accent"><DetailRow icon={<Phone className="h-5 w-5 text-muted-foreground" />} label={tx("Phone")} value={t.contact_phone} chevron /></a> : null}
               {t.contact_email ? <a href={`mailto:${t.contact_email}`} className="block hover:bg-accent"><DetailRow icon={<Mail className="h-5 w-5 text-muted-foreground" />} label={tx("Email")} value={t.contact_email} chevron /></a> : null}
               {t.contact_website ? <a href={/^https?:\/\//i.test(t.contact_website.trim()) ? t.contact_website.trim() : `https://${t.contact_website.trim()}`} target="_blank" rel="noreferrer" className="block hover:bg-accent"><DetailRow icon={<Globe className="h-5 w-5 text-muted-foreground" />} label={tx("Website")} value={t.contact_website.replace(/^https?:\/\//, "")} chevron /></a> : null}
@@ -344,6 +345,30 @@ function TeamPage() {
 
 function InfoCard({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) {
   return InfoCardInner({ label, value, icon });
+}
+
+function ClubPresident({ team }: { team: Team }) {
+  const tx = useTx();
+  const { lang } = useI18n();
+  const president = useQuery({
+    queryKey: ["club-president", team.id, team.chairman],
+    queryFn: async () => {
+      const { data } = await supabase.from("team_staff").select("name,role,photo_url").eq("team_id", team.id);
+      return data?.find(person => person.name === team.chairman || /president|chairman|رئيس/i.test(person.role)) ?? null;
+    },
+  });
+  return <section aria-label={lang === "ar" ? "رئيس النادي" : "Club president"} className="flex min-h-32 items-stretch overflow-hidden rounded-lg border border-border bg-card">
+    <div className="flex w-28 shrink-0 items-center justify-center bg-muted">
+      {president.data?.photo_url
+        ? <img src={president.data.photo_url} alt={team.chairman ?? ""} className="h-full min-h-32 w-full object-cover object-top" />
+        : <PlayerAvatar src={null} name={team.chairman} className="h-16 w-16" />}
+    </div>
+    <div className="flex min-w-0 flex-1 flex-col justify-center gap-2 p-4">
+      <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground"><Crown className="h-3.5 w-3.5" />{lang === "ar" ? "رئيس النادي" : "Club president"}</div>
+      <h2 className="break-words text-base font-bold leading-snug">{tx(team.chairman)}</h2>
+      <div className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground"><TeamCrest name={team.name} logo={team.logo_url} className="h-5 w-5 shrink-0" /><span className="break-words">{tx(team.name)}</span></div>
+    </div>
+  </section>;
 }
 
 function DetailRow({ icon, label, value, chevron }: { icon: React.ReactNode; label: string; value?: string | null; chevron?: boolean }) {

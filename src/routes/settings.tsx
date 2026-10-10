@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { useI18n, type Lang } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n";
 import { useTheme } from "@/components/theme-provider";
 import { VoiceReplays } from "@/components/voice-replays";
 import { AppShell, BackButton } from "@/components/app-shell";
@@ -61,9 +61,8 @@ function SettingsPage() {
       setIsPublic(prof?.is_public ?? true);
       if (prof?.notification_preferences && typeof prof.notification_preferences === "object" && !Array.isArray(prof.notification_preferences)) setAlertPrefs((prev) => ({ ...prev, ...(prof.notification_preferences as typeof prev) }));
       if (prof?.height_unit === "ft" || prof?.height_unit === "cm") setHeightUnit(prof.height_unit);
-      if (prof?.language && (prof.language === "en" || prof.language === "ar")) setLang(prof.language as Lang);
     })();
-  }, [user, authLoading, setLang]);
+  }, [user, authLoading]);
 
   const save = async () => {
     if (!user) return;
@@ -161,10 +160,16 @@ function SettingsPage() {
           <div className="mb-3 text-sm font-semibold">{t("settings.language")}</div>
           <div className="grid grid-cols-2 gap-2">
             {(["en", "ar"] as const).map((l) => (
-              <button key={l} type="button" onClick={() => setLang(l)}
+              <Button key={l} type="button" variant="ghost" onClick={async () => {
+                setLang(l);
+                if (user) {
+                  const { error } = await supabase.from("profiles").update({ language: l }).eq("id", user.id);
+                  if (error) setNotice(l === "ar" ? "تم حفظ اللغة على هذا الجهاز. تعذّر مزامنتها مع حسابك." : "Language saved on this device. Account sync failed.");
+                }
+              }}
                 className={`rounded-xl border px-3 py-2 text-sm ${lang === l ? "border-primary bg-primary/10 text-primary" : "border-border bg-background hover:bg-accent"}`}>
                 {l === "en" ? "English" : "العربية"}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
