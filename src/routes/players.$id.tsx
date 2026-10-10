@@ -165,11 +165,12 @@ function PlayerPage() {
         )}
       </div>
 
-      <SwipeTabs className="mb-4 gap-1 rounded-full border border-border bg-card p-1 text-[0.75rem]">
+      <SwipeTabs className="mb-4 gap-1 border-b border-border text-[0.85rem]">
         {(["details", "matches", "media", "news"] as const).map((k) => (
-          <button key={k} onClick={() => setTab(k)}
-            className={`whitespace-nowrap rounded-full px-4 py-1.5 font-semibold ${tab === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+           <button key={k} onClick={() => setTab(k)}
+            className={`relative whitespace-nowrap px-4 pb-2.5 pt-2 font-semibold ${tab === k ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
             {tr(`tab.${k}`)}
+            {tab === k && <span className="absolute inset-x-3 -bottom-px h-1 rounded-full bg-foreground" />}
           </button>
         ))}
       </SwipeTabs>
@@ -242,7 +243,7 @@ function Stat({ label, value, icon }: { label: string; value: string; icon?: Rea
   return (
      <div className="min-w-0 px-1">
        <div className="truncate text-[0.6rem] font-medium uppercase tracking-wide text-muted-foreground">{label}</div>
-       <div className="mt-0.5 flex items-center justify-center gap-1.5 truncate text-base font-bold">{icon}{value}</div>
+       <div className="mt-0.5 flex items-center justify-center gap-1.5 truncate text-sm font-medium">{icon}{value}</div>
     </div>
   );
 }
