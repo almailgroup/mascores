@@ -178,7 +178,7 @@ function MatchPage() {
   const scorerList = (teamId: string | null | undefined) => (events.data ?? [])
     .filter((event) => ["goal", "penalty_goal", "penalty", "own_goal", "red", "second_yellow"].includes(event.type) && event.team?.id === teamId)
     .map((event) => ({
-      name: lang === "ar" && event.player?.name_ar ? event.player.name_ar : tx(event.player?.name) ?? tx(event.description ?? eventLabel(event.type)),
+      name: lang === "ar" && (event.player?.short_name_ar || event.player?.name_ar) ? (event.player.short_name_ar ?? event.player.name_ar) : tx(displayShortName(event.player?.short_name, event.player?.name)) ?? tx(event.player?.name) ?? tx(event.description ?? eventLabel(event.type)),
       minute: `${event.minute ?? ""}${event.extra ? `+${event.extra}` : ""}'${event.type === "own_goal" ? " (OG)" : event.type === "penalty" ? " (P)" : ""}`,
       type: event.type,
     }));
@@ -272,7 +272,7 @@ function MatchPage() {
         </div>
         <div className="match-tabs border-t border-match-foreground/10 px-1">
           <SwipeTabs className="gap-1 text-[0.75rem]">
-            {tabs.map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-2.5 pb-2 pt-2 font-semibold capitalize ${tab === item ? "border-b-2 border-match-live text-match-foreground" : "text-match-foreground/55"}`}>{tx(item === "media" ? "Media" : item === "previous" ? "Matches" : item === "details" ? "Details" : item === "lineups" ? "Lineups" : item === "standings" ? "Standings" : "Stats")}</button>)}
+            {tabs.map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 pb-3 pt-3 text-sm font-semibold capitalize ${tab === item ? "border-b-2 border-match-live text-match-foreground" : "text-match-foreground/55"}`}>{tx(item === "media" ? "Media" : item === "previous" ? "Matches" : item === "details" ? "Details" : item === "lineups" ? "Lineups" : item === "standings" ? "Standings" : "Stats")}</button>)}
           </SwipeTabs>
         </div>
       </div>
