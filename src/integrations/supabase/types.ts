@@ -2902,6 +2902,7 @@ export type Database = {
       is_admin: { Args: { _uid: string }; Returns: boolean }
       is_main_admin: { Args: { _uid: string }; Returns: boolean }
       is_suspended: { Args: { _uid: string }; Returns: boolean }
+      player_follower_count: { Args: { _player_id: string }; Returns: number }
       public_profile: {
         Args: { _id: string }
         Returns: {
@@ -2933,6 +2934,10 @@ export type Database = {
       }
       set_club_notification: {
         Args: { _enabled: boolean; _team_id: string }
+        Returns: Json
+      }
+      set_player_notification: {
+        Args: { _enabled: boolean; _player_id: string }
         Returns: Json
       }
       show_limit: { Args: never; Returns: number }
