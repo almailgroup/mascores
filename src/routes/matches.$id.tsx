@@ -77,10 +77,10 @@ function TeamHeadline({ team }: { team: Team | null }) {
   const tx = useTx();
   const body = (
     <>
-       <span className="flex h-11 items-center justify-center">
-        <TeamCrest name={team?.name} logo={team?.logo_url} className="h-11 w-11" rounded="rounded-2xl" />
+        <span className="flex h-10 items-center justify-center">
+        <TeamCrest name={team?.name} logo={team?.logo_url} className="h-10 w-10" rounded="rounded-2xl" />
       </span>
-      <span className="mt-1.5 line-clamp-2 min-h-9 text-balance text-sm font-bold leading-4">{tx(team?.name) ?? "TBD"}</span>
+      <span className="mt-1 line-clamp-2 min-h-8 text-balance text-[0.8rem] font-bold leading-4">{tx(team?.name) ?? "TBD"}</span>
     </>
   );
   const cls = "flex min-w-0 flex-col items-center text-center";
