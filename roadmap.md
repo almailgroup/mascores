@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Fix Arabic Home filter overflow/scrolling, retain language when revisiting settings, and professionally present club presidents
 - [ ] Polish liquid-glass season selectors and replace native Team of the Round picker with an in-app menu
 - [ ] Add owner submission editing before approval and deletion at any status; separate cover/proof previews
 - [ ] Modernize first-team/youth labels and fix ticket sheet/list clipping
