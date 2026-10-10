@@ -243,18 +243,18 @@ function PlayerMatches({ data, playerId, playerTeamId }: { data: PlayerMatchData
 
   return (
     <div className="space-y-3">
-      <select value={comp} onChange={(e) => setComp(e.target.value)} className="rounded-xl border border-border bg-card px-3 py-2 text-xs font-semibold">
+      <select value={comp} onChange={(e) => setComp(e.target.value)} className="rounded-xl border border-border bg-card px-2.5 py-1.5 text-[0.7rem] font-semibold">
         <option value="all">{tx("All competitions")}</option>
         {comps.map((c) => <option key={c.id} value={c.id}>{tx(c.name)}</option>)}
       </select>
 
       {groups.map((g, gi) => (
         <section key={`${g.comp?.id ?? "none"}-${gi}`} className="overflow-hidden rounded-2xl border border-border bg-card">
-          <div className="flex items-center gap-3 px-3 py-3">
-            <TeamCrest name={g.comp?.name} logo={g.comp?.logo_url} className="h-8 w-8" rounded="rounded-full" />
+          <div className="flex items-center gap-2 px-3 py-2">
+            <TeamCrest name={g.comp?.name} logo={g.comp?.logo_url} className="h-6 w-6" rounded="rounded-full" />
             <div className="min-w-0">
-              <div className="truncate text-sm font-bold">{tx(g.comp?.name) ?? tx("Matches")}</div>
-              <div className="flex items-center gap-1.5 text-[0.7rem] text-muted-foreground">
+              <div className="truncate text-[0.8rem] font-bold">{tx(g.comp?.name) ?? tx("Matches")}</div>
+              <div className="flex items-center gap-1 text-[0.65rem] text-muted-foreground">
                 <FlagIcon value={g.comp?.country_code ?? g.comp?.country} size="sm" />
                 <span className="truncate">{tx(g.comp?.country) ?? ""}</span>
               </div>
@@ -271,8 +271,8 @@ function PlayerMatches({ data, playerId, playerTeamId }: { data: PlayerMatchData
               const isHome = playerTeamId && m.home_team_id === playerTeamId;
               const isAway = playerTeamId && m.away_team_id === playerTeamId;
               return (
-                <Link key={m.id} to="/matches/$id" params={{ id: m.id }} className="flex items-center gap-2 px-3 py-2.5 hover:bg-accent">
-                  <div className="w-14 shrink-0 text-[0.65rem] leading-tight text-muted-foreground">
+                <Link key={m.id} to="/matches/$id" params={{ id: m.id }} className="flex items-center gap-2 px-3 py-2 hover:bg-accent">
+                  <div className="w-12 shrink-0 text-[0.6rem] leading-tight text-muted-foreground">
                     <div>{m.kickoff_at ? num(dates.date(m.kickoff_at)) : "—"}</div>
                     <div className="font-semibold">{tx(STATUS_SHORT[m.status] ?? "")}</div>
                   </div>
@@ -280,17 +280,17 @@ function PlayerMatches({ data, playerId, playerTeamId }: { data: PlayerMatchData
                     <TeamLine team={m.home} dim={!!isAway} />
                     <TeamLine team={m.away} dim={!!isHome} />
                   </div>
-                  <div className="flex w-12 shrink-0 items-center justify-end gap-0.5 text-[0.7rem]">
-                    {goals > 0 && <span className="flex items-center gap-0.5"><EventIcon type="goal" className="h-4 w-4" />{goals > 1 ? num(String(goals)) : ""}</span>}
+                  <div className="flex w-11 shrink-0 items-center justify-end gap-0.5 text-[0.65rem]">
+                    {goals > 0 && <span className="flex items-center gap-0.5"><EventIcon type="goal" className="h-3.5 w-3.5" />{goals > 1 ? num(String(goals)) : ""}</span>}
                     {assists > 0 && <span title={tx("Assist") ?? "Assist"}>👟</span>}
-                    {yellow && <EventIcon type="yellow" className="h-4 w-4" />}
-                    {red && <EventIcon type="red" className="h-4 w-4" />}
+                    {yellow && <EventIcon type="yellow" className="h-3.5 w-3.5" />}
+                    {red && <EventIcon type="red" className="h-3.5 w-3.5" />}
                   </div>
-                  <div className="w-6 shrink-0 text-right text-sm font-bold leading-tight tabular-nums">
+                  <div className="w-5 shrink-0 text-right text-[0.8rem] font-bold leading-tight tabular-nums">
                     <div className={isAway ? "text-muted-foreground" : ""}>{m.home_score != null ? num(String(m.home_score)) : ""}</div>
                     <div className={isHome ? "text-muted-foreground" : ""}>{m.away_score != null ? num(String(m.away_score)) : ""}</div>
                   </div>
-                  <div className="w-9 shrink-0 text-right text-[0.7rem] font-semibold text-muted-foreground">
+                  <div className="w-8 shrink-0 text-right text-[0.65rem] font-semibold text-muted-foreground">
                     {rating != null ? num(rating.toFixed(1)) : tx("N/A")}
                   </div>
                 </Link>
@@ -306,7 +306,7 @@ function PlayerMatches({ data, playerId, playerTeamId }: { data: PlayerMatchData
 function TeamLine({ team, dim }: { team: Team | null; dim: boolean }) {
   const tx = useTx();
   return (
-    <div className={`flex min-w-0 items-center gap-1.5 text-[0.8rem] font-semibold ${dim ? "text-muted-foreground" : ""}`}>
+    <div className={`flex min-w-0 items-center gap-1.5 text-[0.75rem] font-semibold ${dim ? "text-muted-foreground" : ""}`}>
       <TeamCrest name={team?.name} logo={team?.logo_url} className="h-4 w-4 shrink-0" rounded="rounded-full" />
       <span className="truncate">{tx(team?.name) ?? "TBD"}</span>
     </div>
