@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Place the custom president portrait row inside club details alongside the coach
 - [ ] Modernize club statistics presentation without changing its calculations
 - [ ] Show released rounds and only the current started round; explain one-hour availability and choose round-team formation from ratings
 - [ ] Add club follower counts styled like competitions with admin overrides and replace club standings competition swiping with an in-app menu
