@@ -294,10 +294,19 @@ const byCode = new Map(COUNTRIES.map((c) => [c.code.toUpperCase(), c]));
 const byName = new Map(COUNTRIES.map((c) => [c.name.toLowerCase(), c]));
 const byNameAr = new Map(COUNTRIES.map((c) => [c.nameAr, c]));
 
+/** Retired ISO codes retained in stored data resolve to their current country. */
+const CURRENT_CODES: Record<string, string> = {
+  AN: "CW", BU: "MM", CS: "RS", DD: "DE", DY: "BJ", FX: "FR",
+  HV: "BF", NH: "VU", RH: "ZW", SU: "RU", TP: "TL", UK: "GB",
+  VD: "VN", YD: "YE", YU: "RS", ZR: "CD",
+};
+
 export function findCountry(v: string | null | undefined): Country | null {
   if (!v) return null;
   const s = v.trim();
-  return byCode.get(s.toUpperCase()) ?? byName.get(s.toLowerCase()) ?? byNameAr.get(s) ?? null;
+  const country = byCode.get(s.toUpperCase()) ?? byName.get(s.toLowerCase()) ?? byNameAr.get(s);
+  if (!country) return null;
+  return byCode.get(CURRENT_CODES[country.code] ?? country.code) ?? country;
 }
 
 export function countryFlag(v: string | null | undefined): string | null {
