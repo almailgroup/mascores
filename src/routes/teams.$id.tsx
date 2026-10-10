@@ -49,9 +49,11 @@ function TeamPage() {
   const num = useNum();
   const dates = useDates();
   const { id } = Route.useParams();
+  const followerBaseline = useRef<{ id: string; count: number } | null>(null);
   const followers = useQuery({ queryKey: ["club-followers", id], queryFn: async () => {
     const { data, error } = await supabase.rpc("club_follower_count", { _team_id: id });
     if (error) throw error;
+    if (followerBaseline.current?.id !== id) followerBaseline.current = { id, count: data ?? 0 };
     return data ?? 0;
   }});
   const { t: tr } = useI18n();
@@ -152,7 +154,10 @@ function TeamPage() {
           <TeamCrest name={t.name} logo={t.logo_url} className="h-7 w-7 shrink-0" />
           <span className="truncate text-sm font-bold">{tx(t.name)}</span>
         </div>
-        <div className="flex items-center gap-1 [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-current"><ClubNotificationButton teamId={t.id} /><FavoriteButton kind="team" id={t.id} size="md" onFollow={() => { qc.invalidateQueries({ queryKey: ["club-followers", id] }); }} /></div>
+        <div data-no-gesture className="relative z-10 flex items-center gap-1 [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-current"><ClubNotificationButton teamId={t.id} /><FavoriteButton kind="team" id={t.id} size="md" onFavoriteChange={(active) => {
+          void qc.cancelQueries({ queryKey: ["club-followers", id] });
+          qc.setQueryData<number>(["club-followers", id], (count) => Math.max(0, (count ?? 0) + (active ? 1 : -1)));
+        }} onFavoriteSaved={() => { if (supabase.auth && t.followers_override == null) void qc.invalidateQueries({ queryKey: ["club-followers", id] }); }} /></div>
       </div>
       <div className="profile-expanded-identity flex items-center gap-3 py-3 sm:gap-4">
         <TeamCrest name={t.name} logo={t.logo_url} className="h-10 w-10 shrink-0 sm:h-12 sm:w-12" rounded="rounded-xl" />
@@ -166,8 +171,7 @@ function TeamPage() {
           )}
         </div>
         <div className="sports-header-chip w-16 shrink-0 rounded-lg px-1.5 py-2 text-center">
-          <div className="text-xs font-semibold leading-none tabular-nums">{num((t.followers_override ?? followers.data ?? 0) >= 1000 ? `${((t.followers_override ?? followers.data ?? 0) / 1000).toFixed(1)}K` : (t.followers_override ?? followers.data ?? 0))}</div>
-          <div className="mt-1 text-[0.6rem] leading-tight opacity-70">{tx((t.followers_override ?? followers.data ?? 0) === 1 ? "Follower" : "Followers")}</div>
+          <ClubFollowerCount count={Math.max(0, (followers.data ?? 0) + (t.followers_override == null ? 0 : t.followers_override - (followerBaseline.current?.id === id ? followerBaseline.current.count : 0)))} />
         </div>
       </div>
 
