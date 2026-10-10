@@ -59,3 +59,4 @@
 - [x] Compact match page sizing (Sofascore-style, ref IMG_3674)
 - [x] Remove border around country flags
 - [x] Player matches: competition filter uses in-app SeasonMenu
+- [x] Recycle bin for deleted data with restore
