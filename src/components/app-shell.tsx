@@ -128,11 +128,11 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
 
       <div data-browse-page>
       {!hideHeader && <header data-shell-header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
-        <div dir="ltr" className="mx-auto grid min-h-16 max-w-7xl grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-3 px-4 py-2 sm:px-6">
-          <Link to="/settings" aria-label={t("nav.settings")} className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full border border-border bg-card text-sm font-bold text-primary">
+        <div dir="ltr" className="mx-auto grid min-h-16 max-w-7xl grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 py-2 sm:px-6">
+          <Link to="/settings" aria-label={t("nav.settings")} className="col-start-3 row-start-1 grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full border border-border bg-card text-sm font-bold text-primary">
             {user && profile.data?.avatar_url ? <img src={profile.data.avatar_url} alt="" className="h-full w-full object-cover" /> : user ? <span>{initials}</span> : <User className="h-6 w-6" />}
           </Link>
-          <Link to="/" aria-label="MA Scores" className="shrink-0"><BrandLogo showWordmark={false} className="h-10 w-10 object-contain" /></Link>
+          <Link to="/" aria-label="MA Scores" className="col-start-1 row-start-1 shrink-0"><BrandLogo showWordmark={false} className="h-10 w-10 object-contain" /></Link>
           <Link to="/search" onClick={(event) => { if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return; if (document.startViewTransition && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) { event.preventDefault(); document.startViewTransition(() => router.navigate({ to: "/search" })); } }} className="mas-search-field flex h-11 min-w-0 items-center gap-2 rounded-full border border-border bg-card px-4 text-muted-foreground" aria-label="Search MaScores"><Search className="h-5 w-5 shrink-0" /><span className="truncate text-sm">Search MaScores</span></Link>
         </div>
         <nav className="mx-auto hidden max-w-7xl items-center gap-1 px-6 pb-2 md:flex">

@@ -25,3 +25,5 @@
 - Gate welcome UI until local completion is checked to prevent repeat setup flashes; keep rendering hydration-safe.
 - Store per-club alert overrides separately from favourites and preserve other notification preferences on writes, so the bell never changes the star.
 - Use the shared SportsHeaderBackground with semantic surface tokens and sampled logo colours for sports identity headers; one backdrop keeps their visual treatment consistent without changing stored artwork.
+- All public standings default to the shared modern StandingsTable with position-label and row-qualification fallbacks, so club, competition and match views stay consistent.
+- Use the shared portalled SeasonMenu for season selection so sticky headers cannot clip its keyboard-accessible menu.

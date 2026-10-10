@@ -447,13 +447,15 @@ function StandingsTabs({ rows, labels, teamId, tx }: {
         </div>
       )}
       <div className="space-y-3">
+        <div className="flex items-center gap-2 py-2">
         <Link to="/competitions/$slug" params={{ slug: current?.competition?.slug ?? "" }}
-          className="flex items-center gap-2 py-2 text-sm font-bold hover:text-primary">
+          className="flex min-w-0 flex-1 items-center gap-2 text-sm font-bold hover:text-primary">
           {current?.competition?.logo_url && <img src={current.competition.logo_url} alt="" className="h-6 w-6 shrink-0 object-contain" />}
           <span className="min-w-0 flex-1 text-balance break-words text-xs leading-relaxed">{tx(current?.competition?.name) ?? tx("Competition")}</span>
-          {availableSeasons.length > 0 && <span onClick={(event) => event.preventDefault()}><SeasonMenu seasons={availableSeasons} value={activeSeason} onChange={(value) => current && setSelectedSeasons((previous) => ({ ...previous, [current.competition_id]: value }))} /></span>}
           <ArrowRight className="h-4 w-4 shrink-0" />
         </Link>
+        {availableSeasons.length > 0 && <SeasonMenu seasons={availableSeasons} value={activeSeason} onChange={(value) => current && setSelectedSeasons((previous) => ({ ...previous, [current.competition_id]: value }))} />}
+        </div>
         <StandingsTable rows={list} labels={currentLabels} highlightTeamId={teamId} modern />
       </div>
     </div>

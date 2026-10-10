@@ -1,4 +1,7 @@
 # Roadmap
+- [x] Apply modern standings everywhere and restore qualification markers/labels
+- [x] Modernize season selectors and arrange Home logo/search/profile left-to-right
+- [x] Verify standings, season menus and header in the browser
 - [x] Modernize club standings without Home/Away filters
 - [x] Add club notification control next to the favourite star
 - [x] Prevent completed first-run setup from flashing on launch
