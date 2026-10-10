@@ -44,7 +44,7 @@ export function FlagIcon({
       src={src}
       alt={`${c.name} flag`}
       title={c.name}
-      className={`${SIZES[size]} shrink-0 rounded-[2px] object-fill ring-1 ring-border ${className}`}
+      className={`${SIZES[size]} shrink-0 rounded-[2px] object-fill ${className}`}
     />
   );
 }
