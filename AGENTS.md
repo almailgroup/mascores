@@ -21,7 +21,7 @@
 - Use one text-free branded loading overlay for both language directions, keeping underlying pages mounted to preserve navigation and form state.
 - Use the shared scroll-driven collapsing-header hook for club, competition and match headers; identity and tabs remain one sticky unit for consistent scrolling.
 - Calculate round teams from terminal match completion timestamps and actual position ratings through the public read-only function, with a one-hour availability deadline; avoid recurring background polling.
-- Choose the complete legal round-team formation with the highest summed position ratings; expose published history plus only the earliest started unreleased round.
+- Choose the complete legal round-team formation by how far selected players beat their position's round average (raw rating sum as tie-break), so position rating bias never fixes one shape; expose published history plus only the earliest started unreleased round.
 - Keep season winners in owner-writable title history separate from cumulative title counts so editing a year never changes trophy totals.
 - Gate welcome UI until local completion is checked to prevent repeat setup flashes; keep rendering hydration-safe.
 - Store per-club alert overrides separately from favourites and preserve other notification preferences on writes, so the bell never changes the star.
