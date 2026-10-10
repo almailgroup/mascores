@@ -127,10 +127,10 @@ function PlayerPage() {
           <FavoriteButton kind="player" id={p.id} size="md" />
         </div>
         {(national.data?.length ?? 0) > 0 && (
-          <div className="mt-3 flex flex-wrap gap-2 border-t border-border pt-3">
+           <div className="mt-2.5 flex flex-wrap gap-1.5 border-t border-border pt-2.5">
             {national.data!.map((call) => call.team ? (
               <Link key={call.id} to="/teams/$id" params={{ id: call.team.id }}
-                className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 text-[0.7rem] font-semibold hover:border-primary sm:text-xs">
+                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-2.5 py-1 text-[0.65rem] font-semibold hover:border-primary">
                 <FlagIcon value={call.team.country_code ?? call.team.country} size="sm" />
                 <span className="truncate">{tx(call.team.name)}</span>
                 <span className="text-muted-foreground">{tx("National team")}{call.shirt_number != null ? ` · #${call.shirt_number}` : ""}</span>
@@ -140,10 +140,10 @@ function PlayerPage() {
         )}
       </div>
 
-      <SwipeTabs className="mb-5 gap-1 rounded-full border border-border bg-card p-1 text-xs">
+      <SwipeTabs className="mb-4 gap-1 rounded-full border border-border bg-card p-1 text-[0.75rem]">
         {(["details", "matches", "media", "news"] as const).map((k) => (
           <button key={k} onClick={() => setTab(k)}
-            className={`whitespace-nowrap rounded-full px-5 py-1.5 font-semibold ${tab === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+            className={`whitespace-nowrap rounded-full px-4 py-1.5 font-semibold ${tab === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
             {tr(`tab.${k}`)}
           </button>
         ))}
