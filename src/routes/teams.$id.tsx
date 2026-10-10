@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { MediaGallery } from "@/components/media-gallery";
 import { AppShell, BackButton, EmptyState, LoadingSkeleton, SwipeTabs } from "@/components/app-shell";
@@ -127,7 +127,7 @@ function TeamPage() {
   const losses = played.length - wins - draws;
   const gf = played.reduce((s, m) => s + (m.home_team_id === id ? m.home_score ?? 0 : m.away_score ?? 0), 0);
   const ga = played.reduce((s, m) => s + (m.home_team_id === id ? m.away_score ?? 0 : m.home_score ?? 0), 0);
-  const upcoming = [...(matches.data ?? [])].filter((m) => m.status === "scheduled" && m.kickoff_at).sort((a, b) => new Date(a.kickoff_at!).getTime() - new Date(b.kickoff_at!).getTime());
+  const upcoming = [...(matches.data ?? [])].filter((m) => m.status === "scheduled" && m.kickoff_at && new Date(m.kickoff_at).getTime() >= Date.now()).sort((a, b) => new Date(a.kickoff_at ?? 0).getTime() - new Date(b.kickoff_at ?? 0).getTime());
   const featured = upcoming[0] ?? matches.data?.[0] ?? null;
   const tournaments = [...new Map((matches.data ?? []).filter((m) => m.competition).map((m) => [m.competition!.slug, m.competition!])).values()];
   const statComps: TeamComp[] = [...new Map((matches.data ?? [])
@@ -493,7 +493,7 @@ function YouthTeams({ team }: { team: Team }) {
             <TeamCrest name={row.name} logo={row.logo_url} className="h-9 w-9" />
             <span className="min-w-0 flex-1">
               <span className="block truncate text-sm font-semibold">{tx(row.name)}</span>
-              <span className="mt-0.5 inline-flex rounded-full bg-primary/10 px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wide text-primary">{tx(row.tag)}</span>
+              <span className="mt-1 block text-[0.65rem] font-medium text-muted-foreground">{tx(row.tag)}</span>
             </span>
             <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
           </Link>
@@ -596,13 +596,29 @@ function TeamNewsTeaser({ teamId, onMore }: { teamId: string; onMore: () => void
 function TeamMatches({ data, teamId, nextId }: { data: MatchWithTeams[]; teamId: string; nextId: string | null }) {
   const tx = useTx();
   const top = useRef<HTMLDivElement>(null);
+  const [showToday, setShowToday] = useState(false);
+  const resetPosition = useRef(0);
   const timestamp = (m: MatchWithTeams) => m.kickoff_at ? new Date(m.kickoff_at).getTime() : 0;
-  const day = new Date(); day.setHours(0, 0, 0, 0);
-  const forward = data.filter((m) => timestamp(m) >= day.getTime() || ["live", "ht"].includes(m.status)).sort((a, b) => timestamp(a) - timestamp(b));
-  const past = data.filter((m) => !forward.some((next) => next.id === m.id)).sort((a, b) => timestamp(b) - timestamp(a));
+  const ordered = [...data].sort((a, b) => timestamp(b) - timestamp(a));
+  const targetId = data.find((m) => ["live", "ht"].includes(m.status))?.id ?? nextId ?? ordered.find((m) => timestamp(m) <= Date.now())?.id ?? ordered[0]?.id;
+  const goToNext = () => {
+    const target = Array.from(top.current?.querySelectorAll<HTMLElement>("[data-fixture-id]") ?? []).find((node) => node.dataset.fixtureId === targetId);
+    if (!target) return;
+    const header = document.querySelector<HTMLElement>("[data-refresh-header]");
+    const offset = header?.getBoundingClientRect().height ?? 140;
+    window.scrollTo({ top: Math.max(0, window.scrollY + target.getBoundingClientRect().top - offset - 12), behavior: "instant" });
+    resetPosition.current = window.scrollY;
+    setShowToday(false);
+  };
+  useEffect(() => {
+    let secondFrame = 0;
+    const firstFrame = requestAnimationFrame(() => { secondFrame = requestAnimationFrame(goToNext); });
+    const onScroll = () => setShowToday(Math.abs(window.scrollY - resetPosition.current) > 40);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => { cancelAnimationFrame(firstFrame); cancelAnimationFrame(secondFrame); window.removeEventListener("scroll", onScroll); };
+  }, [targetId, teamId]);
   return <div ref={top} className="scroll-mt-40">
-    {forward.length > 0 && <MatchGroups data={forward} highlightTeamId={teamId} />}
-    {past.length > 0 && <MatchGroups data={past} highlightTeamId={teamId} />}
-    <Button variant="outline" onClick={() => { top.current?.scrollIntoView({ block: "start", behavior: "instant" }); }} className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] left-1/2 z-30 -translate-x-1/2 rounded-full border-primary bg-background text-primary shadow">{tx("Today")} ↑</Button>
+    <MatchGroups data={ordered} highlightTeamId={teamId} />
+    {showToday && <Button variant="outline" onClick={goToNext} className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] left-1/2 z-30 -translate-x-1/2 rounded-full border-border bg-background text-foreground shadow">{tx("Today")}</Button>}
   </div>;
 }

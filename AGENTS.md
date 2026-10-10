@@ -27,3 +27,6 @@
 - Use the shared SportsHeaderBackground with semantic surface tokens and sampled logo colours for sports identity headers; one backdrop keeps their visual treatment consistent without changing stored artwork.
 - All public standings default to the shared modern StandingsTable with position-label and row-qualification fallbacks, so club, competition and match views stay consistent.
 - Use the shared portalled SeasonMenu for season selection so sticky headers cannot clip its keyboard-accessible menu.
+- Portal ticket overlays outside the browsing wrapper and lock background scrolling so page transforms and bottom navigation cannot clip ticket actions.
+- Enforce submission ownership and approval-state editing through database policies; deleting a submission removes the review record, not a separately published news article.
+- Use fixture row identifiers for club match scroll targets so Today and initial focus resolve the same next fixture in a descending chronological list.
