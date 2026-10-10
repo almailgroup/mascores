@@ -123,7 +123,7 @@ function PlayerPage() {
 
   return (
     <AppShell>
-      <div data-refresh-header className="sports-header -mx-4 mb-4 px-4 sm:-mx-6 sm:px-6">
+      <div data-refresh-header className="sports-header club-profile-header relative -mx-4 mb-4 px-4 sm:-mx-6 sm:px-6">
       <SportsHeaderBackground start={headerAccent?.color} />
       <div className="relative flex h-10 items-center justify-between">
         <BackButton iconOnly className="text-match-foreground" />
