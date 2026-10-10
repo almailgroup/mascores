@@ -16,6 +16,7 @@ import { ImageCropper } from "@/components/image-cropper";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import type { AlertSoundMap } from "@/lib/alert-sounds";
 import { Button } from '@/components/ui/button';
+import { useQuery } from "@tanstack/react-query";
 
 
 export const Route = createFileRoute("/settings")({
@@ -25,6 +26,11 @@ export const Route = createFileRoute("/settings")({
 
 function SettingsPage() {
   const { user, loading: authLoading } = useAuth();
+  const owner = useQuery({ queryKey: ["settings-owner", user?.id], enabled: !!user, queryFn: async () => {
+    if (!user) return false;
+    const { data, error } = await supabase.rpc("is_main_admin", { _uid: user.id });
+    return !error && data === true;
+  }});
   const navigate = useNavigate();
   const { t, lang, setLang } = useI18n();
   const { theme, setTheme } = useTheme();
@@ -90,6 +96,7 @@ function SettingsPage() {
     <AppShell>
       <BackButton iconOnly className="mb-3" />
       <h1 className="text-3xl font-bold tracking-tight">{t("settings.title")}</h1>
+      {owner.data && <Link to="/admin" className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-primary">{lang === "ar" ? "إدارة المسابقات وسجل الأبطال" : "Competition settings & title history"}</Link>}
       {user && <p className="mt-1 text-sm text-muted-foreground">{user.email}</p>}
 
       <section className="mt-6 rounded-3xl border border-border bg-card p-6">
