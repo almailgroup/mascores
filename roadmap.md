@@ -1,17 +1,17 @@
 # Roadmap
-- [ ] Keep the club president crown black and white
-- [ ] Update club followers immediately when starred and fix stuck star/notification controls
-- [ ] Label national-squad players without clubs as Free agent and use club initials for missing club logos
-- [ ] Place the custom president portrait row inside club details alongside the coach
-- [ ] Modernize club statistics presentation without changing its calculations
-- [ ] Show released rounds and only the current started round; explain one-hour availability and choose round-team formation from ratings
-- [ ] Add club follower counts styled like competitions with admin overrides and replace club standings competition swiping with an in-app menu
-- [ ] Fix Arabic Home filter overflow/scrolling, retain language when revisiting settings, and professionally present club presidents
-- [ ] Polish liquid-glass season selectors and replace native Team of the Round picker with an in-app menu
-- [ ] Add owner submission editing before approval and deletion at any status; separate cover/proof previews
-- [ ] Modernize first-team/youth labels and fix ticket sheet/list clipping
-- [ ] Restore descending club matches, next-fixture initial focus and scroll-triggered Today
-- [ ] Verify submission permissions and phone-sized ticket/match flows
+- [x] Keep the club president crown black and white
+- [x] Update club followers immediately when starred and fix stuck star/notification controls
+- [x] Label national-squad players without clubs as Free agent and use club initials for missing club logos
+- [x] Place the custom president portrait row inside club details alongside the coach
+- [x] Modernize club statistics presentation without changing its calculations
+- [x] Show released rounds and only the current started round; explain one-hour availability and choose round-team formation from ratings
+- [x] Add club follower counts styled like competitions with admin overrides and replace club standings competition swiping with an in-app menu
+- [x] Fix Arabic Home filter overflow/scrolling, retain language when revisiting settings, and professionally present club presidents
+- [x] Polish liquid-glass season selectors and replace native Team of the Round picker with an in-app menu
+- [x] Add owner submission editing before approval and deletion at any status; separate cover/proof previews
+- [x] Modernize first-team/youth labels and fix ticket sheet/list clipping
+- [x] Restore descending club matches, next-fixture initial focus and scroll-triggered Today
+- [x] Verify submission permissions and phone-sized ticket/match flows
 - [x] Apply modern standings everywhere and restore qualification markers/labels
 - [x] Modernize season selectors and arrange Home logo/search/profile left-to-right
 - [x] Verify standings, season menus and header in the browser
