@@ -148,11 +148,11 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
         ? "grid-cols-[1.75rem_minmax(0,1fr)_1.25rem_1.25rem_1.25rem_1.25rem_2.75rem_2rem]"
         : view === "form"
           ? "grid-cols-[2.75rem_minmax(0,1fr)_10rem]"
-           : modern ? "grid-cols-[1.75rem_minmax(0,1fr)_2rem_2.25rem_2.5rem]" : "grid-cols-[2.75rem_minmax(0,1fr)_2rem_2.25rem_2.5rem]";
+        : modern ? "grid-cols-[1.5rem_minmax(0,1fr)_1.75rem_2rem_2rem]" : "grid-cols-[2.75rem_minmax(0,1fr)_2rem_2.25rem_2.5rem]";
       return <section key={group ?? "single"}>
         <div className={modern ? "overflow-hidden rounded-lg border border-border bg-card" : "overflow-hidden rounded-3xl border border-border bg-card shadow-sm"}>
-          {modern && group && <h3 className="px-3 pb-2 pt-4 text-xs font-bold">{tx(group)}</h3>}
-          <div className={`grid ${cols} items-center gap-1 ${modern ? "bg-card" : "bg-muted/40"} px-3 py-2 text-[0.6rem] font-semibold text-muted-foreground`}>
+          {modern && group && <h3 className="px-3 pb-1.5 pt-3 text-[0.7rem] font-bold">{tx(group)}</h3>}
+          <div className={`grid ${cols} items-center gap-1 ${modern ? "bg-card" : "bg-muted/40"} px-3 py-1.5 text-[0.6rem] font-semibold text-muted-foreground`}>
             <span>#</span>
             <span>{group ? tx(group) : tx("Team")}</span>
             {view === "full" && <><span className="text-center">P</span><span className="text-center">W</span><span className="text-center">D</span><span className="text-center">L</span><span className="text-center">GLS</span><span className="text-center">PTS</span></>}
@@ -166,12 +166,12 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
               const selected = row.team_id ? highlights.includes(row.team_id) : false;
               const inner = <>
                 <span className="flex items-center gap-1" title={label ? tx(label.label) : undefined}>
-                  <span aria-label={label ? tx(label.label) : undefined} className="h-6 w-1 shrink-0 rounded-full" style={{ backgroundColor: label?.color ?? "transparent" }} />
-                  <span className={`grid h-6 min-w-4 place-items-center ${modern ? "" : "rounded-full bg-muted"} text-xs font-semibold tabular-nums`}>{num(index + 1)}</span>
+                  <span aria-label={label ? tx(label.label) : undefined} className="h-5 w-1 shrink-0 rounded-full" style={{ backgroundColor: label?.color ?? "transparent" }} />
+                  <span className={`grid h-5 min-w-4 place-items-center ${modern ? "" : "rounded-full bg-muted"} text-[0.7rem] font-semibold tabular-nums`}>{num(index + 1)}</span>
                 </span>
-                <span className="flex min-w-0 items-center gap-2">
-                  <TeamCrest name={row.team?.name} logo={row.team?.logo_url ?? null} className={modern && view === "short" ? "h-7 w-7 shrink-0" : "h-6 w-6 shrink-0"} />
-                  <span className={`${modern ? "break-words text-xs" : "truncate text-sm"} font-semibold`}>{tx((view === "full" ? row.team?.short_name || row.team?.name : row.team?.name || row.team?.short_name) || "—")}</span>
+                <span className="flex min-w-0 items-center gap-1.5">
+                  <TeamCrest name={row.team?.name} logo={row.team?.logo_url ?? null} className={modern && view === "short" ? "h-5 w-5 shrink-0" : "h-6 w-6 shrink-0"} />
+                  <span className={`${modern ? "truncate text-[0.75rem]" : "truncate text-sm"} font-semibold`}>{tx((view === "full" ? row.team?.short_name || row.team?.name : row.team?.name || row.team?.short_name) || "—")}</span>
                   {live && <span className="shrink-0 rounded-full bg-primary/20 px-1.5 py-0.5 text-[0.55rem] font-bold uppercase text-primary">{tx("Live")}</span>}
                 </span>
                 {view === "full" && <>
@@ -186,12 +186,12 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
                   <FormStrip results={(form.data?.[row.team_id] ?? []) as ("W" | "D" | "L")[]} />
                 </span>}
                 {view === "short" && <>
-                  <span className="text-center text-xs tabular-nums text-muted-foreground">{num(row.played)}</span>
-                  <span className="text-center text-xs tabular-nums text-muted-foreground">{num(row.gf - row.ga)}</span>
-                  <span className="text-center text-sm font-black tabular-nums text-primary">{num(row.points + row.points_adjust)}</span>
+                  <span className="text-center text-[0.7rem] tabular-nums text-muted-foreground">{num(row.played)}</span>
+                  <span className="text-center text-[0.7rem] tabular-nums text-muted-foreground">{num(row.gf - row.ga)}</span>
+                  <span className="text-center text-xs font-black tabular-nums text-primary">{num(row.points + row.points_adjust)}</span>
                 </>}
               </>;
-              const cls = `grid ${cols} items-center gap-1 px-3 ${modern ? "min-h-14 py-3" : "py-2.5"} active:bg-muted/60 ${live ? "bg-primary/15" : selected ? "bg-primary/10" : ""}`;
+              const cls = `grid ${cols} items-center gap-1 px-3 ${modern ? "py-2" : "py-2.5"} active:bg-muted/60 ${live ? "bg-primary/15" : selected ? "bg-primary/10" : ""}`;
               return row.team
                 ? <Link key={row.id} to="/teams/$id" params={{ id: row.team.id }} className={cls}>{inner}</Link>
                 : <div key={row.id} className={cls}>{inner}</div>;
