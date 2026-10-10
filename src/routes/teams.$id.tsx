@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { MediaGallery } from "@/components/media-gallery";
 import { AppShell, BackButton, EmptyState, LoadingSkeleton, SwipeTabs } from "@/components/app-shell";
 import { supabase, formatKickoff, type Team, type Player, type Match, type StandingRow, type Coach, type Transfer } from "@/lib/db";
@@ -44,10 +44,16 @@ type Tab = "info" | "matches" | "standings" | "squad" | "stats" | "media" | "tra
 const TABS: Tab[] = ["info", "matches", "standings", "squad", "stats", "media", "transfers", "news", "rabta"];
 
 function TeamPage() {
+  const qc = useQueryClient();
   const tx = useTx();
   const num = useNum();
   const dates = useDates();
   const { id } = Route.useParams();
+  const followers = useQuery({ queryKey: ["club-followers", id], queryFn: async () => {
+    const { data, error } = await supabase.rpc("club_follower_count", { _team_id: id });
+    if (error) throw error;
+    return data ?? 0;
+  }});
   const { t: tr } = useI18n();
   const [tab, setTab] = useState<Tab>("info");
   useRealtime(["teams", "players", "matches", "standings_rows", "transfers"]);
@@ -146,12 +152,13 @@ function TeamPage() {
           <TeamCrest name={t.name} logo={t.logo_url} className="h-7 w-7 shrink-0" />
           <span className="truncate text-sm font-bold">{tx(t.name)}</span>
         </div>
-        <div className="flex items-center gap-1 [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-current"><ClubNotificationButton teamId={t.id} /><FavoriteButton kind="team" id={t.id} size="md" /></div>
+        <div className="flex items-center gap-1 [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-current"><ClubNotificationButton teamId={t.id} /><FavoriteButton kind="team" id={t.id} size="md" onFollow={() => { qc.invalidateQueries({ queryKey: ["club-followers", id] }); }} /></div>
       </div>
       <div className="profile-expanded-identity flex items-center gap-3 py-3 sm:gap-4">
         <TeamCrest name={t.name} logo={t.logo_url} className="h-10 w-10 shrink-0 sm:h-12 sm:w-12" rounded="rounded-xl" />
         <div className="min-w-0 flex-1">
           <h1 className="profile-title">{tx(t.name)}</h1>
+          <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground"><Users className="h-3.5 w-3.5" /><span>{num(t.followers_override ?? followers.data ?? 0)} {tx("Followers")}</span></div>
           {t.is_national ? null : (
             <div className="club-country mt-0.5 flex min-w-0 items-center gap-1.5 text-[0.7rem] sm:text-xs">
               <FlagIcon value={t.country_code ?? t.country} />
@@ -460,25 +467,12 @@ function StandingsTabs({ rows, labels, teamId, tx }: {
 
   return (
     <div>
-      {comps.length > 1 && (
-        <div className="mb-4 flex gap-1 overflow-x-auto border-b border-border pb-2">
-          {comps.map((c) => (
-            <button key={c.competition_id} onClick={() => setActive(c.competition_id)}
-              className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold ${c.competition_id === current?.competition_id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-              {c.competition?.logo_url && <img src={c.competition.logo_url} alt="" className="h-4 w-4 object-contain" />}
-              <span className="max-w-[9rem] truncate">{tx(c.competition?.name) ?? tx("Competition")}</span>
-            </button>
-          ))}
-        </div>
-      )}
       <div className="space-y-3">
-        <div className="flex items-center gap-2 py-2">
-        <Link to="/competitions/$slug" params={{ slug: current?.competition?.slug ?? "" }}
-          className="flex min-w-0 flex-1 items-center gap-2 text-sm font-bold hover:text-primary">
-          {current?.competition?.logo_url && <img src={current.competition.logo_url} alt="" className="h-6 w-6 shrink-0 object-contain" />}
-          <span className="min-w-0 flex-1 text-balance break-words text-xs leading-relaxed">{tx(current?.competition?.name) ?? tx("Competition")}</span>
-          <ArrowRight className="h-4 w-4 shrink-0" />
-        </Link>
+        <div data-no-gesture className="flex min-w-0 items-center gap-2 py-2">
+        <SeasonMenu label="Competition" seasons={comps.map(c => c.competition_id)} value={current?.competition_id} onChange={setActive} className="min-w-0 flex-1 justify-between [&>span]:flex-1 [&>span]:text-start" formatValue={value => tx(comps.find(c => c.competition_id === value)?.competition?.name) ?? "Competition"} renderIcon={value => {
+          const comp = comps.find(c => c.competition_id === value)?.competition;
+          return comp?.logo_url ? <img src={comp.logo_url} alt="" className="h-5 w-5 shrink-0 object-contain" /> : null;
+        }} />
         {availableSeasons.length > 0 && <SeasonMenu seasons={availableSeasons} value={activeSeason} onChange={(value) => current && setSelectedSeasons((previous) => ({ ...previous, [current.competition_id]: value }))} />}
         </div>
         <StandingsTable rows={list} labels={currentLabels} highlightTeamId={teamId} modern />

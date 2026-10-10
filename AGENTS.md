@@ -32,3 +32,5 @@
 - Use fixture row identifiers for club match scroll targets so Today and initial focus resolve the same next fixture in a descending chronological list.
 - Device-local language is authoritative on navigation; settings language changes sync immediately without reloading a stale profile language.
 - Resolve club president portraits from existing team staff by chairman name or president role; never invent identity images.
+- Club follower totals use a public aggregate-only function over private favourites; nullable admin overrides affect display only, never real favourite membership.
+- Use the portalled shared picker for club standings competition selection instead of a horizontally scrolling competition bar.
