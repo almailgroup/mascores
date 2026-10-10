@@ -43,6 +43,13 @@
       "when": 1791657541560,
       "tag": "0005_reporter_submission_owner_controls",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791658037959,
+      "tag": "0006_club_followers",
+      "breakpoints": true
     }
   ]
 }

@@ -2112,6 +2112,7 @@ export type Database = {
           country_code: string | null
           created_at: string
           description: string | null
+          followers_override: number | null
           founded_on: string | null
           group_label: string | null
           id: string
@@ -2142,6 +2143,7 @@ export type Database = {
           country_code?: string | null
           created_at?: string
           description?: string | null
+          followers_override?: number | null
           founded_on?: string | null
           group_label?: string | null
           id?: string
@@ -2172,6 +2174,7 @@ export type Database = {
           country_code?: string | null
           created_at?: string
           description?: string | null
+          followers_override?: number | null
           founded_on?: string | null
           group_label?: string | null
           id?: string
@@ -2874,6 +2877,7 @@ export type Database = {
           id: string
         }[]
       }
+      club_follower_count: { Args: { _team_id: string }; Returns: number }
       competition_follower_count: {
         Args: { _competition_id: string }
         Returns: number
