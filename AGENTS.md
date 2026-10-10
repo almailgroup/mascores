@@ -38,3 +38,4 @@
 - Use TeamCrest for missing club artwork and localized free-agent labels for unattached players so national call-ups never imply club membership.
 - Update favourites and club alerts optimistically with ordered writes and ignore stale profile hydration; exclude buttons from page gestures so one tap never locks navigation.
 - Resolve retired country codes centrally and serve shared flag artwork from the local flag-icons package, so every flag display avoids invalid external image URLs.
+- Content-table deletes are archived by a BEFORE DELETE trigger into deleted_records (grouped per transaction) and restored only by the owner via restore_deleted_batch; keeps every deletion recoverable, including cascaded rows.
