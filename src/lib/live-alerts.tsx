@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useFavorites } from "@/hooks/use-favorites";
 import { isNativeApp, nativeNotify, ensureNativePermission } from "@/lib/native-notify";
 import { playAlertSound, soundFor, type AlertEventKey, type AlertSoundMap } from "@/lib/alert-sounds";
+import { readClubAlerts } from "@/hooks/use-club-alerts";
 
 
 const ALERT_KEY = "mas.match_notification_ids";
@@ -140,9 +141,10 @@ export function useLiveEventAlerts() {
 
     /** Only matches the person asked about, or their clubs' matches. */
     const wanted = (m: Info | null, matchId: string) => {
-      if (explicit.has(matchId)) return true;
       if (!m) return false;
-      return Boolean((m.homeId && followedTeams.has(m.homeId)) || (m.awayId && followedTeams.has(m.awayId)));
+      const overrides = readClubAlerts();
+      const inherited = [m.homeId, m.awayId].some(id => !!id && (overrides[id] ?? followedTeams.has(id)));
+      return inherited ? !explicit.has(matchId) : explicit.has(matchId);
     };
 
     const playerName = async (id: string | null) => {
@@ -198,6 +200,7 @@ export function useLiveEventAlerts() {
     loadAlerts();
     // Picks up a newly switched-on match without re-subscribing.
     const refreshExplicit = () => {
+      explicit = new Set(matchIds ? matchIds.split(",") : []);
       try {
         const local = JSON.parse(localStorage.getItem(ALERT_KEY) ?? "[]");
         if (Array.isArray(local)) for (const id of local) explicit.add(String(id));

@@ -5,6 +5,9 @@
 export const UI_AR: Record<string, string> = {
   // navigation & tabs
   "Team of the Round": "فريق الجولة",
+  "Turn on club notifications": "تفعيل إشعارات النادي",
+  "Turn off club notifications": "إيقاف إشعارات النادي",
+  "Unable to save notifications": "تعذر حفظ الإشعارات",
   "Title history": "سجل الأبطال",
   "No title history yet": "لا يوجد سجل للأبطال بعد",
   "Unable to load title history": "تعذر تحميل سجل الأبطال",

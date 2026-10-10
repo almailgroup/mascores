@@ -2927,6 +2927,10 @@ export type Database = {
           username: string
         }[]
       }
+      set_club_notification: {
+        Args: { _enabled: boolean; _team_id: string }
+        Returns: Json
+      }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
       voice_delete_room: { Args: { _room_id: string }; Returns: undefined }

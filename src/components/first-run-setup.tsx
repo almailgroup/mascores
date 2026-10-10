@@ -44,7 +44,8 @@ export function FirstRunSetup({ children }: { children: ReactNode }) {
     setStage("done");
     setSaving(false);
   };
-  if (stage === "done") return children;
+  // Do not render welcome branding or step numbers before device storage is checked.
+  if (stage === "done" || stage === "checking") return children;
   const ar = lang === "ar";
   const visible = (teams.data ?? []).filter((team) => `${team.name} ${tx(team.name)} ${team.country ?? ""}`.toLowerCase().includes(query.toLowerCase()));
   return <>
@@ -52,7 +53,7 @@ export function FirstRunSetup({ children }: { children: ReactNode }) {
     <div data-no-gesture className="fixed inset-0 z-[110] overflow-y-auto bg-background text-foreground" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
       <div className="mx-auto flex min-h-dvh max-w-xl flex-col px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-[calc(1.5rem+env(safe-area-inset-top))]">
         <div className="flex items-center justify-between"><BrandLogo showWordmark={false} className="h-12 w-12 object-contain" /><span className="text-xs font-semibold text-muted-foreground" dir="ltr">{stage === "language" ? "2 / 2" : "1 / 2"}</span></div>
-        {stage === "checking" ? <Loader2 className="mx-auto my-auto h-8 w-8 animate-spin text-primary" /> : stage === "teams" ? <>
+        {stage === "teams" ? <>
           <h1 id="welcome-title" className="mt-8 text-3xl font-bold">{ar ? "اختر فرقك" : "Choose your teams"}</h1>
           <p className="mt-2 text-sm text-muted-foreground">اختر فرقك المفضلة · Choose your favourites</p>
           <label className="mt-6 flex h-12 items-center gap-3 rounded-lg border border-border bg-card px-4"><Search className="h-5 w-5 text-muted-foreground" /><input aria-label="Search teams" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search teams / ابحث عن فريق" className="min-w-0 flex-1 bg-transparent text-sm outline-none" /></label>

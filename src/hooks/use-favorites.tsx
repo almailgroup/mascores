@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./use-auth";
 import { Bell, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
+import { useClubAlerts } from "@/hooks/use-club-alerts";
 
 export type FavoriteKind = "team" | "player" | "competition" | "match";
 
@@ -180,6 +181,7 @@ const PREF_ROWS: { key: keyof AlertPrefs; label: string }[] = [
  * sliders button next to it chooses which moments are announced.
  */
 export function MatchNotificationButton({ matchId, teamIds = [], withSettings = false }: { matchId: string; teamIds?: (string | null | undefined)[]; withSettings?: boolean }) {
+  const { overrides } = useClubAlerts();
   const { user } = useAuth();
   const { favorites } = useFavorites();
   const [alerts, setAlerts] = useState<string[]>([]);
@@ -187,7 +189,7 @@ export function MatchNotificationButton({ matchId, teamIds = [], withSettings = 
   const [prefs, setPrefs] = useState<AlertPrefs>({});
   const [openPrefs, setOpenPrefs] = useState(false);
   const box = useRef<HTMLDivElement>(null);
-  const inherited = teamIds.some((id) => Boolean(id && favorites.team.includes(id)));
+  const inherited = teamIds.some((id) => Boolean(id && (overrides[id] ?? favorites.team.includes(id))));
 
   useEffect(() => {
     let cancelled = false;
@@ -225,7 +227,11 @@ export function MatchNotificationButton({ matchId, teamIds = [], withSettings = 
   const savePrefs = async (next: AlertPrefs) => {
     setPrefs(next);
     try { localStorage.setItem(PREF_KEY, JSON.stringify(next)); } catch { /* optional */ }
-    if (user) await supabase.from("profiles").update({ notification_preferences: next as never }).eq("id", user.id);
+    if (user) {
+      const { data } = await supabase.from("profiles").select("notification_preferences").eq("id", user.id).maybeSingle();
+      const saved = data?.notification_preferences;
+      await supabase.from("profiles").update({ notification_preferences: { ...(saved && typeof saved === "object" && !Array.isArray(saved) ? saved : {}), ...next } }).eq("id", user.id);
+    }
     window.dispatchEvent(new Event("mas:alerts-changed"));
   };
 
