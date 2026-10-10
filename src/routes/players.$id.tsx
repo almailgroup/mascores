@@ -151,7 +151,7 @@ function PlayerPage() {
 
       {tab === "details" && (
         <>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          <div className="grid grid-cols-3 gap-2 lg:grid-cols-6">
              {countryTeam.data ? (
                <Link to="/teams/$id" params={{ id: countryTeam.data.id }} className="block transition hover:opacity-80">
                  <Stat label={tx("Nationality")} value={tx(p.nationality) ?? "—"} icon={<FlagIcon value={nat} size="md" />} />
@@ -166,7 +166,7 @@ function PlayerPage() {
              <Stat label={tx("Market value")} value={tx(num(formatMoney(p.market_value, currency)))} />
           </div>
 
-           <h2 className="mb-3 mt-8 text-sm font-bold uppercase text-muted-foreground">{tx("Transfer history")}</h2>
+           <h2 className="mb-2 mt-6 text-xs font-bold uppercase text-muted-foreground">{tx("Transfer history")}</h2>
           {transfers.data && transfers.data.length > 0 ? (
             <div className="overflow-hidden rounded-lg border border-border bg-card">
               {transfers.data.map((r) => {
@@ -192,7 +192,7 @@ function PlayerPage() {
             </div>
           ) : <EmptyState title={tx("No transfers recorded")} />}
 
-          <div className="mt-8"><SocialLinksSection value={p.social_links} /></div>
+          <div className="mt-6"><SocialLinksSection value={p.social_links} /></div>
         </>
       )}
 
