@@ -359,11 +359,11 @@ a:has([aria-label*="match notifications"]):active { filter: none; transform: non
 @keyframes brand-sweep { to { transform: translateX(100%); } }
 .match-hero { --collapse: 0; position: sticky; top: 0; z-index: 35; margin-top: calc(-1 * (env(safe-area-inset-top, 0px) + 2rem)); padding-top: calc(env(safe-area-inset-top, 0px) + .5rem); }
 .match-hero-body { position: relative; padding-top: calc(8px * (1 - var(--collapse))); padding-bottom: calc(8px * (1 - var(--collapse))); }
-.match-score-row { height: calc(88px - 62px * var(--collapse)); transform: translateY(calc(-28px * var(--collapse))); margin-bottom: calc(-24px * var(--collapse)); margin-left: calc(32px * var(--collapse)); margin-right: calc(128px * var(--collapse)); gap: calc(12px - 8px * var(--collapse)); }
-.match-team-crest { height: calc(52px - 28px * var(--collapse)); width: calc(52px - 28px * var(--collapse)); }
-.match-team-star { width: calc(40px * (1 - var(--collapse))); opacity: calc(1 - var(--collapse)); overflow: hidden; }
-.match-score { font-size: calc(30px - 16px * var(--collapse)); }
-.match-clock { margin-top: calc(8px - 6px * var(--collapse)); font-size: calc(14px - 5px * var(--collapse)); }
+.match-score-row { height: calc(68px - 44px * var(--collapse)); transform: translateY(calc(-22px * var(--collapse))); margin-bottom: calc(-18px * var(--collapse)); margin-left: calc(28px * var(--collapse)); margin-right: calc(112px * var(--collapse)); gap: calc(10px - 6px * var(--collapse)); }
+.match-team-crest { height: calc(42px - 20px * var(--collapse)); width: calc(42px - 20px * var(--collapse)); }
+.match-team-star { width: calc(32px * (1 - var(--collapse))); opacity: calc(1 - var(--collapse)); overflow: hidden; }
+.match-score { font-size: calc(24px - 12px * var(--collapse)); }
+.match-clock { margin-top: calc(6px - 4px * var(--collapse)); font-size: calc(12px - 4px * var(--collapse)); }
 .match-fading-detail { max-height: calc(160px * (1 - var(--collapse))); margin-top: calc(12px * (1 - var(--collapse))); overflow: hidden; opacity: max(0, calc(1 - var(--collapse) * 2)); }
 .match-hero .match-tabs { margin-top: calc(12px * (1 - var(--collapse))); }
 .match-hero [role="img"] { color: var(--match-foreground); }
