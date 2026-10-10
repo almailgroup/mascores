@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 
 type RoundPlayer = { id: string; name: string; photo_url: string | null; rating: number; position: string; team_id: string; team_name: string; team_logo: string | null };
-type RoundTeam = { key: string; round_number: number | null; round_label: string | null; available_at: string | null; ready: boolean; players: RoundPlayer[] };
+type RoundTeam = { key: string; round_number: number | null; round_label: string | null; available_at: string | null; ready: boolean; formation: string | null; players: RoundPlayer[] };
 
 export function CompetitionRoundTeam({ competitionId, season }: { competitionId: string; season: string | null }) {
   const tx = useTx();
@@ -33,7 +33,7 @@ export function CompetitionRoundTeam({ competitionId, season }: { competitionId:
     return () => clearTimeout(timer);
   }, [rounds.data]);
   const available = rounds.data ?? [];
-  const round = available.find(r => r.key === selected) ?? available.find(r => r.ready && r.players.length === 11) ?? available.find(r => r.ready) ?? available[0];
+  const round = available.find(r => r.key === selected) ?? available[0];
   return <section aria-label={tx("Team of the Round")} className="overflow-hidden rounded-lg border border-border bg-card">
     <div className="flex items-center justify-between gap-3 border-b border-border px-3 py-3">
       <h2 className="text-sm font-bold">{tx("Team of the Round")}</h2>
@@ -54,7 +54,7 @@ export function CompetitionRoundTeam({ competitionId, season }: { competitionId:
           <span className="mt-2 w-full text-balance break-words text-[0.65rem] font-semibold leading-tight">{tx(player.name)}</span>
         </Link>)}
       </div>)}
-      <div className="text-center text-[0.65rem] text-muted-foreground">4-3-3</div>
-    </div> : <p className="p-5 text-center text-xs text-muted-foreground">{tx(round?.ready ? "Not enough rated players for a complete team" : "Available one hour after the round ends")}</p>}
+      <div dir="ltr" className="text-center text-[0.65rem] text-muted-foreground">{round.formation}</div>
+    </div> : <p className="p-5 text-center text-xs text-muted-foreground">{tx(round?.ready ? "Waiting for enough player ratings to complete this round’s team" : "Available one hour after the round ends")}</p>}
   </section>;
 }

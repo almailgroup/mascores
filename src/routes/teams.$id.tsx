@@ -158,13 +158,16 @@ function TeamPage() {
         <TeamCrest name={t.name} logo={t.logo_url} className="h-10 w-10 shrink-0 sm:h-12 sm:w-12" rounded="rounded-xl" />
         <div className="min-w-0 flex-1">
           <h1 className="profile-title">{tx(t.name)}</h1>
-          <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground"><Users className="h-3.5 w-3.5" /><span>{num(t.followers_override ?? followers.data ?? 0)} {tx("Followers")}</span></div>
           {t.is_national ? null : (
             <div className="club-country mt-0.5 flex min-w-0 items-center gap-1.5 text-[0.7rem] sm:text-xs">
               <FlagIcon value={t.country_code ?? t.country} />
               <span className="truncate">{tx(t.country)}</span>
             </div>
           )}
+        </div>
+        <div className="sports-header-chip w-16 shrink-0 rounded-lg px-1.5 py-2 text-center">
+          <div className="text-xs font-semibold leading-none tabular-nums">{num((t.followers_override ?? followers.data ?? 0) >= 1000 ? `${((t.followers_override ?? followers.data ?? 0) / 1000).toFixed(1)}K` : (t.followers_override ?? followers.data ?? 0))}</div>
+          <div className="mt-1 text-[0.6rem] leading-tight opacity-70">{tx((t.followers_override ?? followers.data ?? 0) === 1 ? "Follower" : "Followers")}</div>
         </div>
       </div>
 
@@ -239,7 +242,6 @@ function TeamPage() {
 
           <RecentForm matches={matches.data ?? []} teamId={id} />
 
-          {t.chairman && <ClubPresident team={t} />}
 
           <SocialLinksSection value={t.social_links} />
 
@@ -265,6 +267,7 @@ function TeamPage() {
                   <DetailRow icon={<PlayerAvatar src={coaches.data[0].photo_url} name={coaches.data[0].name} size="sm" />} label={tx("Coach")} value={tx(coaches.data[0].name)} />
                 </Link>
               ) : null}
+              {t.chairman && <ClubPresident team={t} />}
               {t.is_national && fifaRank.data ? <DetailRow icon={<Trophy className="h-5 w-5 text-muted-foreground" />} label={tx("FIFA world ranking")} value={`#${num(String(fifaRank.data.rank))} · ${num(String(fifaRank.data.points))} ${tx("pts")}`} /> : null}
               {t.contact_phone ? <a href={`tel:${t.contact_phone}`} className="block hover:bg-accent"><DetailRow icon={<Phone className="h-5 w-5 text-muted-foreground" />} label={tx("Phone")} value={t.contact_phone} chevron /></a> : null}
               {t.contact_email ? <a href={`mailto:${t.contact_email}`} className="block hover:bg-accent"><DetailRow icon={<Mail className="h-5 w-5 text-muted-foreground" />} label={tx("Email")} value={t.contact_email} chevron /></a> : null}
@@ -364,16 +367,14 @@ function ClubPresident({ team }: { team: Team }) {
       return data?.find(person => person.name === team.chairman || /president|chairman|رئيس/i.test(person.role)) ?? null;
     },
   });
-  return <section aria-label={lang === "ar" ? "رئيس النادي" : "Club president"} className="flex min-h-32 items-stretch overflow-hidden rounded-lg border border-border bg-card">
-    <div className="flex w-28 shrink-0 items-center justify-center bg-muted">
-      {president.data?.photo_url
-        ? <img src={president.data.photo_url} alt={team.chairman ?? ""} className="h-full min-h-32 w-full object-cover object-top" />
-        : <PlayerAvatar src={null} name={team.chairman} className="h-16 w-16" />}
+  return <section aria-label={lang === "ar" ? "رئيس النادي" : "Club president"} className="flex items-center gap-3 px-4 py-3">
+    <div className="relative shrink-0">
+      <PlayerAvatar src={president.data?.photo_url} name={team.chairman} className="h-11 w-11 ring-2 ring-border" />
+      <span className="absolute -bottom-1 -end-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-primary-foreground"><Crown className="h-2.5 w-2.5" /></span>
     </div>
-    <div className="flex min-w-0 flex-1 flex-col justify-center gap-2 p-4">
-      <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground"><Crown className="h-3.5 w-3.5" />{lang === "ar" ? "رئيس النادي" : "Club president"}</div>
-      <h2 className="break-words text-base font-bold leading-snug">{tx(team.chairman)}</h2>
-      <div className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground"><TeamCrest name={team.name} logo={team.logo_url} className="h-5 w-5 shrink-0" /><span className="break-words">{tx(team.name)}</span></div>
+    <div className="min-w-0 flex-1">
+      <div className="text-[0.65rem] font-semibold uppercase text-muted-foreground">{lang === "ar" ? "رئيس النادي" : "Club president"}</div>
+      <h2 className="break-words text-sm font-bold leading-snug">{tx(team.chairman)}</h2>
     </div>
   </section>;
 }
@@ -384,7 +385,7 @@ function DetailRow({ icon, label, value, chevron }: { icon: React.ReactNode; lab
       <span className="flex h-9 w-9 shrink-0 items-center justify-center">{icon}</span>
       <span className="min-w-0 flex-1">
         <span className="block text-[0.65rem] font-semibold uppercase tracking-widest text-muted-foreground">{label}</span>
-        <span className="block truncate text-sm font-bold">{value ?? "—"}</span>
+        <span className="block break-words text-sm font-bold">{value ?? "—"}</span>
       </span>
       {chevron ? <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" /> : null}
     </div>
