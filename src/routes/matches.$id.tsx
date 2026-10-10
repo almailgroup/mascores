@@ -284,10 +284,10 @@ function MatchPage() {
           {match.competition.logo_url
             ? <img src={match.competition.logo_url} alt="" className="h-6 w-6 shrink-0 object-contain" />
             : <span className="h-6 w-6 shrink-0 rounded-full bg-muted" />}
-          <span className="flex min-w-0 flex-1 items-center gap-1 truncate text-[0.75rem] font-semibold">
+          <span className="flex min-w-0 flex-1 flex-wrap items-center gap-x-1 text-[0.75rem] font-semibold leading-4">
             <span className="shrink-0 capitalize">{tx(match.competition.sport)},</span>
             {match.competition.country && <span className="shrink-0">{tx(match.competition.country)},</span>}
-            <span className="truncate">{lang === "ar" && match.competition.name_ar ? match.competition.name_ar : tx(match.competition.name)}</span>
+            <span className="min-w-0 break-words">{lang === "ar" && match.competition.name_ar ? match.competition.name_ar : tx(match.competition.name)}</span>
             {roundLabel(match.round_number, match.round) ? <span className="shrink-0 text-muted-foreground">, {tx(roundLabel(match.round_number, match.round))}</span> : null}
           </span>
           <ChevronRight className="h-4 w-4 shrink-0 text-primary" />
