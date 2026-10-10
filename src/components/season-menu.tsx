@@ -27,7 +27,7 @@ export function SeasonMenu({ seasons, value, onChange, footer, onHero = false, l
         <span dir={label === "Season" ? "ltr" : undefined} className="truncate">{value ? display(value) : tx("No season")}</span><ChevronDown className={`h-3 w-3 shrink-0 opacity-70 transition-transform ${open ? "rotate-180" : ""}`} />
       </Button>
     </DropdownMenuTrigger>
-    <DropdownMenuContent align="start" sideOffset={8} collisionPadding={12} className="glass-picker z-[100] max-h-72 w-48 max-w-[70vw] overflow-y-auto rounded-lg p-1.5 text-popover-foreground">
+    <DropdownMenuContent align="start" sideOffset={8} collisionPadding={12} className="glass-picker glass-picker-menu z-[100] max-h-72 w-48 max-w-[70vw] overflow-y-auto rounded-lg p-1.5 text-popover-foreground">
       <div className="px-2.5 pb-2 pt-1 text-[0.65rem] font-semibold text-muted-foreground">{tx(label)}</div>
       {seasons.map((season) => <DropdownMenuItem key={season} onSelect={() => onChange(season)} className={`min-h-9 gap-3 rounded-md px-2.5 text-xs ${season === value ? "bg-muted font-semibold" : "font-medium"}`}>
         <span dir={label === "Season" ? "ltr" : undefined} className="flex-1">{display(season)}</span>{season === value && <Check className="h-3.5 w-3.5 text-foreground" />}

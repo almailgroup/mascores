@@ -232,6 +232,7 @@
   --glass-edge: color-mix(in oklab, var(--sports-header-foreground) 24%, transparent);
   color: var(--sports-header-foreground);
 }
+.glass-picker-menu { --glass-surface: color-mix(in oklab, var(--popover) 94%, transparent); }
 
 @layer base {
   /* No Safari-style link/photo preview on press-and-hold in the app. */
