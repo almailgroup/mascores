@@ -112,17 +112,17 @@ function PlayerPage() {
   return (
     <AppShell>
       <BackButton />
-       <div className="mb-4 overflow-hidden rounded-lg border border-border bg-card p-4 sm:p-5">
-         <div className="flex items-center gap-4">
-           <PlayerAvatar src={callUp?.photo_url ?? p.photo_url} name={p.name} size="lg" className="border-2 border-border" />
+       <div className="mb-3 overflow-hidden rounded-lg border border-border bg-card p-3">
+         <div className="flex items-center gap-3">
+           <PlayerAvatar src={callUp?.photo_url ?? p.photo_url} name={p.name} size="md" className="border-2 border-border" />
            <div className="min-w-0 flex-1">
-             <h1 className="text-sm font-bold leading-snug break-words sm:text-xl">{tx(p.name)}</h1>
+             <h1 className="text-base font-bold leading-snug break-words">{tx(p.name)}</h1>
             {p.team ? (
-              <Link to="/teams/$id" params={{ id: p.team.id }} className="mt-1 inline-flex min-w-0 max-w-full items-center gap-1.5 text-[0.7rem] font-medium text-muted-foreground hover:text-primary sm:text-sm">
-                <TeamCrest name={p.team.name} logo={p.team.logo_url} className="h-4 w-4 shrink-0 sm:h-5 sm:w-5" />
+              <Link to="/teams/$id" params={{ id: p.team.id }} className="mt-0.5 inline-flex min-w-0 max-w-full items-center gap-1.5 text-[0.75rem] font-medium text-muted-foreground hover:text-primary">
+                <TeamCrest name={p.team.name} logo={p.team.logo_url} className="h-4 w-4 shrink-0" />
                 <span className="truncate">{tx(p.team.name)}</span>
               </Link>
-            ) : <div className="mt-1 text-[0.7rem] font-medium text-muted-foreground sm:text-sm">{tr("player.freeAgent")}</div>}
+            ) : <div className="mt-0.5 text-[0.75rem] font-medium text-muted-foreground">{tr("player.freeAgent")}</div>}
           </div>
           <FavoriteButton kind="player" id={p.id} size="md" />
         </div>
