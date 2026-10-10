@@ -280,17 +280,17 @@ function MatchPage() {
       <div className="px-4 pb-6 sm:px-6">
       {tab === "details" && match.competition && (
         <Link to="/competitions/$slug" params={{ slug: match.competition.slug }}
-          className="mb-4 flex items-center gap-3 rounded-3xl border border-border bg-card px-4 py-3 shadow-sm transition hover:border-primary">
+          className="mb-3 flex items-center gap-2 rounded-2xl border border-border bg-card px-3 py-2 shadow-sm transition hover:border-primary">
           {match.competition.logo_url
-            ? <img src={match.competition.logo_url} alt="" className="h-9 w-9 shrink-0 object-contain" />
-            : <span className="h-9 w-9 shrink-0 rounded-full bg-muted" />}
-          <span className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 text-sm font-bold sm:text-base">
-            <span className="capitalize">{tx(match.competition.sport)},</span>
-            {match.competition.country && <><FlagIcon value={match.competition.country_code ?? match.competition.country} /><span>{tx(match.competition.country)},</span></>}
-             <span className="truncate">{lang === "ar" && match.competition.name_ar ? match.competition.name_ar : tx(match.competition.name)}</span>
-            {roundLabel(match.round_number, match.round) ? <span className="text-muted-foreground">, {tx(roundLabel(match.round_number, match.round))}</span> : null}
+            ? <img src={match.competition.logo_url} alt="" className="h-6 w-6 shrink-0 object-contain" />
+            : <span className="h-6 w-6 shrink-0 rounded-full bg-muted" />}
+          <span className="flex min-w-0 flex-1 items-center gap-1 truncate text-[0.75rem] font-semibold">
+            <span className="shrink-0 capitalize">{tx(match.competition.sport)},</span>
+            {match.competition.country && <span className="shrink-0">{tx(match.competition.country)},</span>}
+            <span className="truncate">{lang === "ar" && match.competition.name_ar ? match.competition.name_ar : tx(match.competition.name)}</span>
+            {roundLabel(match.round_number, match.round) ? <span className="shrink-0 text-muted-foreground">, {tx(roundLabel(match.round_number, match.round))}</span> : null}
           </span>
-          <ChevronRight className="h-5 w-5 shrink-0 text-primary" />
+          <ChevronRight className="h-4 w-4 shrink-0 text-primary" />
         </Link>
       )}
 
