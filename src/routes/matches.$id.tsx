@@ -37,7 +37,7 @@ function HeroTeam({ team, onFollow, starSide }: { team: Team | null; onFollow?: 
   const crest = <span className="match-team-crest grid shrink-0 place-items-center">
     {team?.logo_url
       ? <img src={team.logo_url} alt="" className="h-full w-full object-contain drop-shadow-[0_3px_8px_rgba(0,0,0,0.35)]" />
-      : <TeamCrest name={team?.name} logo={null} className="h-12 w-12" />}
+      : <TeamCrest name={team?.name} logo={null} className="h-10 w-10" />}
   </span>;
   const column = team
     ? <Link to="/teams/$id" params={{ id: team.id }} className="flex min-w-0 flex-1 items-center justify-center">{crest}</Link>
@@ -77,10 +77,10 @@ function TeamHeadline({ team }: { team: Team | null }) {
   const tx = useTx();
   const body = (
     <>
-       <span className="flex h-11 items-center justify-center">
-        <TeamCrest name={team?.name} logo={team?.logo_url} className="h-11 w-11" rounded="rounded-2xl" />
+        <span className="flex h-10 items-center justify-center">
+        <TeamCrest name={team?.name} logo={team?.logo_url} className="h-10 w-10" rounded="rounded-2xl" />
       </span>
-      <span className="mt-1.5 line-clamp-2 min-h-9 text-balance text-sm font-bold leading-4">{tx(team?.name) ?? "TBD"}</span>
+      <span className="mt-1 line-clamp-2 min-h-8 text-balance text-[0.8rem] font-bold leading-4">{tx(team?.name) ?? "TBD"}</span>
     </>
   );
   const cls = "flex min-w-0 flex-col items-center text-center";
@@ -255,10 +255,10 @@ function MatchPage() {
 
         <div className="match-fading-detail mt-3 grid grid-cols-2 gap-8 px-5 text-center">
           <div className="min-w-0">
-            <Link to="/teams/$id" params={{ id: match.home?.id ?? "" }} disabled={!match.home} className="block text-balance break-words text-[0.8rem] font-bold leading-4 text-match-foreground">{tx(match.home?.name) ?? "TBD"}</Link>
+            <Link to="/teams/$id" params={{ id: match.home?.id ?? "" }} disabled={!match.home} className="block text-balance break-words text-[0.75rem] font-bold leading-4 text-match-foreground">{tx(match.home?.name) ?? "TBD"}</Link>
           </div>
           <div className="min-w-0">
-            <Link to="/teams/$id" params={{ id: match.away?.id ?? "" }} disabled={!match.away} className="block text-balance break-words text-[0.8rem] font-bold leading-4 text-match-foreground">{tx(match.away?.name) ?? "TBD"}</Link>
+            <Link to="/teams/$id" params={{ id: match.away?.id ?? "" }} disabled={!match.away} className="block text-balance break-words text-[0.75rem] font-bold leading-4 text-match-foreground">{tx(match.away?.name) ?? "TBD"}</Link>
           </div>
         </div>
 
@@ -271,8 +271,8 @@ function MatchPage() {
 
         </div>
         <div className="match-tabs border-t border-match-foreground/10 px-1">
-          <SwipeTabs className="gap-1.5 text-[0.8rem]">
-            {tabs.map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-3 pb-2.5 pt-2.5 font-semibold capitalize ${tab === item ? "border-b-2 border-match-live text-match-foreground" : "text-match-foreground/55"}`}>{tx(item === "media" ? "Media" : item === "previous" ? "Matches" : item === "details" ? "Details" : item === "lineups" ? "Lineups" : item === "standings" ? "Standings" : "Stats")}</button>)}
+          <SwipeTabs className="gap-1 text-[0.75rem]">
+            {tabs.map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-2.5 pb-2 pt-2 font-semibold capitalize ${tab === item ? "border-b-2 border-match-live text-match-foreground" : "text-match-foreground/55"}`}>{tx(item === "media" ? "Media" : item === "previous" ? "Matches" : item === "details" ? "Details" : item === "lineups" ? "Lineups" : item === "standings" ? "Standings" : "Stats")}</button>)}
           </SwipeTabs>
         </div>
       </div>
