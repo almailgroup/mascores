@@ -112,25 +112,25 @@ function PlayerPage() {
   return (
     <AppShell>
       <BackButton />
-       <div className="mb-4 overflow-hidden rounded-lg border border-border bg-card p-4 sm:p-5">
-         <div className="flex items-center gap-4">
-           <PlayerAvatar src={callUp?.photo_url ?? p.photo_url} name={p.name} size="lg" className="border-2 border-border" />
+       <div className="mb-3 overflow-hidden rounded-lg border border-border bg-card p-3">
+         <div className="flex items-center gap-3">
+           <PlayerAvatar src={callUp?.photo_url ?? p.photo_url} name={p.name} size="md" className="border-2 border-border" />
            <div className="min-w-0 flex-1">
-             <h1 className="text-sm font-bold leading-snug break-words sm:text-xl">{tx(p.name)}</h1>
+             <h1 className="text-base font-bold leading-snug break-words">{tx(p.name)}</h1>
             {p.team ? (
-              <Link to="/teams/$id" params={{ id: p.team.id }} className="mt-1 inline-flex min-w-0 max-w-full items-center gap-1.5 text-[0.7rem] font-medium text-muted-foreground hover:text-primary sm:text-sm">
-                <TeamCrest name={p.team.name} logo={p.team.logo_url} className="h-4 w-4 shrink-0 sm:h-5 sm:w-5" />
+              <Link to="/teams/$id" params={{ id: p.team.id }} className="mt-0.5 inline-flex min-w-0 max-w-full items-center gap-1.5 text-[0.75rem] font-medium text-muted-foreground hover:text-primary">
+                <TeamCrest name={p.team.name} logo={p.team.logo_url} className="h-4 w-4 shrink-0" />
                 <span className="truncate">{tx(p.team.name)}</span>
               </Link>
-            ) : <div className="mt-1 text-[0.7rem] font-medium text-muted-foreground sm:text-sm">{tr("player.freeAgent")}</div>}
+            ) : <div className="mt-0.5 text-[0.75rem] font-medium text-muted-foreground">{tr("player.freeAgent")}</div>}
           </div>
           <FavoriteButton kind="player" id={p.id} size="md" />
         </div>
         {(national.data?.length ?? 0) > 0 && (
-          <div className="mt-3 flex flex-wrap gap-2 border-t border-border pt-3">
+           <div className="mt-2.5 flex flex-wrap gap-1.5 border-t border-border pt-2.5">
             {national.data!.map((call) => call.team ? (
               <Link key={call.id} to="/teams/$id" params={{ id: call.team.id }}
-                className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 text-[0.7rem] font-semibold hover:border-primary sm:text-xs">
+                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-2.5 py-1 text-[0.65rem] font-semibold hover:border-primary">
                 <FlagIcon value={call.team.country_code ?? call.team.country} size="sm" />
                 <span className="truncate">{tx(call.team.name)}</span>
                 <span className="text-muted-foreground">{tx("National team")}{call.shirt_number != null ? ` · #${call.shirt_number}` : ""}</span>
@@ -140,10 +140,10 @@ function PlayerPage() {
         )}
       </div>
 
-      <SwipeTabs className="mb-5 gap-1 rounded-full border border-border bg-card p-1 text-xs">
+      <SwipeTabs className="mb-4 gap-1 rounded-full border border-border bg-card p-1 text-[0.75rem]">
         {(["details", "matches", "media", "news"] as const).map((k) => (
           <button key={k} onClick={() => setTab(k)}
-            className={`whitespace-nowrap rounded-full px-5 py-1.5 font-semibold ${tab === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+            className={`whitespace-nowrap rounded-full px-4 py-1.5 font-semibold ${tab === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
             {tr(`tab.${k}`)}
           </button>
         ))}
@@ -151,7 +151,7 @@ function PlayerPage() {
 
       {tab === "details" && (
         <>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          <div className="grid grid-cols-3 gap-2 lg:grid-cols-6">
              {countryTeam.data ? (
                <Link to="/teams/$id" params={{ id: countryTeam.data.id }} className="block transition hover:opacity-80">
                  <Stat label={tx("Nationality")} value={tx(p.nationality) ?? "—"} icon={<FlagIcon value={nat} size="md" />} />
@@ -166,21 +166,21 @@ function PlayerPage() {
              <Stat label={tx("Market value")} value={tx(num(formatMoney(p.market_value, currency)))} />
           </div>
 
-           <h2 className="mb-3 mt-8 text-sm font-bold uppercase text-muted-foreground">{tx("Transfer history")}</h2>
+           <h2 className="mb-2 mt-6 text-xs font-bold uppercase text-muted-foreground">{tx("Transfer history")}</h2>
           {transfers.data && transfers.data.length > 0 ? (
             <div className="overflow-hidden rounded-lg border border-border bg-card">
               {transfers.data.map((r) => {
                 const from = transferClubs.data?.find((team) => team.name === r.from_club);
                 const to = transferClubs.data?.find((team) => team.name === r.to_club);
-                return <div key={r.id} className="grid grid-cols-[2.25rem_minmax(0,1fr)] items-start gap-3 border-b border-border p-3 last:border-b-0 sm:grid-cols-[3rem_minmax(0,1fr)]">
-                  <TeamCrest name={to?.name ?? r.to_club ?? r.from_club} logo={to?.logo_url ?? r.to_club_logo_url ?? from?.logo_url ?? r.from_club_logo_url ?? null} className="h-9 w-9 sm:h-10 sm:w-10" />
-                  <div className="min-w-0">
-                    <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[0.8rem] font-semibold leading-snug sm:text-sm">
-                      <span className="break-words">{tx(r.from_club) ?? tx("Free agent")}</span>
-                      <ArrowRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                      <span className="break-words">{tx(r.to_club) ?? tx("Free agent")}</span>
-                    </div>
-                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.7rem] text-muted-foreground sm:text-xs">
+                 return <div key={r.id} className="grid grid-cols-[2rem_minmax(0,1fr)] items-start gap-2.5 border-b border-border p-2.5 last:border-b-0">
+                   <TeamCrest name={to?.name ?? r.to_club ?? r.from_club} logo={to?.logo_url ?? r.to_club_logo_url ?? from?.logo_url ?? r.from_club_logo_url ?? null} className="h-8 w-8" />
+                   <div className="min-w-0">
+                     <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[0.75rem] font-semibold leading-snug">
+                       <span className="break-words">{tx(r.from_club) ?? tx("Free agent")}</span>
+                       <ArrowRight className="h-3 w-3 shrink-0 text-muted-foreground" />
+                       <span className="break-words">{tx(r.to_club) ?? tx("Free agent")}</span>
+                     </div>
+                     <div className="mt-0.5 flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-[0.65rem] text-muted-foreground">
                       <span>{tx(r.transfer_type)}</span>
                       {r.season && <span>{num(r.season)}</span>}
                       <span className="font-bold text-foreground">{r.fee ? tx(r.fee) : tx("Free")}</span>
@@ -192,7 +192,7 @@ function PlayerPage() {
             </div>
           ) : <EmptyState title={tx("No transfers recorded")} />}
 
-          <div className="mt-8"><SocialLinksSection value={p.social_links} /></div>
+          <div className="mt-6"><SocialLinksSection value={p.social_links} /></div>
         </>
       )}
 
@@ -215,9 +215,9 @@ function PlayerPage() {
 
 function Stat({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-4">
-      <div className="text-[0.6rem] font-semibold uppercase tracking-widest text-muted-foreground">{label}</div>
-      <div className="mt-1 flex items-center gap-2 truncate text-sm font-bold">{icon}{value}</div>
+     <div className="rounded-xl border border-border bg-card p-2.5">
+       <div className="text-[0.55rem] font-semibold uppercase tracking-widest text-muted-foreground">{label}</div>
+       <div className="mt-0.5 flex items-center gap-1.5 truncate text-xs font-bold">{icon}{value}</div>
     </div>
   );
 }
@@ -243,18 +243,18 @@ function PlayerMatches({ data, playerId, playerTeamId }: { data: PlayerMatchData
 
   return (
     <div className="space-y-3">
-      <select value={comp} onChange={(e) => setComp(e.target.value)} className="rounded-xl border border-border bg-card px-3 py-2 text-xs font-semibold">
+      <select value={comp} onChange={(e) => setComp(e.target.value)} className="rounded-xl border border-border bg-card px-2.5 py-1.5 text-[0.7rem] font-semibold">
         <option value="all">{tx("All competitions")}</option>
         {comps.map((c) => <option key={c.id} value={c.id}>{tx(c.name)}</option>)}
       </select>
 
       {groups.map((g, gi) => (
         <section key={`${g.comp?.id ?? "none"}-${gi}`} className="overflow-hidden rounded-2xl border border-border bg-card">
-          <div className="flex items-center gap-3 px-3 py-3">
-            <TeamCrest name={g.comp?.name} logo={g.comp?.logo_url} className="h-8 w-8" rounded="rounded-full" />
+          <div className="flex items-center gap-2 px-3 py-2">
+            <TeamCrest name={g.comp?.name} logo={g.comp?.logo_url} className="h-6 w-6" rounded="rounded-full" />
             <div className="min-w-0">
-              <div className="truncate text-sm font-bold">{tx(g.comp?.name) ?? tx("Matches")}</div>
-              <div className="flex items-center gap-1.5 text-[0.7rem] text-muted-foreground">
+              <div className="truncate text-[0.8rem] font-bold">{tx(g.comp?.name) ?? tx("Matches")}</div>
+              <div className="flex items-center gap-1 text-[0.65rem] text-muted-foreground">
                 <FlagIcon value={g.comp?.country_code ?? g.comp?.country} size="sm" />
                 <span className="truncate">{tx(g.comp?.country) ?? ""}</span>
               </div>
@@ -271,8 +271,8 @@ function PlayerMatches({ data, playerId, playerTeamId }: { data: PlayerMatchData
               const isHome = playerTeamId && m.home_team_id === playerTeamId;
               const isAway = playerTeamId && m.away_team_id === playerTeamId;
               return (
-                <Link key={m.id} to="/matches/$id" params={{ id: m.id }} className="flex items-center gap-2 px-3 py-2.5 hover:bg-accent">
-                  <div className="w-14 shrink-0 text-[0.65rem] leading-tight text-muted-foreground">
+                <Link key={m.id} to="/matches/$id" params={{ id: m.id }} className="flex items-center gap-2 px-3 py-2 hover:bg-accent">
+                  <div className="w-12 shrink-0 text-[0.6rem] leading-tight text-muted-foreground">
                     <div>{m.kickoff_at ? num(dates.date(m.kickoff_at)) : "—"}</div>
                     <div className="font-semibold">{tx(STATUS_SHORT[m.status] ?? "")}</div>
                   </div>
@@ -280,17 +280,17 @@ function PlayerMatches({ data, playerId, playerTeamId }: { data: PlayerMatchData
                     <TeamLine team={m.home} dim={!!isAway} />
                     <TeamLine team={m.away} dim={!!isHome} />
                   </div>
-                  <div className="flex w-12 shrink-0 items-center justify-end gap-0.5 text-[0.7rem]">
-                    {goals > 0 && <span className="flex items-center gap-0.5"><EventIcon type="goal" className="h-4 w-4" />{goals > 1 ? num(String(goals)) : ""}</span>}
+                  <div className="flex w-11 shrink-0 items-center justify-end gap-0.5 text-[0.65rem]">
+                    {goals > 0 && <span className="flex items-center gap-0.5"><EventIcon type="goal" className="h-3.5 w-3.5" />{goals > 1 ? num(String(goals)) : ""}</span>}
                     {assists > 0 && <span title={tx("Assist") ?? "Assist"}>👟</span>}
-                    {yellow && <EventIcon type="yellow" className="h-4 w-4" />}
-                    {red && <EventIcon type="red" className="h-4 w-4" />}
+                    {yellow && <EventIcon type="yellow" className="h-3.5 w-3.5" />}
+                    {red && <EventIcon type="red" className="h-3.5 w-3.5" />}
                   </div>
-                  <div className="w-6 shrink-0 text-right text-sm font-bold leading-tight tabular-nums">
+                  <div className="w-5 shrink-0 text-right text-[0.8rem] font-bold leading-tight tabular-nums">
                     <div className={isAway ? "text-muted-foreground" : ""}>{m.home_score != null ? num(String(m.home_score)) : ""}</div>
                     <div className={isHome ? "text-muted-foreground" : ""}>{m.away_score != null ? num(String(m.away_score)) : ""}</div>
                   </div>
-                  <div className="w-9 shrink-0 text-right text-[0.7rem] font-semibold text-muted-foreground">
+                  <div className="w-8 shrink-0 text-right text-[0.65rem] font-semibold text-muted-foreground">
                     {rating != null ? num(rating.toFixed(1)) : tx("N/A")}
                   </div>
                 </Link>
@@ -306,7 +306,7 @@ function PlayerMatches({ data, playerId, playerTeamId }: { data: PlayerMatchData
 function TeamLine({ team, dim }: { team: Team | null; dim: boolean }) {
   const tx = useTx();
   return (
-    <div className={`flex min-w-0 items-center gap-1.5 text-[0.8rem] font-semibold ${dim ? "text-muted-foreground" : ""}`}>
+    <div className={`flex min-w-0 items-center gap-1.5 text-[0.75rem] font-semibold ${dim ? "text-muted-foreground" : ""}`}>
       <TeamCrest name={team?.name} logo={team?.logo_url} className="h-4 w-4 shrink-0" rounded="rounded-full" />
       <span className="truncate">{tx(team?.name) ?? "TBD"}</span>
     </div>
