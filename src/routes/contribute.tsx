@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { AppShell } from "@/components/app-shell";
@@ -10,7 +10,7 @@ import { uploadMedia } from "@/components/admin/upload";
 import { NewsLinkPicker, type NewsLinks } from "@/components/admin/news-link-picker";
 import { redeemReporterCode, applyAsReporter } from "@/lib/reporter.functions";
 import { Button } from '@/components/ui/button';
-import { Loader2, LogIn, ImagePlus, Send, BadgeCheck, Mail, KeyRound, Share2, CheckCircle2 } from "lucide-react";
+import { Loader2, LogIn, ImagePlus, Send, BadgeCheck, Mail, KeyRound, Share2, CheckCircle2, Pencil, Trash2, X, FileText } from "lucide-react";
 
 export const Route = createFileRoute("/contribute")({
   head: () => ({
@@ -63,6 +63,10 @@ function ContributePage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
+  const [proofIsImage, setProofIsImage] = useState(false);
 
   const reporter = useQuery({
     enabled: !!user,
@@ -78,7 +82,9 @@ function ContributePage() {
     enabled: !!user,
     queryKey: ["my-submissions", user?.id],
     queryFn: async () => {
-      const { data } = await supabase.from("news_submissions").select("id,title,status,review_note,created_at").order("created_at", { ascending: false });
+      if (!user) return [];
+      const { data, error } = await supabase.from("news_submissions").select("*").eq("author_id", user.id).order("created_at", { ascending: false });
+      if (error) throw error;
       return data ?? [];
     },
   });
@@ -123,7 +129,7 @@ function ContributePage() {
       if (file.size > 20 * 1024 * 1024) throw new Error("Choose a file smaller than 20 MB.");
       const url = await uploadMedia("news-covers", file, user.id);
       if (!url) throw new Error("The file could not be uploaded. Please try again.");
-      if (kind === "cover") setCover(url); else setProofUrl(url);
+      if (kind === "cover") setCover(url); else { setProofUrl(url); setProofIsImage(file.type.startsWith("image/")); }
     } catch (error) { setError(error instanceof Error ? error.message : "Could not upload the file."); }
     finally { setUploading(null); }
   };
@@ -131,8 +137,7 @@ function ContributePage() {
   const submit = async () => {
     if (!user || !title.trim() || !body.trim()) return;
     setBusy(true); setError(null);
-    const { error: err } = await supabase.from("news_submissions").insert({
-      author_id: user.id,
+    const payload = {
       title: title.trim(),
       excerpt: excerpt || null,
       body_markdown: body,
@@ -140,11 +145,16 @@ function ContributePage() {
       proof_note: proofNote || null,
       proof_url: proofUrl,
       ...links,
-    } as never);
+    };
+    const { data: saved, error: err } = editingId
+      ? await supabase.from("news_submissions").update({ ...payload, status: "pending", review_note: null }).eq("id", editingId).eq("author_id", user.id).in("status", ["pending", "rejected"]).select("id")
+      : await supabase.from("news_submissions").insert({ ...payload, author_id: user.id }).select("id");
     setBusy(false);
     if (err) { setError(err.message); return; }
+    if (!saved?.length) { setError("This submission has already been approved and can no longer be edited."); return; }
     setSent(true);
     setTitle(""); setExcerpt(""); setBody(""); setCover(null); setProofNote(""); setProofUrl(null);
+    setEditingId(null); setProofIsImage(false);
     qc.invalidateQueries({ queryKey: ["my-submissions", user.id] });
   };
 
@@ -275,10 +285,10 @@ function ContributePage() {
         </section>
       ) : (
         <section className="mt-6 grid gap-4">
-          <div className="rounded-3xl border border-border bg-card p-6">
+          <div ref={editorRef} className="rounded-3xl border border-border bg-card p-6">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <div className="text-sm font-bold">Write an article</div>
+                <div className="text-sm font-bold">{editingId ? "Edit submission" : "Write an article"}</div>
                 <p className="mt-1 text-xs text-muted-foreground">
                   Everything you send is read by the main admin before it goes live. Your username
                   <strong className="text-foreground"> @{reporter.data.handle}</strong> is shown on your published articles.
@@ -309,6 +319,7 @@ function ContributePage() {
                     <input type="file" accept="image/*" disabled={!!uploading} className="sr-only"
                       onChange={async (e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) await uploadArticleFile(f, "cover"); }} />
                   </label>
+                  {cover && <img src={cover} alt="Cover preview" className="mt-2 max-h-60 w-full rounded-lg bg-muted/60 object-contain" />}
                 </div>
                 <div>
                   <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Proof (photo or document)</label>
@@ -317,10 +328,11 @@ function ContributePage() {
                     <input type="file" disabled={!!uploading} className="sr-only"
                       onChange={async (e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) await uploadArticleFile(f, "proof"); }} />
                   </label>
+                  {proofUrl && (proofIsImage || /\.(png|jpe?g|webp|gif|heic)(\?|$)/i.test(proofUrl)
+                    ? <img src={proofUrl} alt="Proof preview" className="mt-2 max-h-60 w-full rounded-lg bg-muted/60 object-contain" />
+                    : <a href={proofUrl} target="_blank" rel="noreferrer" className="mt-2 flex items-center gap-2 break-all text-sm text-primary"><FileText className="h-4 w-4 shrink-0" />Open proof document</a>)}
                 </div>
               </div>
-              {proofUrl && <p className="text-xs text-success">Proof attached</p>}
-              {cover && <img src={cover} alt="" className="max-h-60 w-full rounded-2xl bg-muted/60 object-contain" />}
 
               <div>
                 <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Where does it belong?</label>
@@ -333,10 +345,10 @@ function ContributePage() {
               </div>
 
               {error && <p className="text-xs text-destructive">{error}</p>}
-              <button disabled={busy || !!uploading || !title.trim() || !body.trim()} onClick={submit}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground disabled:opacity-60">
-                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} Send for review
-              </button>
+              <Button disabled={busy || !!uploading || !title.trim() || !body.trim()} onClick={submit}>
+                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} {editingId ? "Save for review" : "Send for review"}
+              </Button>
+              {editingId && <Button variant="ghost" onClick={() => { setEditingId(null); setTitle(""); setExcerpt(""); setBody(""); setCover(null); setProofUrl(null); setProofNote(""); setError(null); }}><X className="h-4 w-4" />Cancel editing</Button>}
               <p className="text-xs text-muted-foreground">False information, impersonation or deliberate misuse of the news service will result in an account ban. Repeated violations lead to longer bans and ultimately a permanent ban.</p>
             </div>
           </div>
@@ -346,12 +358,27 @@ function ContributePage() {
             <div className="text-sm font-semibold">Your submissions</div>
             <div className="mt-3 grid gap-2">
               {(mine.data ?? []).map((s) => (
-                <div key={s.id} className="flex items-center gap-3 rounded-2xl border border-border bg-background p-3 text-sm">
+                <div key={s.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-background p-3 text-sm">
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-semibold">{s.title}</div>
                     {s.review_note && <div className="truncate text-xs text-muted-foreground">{s.review_note}</div>}
                   </div>
                   <span className="shrink-0 text-xs font-semibold uppercase text-muted-foreground">{s.status}</span>
+                  {s.status !== "approved" && <Button variant="ghost" size="icon" aria-label={`Edit ${s.title}`} title="Edit submission" disabled={busy} onClick={() => {
+                    setEditingId(s.id); setTitle(s.title); setExcerpt(s.excerpt ?? ""); setBody(s.body_markdown); setCover(s.cover_url); setProofUrl(s.proof_url); setProofIsImage(false); setProofNote(s.proof_note ?? ""); setLinks({ team_id: s.team_id, competition_id: s.competition_id, player_id: s.player_id }); setError(null); setSent(false); editorRef.current?.scrollIntoView({ block: "start" });
+                  }}><Pencil className="h-4 w-4" /></Button>}
+                  <Button variant="ghost" size="icon" aria-label={`Delete ${s.title}`} title="Delete submission" disabled={deletingId === s.id || busy} onClick={async () => {
+                    if (!user || !window.confirm("Delete this submission? This cannot be undone.")) return;
+                    setDeletingId(s.id); setError(null);
+                    try {
+                      const { data, error } = await supabase.from("news_submissions").delete().eq("id", s.id).eq("author_id", user.id).select("id");
+                      if (error) throw error;
+                      if (!data?.length) throw new Error("Could not delete this submission.");
+                      if (editingId === s.id) { setEditingId(null); setTitle(""); setBody(""); setExcerpt(""); setCover(null); setProofUrl(null); setProofNote(""); }
+                      await qc.invalidateQueries({ queryKey: ["my-submissions", user.id] });
+                    } catch (e) { setError(e instanceof Error ? e.message : "Could not delete this submission."); }
+                    finally { setDeletingId(null); }
+                  }}>{deletingId === s.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4 text-destructive" />}</Button>
                 </div>
               ))}
               {mine.data && mine.data.length === 0 && <div className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">Nothing submitted yet.</div>}
