@@ -82,11 +82,11 @@ export function CompHeader({ m, group }: { m: MatchWithTeams; group?: string | n
   const name = [tx(c?.name) ?? tx("Matches"), group ? tx(group) : null].filter(Boolean).join(", ");
   const inner = (
     <>
-      {c?.logo_url ? <img src={c.logo_url} alt="" className="h-7 w-7 shrink-0 object-contain" /> : <Trophy className="h-6 w-6 shrink-0 text-primary" />}
+      {c?.logo_url ? <img src={c.logo_url} alt="" className="h-6 w-6 shrink-0 object-contain" /> : <Trophy className="h-5 w-5 shrink-0 text-primary" />}
       <span className="min-w-0">
-        <span className="block truncate text-sm font-bold">{name}</span>
+        <span className="block truncate text-[0.8rem] font-bold">{name}</span>
         {c?.country ? (
-          <span className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+          <span className="mt-0.5 flex items-center gap-1.5 text-[0.7rem] text-muted-foreground">
             <FlagIcon value={c.country_code ?? c.country} />
             <span className="truncate">{tx(c.country)}</span>
           </span>
@@ -94,9 +94,9 @@ export function CompHeader({ m, group }: { m: MatchWithTeams; group?: string | n
       </span>
     </>
   );
-  if (!c) return <div className="flex items-center gap-2.5 px-4 py-3">{inner}</div>;
+  if (!c) return <div className="flex items-center gap-2 px-3.5 py-2">{inner}</div>;
   return (
-    <Link to="/competitions/$slug" params={{ slug: c.slug }} className="flex items-center gap-2.5 px-4 py-3 hover:bg-accent">{inner}</Link>
+    <Link to="/competitions/$slug" params={{ slug: c.slug }} className="flex items-center gap-2 px-3.5 py-2 hover:bg-accent">{inner}</Link>
   );
 }
 
@@ -122,15 +122,15 @@ export function MatchRow({ m, highlightTeamId }: { m: MatchWithTeams; highlightT
     ? highlightedScore[0] > highlightedScore[1] ? "W" : highlightedScore[0] < highlightedScore[1] ? "L" : "D"
     : null;
   const line = (team: Team | null | undefined, score: number | null) => (
-    <div className="flex min-w-0 items-center gap-2">
-      <TeamCrest name={team?.name} logo={team?.logo_url} className="h-5 w-5 shrink-0" />
-      <span className={`min-w-0 flex-1 truncate text-sm ${highlightTeamId && team?.id === highlightTeamId ? "font-bold" : "font-medium"}`}>{tx(team?.name) ?? "TBD"}</span>
-      {started && <span className="shrink-0 text-sm font-bold tabular-nums">{num(score ?? 0)}</span>}
+    <div className="flex min-w-0 items-center gap-1.5">
+      <TeamCrest name={team?.name} logo={team?.logo_url} className="h-4.5 w-4.5 shrink-0" />
+      <span className={`min-w-0 flex-1 truncate text-[0.8rem] ${highlightTeamId && team?.id === highlightTeamId ? "font-bold" : "font-medium"}`}>{tx(team?.name) ?? "TBD"}</span>
+      {started && <span className="shrink-0 text-[0.8rem] font-bold tabular-nums">{num(score ?? 0)}</span>}
     </div>
   );
   return (
-    <Link data-fixture-id={m.id} to="/matches/$id" params={{ id: m.id }} className="flex items-center gap-3 px-4 py-2.5 hover:bg-accent">
-      <div className="w-14 shrink-0 text-center text-[0.7rem] leading-tight text-muted-foreground">
+    <Link data-fixture-id={m.id} to="/matches/$id" params={{ id: m.id }} className="flex items-center gap-2.5 px-3.5 py-2 hover:bg-accent">
+      <div className="w-12 shrink-0 text-center text-[0.65rem] leading-tight text-muted-foreground">
         {isLive ? (
            <span className="font-bold text-primary">{m.status === "live" ? `${num(minute)}'` : "HT"}</span>
         ) : (
@@ -140,12 +140,12 @@ export function MatchRow({ m, highlightTeamId }: { m: MatchWithTeams; highlightT
           </>
         )}
       </div>
-      <div className="min-w-0 flex-1 space-y-1.5 border-s border-border ps-3">
+      <div className="min-w-0 flex-1 space-y-1 border-s border-border ps-2.5">
         {line(m.home, m.home_score)}
         {line(m.away, m.away_score)}
       </div>
        <div className="flex shrink-0 items-center gap-1">
-         {finished && outcome ? <span className={`grid h-7 w-7 place-items-center rounded-full text-[0.65rem] font-black ${outcome === "W" ? "bg-emerald-500/15 text-emerald-500" : outcome === "L" ? "bg-destructive/15 text-destructive" : "bg-muted text-muted-foreground"}`}>{outcome}</span> : <MatchNotificationButton matchId={m.id} teamIds={[m.home_team_id, m.away_team_id]} />}
+         {finished && outcome ? <span className={`grid h-6 w-6 place-items-center rounded-full text-[0.6rem] font-black ${outcome === "W" ? "bg-emerald-500/15 text-emerald-500" : outcome === "L" ? "bg-destructive/15 text-destructive" : "bg-muted text-muted-foreground"}`}>{outcome}</span> : <MatchNotificationButton matchId={m.id} teamIds={[m.home_team_id, m.away_team_id]} />}
        </div>
 
     </Link>
