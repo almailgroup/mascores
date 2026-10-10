@@ -178,7 +178,7 @@ function MatchPage() {
   const scorerList = (teamId: string | null | undefined) => (events.data ?? [])
     .filter((event) => ["goal", "penalty_goal", "penalty", "own_goal", "red", "second_yellow"].includes(event.type) && event.team?.id === teamId)
     .map((event) => ({
-      name: lang === "ar" && (event.player?.short_name_ar || event.player?.name_ar) ? (event.player.short_name_ar ?? event.player.name_ar) : tx(displayShortName(event.player?.short_name, event.player?.name)) ?? tx(event.player?.name) ?? tx(event.description ?? eventLabel(event.type)) ?? tx("Goal"),
+      name: lang === "ar" && (event.player?.short_name_ar || event.player?.name_ar) ? ((event.player.short_name_ar ?? event.player.name_ar) ?? "") : tx(displayShortName(event.player?.short_name, event.player?.name)) ?? tx(event.player?.name) ?? tx(event.description ?? eventLabel(event.type)) ?? tx("Goal"),
       minute: `${event.minute ?? ""}${event.extra ? `+${event.extra}` : ""}'${event.type === "own_goal" ? " (OG)" : event.type === "penalty" ? " (P)" : ""}`,
       type: event.type,
     }));
