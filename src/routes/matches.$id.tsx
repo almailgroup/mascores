@@ -271,8 +271,8 @@ function MatchPage() {
 
         </div>
         <div className="match-tabs border-t border-match-foreground/10 px-1">
-          <SwipeTabs className="gap-2 text-sm">
-            {tabs.map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 pb-3 pt-3 font-semibold capitalize ${tab === item ? "border-b-2 border-match-live text-match-foreground" : "text-match-foreground/55"}`}>{tx(item === "media" ? "Media" : item === "previous" ? "Matches" : item === "details" ? "Details" : item === "lineups" ? "Lineups" : item === "standings" ? "Standings" : "Stats")}</button>)}
+          <SwipeTabs className="gap-1.5 text-[0.8rem]">
+            {tabs.map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-3 pb-2.5 pt-2.5 font-semibold capitalize ${tab === item ? "border-b-2 border-match-live text-match-foreground" : "text-match-foreground/55"}`}>{tx(item === "media" ? "Media" : item === "previous" ? "Matches" : item === "details" ? "Details" : item === "lineups" ? "Lineups" : item === "standings" ? "Standings" : "Stats")}</button>)}
           </SwipeTabs>
         </div>
       </div>
