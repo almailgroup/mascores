@@ -218,10 +218,10 @@ function TeamPage() {
                     {club?.club_name ? (
                       <>
                         <span aria-hidden>·</span>
-                        {club.club_logo ? <img src={club.club_logo} alt="" className="h-3.5 w-3.5 shrink-0 object-contain" /> : null}
+                        <TeamCrest name={club.club_name} logo={club.club_logo} className="h-4 w-4 shrink-0" />
                         <span className="truncate font-semibold text-foreground/80">{tx(club.club_name)}</span>
                       </>
-                    ) : null}
+                    ) : club ? <><span aria-hidden>·</span><span className="truncate">{tr("player.freeAgent")}</span></> : null}
                   </div>
                 </div>
               </Link>

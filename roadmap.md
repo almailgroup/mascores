@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Update club followers immediately when starred and fix stuck star/notification controls
 - [ ] Label national-squad players without clubs as Free agent and use club initials for missing club logos
 - [ ] Place the custom president portrait row inside club details alongside the coach
 - [ ] Modernize club statistics presentation without changing its calculations

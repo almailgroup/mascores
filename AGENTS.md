@@ -35,3 +35,4 @@
 - Resolve club president portraits from existing team staff by chairman name or president role; never invent identity images.
 - Club follower totals use a public aggregate-only function over private favourites; nullable admin overrides affect display only, never real favourite membership.
 - Use the portalled shared picker for club standings competition selection instead of a horizontally scrolling competition bar.
+- Use TeamCrest for missing club artwork and localized free-agent labels for unattached players so national call-ups never imply club membership.
