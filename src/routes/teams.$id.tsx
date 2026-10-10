@@ -25,6 +25,7 @@ import { useCollapsingHeader } from "@/hooks/use-collapsing-header";
 import { useLogoAccent } from "@/lib/logo-accent";
 import { SportsHeaderBackground } from "@/components/sports-header-background";
 import { ClubNotificationButton } from "@/components/club-notification-button";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/teams/$id")({
   head: () => ({
@@ -44,6 +45,7 @@ type Tab = "info" | "matches" | "standings" | "squad" | "stats" | "media" | "tra
 const TABS: Tab[] = ["info", "matches", "standings", "squad", "stats", "media", "transfers", "news", "rabta"];
 
 function TeamPage() {
+  const { user } = useAuth();
   const qc = useQueryClient();
   const tx = useTx();
   const num = useNum();
@@ -142,6 +144,7 @@ function TeamPage() {
     .filter((m) => m.competition_id && m.competition)
     .map((m) => [m.competition_id, { id: m.competition_id, name: m.competition!.name, logo_url: m.competition!.logo_url ?? null, season: (m as { season?: string | null }).season ?? null }] as const))
     .values()];
+  const followerCount = Math.max(0, (followers.data ?? 0) + (t.followers_override == null ? 0 : t.followers_override - (followerBaseline.current?.id === id ? followerBaseline.current.count : 0)));
 
 
   return (
@@ -157,7 +160,7 @@ function TeamPage() {
         <div data-no-gesture className="relative z-10 flex items-center gap-1 [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-current"><ClubNotificationButton teamId={t.id} /><FavoriteButton kind="team" id={t.id} size="md" onFavoriteChange={(active) => {
           void qc.cancelQueries({ queryKey: ["club-followers", id] });
           qc.setQueryData<number>(["club-followers", id], (count) => Math.max(0, (count ?? 0) + (active ? 1 : -1)));
-        }} onFavoriteSaved={() => { if (supabase.auth && t.followers_override == null) void qc.invalidateQueries({ queryKey: ["club-followers", id] }); }} /></div>
+        }} onFavoriteSaved={() => { if (user) void qc.invalidateQueries({ queryKey: ["club-followers", id] }); }} /></div>
       </div>
       <div className="profile-expanded-identity flex items-center gap-3 py-3 sm:gap-4">
         <TeamCrest name={t.name} logo={t.logo_url} className="h-10 w-10 shrink-0 sm:h-12 sm:w-12" rounded="rounded-xl" />
@@ -171,7 +174,8 @@ function TeamPage() {
           )}
         </div>
         <div className="sports-header-chip w-16 shrink-0 rounded-lg px-1.5 py-2 text-center">
-          <ClubFollowerCount count={Math.max(0, (followers.data ?? 0) + (t.followers_override == null ? 0 : t.followers_override - (followerBaseline.current?.id === id ? followerBaseline.current.count : 0)))} />
+          <div data-club-followers className="text-xs font-semibold leading-none tabular-nums">{num(followerCount >= 1000 ? `${(followerCount / 1000).toFixed(1)}K` : followerCount)}</div>
+          <div className="mt-1 text-[0.6rem] leading-tight opacity-70">{tx(followerCount === 1 ? "Follower" : "Followers")}</div>
         </div>
       </div>
 
@@ -374,7 +378,7 @@ function ClubPresident({ team }: { team: Team }) {
   return <section aria-label={lang === "ar" ? "رئيس النادي" : "Club president"} className="flex items-center gap-3 px-4 py-3">
     <div className="relative shrink-0">
       <PlayerAvatar src={president.data?.photo_url} name={team.chairman} className="h-11 w-11 ring-2 ring-border" />
-      <span className="absolute -bottom-1 -end-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-primary-foreground"><Crown className="h-2.5 w-2.5" /></span>
+      <span className="absolute -bottom-1 -end-1 flex h-4 w-4 items-center justify-center rounded-full bg-foreground text-background"><Crown className="h-2.5 w-2.5" /></span>
     </div>
     <div className="min-w-0 flex-1">
       <div className="text-[0.65rem] font-semibold uppercase text-muted-foreground">{lang === "ar" ? "رئيس النادي" : "Club president"}</div>
