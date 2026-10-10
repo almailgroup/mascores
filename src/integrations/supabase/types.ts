@@ -716,6 +716,24 @@ export type Database = {
           },
         ]
       }
+      import_staging: {
+        Row: {
+          created_at: string
+          id: string
+          sql: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          sql: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          sql?: string
+        }
+        Relationships: []
+      }
       match_broadcasts: {
         Row: {
           channel_id: string

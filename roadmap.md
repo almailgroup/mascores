@@ -60,3 +60,4 @@
 - [x] Remove border around country flags
 - [x] Player matches: competition filter uses in-app SeasonMenu
 - [x] Recycle bin for deleted data with restore
+- [ ] ACL2: fill Kuwait SC match details using existing Kuwait SC players (no new duplicates)
