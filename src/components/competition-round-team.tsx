@@ -5,6 +5,9 @@ import { supabase, formatRating, ratingClass } from "@/lib/db";
 import { useNum, useTx } from "@/lib/auto-translate";
 import { PlayerAvatar } from "@/components/player-avatar";
 import { TeamCrest } from "@/components/team-crest";
+import { SeasonMenu } from "@/components/season-menu";
+import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 
 type RoundPlayer = { id: string; name: string; photo_url: string | null; rating: number; position: string; team_id: string; team_name: string; team_logo: string | null };
 type RoundTeam = { key: string; round_number: number | null; round_label: string | null; available_at: string | null; ready: boolean; players: RoundPlayer[] };
@@ -34,11 +37,12 @@ export function CompetitionRoundTeam({ competitionId, season }: { competitionId:
   return <section aria-label={tx("Team of the Round")} className="overflow-hidden rounded-lg border border-border bg-card">
     <div className="flex items-center justify-between gap-3 border-b border-border px-3 py-3">
       <h2 className="text-sm font-bold">{tx("Team of the Round")}</h2>
-      {available.length > 0 && <select aria-label={tx("Round")} value={round?.key ?? ""} onChange={e => setSelected(e.target.value)} className="max-w-36 rounded border border-border bg-background px-2 py-1 text-xs">
-        {available.map(r => <option key={r.key} value={r.key}>{r.round_number != null ? `${tx("Round")} ${num(r.round_number)}` : tx(r.round_label)}</option>)}
-      </select>}
+      {available.length > 0 && <SeasonMenu label="Round" seasons={available.map(r => r.key)} value={round?.key} onChange={setSelected} formatValue={key => {
+        const option = available.find(r => r.key === key);
+        return option?.round_number != null ? `${tx("Round")} ${num(option.round_number)}` : tx(option?.round_label) ?? tx("Round");
+      }} />}
     </div>
-    {showInfo && <div className="mx-3 my-3 flex items-start gap-2 rounded-lg bg-muted p-3 text-[0.65rem] leading-relaxed"><span className="min-w-0 flex-1">{tx("Top-rated players at each position, based on their rating from that round’s match.")}</span><button type="button" aria-label={tx("Close")} onClick={() => setShowInfo(false)} className="px-1">×</button></div>}
+    {showInfo && <div className="mx-3 my-3 flex items-start gap-2 rounded-lg bg-muted p-3 text-[0.65rem] leading-relaxed"><span className="min-w-0 flex-1">{tx("Top-rated players at each position, based on their rating from that round’s match.")}</span><Button variant="ghost" size="icon" aria-label={tx("Close")} onClick={() => setShowInfo(false)} className="h-6 w-6 shrink-0"><X className="h-3 w-3" /></Button></div>}
     {rounds.isError ? <p className="p-4 text-xs text-destructive">{tx("Unable to load round ratings")}</p> : round?.ready && round.players.length === 11 ? <div className="round-team-pitch px-2 pb-4 pt-3">
       {["Forward","Midfielder","Defender","Goalkeeper"].map(position => <div key={position} className="relative z-10 flex min-h-24 items-start justify-around gap-1">
         {round.players.filter(p => p.position === position).map(player => <Link key={player.id} to="/players/$id" params={{ id: player.id }} className="flex w-20 min-w-0 flex-col items-center pt-2 text-center">
