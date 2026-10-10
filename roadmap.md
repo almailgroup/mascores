@@ -1,4 +1,8 @@
 # Roadmap
+- [ ] Add owner submission editing before approval and deletion at any status; separate cover/proof previews
+- [ ] Modernize first-team/youth labels and fix ticket sheet/list clipping
+- [ ] Restore descending club matches, next-fixture initial focus and scroll-triggered Today
+- [ ] Verify submission permissions and phone-sized ticket/match flows
 - [x] Apply modern standings everywhere and restore qualification markers/labels
 - [x] Modernize season selectors and arrange Home logo/search/profile left-to-right
 - [x] Verify standings, season menus and header in the browser
