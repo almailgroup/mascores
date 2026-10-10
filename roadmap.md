@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Label national-squad players without clubs as Free agent and use club initials for missing club logos
 - [ ] Place the custom president portrait row inside club details alongside the coach
 - [ ] Modernize club statistics presentation without changing its calculations
 - [ ] Show released rounds and only the current started round; explain one-hour availability and choose round-team formation from ratings
