@@ -386,8 +386,32 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
     queryFn: async () => (await supabase.from("player_ratings").select("*").eq("match_id", match.id)).data ?? [],
   });
 
-  const players = playersQ.data ?? [];
+  const [extraSquads, setExtraSquads] = useState<string[]>([]);
+  const [tempName, setTempName] = useState("");
+  /** Linked youth / first teams for a side (parent and children). */
+  const relatedTeams = (tid: string) => {
+    const self = teams.find((t) => t.id === tid);
+    return teams.filter((t) => t.id !== tid && (t.parent_team_id === tid || (self?.parent_team_id && (t.id === self.parent_team_id || t.parent_team_id === self.parent_team_id))));
+  };
+  const lineupIds = (lineupsQ.data ?? []).map((l) => l.player_id).join(",");
+  const extraQ = useQuery({
+    queryKey: ["admin", "lineup-extra-players", match.id, extraSquads.join(","), lineupIds],
+    queryFn: async () => {
+      const out: Player[] = [];
+      if (extraSquads.length) out.push(...(((await supabase.from("players").select("*").in("team_id", extraSquads)).data ?? []) as Player[]));
+      const ids = lineupIds ? lineupIds.split(",") : [];
+      if (ids.length) out.push(...(((await supabase.from("players").select("*").in("id", ids)).data ?? []) as Player[]));
+      return out;
+    },
+  });
+  const players = [...(playersQ.data ?? []), ...(extraQ.data ?? [])].filter((p, i, all) => all.findIndex((x) => x.id === p.id) === i);
   const lineups = lineupsQ.data ?? [];
+  const addTemporary = async (teamId: string, slot: string) => {
+    const name = tempName.trim();
+    if (!name) return;
+    const { data } = await supabase.from("players").insert({ name, team_id: null, is_temporary: true } as never).select("id").single();
+    if (data) { await assignSlot(teamId, slot, (data as { id: string }).id); setTempName(""); setPicker(null); extraQ.refetch(); }
+  };
   const teamName = (id: string) => teams.find((t) => t.id === id)?.name ?? "";
 
   /** Icons a player earned in this match: goals, cards, and a swap arrow when subbed off/on. */
