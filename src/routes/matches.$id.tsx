@@ -121,7 +121,7 @@ function MatchPage() {
     queryKey: ["match-lineups", id, m.data?.home?.is_national, m.data?.away?.is_national],
     queryFn: async () => {
       const { data } = await supabase.from("match_lineups")
-        .select("*, player:player_id(id,name,name_ar,short_name,short_name_ar,shirt_number,position,photo_url)")
+        .select("*, player:player_id(id,name,name_ar,short_name,short_name_ar,shirt_number,position,photo_url,team_id,is_temporary)")
         .eq("match_id", id);
       const rows = (data ?? []) as unknown as (Lineup & { player: Player | null })[];
       const overrides = await nationalOverrideMap([m.data?.home ?? null, m.data?.away ?? null]);
@@ -440,7 +440,7 @@ function MatchPage() {
                       return (
                         <Link key={slot} to="/players/$id" params={{ id: lu.player_id }} className="relative z-10 flex w-16 flex-col items-center gap-0.5 overflow-visible text-center">
                           <span className="relative block h-11 w-11 overflow-visible">
-                            <PlayerAvatar src={lu.player?.photo_url} name={lu.player?.name} className="h-11 w-11 border-2" />
+                            <PlayerAvatar src={lu.player?.photo_url} name={lu.player?.name} className={`h-11 w-11 border-2 ${lu.player?.is_temporary ? "border-dashed border-muted-foreground" : lu.player?.team_id && lu.player.team_id !== lu.team_id ? "border-primary" : ""}`} />
                             {(lu.shirt_number ?? lu.player?.shirt_number) != null && (
                               <span className="absolute -left-1 -top-1 z-30 flex h-4 min-w-4 items-center justify-center rounded-full bg-background px-1 text-[0.6rem] font-black leading-none text-foreground shadow ring-1 ring-border">{num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}</span>
                             )}

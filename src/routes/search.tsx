@@ -90,12 +90,12 @@ function SearchPage() {
 
       const [teams, players, comps, coaches, venues, fTeams, fPlayers, fComps, fCoaches, fVenues] = await Promise.all([
         supabase.from("teams").select(teamCols).or(orFilter(["name", "short_name"])).limit(20),
-        supabase.from("players").select(playerCols).or(orFilter(["name"])).limit(20),
+        supabase.from("players").select(playerCols).or(orFilter(["name"])).eq("is_temporary", false).limit(20),
         supabase.from("competitions").select(compCols).or(compFilter).limit(30),
         supabase.from("coaches").select(coachCols).or(orFilter(["name"])).limit(20),
         supabase.from("venues").select(venueCols).or(orFilter(["name", "city"])).limit(20),
         fuzzyIn(idsOf("team"), (ids) => supabase.from("teams").select(teamCols).in("id", ids)),
-        fuzzyIn(idsOf("player"), (ids) => supabase.from("players").select(playerCols).in("id", ids)),
+        fuzzyIn(idsOf("player"), (ids) => supabase.from("players").select(playerCols).in("id", ids).eq("is_temporary", false)),
         fuzzyIn(idsOf("competition"), (ids) => supabase.from("competitions").select(compCols).in("id", ids)),
         fuzzyIn(idsOf("coach"), (ids) => supabase.from("coaches").select(coachCols).in("id", ids)),
         fuzzyIn(idsOf("venue"), (ids) => supabase.from("venues").select(venueCols).in("id", ids)),

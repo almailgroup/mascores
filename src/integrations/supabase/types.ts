@@ -1711,6 +1711,7 @@ export type Database = {
           dob: string | null
           height_cm: number | null
           id: string
+          is_temporary: boolean
           market_value: string | null
           media_urls: string[]
           name: string
@@ -1731,6 +1732,7 @@ export type Database = {
           dob?: string | null
           height_cm?: number | null
           id?: string
+          is_temporary?: boolean
           market_value?: string | null
           media_urls?: string[]
           name: string
@@ -1751,6 +1753,7 @@ export type Database = {
           dob?: string | null
           height_cm?: number | null
           id?: string
+          is_temporary?: boolean
           market_value?: string | null
           media_urls?: string[]
           name?: string

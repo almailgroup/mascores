@@ -386,8 +386,32 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
     queryFn: async () => (await supabase.from("player_ratings").select("*").eq("match_id", match.id)).data ?? [],
   });
 
-  const players = playersQ.data ?? [];
+  const [extraSquads, setExtraSquads] = useState<string[]>([]);
+  const [tempName, setTempName] = useState("");
+  /** Linked youth / first teams for a side (parent and children). */
+  const relatedTeams = (tid: string) => {
+    const self = teams.find((t) => t.id === tid);
+    return teams.filter((t) => t.id !== tid && (t.parent_team_id === tid || (self?.parent_team_id && (t.id === self.parent_team_id || t.parent_team_id === self.parent_team_id))));
+  };
+  const lineupIds = (lineupsQ.data ?? []).map((l) => l.player_id).join(",");
+  const extraQ = useQuery({
+    queryKey: ["admin", "lineup-extra-players", match.id, extraSquads.join(","), lineupIds],
+    queryFn: async () => {
+      const out: Player[] = [];
+      if (extraSquads.length) out.push(...(((await supabase.from("players").select("*").in("team_id", extraSquads)).data ?? []) as Player[]));
+      const ids = lineupIds ? lineupIds.split(",") : [];
+      if (ids.length) out.push(...(((await supabase.from("players").select("*").in("id", ids)).data ?? []) as Player[]));
+      return out;
+    },
+  });
+  const players = [...(playersQ.data ?? []), ...(extraQ.data ?? [])].filter((p, i, all) => all.findIndex((x) => x.id === p.id) === i);
   const lineups = lineupsQ.data ?? [];
+  const addTemporary = async (teamId: string, slot: string) => {
+    const name = tempName.trim();
+    if (!name) return;
+    const { data } = await supabase.from("players").insert({ name, team_id: null, is_temporary: true } as never).select("id").single();
+    if (data) { await assignSlot(teamId, slot, (data as { id: string }).id); setTempName(""); setPicker(null); extraQ.refetch(); }
+  };
   const teamName = (id: string) => teams.find((t) => t.id === id)?.name ?? "";
 
   /** Icons a player earned in this match: goals, cards, and a swap arrow when subbed off/on. */
@@ -675,10 +699,26 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
               </section>
             );
           })()}
+          {picker && (() => {
+            const related = relatedTeams(picker.teamId);
+            return (
+              <section className="space-y-2 rounded-xl border border-border bg-background/50 p-3">
+                <div className="flex gap-2">
+                  <input className="h-9 min-w-0 flex-1 rounded-lg border border-border bg-background px-3 text-sm" placeholder="Temporary player name (this match only)" value={tempName} onChange={(e) => setTempName(e.target.value)} />
+                  <button type="button" className={btnPrimary} disabled={!tempName.trim()} onClick={() => addTemporary(picker.teamId, picker.slot)}>Add</button>
+                </div>
+                {related.length > 0 && <div className="flex flex-wrap gap-1.5">{related.map((t) => {
+                  const on = extraSquads.includes(t.id);
+                  return <button key={t.id} type="button" onClick={() => setExtraSquads((s) => on ? s.filter((x) => x !== t.id) : [...s, t.id])} className={`rounded-full border px-3 py-1 text-xs font-semibold ${on ? "border-primary bg-primary/10 text-primary" : "border-border"}`}>{on ? "Hide" : "Show"} {t.age_group ?? t.name}</button>;
+                })}</div>}
+              </section>
+            );
+          })()}
           {picker && ["Goalkeeper", "Defender", "Midfielder", "Forward", "Unknown"].map((position) => {
-            const pool = players.filter((player) => player.team_id === picker.teamId && (player.position ?? "Unknown") === position).sort((a, b) => (a.shirt_number ?? 999) - (b.shirt_number ?? 999) || a.name.localeCompare(b.name));
+            const allowed = new Set([picker.teamId, ...extraSquads.filter((id) => relatedTeams(picker.teamId).some((t) => t.id === id))]);
+            const pool = players.filter((player) => !player.is_temporary && allowed.has(player.team_id ?? "") && (player.position ?? "Unknown") === position).sort((a, b) => (a.shirt_number ?? 999) - (b.shirt_number ?? 999) || a.name.localeCompare(b.name));
             if (pool.length === 0) return null;
-            return <section key={position}><h4 className="mb-2 text-xs font-bold uppercase text-muted-foreground">{position}</h4><div className="grid gap-2">{pool.map((player) => <button key={player.id} type="button" onClick={async () => { await assignSlot(picker.teamId, picker.slot, player.id); setPicker(null); }} className="flex items-center gap-3 rounded-lg border border-border bg-background p-2 text-left hover:border-primary"><PlayerAvatar src={player.photo_url} name={player.name} size="sm" /><span className="w-8 text-center text-sm font-bold">{player.shirt_number ?? "—"}</span><span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{player.name}</span><span className="block text-xs text-muted-foreground">{player.position ?? "Unknown"}</span></span></button>)}</div></section>;
+            return <section key={position}><h4 className="mb-2 text-xs font-bold uppercase text-muted-foreground">{position}</h4><div className="grid gap-2">{pool.map((player) => { const other = player.team_id !== picker.teamId; return <button key={player.id} type="button" onClick={async () => { await assignSlot(picker.teamId, picker.slot, player.id); setPicker(null); }} className="flex items-center gap-3 rounded-lg border border-border bg-background p-2 text-left hover:border-primary"><PlayerAvatar src={player.photo_url} name={player.name} size="sm" className={other ? "ring-2 ring-primary" : ""} /><span className="w-8 text-center text-sm font-bold">{player.shirt_number ?? "—"}</span><span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{player.name}</span><span className="block text-xs text-muted-foreground">{player.position ?? "Unknown"}{other ? ` · ${teams.find((t) => t.id === player.team_id)?.age_group ?? teamName(player.team_id ?? "")}` : ""}</span></span></button>; })}</div></section>;
           })}
         </div>
       </Modal>
