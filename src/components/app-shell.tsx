@@ -151,6 +151,9 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
         }}
       >
 
+        {!hideHeader && user?.email?.toLowerCase() === "mansouralmailscores@gmail.com" && (
+          <Link to="/secretadminsafha" className="mb-3 flex items-center justify-center rounded-2xl border border-primary/40 bg-primary/10 px-4 py-2.5 text-sm font-semibold text-primary">Go to admin section</Link>
+        )}
         {children}
       </main>
       </div>
