@@ -699,10 +699,26 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
               </section>
             );
           })()}
+          {picker && (() => {
+            const related = relatedTeams(picker.teamId);
+            return (
+              <section className="space-y-2 rounded-xl border border-border bg-background/50 p-3">
+                <div className="flex gap-2">
+                  <input className="h-9 min-w-0 flex-1 rounded-lg border border-border bg-background px-3 text-sm" placeholder="Temporary player name (this match only)" value={tempName} onChange={(e) => setTempName(e.target.value)} />
+                  <button type="button" className={btnPrimary} disabled={!tempName.trim()} onClick={() => addTemporary(picker.teamId, picker.slot)}>Add</button>
+                </div>
+                {related.length > 0 && <div className="flex flex-wrap gap-1.5">{related.map((t) => {
+                  const on = extraSquads.includes(t.id);
+                  return <button key={t.id} type="button" onClick={() => setExtraSquads((s) => on ? s.filter((x) => x !== t.id) : [...s, t.id])} className={`rounded-full border px-3 py-1 text-xs font-semibold ${on ? "border-primary bg-primary/10 text-primary" : "border-border"}`}>{on ? "Hide" : "Show"} {t.age_group ?? t.name}</button>;
+                })}</div>}
+              </section>
+            );
+          })()}
           {picker && ["Goalkeeper", "Defender", "Midfielder", "Forward", "Unknown"].map((position) => {
-            const pool = players.filter((player) => player.team_id === picker.teamId && (player.position ?? "Unknown") === position).sort((a, b) => (a.shirt_number ?? 999) - (b.shirt_number ?? 999) || a.name.localeCompare(b.name));
+            const allowed = new Set([picker.teamId, ...extraSquads.filter((id) => relatedTeams(picker.teamId).some((t) => t.id === id))]);
+            const pool = players.filter((player) => !player.is_temporary && allowed.has(player.team_id ?? "") && (player.position ?? "Unknown") === position).sort((a, b) => (a.shirt_number ?? 999) - (b.shirt_number ?? 999) || a.name.localeCompare(b.name));
             if (pool.length === 0) return null;
-            return <section key={position}><h4 className="mb-2 text-xs font-bold uppercase text-muted-foreground">{position}</h4><div className="grid gap-2">{pool.map((player) => <button key={player.id} type="button" onClick={async () => { await assignSlot(picker.teamId, picker.slot, player.id); setPicker(null); }} className="flex items-center gap-3 rounded-lg border border-border bg-background p-2 text-left hover:border-primary"><PlayerAvatar src={player.photo_url} name={player.name} size="sm" /><span className="w-8 text-center text-sm font-bold">{player.shirt_number ?? "—"}</span><span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{player.name}</span><span className="block text-xs text-muted-foreground">{player.position ?? "Unknown"}</span></span></button>)}</div></section>;
+            return <section key={position}><h4 className="mb-2 text-xs font-bold uppercase text-muted-foreground">{position}</h4><div className="grid gap-2">{pool.map((player) => { const other = player.team_id !== picker.teamId; return <button key={player.id} type="button" onClick={async () => { await assignSlot(picker.teamId, picker.slot, player.id); setPicker(null); }} className="flex items-center gap-3 rounded-lg border border-border bg-background p-2 text-left hover:border-primary"><PlayerAvatar src={player.photo_url} name={player.name} size="sm" className={other ? "ring-2 ring-primary" : ""} /><span className="w-8 text-center text-sm font-bold">{player.shirt_number ?? "—"}</span><span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{player.name}</span><span className="block text-xs text-muted-foreground">{player.position ?? "Unknown"}{other ? ` · ${teams.find((t) => t.id === player.team_id)?.age_group ?? teamName(player.team_id ?? "")}` : ""}</span></span></button>; })}</div></section>;
           })}
         </div>
       </Modal>
