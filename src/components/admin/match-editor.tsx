@@ -388,6 +388,12 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
 
   const [extraSquads, setExtraSquads] = useState<string[]>([]);
   const [tempName, setTempName] = useState("");
+  const [anySearch, setAnySearch] = useState("");
+  const anyQ = useQuery({
+    enabled: anySearch.trim().length >= 2,
+    queryKey: ["admin", "lineup-any-player", anySearch.trim()],
+    queryFn: async () => ((await supabase.from("players").select("*").ilike("name", `%${anySearch.trim()}%`).eq("is_temporary", false).order("name").limit(30)).data ?? []) as Player[],
+  });
   /** Linked youth / first teams for a side (parent and children). */
   const relatedTeams = (tid: string) => {
     const self = teams.find((t) => t.id === tid);
@@ -703,6 +709,14 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
             const related = relatedTeams(picker.teamId);
             return (
               <section className="space-y-2 rounded-xl border border-border bg-background/50 p-3">
+                <input className="h-9 w-full rounded-lg border border-border bg-background px-3 text-sm" placeholder="Search any player (former players, any club)…" value={anySearch} onChange={(e) => setAnySearch(e.target.value)} />
+                {anySearch.trim().length >= 2 && <div className="max-h-56 space-y-1 overflow-y-auto">
+                  {(anyQ.data ?? []).map((p) => <button key={p.id} type="button" onClick={async () => { await assignSlot(picker.teamId, picker.slot, p.id); setAnySearch(""); setPicker(null); extraQ.refetch(); }} className="flex w-full items-center gap-2 rounded-lg border border-border bg-background p-2 text-left hover:border-primary">
+                    <PlayerAvatar src={p.photo_url} name={p.name} size="sm" />
+                    <span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{p.name}</span><span className="block truncate text-xs text-muted-foreground">{[p.position, teams.find((t) => t.id === p.team_id)?.name ?? "Free agent"].filter(Boolean).join(" · ")}</span></span>
+                  </button>)}
+                  {anyQ.data?.length === 0 && <p className="p-2 text-xs text-muted-foreground">No player found</p>}
+                </div>}
                 <div className="flex gap-2">
                   <input className="h-9 min-w-0 flex-1 rounded-lg border border-border bg-background px-3 text-sm" placeholder="Temporary player name (this match only)" value={tempName} onChange={(e) => setTempName(e.target.value)} />
                   <button type="button" className={btnPrimary} disabled={!tempName.trim()} onClick={() => addTemporary(picker.teamId, picker.slot)}>Add</button>
