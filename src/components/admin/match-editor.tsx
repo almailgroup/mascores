@@ -981,8 +981,24 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
 /** Squad-style player picker: avatars, shirt numbers, grouped by position — same feel as lineups. */
 function PlayerPickField({ label, players, value, onChange }: { label: string; players: Player[]; value: string | null | undefined; onChange: (id: string | null) => void }) {
   const [open, setOpen] = useState(false);
-  const chosen = players.find((p) => p.id === value) ?? null;
+  const [search, setSearch] = useState("");
+  // Players picked from the global search that aren't in the squad pool — kept so the field can still show them.
+  const [extras, setExtras] = useState<Player[]>([]);
+  const all = [...players, ...extras.filter((e) => !players.some((p) => p.id === e.id))];
+  const chosen = all.find((p) => p.id === value) ?? null;
   const groups = ["Goalkeeper", "Defender", "Midfielder", "Forward", "Unknown"];
+  const searchQ = useQuery({
+    enabled: open && search.trim().length > 1,
+    queryKey: ["admin", "event-player-search", search.trim()],
+    queryFn: async () => ((await supabase.from("players").select("*").ilike("name", `%${search.trim()}%`).eq("is_temporary", false).order("name").limit(30)).data ?? []) as Player[],
+  });
+  const results = (searchQ.data ?? []).filter((p) => !players.some((s) => s.id === p.id));
+  const pick = (player: Player) => {
+    if (!players.some((p) => p.id === player.id)) setExtras((prev) => [...prev.filter((e) => e.id !== player.id), player]);
+    onChange(player.id);
+    setOpen(false);
+    setSearch("");
+  };
   return (
     <div>
       <span className="mb-1 block text-[0.6rem] font-bold uppercase tracking-widest text-muted-foreground">{label}</span>
@@ -999,6 +1015,24 @@ function PlayerPickField({ label, players, value, onChange }: { label: string; p
       </button>
       <Modal open={open} onClose={() => setOpen(false)} title={label}>
         <div className="max-h-[70vh] space-y-4 overflow-y-auto">
+          <input autoFocus value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search any player…" className={inputCls} />
+          {search.trim().length > 1 && (
+            <section>
+              <h4 className="mb-2 text-xs font-bold uppercase text-muted-foreground">All players</h4>
+              <div className="grid gap-2">
+                {searchQ.isLoading && <p className="text-xs text-muted-foreground">Searching…</p>}
+                {!searchQ.isLoading && results.length === 0 && <p className="text-xs text-muted-foreground">No other players match.</p>}
+                {results.map((player) => (
+                  <button key={player.id} type="button" onClick={() => pick(player)}
+                    className="flex items-center gap-3 rounded-lg border border-border bg-background p-2 text-left hover:border-primary">
+                    <PlayerAvatar src={player.photo_url} name={player.name} size="sm" />
+                    <span className="w-8 text-center text-sm font-bold">{player.shirt_number ?? "—"}</span>
+                    <span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{player.name}</span><span className="block text-xs text-muted-foreground">{player.position ?? "Unknown"}</span></span>
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
           {groups.map((position) => {
             const pool = players.filter((p) => (p.position ?? "Unknown") === position)
               .sort((a, b) => (a.shirt_number ?? 999) - (b.shirt_number ?? 999) || a.name.localeCompare(b.name));
@@ -1008,7 +1042,7 @@ function PlayerPickField({ label, players, value, onChange }: { label: string; p
                 <h4 className="mb-2 text-xs font-bold uppercase text-muted-foreground">{position}</h4>
                 <div className="grid gap-2">
                   {pool.map((player) => (
-                    <button key={player.id} type="button" onClick={() => { onChange(player.id); setOpen(false); }}
+                    <button key={player.id} type="button" onClick={() => { onChange(player.id); setOpen(false); setSearch(""); }}
                       className={`flex items-center gap-3 rounded-lg border p-2 text-left ${player.id === value ? "border-primary bg-primary/10" : "border-border bg-background hover:border-primary"}`}>
                       <PlayerAvatar src={player.photo_url} name={player.name} size="sm" />
                       <span className="w-8 text-center text-sm font-bold">{player.shirt_number ?? "—"}</span>
@@ -1020,7 +1054,7 @@ function PlayerPickField({ label, players, value, onChange }: { label: string; p
               </section>
             );
           })}
-          {players.length === 0 && <p className="text-xs text-muted-foreground">Pick a team first to see its squad.</p>}
+          {players.length === 0 && search.trim().length < 2 && <p className="text-xs text-muted-foreground">Pick a team first to see its squad, or search any player above.</p>}
         </div>
       </Modal>
     </div>
