@@ -14,7 +14,8 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { ThemeProvider } from "../components/theme-provider";
 import { onNativeNotificationTap } from "../lib/native-notify";
-import { initNativePush } from "../lib/native-push";
+import { initNativePush, syncPushToken, clearPushToken } from "../lib/native-push";
+import { supabase } from "../integrations/supabase/client";
 import { I18nProvider, useI18n } from "../lib/i18n";
 import { CurrencyProvider } from "../lib/currency";
 import { HeightUnitProvider } from "../lib/units";
@@ -160,6 +161,14 @@ function RootComponent() {
     // carries the path to open, so a full navigation is the simplest handoff.
     void initNativePush((path) => window.location.assign(path));
     void onNativeNotificationTap((path) => window.location.assign(path));
+
+    // The phone may register with Apple before the user signs in, so link the
+    // device token to the account on sign-in and detach it on sign-out.
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN") void syncPushToken();
+      if (event === "SIGNED_OUT") void clearPushToken();
+    });
+    return () => sub.subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
