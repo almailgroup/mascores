@@ -168,6 +168,15 @@ function RootComponent() {
       if (event === "SIGNED_IN") void syncPushToken();
       if (event === "SIGNED_OUT") void clearPushToken();
     });
+
+    // After Google/Apple or an email link returns, the sign-in codes sit in the
+    // address bar. Once the session is stored, remove them so they can't be
+    // copied or shared along with the page link.
+    if (/[#&](access_token|refresh_token|error_description)=/.test(window.location.hash)) {
+      void supabase.auth.getSession().finally(() => {
+        window.history.replaceState(window.history.state, "", window.location.pathname + window.location.search);
+      });
+    }
     return () => sub.subscription.unsubscribe();
   }, []);
 
