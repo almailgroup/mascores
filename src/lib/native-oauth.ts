@@ -9,6 +9,9 @@ import { supabase } from "@/integrations/supabase/client";
 const CALLBACK_URL = "https://mascores.live/auth/callback?native=1";
 const APP_SCHEME = "com.almailgroup.mascores";
 
+export const NATIVE_UPDATE_NEEDED =
+  "Google and Apple sign-in need the latest version of the app. Please update the app, or sign in with your email and password for now.";
+
 // Apple's compact sign-in sheet (ASWebAuthenticationSession), built into the app.
 const AuthSheet = registerPlugin<{
   open(options: { url: string; callbackScheme: string }): Promise<{ url: string }>;
@@ -53,9 +56,9 @@ export async function nativeOAuthSignIn(provider: "google" | "apple"): Promise<{
   if (!isNativeApp()) return { handled: false };
   const hasSheet = Capacitor.isPluginAvailable("AuthSheet");
   const hasBrowser = Capacitor.isPluginAvailable("Browser");
-  // Older builds without either: use the in-app web sign-in instead of
-  // failing with "plugin is not implemented on ios".
-  if (!hasSheet && !hasBrowser) return { handled: false };
+  // Older builds without either: the web sign-in escapes to Safari, loses its
+  // security check and drops the user back on the sign-in page. Explain instead.
+  if (!hasSheet && !hasBrowser) return { handled: true, error: NATIVE_UPDATE_NEEDED };
 
   // Use the app's managed sign-in service (the same one the website uses).
   // Calling Google directly fails with "400 malformed request".
