@@ -161,6 +161,14 @@ function RootComponent() {
     // carries the path to open, so a full navigation is the simplest handoff.
     void initNativePush((path) => window.location.assign(path));
     void onNativeNotificationTap((path) => window.location.assign(path));
+
+    // The phone may register with Apple before the user signs in, so link the
+    // device token to the account on sign-in and detach it on sign-out.
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN") void syncPushToken();
+      if (event === "SIGNED_OUT") void clearPushToken();
+    });
+    return () => sub.subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
