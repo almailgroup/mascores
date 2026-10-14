@@ -99,6 +99,13 @@
       "when": 1791952014071,
       "tag": "0013_create_device_tokens",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1791977994652,
+      "tag": "0014_tighten_media_and_chat_reads",
+      "breakpoints": true
     }
   ]
 }
