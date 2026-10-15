@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase, ordinal, type Team, type StandingRow, type StandingLabel } from "@/lib/db";
 import { inputCls, btnPrimary, btnGhost, Modal, Field } from "./ui";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { GripVertical, Plus, Trash2, Tag } from "lucide-react";
+import { Plus, Trash2, Tag, BarChart3, ArrowUpDown, RefreshCw, MoreVertical, ChevronUp, ChevronDown, Layers } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
 type PositionLabel = Database["public"]["Tables"]["standings_position_labels"]["Row"];
@@ -150,7 +150,14 @@ export function StandingsPanel({ competitionId, season = null }: { competitionId
   };
 
   const removeRow = async (id: string) => {
+    const row = rows.find((r) => r.id === id);
     await supabase.from("standings_rows").delete().eq("id", id);
+    if (row) {
+      let unlink = supabase.from("competition_teams").delete().eq("competition_id", competitionId).eq("team_id", row.team_id);
+      if (season) unlink = unlink.eq("season", season);
+      await unlink;
+      qc.invalidateQueries({ queryKey: ["admin", "teams", competitionId, season] });
+    }
     invalidate();
   };
 
@@ -186,6 +193,7 @@ export function StandingsPanel({ competitionId, season = null }: { competitionId
             onAdjust={setAdjust}
             onRemove={removeRow}
             onAdd={group === SINGLE ? undefined : () => setAddTo(group)}
+            onRecalc={async () => { await supabase.rpc("recompute_standings", { _comp: competitionId }); invalidate(); }}
           />
         );
       })}
@@ -197,7 +205,7 @@ export function StandingsPanel({ competitionId, season = null }: { competitionId
       )}
 
       <p className="text-[0.65rem] text-muted-foreground">
-        P/W/D/L/GF/GA/Pts are computed from finished matches. Drag a team to move it up or down. Labels stay attached to the
+        P/W/D/L/GF/GA/Pts are computed from finished matches. Use Manage to edit points, labels, order or remove a team. Labels stay attached to the
         position (1st place, 2nd place…), not to the team.
       </p>
 
@@ -252,8 +260,10 @@ export function StandingsPanel({ competitionId, season = null }: { competitionId
   );
 }
 
+type Mode = "view" | "points" | "label" | "reorder" | "remove" | "group";
+
 function GroupTable({
-  title, rows, teams, groups, groupKey, labelFor, onLabelClick, onReorder, onGroupChange, onAdjust, onRemove, onAdd,
+  title, rows, teams, groups, groupKey, labelFor, onLabelClick, onReorder, onGroupChange, onAdjust, onRemove, onAdd, onRecalc,
 }: {
   title: string;
   rows: StandingRow[];
@@ -267,101 +277,92 @@ function GroupTable({
   onAdjust: (rowId: string, value: number) => void;
   onRemove: (rowId: string) => void;
   onAdd?: () => void;
+  onRecalc: () => Promise<void>;
 }) {
-  const [dragId, setDragId] = useState<string | null>(null);
+  const [mode, setMode] = useState<Mode>("view");
+  const [menu, setMenu] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const items: { m: Mode | "recalc"; l: string; Icon: typeof BarChart3 }[] = [
+    { m: "points", l: "Edit points", Icon: BarChart3 },
+    { m: "label", l: "Label", Icon: Tag },
+    { m: "reorder", l: "Reorder teams", Icon: ArrowUpDown },
+    ...(groups.length > 1 ? [{ m: "group" as const, l: "Move to group", Icon: Layers }] : []),
+    { m: "remove", l: "Remove team", Icon: Trash2 },
+    { m: "recalc", l: "Recalculate standings", Icon: RefreshCw },
+  ];
+  const move = (i: number, d: number) => { const t = rows[i + d]; if (t) onReorder(rows[i].id, t.id); };
 
   return (
-    <div>
-      <div className="mb-2 flex items-center justify-between gap-2">
-        <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{title}</div>
-        {onAdd && (
-          <button type="button" onClick={onAdd} className={btnGhost}>
-            <Plus className="h-3.5 w-3.5" /> Add teams
-          </button>
+    <div className="rounded-2xl border border-border bg-card p-3">
+      <div className="relative mb-2 flex items-center justify-between gap-2">
+        <div className="min-w-0 break-words text-sm font-bold">{title}</div>
+        <div className="flex shrink-0 items-center gap-2">
+          {onAdd && <button type="button" onClick={onAdd} className={btnGhost}><Plus className="h-3.5 w-3.5" /> Add teams</button>}
+          {mode !== "view"
+            ? <button type="button" onClick={() => setMode("view")} className={btnPrimary}>Done</button>
+            : <button type="button" onClick={() => setMenu((v) => !v)} className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-muted px-3 text-xs font-semibold">{busy ? "Working…" : "Manage"} <MoreVertical className="h-4 w-4" /></button>}
+        </div>
+        {menu && (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => setMenu(false)} />
+            <div className="absolute right-0 top-11 z-50 w-60 overflow-hidden rounded-2xl border border-border bg-popover py-1 shadow-xl">
+              {items.map(({ m, l, Icon }) => (
+                <button key={m} type="button" onClick={async () => {
+                  setMenu(false);
+                  if (m === "recalc") { setBusy(true); try { await onRecalc(); } finally { setBusy(false); } }
+                  else setMode(m);
+                }} className={`flex w-full items-center gap-3 px-4 py-3 text-left text-sm hover:bg-accent ${m === "remove" ? "text-destructive" : ""}`}>
+                  <Icon className="h-4 w-4 shrink-0" /> {l}
+                </button>
+              ))}
+            </div>
+          </>
         )}
       </div>
-      <div className="overflow-x-auto rounded-2xl border border-border bg-card">
-        <table className="w-full min-w-[780px] text-xs">
-          <thead className="bg-background/50 text-[0.65rem] uppercase tracking-widest text-muted-foreground">
-            <tr>
-              <th className="p-2 text-left">Position</th>
-              <th className="p-2 text-left">Team</th>
-              <th className="p-2">P</th><th className="p-2">W</th><th className="p-2">D</th><th className="p-2">L</th>
-              <th className="p-2">GF</th><th className="p-2">GA</th><th className="p-2">Adj</th><th className="p-2">Pts</th>
-              <th className="p-2 text-left">Qualification</th>
-              <th className="p-2"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r, i) => {
-              const team = teams.find((t) => t.id === r.team_id);
-              const lbl = labelFor(i + 1);
-              return (
-                <tr
-                  key={r.id}
-                  draggable
-                  onDragStart={() => setDragId(r.id)}
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={() => { if (dragId && dragId !== r.id) onReorder(dragId, r.id); setDragId(null); }}
-                  className={`border-t border-border ${dragId === r.id ? "opacity-50" : ""}`}
-                  style={{ borderLeft: lbl ? `4px solid ${lbl.color}` : undefined }}
-                >
-                  <td className="p-2">
-                    <div className="flex cursor-grab items-center gap-2 font-semibold">
-                      <GripVertical className="h-3.5 w-3.5 text-muted-foreground" />
-                      {ordinal(i + 1)} place
-                    </div>
-                  </td>
-                  <td className="p-2">
-                    <div className="flex items-center gap-2 font-semibold">
-                      {team?.logo_url && <img src={team.logo_url} alt="" className="h-5 w-5 object-contain" />}
-                      <span className="truncate">{team?.name ?? "?"}</span>
-                    </div>
-                  </td>
-                  <td className="p-2 text-center tabular-nums">{r.played}</td>
-                  <td className="p-2 text-center tabular-nums">{r.won}</td>
-                  <td className="p-2 text-center tabular-nums">{r.drawn}</td>
-                  <td className="p-2 text-center tabular-nums">{r.lost}</td>
-                  <td className="p-2 text-center tabular-nums">{r.gf}</td>
-                  <td className="p-2 text-center tabular-nums">{r.ga}</td>
-                  <td className="p-1">
-                    <input type="number" defaultValue={r.points_adjust}
-                      onBlur={(e) => onAdjust(r.id, Number(e.target.value) || 0)}
-                      className="w-14 rounded border border-border bg-background px-2 py-1 text-xs" />
-                  </td>
-                  <td className="p-2 text-center font-bold">{r.points + r.points_adjust}</td>
-                  <td className="p-2">
-                    <button onClick={() => onLabelClick(i + 1)} className="inline-flex items-center gap-1.5 rounded-full border border-border px-2 py-1 text-[0.65rem] font-medium hover:bg-accent">
-                      {lbl ? (
-                        <>
-                          <span className="h-2.5 w-2.5 rounded-full" style={{ background: lbl.color }} />
-                          <span className="max-w-[10rem] truncate">{lbl.label}</span>
-                        </>
-                      ) : (
-                        <><Tag className="h-3 w-3 text-muted-foreground" /> Add label</>
-                      )}
-                    </button>
-                  </td>
-                  <td className="p-2">
-                    <div className="flex items-center gap-2">
-                      {groups.length > 1 && (
-                        <select value={groupKey} onChange={(e) => onGroupChange(r.id, e.target.value === SINGLE ? null : e.target.value)}
-                          className="rounded border border-border bg-background px-1 py-1 text-[0.65rem]">
-                          {groups.map((g) => <option key={g} value={g}>{g === SINGLE ? "No group" : g}</option>)}
-                        </select>
-                      )}
-                      <button onClick={() => onRemove(r.id)} className="text-destructive" title="Remove">
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        {rows.length === 0 && <div className="p-4 text-center text-xs text-muted-foreground">No teams in this table yet.</div>}
+      {mode !== "view" && <p className="mb-2 text-[0.65rem] text-muted-foreground">{{ points: "Type a bonus or deduction for each team.", label: "Tap a position number to set its label.", reorder: "Use the arrows to move teams.", remove: "Tap the bin to remove a team from this table.", group: "Pick a group for each team." }[mode]}</p>}
+      <div className="grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-x-2 px-1 pb-1 text-[0.65rem] text-muted-foreground">
+        <span>#</span><span>Teams</span>
+        <span className="flex gap-3 tabular-nums"><span className="w-6 text-center">P</span><span className="w-8 text-center">DIFF</span><span className="w-7 text-center">PTS</span></span>
       </div>
+      {rows.map((r, i) => {
+        const team = teams.find((t) => t.id === r.team_id);
+        const lbl = labelFor(i + 1);
+        const diff = r.gf - r.ga;
+        return (
+          <div key={r.id} className="grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-x-2 border-t border-border/50 px-1 py-2 text-sm">
+            <button type="button" disabled={mode !== "label"} onClick={() => onLabelClick(i + 1)}
+              className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${mode === "label" ? "ring-2 ring-primary/40" : ""}`}
+              style={lbl ? { background: lbl.color, color: "white" } : undefined}>{i + 1}</button>
+            <div className="flex min-w-0 items-center gap-2">
+              {team?.logo_url && <img src={team.logo_url} alt="" className="h-6 w-6 shrink-0 object-contain" />}
+              <span className="min-w-0 truncate">{team?.name ?? "?"}</span>
+            </div>
+            {mode === "points" ? (
+              <div className="flex items-center gap-2">
+                <input type="number" defaultValue={r.points_adjust} onBlur={(e) => onAdjust(r.id, Number(e.target.value) || 0)}
+                  className="h-9 w-16 rounded-lg border border-border bg-background px-2 text-center text-base" />
+                <span className="w-7 text-center font-bold tabular-nums">{r.points + r.points_adjust}</span>
+              </div>
+            ) : mode === "reorder" ? (
+              <div className="flex gap-1">
+                <button type="button" disabled={i === 0} onClick={() => move(i, -1)} className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted disabled:opacity-30"><ChevronUp className="h-4 w-4" /></button>
+                <button type="button" disabled={i === rows.length - 1} onClick={() => move(i, 1)} className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted disabled:opacity-30"><ChevronDown className="h-4 w-4" /></button>
+              </div>
+            ) : mode === "remove" ? (
+              <button type="button" onClick={() => { if (confirm(`Remove ${team?.name ?? "this team"} from the standings?`)) onRemove(r.id); }}
+                className="flex h-9 w-9 items-center justify-center rounded-lg bg-destructive/10 text-destructive"><Trash2 className="h-4 w-4" /></button>
+            ) : mode === "group" ? (
+              <select value={groupKey} onChange={(e) => onGroupChange(r.id, e.target.value === SINGLE ? null : e.target.value)}
+                className="h-9 rounded-lg border border-border bg-background px-2 text-base">
+                {groups.map((g) => <option key={g} value={g}>{g === SINGLE ? "No group" : g}</option>)}
+              </select>
+            ) : (
+              <span className="flex gap-3 tabular-nums"><span className="w-6 text-center">{r.played}</span><span className="w-8 text-center">{diff > 0 ? `+${diff}` : diff}</span><span className="w-7 text-center font-bold">{r.points + r.points_adjust}</span></span>
+            )}
+          </div>
+        );
+      })}
+      {rows.length === 0 && <div className="p-4 text-center text-xs text-muted-foreground">No teams in this table yet.</div>}
     </div>
   );
 }
