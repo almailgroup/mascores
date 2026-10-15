@@ -124,6 +124,7 @@ function Profile({ kind, id, name }: { kind: Kind; id: string; name: string }) {
     },
   });
   const href = kind === "player" ? `/players/${id}` : `/teams/${id}`;
+  const [open, setOpen] = useState(false);
   return (
     <div className="min-w-0 rounded-lg border border-border bg-background p-2">
       <div className="mb-1 flex items-center gap-2">
@@ -133,7 +134,17 @@ function Profile({ kind, id, name }: { kind: Kind; id: string; name: string }) {
       <div className="space-y-0.5 text-xs text-muted-foreground">
         {(q.data?.lines ?? []).filter(Boolean).map((l, i) => <div key={i} className="break-words">{String(l)}</div>)}
       </div>
-      <a href={href} target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs font-semibold text-primary">Open profile</a>
+      <button type="button" onClick={() => setOpen(true)} className="mt-1 inline-block text-xs font-semibold text-primary">Open profile</button>
+      {open && createPortal(
+        <div className="fixed inset-0 z-[200] flex flex-col bg-background">
+          <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-4 pb-3" style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}>
+            <b className="min-w-0 truncate text-sm">{name}</b>
+            <button type="button" onClick={() => setOpen(false)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted" aria-label="Close profile"><X className="h-5 w-5" /></button>
+          </div>
+          <iframe src={href} title={name} className="min-h-0 w-full flex-1 border-0" />
+        </div>,
+        document.body,
+      )}
     </div>
   );
 }
