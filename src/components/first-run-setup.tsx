@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Check, Search, ArrowRight, ArrowLeft, Shield, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { normSearch } from "@/lib/norm-search";
 import { useFavorites } from "@/hooks/use-favorites";
 import { useI18n, type Lang } from "@/lib/i18n";
 import { BrandLogo } from "@/components/brand-logo";
@@ -31,7 +32,7 @@ export function FirstRunSetup({ children }: { children: ReactNode }) {
   const teams = useQuery({
     queryKey: ["welcome-teams"], enabled: stage === "teams",
     queryFn: async () => {
-      const { data, error } = await supabase.from("teams").select("id,name,logo_url,country").order("name");
+      const { data, error } = await supabase.from("teams").select("id,name,name_ar,short_name,logo_url,country").order("name");
       if (error) throw error;
       return data ?? [];
     },
@@ -47,7 +48,8 @@ export function FirstRunSetup({ children }: { children: ReactNode }) {
   // Do not render welcome branding or step numbers before device storage is checked.
   if (stage === "done" || stage === "checking") return children;
   const ar = lang === "ar";
-  const visible = (teams.data ?? []).filter((team) => `${team.name} ${tx(team.name)} ${team.country ?? ""}`.toLowerCase().includes(query.toLowerCase()));
+  const needle = normSearch(query);
+  const visible = (teams.data ?? []).filter((team) => normSearch(`${team.name} ${team.short_name ?? ""} ${team.name_ar ?? ""} ${tx(team.name)} ${team.country ?? ""}`).includes(needle) || normSearch(`${team.name_ar ?? ""} ${tx(team.name)}`).includes(needle.replace(/^ال/, "")));
   return <>
     <div hidden inert>{children}</div>
     <div data-no-gesture className="fixed inset-0 z-[110] overflow-y-auto bg-background text-foreground" role="dialog" aria-modal="true" aria-labelledby="welcome-title">

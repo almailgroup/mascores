@@ -72,7 +72,12 @@ function SearchPage() {
     queryKey: ["search", q, terms.join("|"), matchedCountries.map((c) => c.code).join("|")],
     queryFn: async () => {
       // Typo-tolerant matches (trigram similarity) so "sluaibkhat" still finds "Sulaibikhat".
-      const fuzzy = await supabase.rpc("fuzzy_search", { _q: terms[0] ?? q.trim(), _limit: 40 });
+      const [fuzzy, bilingual] = await Promise.all([
+        supabase.rpc("fuzzy_search", { _q: terms[0] ?? q.trim(), _limit: 40 }),
+        // Clubs match in English or Arabic whatever the app language is.
+        supabase.rpc("search_teams", { _q: q.trim(), _limit: 30 }),
+      ]);
+      const bilingualTeamIds = (bilingual.data ?? []).filter((r) => r.score >= 0.3).map((r) => r.id);
       const idsOf = (kind: string) => (fuzzy.data ?? []).filter((r) => r.kind === kind).map((r) => r.id);
       const fuzzyIn = <T,>(ids: string[], run: (ids: string[]) => PromiseLike<{ data: T[] | null }>) =>
         ids.length ? run(ids) : Promise.resolve({ data: [] as T[] });
@@ -89,12 +94,12 @@ function SearchPage() {
       const venueCols = "id,name,city,country";
 
       const [teams, players, comps, coaches, venues, fTeams, fPlayers, fComps, fCoaches, fVenues] = await Promise.all([
-        supabase.from("teams").select(teamCols).or(orFilter(["name", "short_name"])).limit(20),
+        supabase.from("teams").select(teamCols).or(orFilter(["name", "short_name", "name_ar"])).limit(20),
         supabase.from("players").select(playerCols).or(orFilter(["name"])).eq("is_temporary", false).limit(20),
         supabase.from("competitions").select(compCols).or(compFilter).limit(30),
         supabase.from("coaches").select(coachCols).or(orFilter(["name"])).limit(20),
         supabase.from("venues").select(venueCols).or(orFilter(["name", "city"])).limit(20),
-        fuzzyIn(idsOf("team"), (ids) => supabase.from("teams").select(teamCols).in("id", ids)),
+        fuzzyIn([...new Set([...bilingualTeamIds, ...idsOf("team")])], (ids) => supabase.from("teams").select(teamCols).in("id", ids)),
         fuzzyIn(idsOf("player"), (ids) => supabase.from("players").select(playerCols).in("id", ids).eq("is_temporary", false)),
         fuzzyIn(idsOf("competition"), (ids) => supabase.from("competitions").select(compCols).in("id", ids)),
         fuzzyIn(idsOf("coach"), (ids) => supabase.from("coaches").select(coachCols).in("id", ids)),
