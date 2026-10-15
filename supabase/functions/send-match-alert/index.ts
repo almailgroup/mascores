@@ -155,11 +155,8 @@ Deno.serve(async (req) => {
   if (!isAdmin) return new Response("Forbidden", { status: 403 });
 
   let payload: AlertRequest;
-  try {
-    payload = await req.json();
-  } catch {
-    return new Response("Invalid JSON", { status: 400 });
-  }
+  if (!parsed) return new Response("Invalid JSON", { status: 400 });
+  payload = parsed;
   if (!Array.isArray(payload.userIds) || !payload.title || !payload.body) {
     return new Response("userIds, title and body are required", { status: 400 });
   }
