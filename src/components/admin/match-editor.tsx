@@ -1,3 +1,5 @@
+import { useServerFn } from "@tanstack/react-start";
+import { readStatsPhoto } from "@/lib/stats-photo.functions";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -136,6 +138,15 @@ function NumberPicker({ value, onChange, max, step = 1, suffix }: { value: strin
   );
 }
 
+async function shrinkImage(file: File): Promise<string> {
+  const bmp = await createImageBitmap(file);
+  const scale = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
+  const c = document.createElement("canvas");
+  c.width = Math.round(bmp.width * scale); c.height = Math.round(bmp.height * scale);
+  c.getContext("2d")!.drawImage(bmp, 0, 0, c.width, c.height);
+  return c.toDataURL("image/jpeg", 0.85);
+}
+
 function MatchStatsEditor({ match, teams }: { match: Match; teams: Team[] }) {
   const qc = useQueryClient();
   const [label, setLabel] = useState(STAT_PRESETS[0].label);
@@ -153,9 +164,33 @@ function MatchStatsEditor({ match, teams }: { match: Match; teams: Team[] }) {
     setHome(""); setAway("");
     qc.invalidateQueries({ queryKey: ["admin", "match-stats", match.id] });
   };
+  const readPhoto = useServerFn(readStatsPhoto);
+  const [reading, setReading] = useState(false);
+  const fromPhoto = async (file: File) => {
+    setReading(true);
+    try {
+      const image = await shrinkImage(file);
+      const { stats } = await readPhoto({ data: { image, home: homeName, away: awayName, labels: STAT_PRESETS.map((p) => p.label) } });
+      if (!stats.length) { toast.error("No statistics found in that photo."); return; }
+      const current = [...(statsQ.data ?? [])];
+      for (const st of stats) {
+        const existing = current.find((x) => x.label.toLowerCase() === st.label.toLowerCase());
+        if (existing) await supabase.from("match_stats").update({ home_value: st.home, away_value: st.away }).eq("id", existing.id);
+        else { await supabase.from("match_stats").insert({ label: st.label, home_value: st.home, away_value: st.away, match_id: match.id, sort_order: current.length } as never); current.push({ label: st.label } as MatchStat); }
+      }
+      toast.success(`Added ${stats.length} statistics from the photo`);
+      qc.invalidateQueries({ queryKey: ["admin", "match-stats", match.id] });
+    } catch (e) { toast.error((e as Error).message); } finally { setReading(false); }
+  };
   return (
     <section className="mt-5 rounded-lg border border-border bg-background/40 p-3">
-      <h4 className="mb-3 text-sm font-bold">Match statistics</h4>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <h4 className="text-sm font-bold">Match statistics</h4>
+        <label className={`${btnGhost} cursor-pointer`}>
+          <input type="file" accept="image/*" className="hidden" disabled={reading} onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) void fromPhoto(f); }} />
+          {reading ? "Reading photo…" : "Read from photo"}
+        </label>
+      </div>
       <div className="grid gap-2">
         {statsQ.data?.map((item) => (
           <div key={item.id} className="grid grid-cols-[1fr_2fr_1fr_auto] items-center gap-2 rounded-lg border border-border p-2 text-sm">
