@@ -138,8 +138,23 @@ function Profile({ kind, id, name }: { kind: Kind; id: string; name: string }) {
   );
 }
 function SuggestionCard({ kind, s, onApprove }: { kind: Kind; s: Sug; onApprove: (keepId: string, keepName: string, dropId: string, dropName: string) => void }) {
+  const qc = useQueryClient();
   const [hidden, setHidden] = useState(false);
+  const [choosing, setChoosing] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
   if (hidden) return null;
+  const label = kind === "player" ? "Merge players" : "Merge teams";
+  const doMerge = async (keepId: string, keepName: string, dropId: string, dropName: string) => {
+    if (!window.confirm(`Merge "${dropName}" into "${keepName}"? It can be restored from the Recycle bin.`)) return;
+    setBusy(true); setErr(null);
+    const { error } = await supabase.rpc("merge_records", { _kind: kind, _keep: keepId, _drop: dropId });
+    setBusy(false);
+    if (error) { setErr(error.message); return; }
+    setHidden(true);
+    void qc.invalidateQueries();
+  };
+  void onApprove;
   return (
     <div className="rounded-xl border border-border bg-card p-2.5 text-sm">
       <div className="mb-2 text-xs text-muted-foreground">{Math.round(s.score * 100)}% similar</div>
@@ -147,11 +162,23 @@ function SuggestionCard({ kind, s, onApprove }: { kind: Kind; s: Sug; onApprove:
         <Profile kind={kind} id={s.a_id} name={s.a_name} />
         <Profile kind={kind} id={s.b_id} name={s.b_name} />
       </div>
-      <div className="mt-2 flex flex-wrap gap-2">
-        <button className={btnPrimary} onClick={() => onApprove(s.a_id, s.a_name, s.b_id, s.b_name)}>Keep left</button>
-        <button className={btnPrimary} onClick={() => onApprove(s.b_id, s.b_name, s.a_id, s.a_name)}>Keep right</button>
-        <button className={btnGhost} onClick={() => setHidden(true)}>Not the same</button>
-      </div>
+      {choosing ? (
+        <div className="mt-2 rounded-lg border border-primary/30 bg-primary/5 p-2">
+          <p className="mb-2 text-xs font-semibold">{kind === "player" ? "Which photo should be kept for his face?" : "Which logo should be kept?"}</p>
+          <div className="grid grid-cols-2 gap-2">
+            <button className={btnPrimary} disabled={busy} onClick={() => doMerge(s.a_id, s.a_name, s.b_id, s.b_name)}>Keep left photo</button>
+            <button className={btnPrimary} disabled={busy} onClick={() => doMerge(s.b_id, s.b_name, s.a_id, s.a_name)}>Keep right photo</button>
+          </div>
+          <button className={`${btnGhost} mt-2`} disabled={busy} onClick={() => setChoosing(false)}>Cancel</button>
+          {busy && <p className="mt-1 text-xs text-muted-foreground">Merging…</p>}
+        </div>
+      ) : (
+        <div className="mt-2 flex flex-wrap gap-2">
+          <button className={btnPrimary} onClick={() => setChoosing(true)}><GitMerge className="h-3.5 w-3.5" /> {label}</button>
+          <button className={btnGhost} onClick={() => setHidden(true)}>Not the same</button>
+        </div>
+      )}
+      {err && <p className="mt-1 text-xs text-destructive">{err}</p>}
     </div>
   );
 }
