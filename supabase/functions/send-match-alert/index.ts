@@ -75,7 +75,7 @@ type AlertRequest = {
 
 /** Sound files bundled in the iOS app (ios/App/App/Sounds). */
 function soundFor(category: string, title: string): string {
-  if (title.includes("❌")) return "miss.caf";
+  if (title.includes("Penalty missed") || title.includes("ضائعة")) return "miss.caf";
   if (category === "goals") return "goal.caf";
   if (category === "cards") return "card.caf";
   if (category === "kickoff" || category === "final") return "whistle.caf";
