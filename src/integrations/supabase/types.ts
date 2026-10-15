@@ -3002,6 +3002,20 @@ export type Database = {
           votes: number
         }[]
       }
+      merge_records: {
+        Args: { _drop: string; _keep: string; _kind: string }
+        Returns: undefined
+      }
+      merge_suggestions: {
+        Args: { _kind: string; _limit?: number }
+        Returns: {
+          a_id: string
+          a_name: string
+          b_id: string
+          b_name: string
+          score: number
+        }[]
+      }
       norm_search: { Args: { _t: string }; Returns: string }
       player_follower_count: { Args: { _player_id: string }; Returns: number }
       public_profile: {
