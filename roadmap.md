@@ -62,3 +62,5 @@
 - [x] Recycle bin for deleted data with restore
 - [ ] ACL2: fill Kuwait SC match details using existing Kuwait SC players (no new duplicates)
 - [x] Bilingual club search, 2nd main admin, merge section, popup player editor, remove/white bg
+- [x] Admin venue edit as popup with sticky Save/close header
+- [ ] Voice section: more spacing, less cramped design
