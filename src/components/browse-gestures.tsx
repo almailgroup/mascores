@@ -89,7 +89,7 @@ export function BrowseGestures() {
       refreshContent = content.querySelector<HTMLElement>("[data-refresh-body]") ?? content;
       refreshHeader = content.querySelector<HTMLElement>("[data-refresh-header]");
       start = { x: touch.clientX, y: touch.clientY, edge: touch.clientX <= 28 && router.history.canGoBack(), top: window.scrollY <= 0 };
-      setIndicatorTop(refreshHeader?.getBoundingClientRect().bottom ?? document.querySelector("[data-shell-header]")?.getBoundingClientRect().bottom ?? 0);
+      setIndicatorTop(refreshHeader?.getBoundingClientRect().bottom ?? 0);
       distance = 0; axis = null;
     };
     const onMove = (event: TouchEvent) => {
@@ -162,5 +162,5 @@ export function BrowseGestures() {
     };
   }, [router, qc, location.pathname]);
   if (!pull && !refreshing) return null;
-  return <div data-gesture-ui role="status" aria-label={refreshing ? "Refreshing" : "Pull to refresh"} className="browse-refresh-indicator pointer-events-none fixed inset-x-0 z-20 flex justify-center" style={{ top: indicatorTop, height: refreshing ? 64 : pull }}><Loader2 className={`h-5 w-5 self-center text-muted-foreground ${refreshing ? "animate-spin" : ""}`} style={{ transform: refreshing ? undefined : `rotate(${pull * 4}deg)`, opacity: Math.min(1, pull / 40) }} /></div>;
+  return <div data-gesture-ui role="status" aria-label={refreshing ? "Refreshing" : "Pull to refresh"} className="browse-refresh-indicator pointer-events-none fixed inset-x-0 z-20 flex justify-center" style={{ top: indicatorTop || "env(safe-area-inset-top)", height: refreshing ? 48 : Math.min(pull, 48) }}><Loader2 className={`h-5 w-5 self-center text-muted-foreground ${refreshing ? "animate-spin" : ""}`} style={{ transform: refreshing ? undefined : `rotate(${pull * 4}deg)`, opacity: Math.min(1, pull / 40) }} /></div>;
 }
