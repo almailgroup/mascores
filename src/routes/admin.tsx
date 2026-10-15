@@ -25,7 +25,7 @@ import { TicketsPanel } from "@/components/admin/tickets-panel";
 import { UsersPanel } from "@/components/admin/users-panel";
 import { VoicePanel } from "@/components/admin/voice-panel";
 import { ManagePanel } from "@/components/admin/manage-panel";
-import { myAccess, OWNER_EMAIL } from "@/lib/owner.functions";
+import { myAccess, isOwnerEmail } from "@/lib/owner.functions";
 import { UltrasPanel } from "@/components/admin/ultras-panel";
 import { ApprovalsPanel } from "@/components/admin/approvals-panel";
 import { AppealsPanel } from "@/components/admin/appeals-panel";
@@ -56,7 +56,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
   const unlock = useServerFn(unlockAdmin);
   const accessFn = useServerFn(myAccess);
   const access = useQuery({ enabled: !!user, queryKey: ["my-access", user?.id], queryFn: () => accessFn({}) });
-  const isOwner = (user?.email ?? "").toLowerCase() === OWNER_EMAIL;
+  const isOwner = isOwnerEmail(user?.email);
   const scopes = new Set((access.data?.grants ?? []).map((g) => g.scope));
   /** Rabta stays with the owner unless he hands that one section out on purpose. */
   const canRabta = isOwner || scopes.has("rabta");

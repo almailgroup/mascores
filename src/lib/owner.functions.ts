@@ -4,6 +4,9 @@ import { z } from "zod";
 
 /** The single owner account that can hand out and take away access. */
 export const OWNER_EMAIL = "mansouralmailscores@gmail.com";
+/** Every main-admin (owner-level) account. */
+export const OWNER_EMAILS = [OWNER_EMAIL, "11061@dbs.edu.kw"];
+export const isOwnerEmail = (email: string | null | undefined) => OWNER_EMAILS.includes((email ?? "").trim().toLowerCase());
 
 export const GRANT_SCOPES = [
   "all", "news", "club_news", "rabta", "tickets", "matches", "voice",
@@ -14,7 +17,7 @@ export type GrantScope = (typeof GRANT_SCOPES)[number];
 
 async function ownerAdmin(claims: Record<string, unknown> | null | undefined) {
   const email = typeof claims?.email === "string" ? claims.email.toLowerCase() : "";
-  if (email !== OWNER_EMAIL) throw new Error("Owner access only.");
+  if (!isOwnerEmail(email)) throw new Error("Owner access only.");
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   return supabaseAdmin;
 }
@@ -263,7 +266,7 @@ export const myAccess = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const claims = context.claims as Record<string, unknown>;
     const email = typeof claims?.email === "string" ? claims.email.toLowerCase() : "";
-    const isOwner = email === OWNER_EMAIL;
+    const isOwner = isOwnerEmail(email);
     const [{ data }, { data: comps }] = await Promise.all([
       context.supabase.from("admin_grants").select("scope,team_id,requires_approval"),
       context.supabase.from("admin_competition_access").select("competition_id").eq("user_id", context.userId),
