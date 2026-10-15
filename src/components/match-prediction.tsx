@@ -19,14 +19,20 @@ export function MatchPrediction({ matchId, homeLogo, awayLogo, fallback }: {
   const { user } = useAuth();
 
   const votes = useQuery({
-    queryKey: ["match-prediction-votes", matchId],
-    queryFn: async () => ((await supabase.from("match_prediction_votes").select("choice,user_id").eq("match_id", matchId)).data ?? []) as { choice: string; user_id: string }[],
+    queryKey: ["match-prediction-votes", matchId, user?.id ?? null],
+    queryFn: async () => {
+      const [{ data: tally }, own] = await Promise.all([
+        supabase.rpc("match_prediction_tally", { _match_id: matchId }),
+        user ? supabase.from("match_prediction_votes").select("choice").eq("match_id", matchId).eq("user_id", user.id).maybeSingle() : Promise.resolve({ data: null }),
+      ]);
+      return { tally: (tally ?? []) as { choice: string; votes: number }[], mine: (own.data?.choice ?? undefined) as Choice | undefined };
+    },
   });
 
-  const rows = votes.data ?? [];
-  const total = rows.length;
-  const count = (choice: Choice) => rows.filter((row) => row.choice === choice).length;
-  const mine = user ? rows.find((row) => row.user_id === user.id)?.choice as Choice | undefined : undefined;
+  const tally = votes.data?.tally ?? [];
+  const count = (choice: Choice) => Number(tally.find((row) => row.choice === choice)?.votes ?? 0);
+  const total = count("home") + count("draw") + count("away");
+  const mine = user ? votes.data?.mine : undefined;
 
   const pct = (choice: Choice) => {
     if (total > 0) return Math.round((count(choice) / total) * 100);

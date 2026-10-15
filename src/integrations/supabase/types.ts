@@ -2989,6 +2989,13 @@ export type Database = {
       is_admin: { Args: { _uid: string }; Returns: boolean }
       is_main_admin: { Args: { _uid: string }; Returns: boolean }
       is_suspended: { Args: { _uid: string }; Returns: boolean }
+      match_prediction_tally: {
+        Args: { _match_id: string }
+        Returns: {
+          choice: string
+          votes: number
+        }[]
+      }
       player_follower_count: { Args: { _player_id: string }; Returns: number }
       public_profile: {
         Args: { _id: string }
