@@ -114,9 +114,9 @@ function Profile({ kind, id, name }: { kind: Kind; id: string; name: string }) {
     queryKey: ["merge-profile", kind, id],
     queryFn: async () => {
       if (kind === "player") {
-        const { data } = await supabase.from("players").select("name,name_ar,position,nationality,date_of_birth,shirt_number,photo_url,team:team_id(name)").eq("id", id).maybeSingle();
+        const { data } = await supabase.from("players").select("name,name_ar,position,nationality,birth_date,shirt_number,photo_url,team:team_id(name)").eq("id", id).maybeSingle();
         const d = data as Record<string, unknown> | null;
-        return d ? { img: d.photo_url as string | null, lines: [d.name_ar, (d.team as { name: string } | null)?.name ?? "Free agent", d.position, d.nationality, d.date_of_birth, d.shirt_number != null ? `No. ${d.shirt_number}` : null] } : null;
+        return d ? { img: d.photo_url as string | null, lines: [d.name_ar, (d.team as { name: string } | null)?.name ?? "Free agent", d.position, d.nationality, d.birth_date, d.shirt_number != null ? `No. ${d.shirt_number}` : null] } : null;
       }
       const { data } = await supabase.from("teams").select("name,name_ar,short_name,country,logo_url").eq("id", id).maybeSingle();
       const d = data as Record<string, unknown> | null;
