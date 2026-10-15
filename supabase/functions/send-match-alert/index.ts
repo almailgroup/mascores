@@ -13,7 +13,7 @@
  *   APNS_BUNDLE_ID    com.almailgroup.mascores
  *   APNS_HOST         api.sandbox.push.apple.com | api.push.apple.com
  */
-import { createClient } from "jsr:@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 
 const encoder = new TextEncoder();
 
