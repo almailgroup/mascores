@@ -31,6 +31,8 @@ type Info = {
   competition: string | null;
 };
 
+const GOAL_TYPES = ["goal", "own_goal", "penalty_goal", "penalty"];
+
 /** How each moment of the match is announced. */
 const EVENT_TEXT: Record<string, { label: string }> = {
   goal: { label: "Goal" },
@@ -194,7 +196,7 @@ export function useLiveEventAlerts() {
       seen.current.add(key);
       info.set(row.id, { ...(m as Info), homeScore: row.home_score, awayScore: row.away_score });
       const score = row.home_score != null && row.away_score != null ? `${row.home_score} - ${row.away_score}` : "vs";
-      void announce(`${meta.emoji} ${meta.label}`, `${m?.home ?? "Home"} ${score} ${m?.away ?? "Away"}`, soundFor(preferences.sounds, category === "final" ? "final" : "kickoff"), `/matches/${row.id}`);
+      void announce(meta.label, `${m?.home ?? "Home"} ${score} ${m?.away ?? "Away"}`, soundFor(preferences.sounds, category === "final" ? "final" : "kickoff"), `/matches/${row.id}`);
     };
 
     loadAlerts();
