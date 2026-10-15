@@ -15,10 +15,11 @@
 - Record and escalate bans with database triggers and per-user transaction locks, retaining history after restrictions are lifted; every write path must follow the same strike rules.
 - Use the shared AppShell gesture controller: club/competition refresh opens below the sticky identity and tabs while other pages pull as a whole; resolve targets at touch start so asynchronously loaded pages work; never move fixed bottom tabs.
 - Keep account/settings public and reachable from the Home profile icon; signed-out visitors enter the existing authentication page through an explicit account CTA, so local preferences remain accessible without a session.
-- Serve optimized portrait asset copies through a shared portrait resolver while retaining original URLs as fallbacks; this reduces repeated photo transfers without changing stored originals.
+- Resolve optimized portraits centrally with original-URL fallbacks to reduce transfers without changing originals.
 - Scope reporter news uploads to their user-ID folder and active reporter storage policies; administrator upload access stays separate.
 - Keep first-run setup completion device-local and retain guest team favourites with idempotent profile merging on sign-in, and gate welcome UI hydration-safely until it is checked, so onboarding never repeats or flashes.
-- Use one text-free branded loading overlay for both language directions, keeping underlying pages mounted to preserve navigation and form state.
+- Use one text-free loading overlay for both languages; keep pages mounted to preserve state.
+- Keep touch fields at least 16px and document touch-action: manipulation to prevent focus/double-tap zoom while preserving pinch zoom.
 - Use the shared scroll-driven collapsing-header hook for club, competition and match headers; identity and tabs remain one sticky unit for consistent scrolling.
 - Calculate round teams from terminal match completion timestamps and actual position ratings through the public read-only function, with a one-hour availability deadline; avoid recurring background polling.
 - Choose the complete legal round-team formation by how far selected players beat their position's round average (raw rating sum as tie-break), so position rating bias never fixes one shape; expose published history plus only the earliest started unreleased round.
