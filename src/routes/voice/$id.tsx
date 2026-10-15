@@ -363,7 +363,7 @@ function VoiceRoomPage() {
               {actionError && <p className="mb-3 rounded-xl bg-destructive/10 p-3 text-xs font-semibold text-destructive">{actionError}</p>}
 
               <h2 className="text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Speakers")} ({speakerCount})</h2>
-              <div className="mt-2 grid grid-cols-3 gap-3 sm:grid-cols-5">
+              <div className="mt-4 grid grid-cols-3 gap-4 sm:grid-cols-5 sm:gap-5">
                 {speakers.map((peer) => (
                   <PeerTile key={peer.userId} peer={peer} reaction={reactions[peer.userId]} canManage={isHost && !peer.self} onDemote={() => manage(peer.userId, "demote")} onMute={() => manage(peer.userId, "mute")} onRemove={() => manage(peer.userId, "remove")} />
                 ))}
@@ -385,7 +385,7 @@ function VoiceRoomPage() {
               )}
 
               <h2 className="mt-5 text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Listeners")} ({listenerCount})</h2>
-              <div className="mt-2 grid grid-cols-4 gap-3 sm:grid-cols-6">
+              <div className="mt-4 grid grid-cols-3 gap-4 sm:grid-cols-6 sm:gap-5">
                 {listeners.map((peer) => (
                   <PeerTile key={peer.userId} peer={peer} reaction={reactions[peer.userId]} small canManage={isHost && !peer.self} onPromote={() => manage(peer.userId, "promote")} onRemove={() => manage(peer.userId, "remove")} />
                 ))}
@@ -446,7 +446,7 @@ function PeerTile({ peer, reaction, small = false, canManage = false, onPromote,
   const tx = useTx();
   const size = small ? "h-11 w-11" : "h-16 w-16";
   return (
-    <div className="flex flex-col items-center gap-1 text-center">
+    <div className="flex flex-col items-center gap-1.5 text-center">
       <div className={`relative rounded-full ${peer.speaking ? "ring-2 ring-primary ring-offset-2 ring-offset-card" : ""}`}>
         {peer.avatar
           ? <img src={peer.avatar} alt="" className={`${size} rounded-full object-cover`} />
