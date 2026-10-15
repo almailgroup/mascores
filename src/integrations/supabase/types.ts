@@ -2962,6 +2962,7 @@ export type Database = {
     }
     Functions: {
       admin_unlock_allowed: { Args: { _uid: string }; Returns: boolean }
+      ar_skeleton: { Args: { _t: string }; Returns: string }
       chat_author_profiles: {
         Args: { _ids: string[] }
         Returns: {

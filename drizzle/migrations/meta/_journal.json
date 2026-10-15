@@ -134,6 +134,13 @@
       "when": 1792093525861,
       "tag": "0018_merge_players_and_teams",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1792096280648,
+      "tag": "0019_migration",
+      "breakpoints": true
     }
   ]
 }
