@@ -10,6 +10,7 @@ import { createArticleDraftWithAlmail } from "@/lib/almail-ai.functions";
 import { readAiImages, type AiImageInput } from "@/lib/image-files";
 import { NewsLinkPicker, type NewsLinks } from "./news-link-picker";
 import { NewsSubmissionsPanel } from "./news-submissions-panel";
+import { detectCoverFocus } from "@/lib/cover-focus.functions";
 import { Plus, Pencil, Trash2, Sparkles, ImagePlus, Loader2 } from "lucide-react";
 
 type Form = Partial<NewsPost>;
@@ -19,6 +20,14 @@ export function NewsPanel() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [form, setForm] = useState<Form>({});
+  const detectFocus = useServerFn(detectCoverFocus);
+  // AI finds the players' faces so the cropped thumbnail keeps them in view.
+  const focusCover = async (url: string) => {
+    try {
+      const { focus } = await detectFocus({ data: { url } });
+      if (focus) setForm((f) => (f.cover_url === url ? ({ ...f, cover_focus: focus } as typeof f) : f));
+    } catch { /* keep default crop */ }
+  };
   const [aiOpen, setAiOpen] = useState(false);
   const [aiNotes, setAiNotes] = useState("");
   const [aiImages, setAiImages] = useState<AiImageInput[]>([]);
