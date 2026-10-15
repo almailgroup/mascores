@@ -77,7 +77,7 @@ function SearchPage() {
         // Clubs match in English or Arabic whatever the app language is.
         supabase.rpc("search_teams", { _q: q.trim(), _limit: 30 }),
       ]);
-      const bilingualTeamIds = (bilingual.data ?? []).filter((r) => r.score >= 0.3).map((r) => r.id);
+      const bilingualTeamIds = (bilingual.data ?? []).filter((r) => r.score >= 0.45).map((r) => r.id);
       const idsOf = (kind: string) => (fuzzy.data ?? []).filter((r) => r.kind === kind).map((r) => r.id);
       const fuzzyIn = <T,>(ids: string[], run: (ids: string[]) => PromiseLike<{ data: T[] | null }>) =>
         ids.length ? run(ids) : Promise.resolve({ data: [] as T[] });
