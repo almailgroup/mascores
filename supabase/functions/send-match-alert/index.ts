@@ -73,7 +73,16 @@ type AlertRequest = {
   path?: string;
 };
 
-async function sendTo(tokens: string[], title: string, body: string, path: string | undefined, threadId?: string) {
+/** Sound files bundled in the iOS app (ios/App/App/Sounds). */
+function soundFor(category: string, title: string): string {
+  if (title.includes("❌")) return "miss.caf";
+  if (category === "goals") return "goal.caf";
+  if (category === "cards") return "card.caf";
+  if (category === "kickoff" || category === "final") return "whistle.caf";
+  return "default";
+}
+
+async function sendTo(tokens: string[], title: string, body: string, path: string | undefined, threadId?: string, sound = "default") {
   const jwt = await apnsJwt();
   const host = Deno.env.get("APNS_HOST") ?? "api.push.apple.com";
   const topic = Deno.env.get("APNS_BUNDLE_ID")!;
@@ -81,7 +90,7 @@ async function sendTo(tokens: string[], title: string, body: string, path: strin
     const res = await fetch(`https://${host}/3/device/${token}`, {
       method: "POST",
       headers: { authorization: `bearer ${jwt}`, "apns-topic": topic, "apns-push-type": "alert", "apns-priority": "10" },
-      body: JSON.stringify({ aps: { alert: { title, body }, sound: "default", "thread-id": threadId }, path }),
+      body: JSON.stringify({ aps: { alert: { title, body }, sound, "thread-id": threadId }, path }),
     });
     return { token, ok: res.ok, status: res.status };
   }));
@@ -115,8 +124,8 @@ async function dispatchQueued(admin: any, queueId: string) {
   const en = (devices ?? []).filter((d: any) => d.locale !== "ar").map((d: any) => d.token);
   const path = `/matches/${q.match_id}`;
   const results = [
-    ...(en.length ? await sendTo(en, q.title_en, q.body_en, path, q.match_id) : []),
-    ...(ar.length ? await sendTo(ar, q.title_ar, q.body_ar, path, q.match_id) : []),
+    ...(en.length ? await sendTo(en, q.title_en, q.body_en, path, q.match_id, soundFor(q.category, q.title_en)) : []),
+    ...(ar.length ? await sendTo(ar, q.title_ar, q.body_ar, path, q.match_id, soundFor(q.category, q.title_ar)) : []),
   ];
   const stale = results.filter((r) => r.status === 410 || r.status === 400).map((r) => r.token);
   if (stale.length) await admin.from("device_tokens").delete().in("token", stale);
