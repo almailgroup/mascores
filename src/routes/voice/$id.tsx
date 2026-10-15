@@ -293,36 +293,42 @@ function VoiceRoomPage() {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 border-b border-border p-4">
-          {host.data?.avatar_url
-            ? <img src={host.data.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover" />
-            : <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-bold">{(host.data?.display_name ?? "?").slice(0, 1).toUpperCase()}</span>}
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-sm font-bold">{host.data?.display_name ?? tx("Host")}</div>
-            <div className="text-[0.7rem] text-muted-foreground">{tx("Followers")}: {compact(host.data?.followers ?? 0)}</div>
+        <div className="border-b border-border p-4">
+          <div className="flex items-center gap-3">
+            {host.data?.avatar_url
+              ? <img src={host.data.avatar_url} alt="" className="h-10 w-10 shrink-0 rounded-full object-cover" />
+              : <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-bold">{(host.data?.display_name ?? "?").slice(0, 1).toUpperCase()}</span>}
+            <div className="min-w-0 flex-1">
+              <div className="break-words text-sm font-bold leading-snug">{host.data?.display_name ?? tx("Host")}</div>
+              <div className="text-[0.7rem] text-muted-foreground">{tx("Followers")}: {compact(host.data?.followers ?? 0)}</div>
+            </div>
+            {!isHost && (
+              <button onClick={toggleFollow} className={`inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3 text-xs font-bold ${following.data ? "border border-border bg-card text-muted-foreground" : "bg-primary text-primary-foreground"}`}>
+                {following.data ? <UserCheck className="h-3.5 w-3.5" /> : <UserPlus className="h-3.5 w-3.5" />}
+                {following.data ? tx("Following") : tx("Follow")}
+              </button>
+            )}
           </div>
-          {!isHost && (
-            <button onClick={toggleFollow} className={`inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-bold ${following.data ? "border border-border bg-card text-muted-foreground" : "bg-primary text-primary-foreground"}`}>
-              {following.data ? <UserCheck className="h-3.5 w-3.5" /> : <UserPlus className="h-3.5 w-3.5" />}
-              {following.data ? tx("Following") : tx("Follow")}
-            </button>
-          )}
-          {isHost && live && (
-            <button onClick={endRoom} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-destructive px-3 text-xs font-bold text-destructive-foreground">
-              <PhoneOff className="h-3.5 w-3.5" /> {tx("End room")}
-            </button>
-          )}
-           {isHost && !live && (
-            <button onClick={deleteRoom} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-destructive px-3 text-xs font-bold text-destructive-foreground">
-              <Trash2 className="h-3.5 w-3.5" /> {tx("Delete room")}
-            </button>
-          )}
-          {isHost && room.data.invite_code && (
-            <button
-              onClick={async () => { await navigator.clipboard.writeText(inviteLink(room.data!.invite_code!)); setCopied(true); window.setTimeout(() => setCopied(false), 1500); }}
-              className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-xs font-bold">
-              {copied ? <Check className="h-3.5 w-3.5 text-primary" /> : <Copy className="h-3.5 w-3.5" />} {tx("Invite link")}
-            </button>
+          {isHost && (live || room.data.invite_code) && (
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              {live && (
+                <button onClick={endRoom} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-destructive px-3 text-xs font-bold text-destructive-foreground">
+                  <PhoneOff className="h-3.5 w-3.5" /> {tx("End room")}
+                </button>
+              )}
+              {!live && (
+                <button onClick={deleteRoom} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-destructive px-3 text-xs font-bold text-destructive-foreground">
+                  <Trash2 className="h-3.5 w-3.5" /> {tx("Delete room")}
+                </button>
+              )}
+              {room.data.invite_code && (
+                <button
+                  onClick={async () => { await navigator.clipboard.writeText(inviteLink(room.data!.invite_code!)); setCopied(true); window.setTimeout(() => setCopied(false), 1500); }}
+                  className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-xs font-bold">
+                  {copied ? <Check className="h-3.5 w-3.5 text-primary" /> : <Copy className="h-3.5 w-3.5" />} {tx("Invite link")}
+                </button>
+              )}
+            </div>
           )}
         </div>
 
