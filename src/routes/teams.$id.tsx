@@ -222,7 +222,7 @@ function TeamPage() {
                 <div className="min-w-0">
                   <div className="truncate font-medium">{tx(p.name)}</div>
                   <div className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
-                    <span className="truncate">{[p.shirt_number != null ? `#${p.shirt_number}` : null, tx(p.position)].filter(Boolean).join(" · ") || "—"}</span>
+                    <span className="truncate">{[p.shirt_number != null ? String(p.shirt_number) : null, tx(p.position)].filter(Boolean).join(" · ") || "—"}</span>
                     {club?.club_name ? (
                       <>
                         <span aria-hidden>·</span>
@@ -595,7 +595,7 @@ function TeamNewsTeaser({ teamId, onMore }: { teamId: string; onMore: () => void
   const news = useQuery({
     queryKey: ["team-news-teaser", teamId],
     queryFn: async () =>
-      (await supabase.from("news_posts").select("slug,title,excerpt,cover_url,published_at")
+      (await supabase.from("news_posts").select("slug,title,excerpt,cover_url,cover_focus,published_at")
         .eq("team_id", teamId).not("published_at", "is", null).order("published_at", { ascending: false }).limit(1)).data ?? [],
   });
   const post = news.data?.[0];
@@ -604,7 +604,7 @@ function TeamNewsTeaser({ teamId, onMore }: { teamId: string; onMore: () => void
     <section>
       <h2 className="mb-3 text-sm font-bold uppercase text-muted-foreground">{tx("Latest news")}</h2>
       <Link to="/news/$slug" params={{ slug: post.slug }} className="block overflow-hidden rounded-2xl border border-border bg-card hover:border-primary/50">
-        {post.cover_url && <img src={post.cover_url} alt="" className="max-h-56 w-full object-cover" />}
+        {post.cover_url && <img src={post.cover_url} alt="" className="max-h-56 w-full object-cover" style={{ objectPosition: (post as { cover_focus?: string | null }).cover_focus ?? "50% 25%" }} />}
         <div className="p-4">
           <div className="text-sm font-bold">{tx(post.title)}</div>
           {post.excerpt && <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{tx(post.excerpt)}</p>}

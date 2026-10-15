@@ -137,7 +137,8 @@ export function NewsPanel() {
             <Field label="Author"><input className={inputCls} value={form.author_display ?? ""} onChange={(e) => setForm({ ...form, author_display: e.target.value })} /></Field>
           </div>
           <Field label="Cover">
-            <ImageInput value={form.cover_url ?? null} onChange={(v) => setForm({ ...form, cover_url: v })} onFile={async (f) => { const url = await uploadMedia("news-covers", f); if (url) setForm({ ...form, cover_url: url }); }} />
+            <ImageInput value={form.cover_url ?? null} onChange={(v) => { setForm({ ...form, cover_url: v, cover_focus: null } as typeof form); if (v) void focusCover(v); }} onFile={async (f) => { const url = await uploadMedia("news-covers", f); if (url) { setForm({ ...form, cover_url: url, cover_focus: null } as typeof form); void focusCover(url); } }} />
+            {form.cover_url && <img src={form.cover_url} alt="" className="mt-2 h-32 w-full rounded object-cover" style={{ objectPosition: (form as { cover_focus?: string | null }).cover_focus ?? "50% 25%" }} />}
           </Field>
           <NewsLinkPicker
             teamId={form.team_id ?? null}
