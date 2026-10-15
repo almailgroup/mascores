@@ -158,16 +158,16 @@ export function useLiveEventAlerts() {
       seen.current.add(row.id);
       const m = await loadMatch(row.match_id);
       if (cancelled || !wanted(m, row.match_id)) return;
-      const meta = EVENT_TEXT[row.type] ?? { emoji: "🔔", label: row.type.replace(/_/g, " ") };
+      const meta = EVENT_TEXT[row.type] ?? { label: row.type.replace(/_/g, " ") };
       const category: "cards" | "goals" | null = ["yellow", "yellow_card", "second_yellow", "red", "red_card"].includes(row.type) ? "cards" : ["goal", "own_goal", "penalty", "penalty_goal", "penalty_missed", "missed_penalty"].includes(row.type) ? "goals" : null;
       if (category && preferences[category] === false) return;
       const side = m && row.team_id ? (row.team_id === m.homeId ? m.home : row.team_id === m.awayId ? m.away : null) : null;
       const who = await playerName(row.player_id);
       const minute = row.minute != null ? `${row.minute}${row.extra ? `+${row.extra}` : ""}'` : "";
-      const isGoal = meta.emoji === "⚽" || row.type === "own_goal";
+      const isGoal = GOAL_TYPES.includes(row.type);
       const fresh = isGoal ? await refreshScore(row.match_id) : m;
       const score = fresh && fresh.homeScore != null && fresh.awayScore != null ? `${fresh.homeScore} - ${fresh.awayScore}` : "";
-      const title = `${meta.emoji} ${meta.label}${side ? ` · ${side}` : ""}`;
+      const title = `${meta.label}${side ? ` · ${side}` : ""}`;
       const body = [
         m ? `${m.home} ${score || "vs"} ${m.away}` : "",
         [minute, who, row.description].filter(Boolean).join(" · "),
