@@ -1,7 +1,8 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Bot, ImagePlus, Landmark, Plus, Radio, Repeat2, Sparkles, Trash2 } from "lucide-react";
+import { Bot, ImagePlus, Landmark, Plus, Radio, Repeat2, Sparkles, Trash2, X } from "lucide-react";
 import { supabase, type Venue, type Transfer } from "@/lib/db";
 import { CountrySelect } from "@/components/country-select";
 import { Field, ImageInput, inputCls, btnPrimary, btnDanger } from "./ui";
@@ -48,17 +49,39 @@ export function VenuesPanel() {
     </div>
     <SearchBar value={search} onChange={setSearch} placeholder="Search stadiums" />
     <div className="grid gap-2 sm:grid-cols-2">{filterByText(q.data, search, (v) => [v.name, v.city, v.country]).map((v) => <Item key={v.id} title={v.name} subtitle={[v.city, v.country, v.capacity ? `${v.capacity.toLocaleString()} seats` : null].filter(Boolean).join(" · ")} onEdit={() => setForm(v)} onDelete={async () => { await supabase.from("venues").delete().eq("id", v.id); qc.invalidateQueries({ queryKey: ["admin", "venues"] }); }} />)}</div>
-    <div className="mt-4 grid gap-3 border-t border-border pt-4 sm:grid-cols-2">
-      <Field label="Venue name"><input className={inputCls} value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
-      <ArabicNameField englishName={form.name} />
-      <Field label="City"><input className={inputCls} value={form.city ?? ""} onChange={(e) => setForm({ ...form, city: e.target.value })} /></Field>
-      <Field label="Country"><CountrySelect value={form.country} onChange={(name, country) => setForm({ ...form, country: name, country_code: country?.code ?? null })} /></Field>
-      <Field label="Capacity"><input type="number" className={inputCls} value={form.capacity ?? ""} onChange={(e) => setForm({ ...form, capacity: e.target.value ? Number(e.target.value) : null })} /></Field>
-      <Field label="Image"><ImageInput value={form.image_url ?? null} onChange={(image_url) => setForm({ ...form, image_url })} onFile={async (file) => { const image_url = await uploadMedia("competition-logos", file); if (image_url) setForm({ ...form, image_url }); }} /></Field>
-      <Field label="Description"><textarea className={inputCls} value={form.description ?? ""} onChange={(e) => setForm({ ...form, description: e.target.value })} /></Field>
-      <Field label="Map link (Google or Apple Maps)"><input className={inputCls} placeholder="https://maps.app.goo.gl/…" value={form.map_url ?? ""} onChange={(e) => setForm({ ...form, map_url: e.target.value || null })} /></Field>
-      <button className={btnPrimary} onClick={save}><Plus className="h-3.5 w-3.5" /> {form.id ? "Save venue" : "Add venue"}</button>
-    </div>
+    {(() => {
+      const venueForm = (
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field label="Venue name"><input className={inputCls} value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
+          <ArabicNameField englishName={form.name} />
+          <Field label="City"><input className={inputCls} value={form.city ?? ""} onChange={(e) => setForm({ ...form, city: e.target.value })} /></Field>
+          <Field label="Country"><CountrySelect value={form.country} onChange={(name, country) => setForm({ ...form, country: name, country_code: country?.code ?? null })} /></Field>
+          <Field label="Capacity"><input type="number" className={inputCls} value={form.capacity ?? ""} onChange={(e) => setForm({ ...form, capacity: e.target.value ? Number(e.target.value) : null })} /></Field>
+          <Field label="Image"><ImageInput value={form.image_url ?? null} onChange={(image_url) => setForm({ ...form, image_url })} onFile={async (file) => { const image_url = await uploadMedia("competition-logos", file); if (image_url) setForm({ ...form, image_url }); }} /></Field>
+          <Field label="Description"><textarea className={inputCls} value={form.description ?? ""} onChange={(e) => setForm({ ...form, description: e.target.value })} /></Field>
+          <Field label="Map link (Google or Apple Maps)"><input className={inputCls} placeholder="https://maps.app.goo.gl/…" value={form.map_url ?? ""} onChange={(e) => setForm({ ...form, map_url: e.target.value || null })} /></Field>
+        </div>
+      );
+      if (form.id) {
+        return createPortal(
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-background" data-no-gesture>
+            <div className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-border bg-background px-4 pb-3" style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 12px)" }}>
+              <button type="button" aria-label="Close" className="flex h-10 w-10 items-center justify-center rounded-full border border-border" onClick={() => setForm({})}><X className="h-5 w-5" /></button>
+              <div className="min-w-0 flex-1 truncate text-center text-sm font-bold">{form.name || "Edit venue"}</div>
+              <button type="button" className={btnPrimary} onClick={save}>Save</button>
+            </div>
+            <div className="mx-auto max-w-2xl p-4 pb-10">{venueForm}</div>
+          </div>,
+          document.body,
+        );
+      }
+      return (
+        <div className="mt-4 border-t border-border pt-4">
+          {venueForm}
+          <button className={`${btnPrimary} mt-3`} onClick={save}><Plus className="h-3.5 w-3.5" /> Add venue</button>
+        </div>
+      );
+    })()}
   </LibraryPanel>;
 }
 
