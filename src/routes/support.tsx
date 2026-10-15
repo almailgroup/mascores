@@ -7,17 +7,17 @@ import { useI18n } from "@/lib/i18n";
 export const Route = createFileRoute("/support")({
   head: () => ({
     meta: [
-      { title: "Support — MansourAlmailScores" },
+      { title: "Support — MA Scores" },
       {
         name: "description",
         content:
-          "Get in touch with the MansourAlmailScores team — email and Instagram support for scores, tickets, and accounts.",
+          "Get in touch with the MA Scores team — email and Instagram support for scores, tickets, and accounts.",
       },
-      { property: "og:title", content: "Support — MansourAlmailScores" },
+      { property: "og:title", content: "Support — MA Scores" },
       {
         property: "og:description",
         content:
-          "Get in touch with the MansourAlmailScores team — email and Instagram support for scores, tickets, and accounts.",
+          "Get in touch with the MA Scores team — email and Instagram support for scores, tickets, and accounts.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

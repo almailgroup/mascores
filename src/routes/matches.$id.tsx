@@ -66,7 +66,7 @@ function formationRows(formation: string | null | undefined): string[][] {
 }
 
 export const Route = createFileRoute("/matches/$id")({
-  head: ({ params }) => ({ meta: [{ title: `Match — MansourAlmailScores` }, { name: "description", content: `Match center ${params.id}` }, { property: "og:title", content: `Match — MansourAlmailScores` }, { property: "og:description", content: `Match center ${params.id}` }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
+  head: ({ params }) => ({ meta: [{ title: `Match — MA Scores` }, { name: "description", content: `Match center ${params.id}` }, { property: "og:title", content: `Match — MA Scores` }, { property: "og:description", content: `Match center ${params.id}` }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: MatchPage,
 });
 

@@ -10,8 +10,8 @@ import { Loader2, Mail, Lock, User as UserIcon, ArrowLeft } from "lucide-react";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in — MansourAlmailScores" },
-      { name: "description", content: "Sign in or create your MansourAlmailScores account to follow live football scores, favorites, and personalized coverage." }, { property: "og:title", content: "Sign in — MansourAlmailScores" }, { property: "og:description", content: "Sign in or create your MansourAlmailScores account to follow live football scores, favorites, and personalized coverage." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }],
+      { title: "Sign in — MA Scores" },
+      { name: "description", content: "Sign in or create your MA Scores account to follow live football scores, favorites, and personalized coverage." }, { property: "og:title", content: "Sign in — MA Scores" }, { property: "og:description", content: "Sign in or create your MA Scores account to follow live football scores, favorites, and personalized coverage." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }],
   }),
   component: AuthPage,
 });
@@ -141,7 +141,7 @@ function AuthPage() {
               ? "Follow every match with your personalized feed."
               : mode === "forgot"
                 ? "We'll email you a secure reset link."
-                : "Sign in to continue to MansourAlmailScores."}
+                : "Sign in to continue to MA Scores."}
           </p>
 
           {mode !== "forgot" && (
@@ -265,7 +265,7 @@ function AuthPage() {
               </button>
             ) : (
               <>
-                New to MansourAlmailScores?{" "}
+                New to MA Scores?{" "}
                 <button className="font-medium text-primary hover:underline" onClick={() => setMode("signup")}>
                   Create an account
                 </button>
