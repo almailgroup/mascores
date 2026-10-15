@@ -2211,6 +2211,7 @@ export type Database = {
           logo_url: string | null
           media_urls: string[]
           name: string
+          name_ar: string | null
           parent_team_id: string | null
           short_name: string | null
           social_links: Json
@@ -2242,6 +2243,7 @@ export type Database = {
           logo_url?: string | null
           media_urls?: string[]
           name: string
+          name_ar?: string | null
           parent_team_id?: string | null
           short_name?: string | null
           social_links?: Json
@@ -2273,6 +2275,7 @@ export type Database = {
           logo_url?: string | null
           media_urls?: string[]
           name?: string
+          name_ar?: string | null
           parent_team_id?: string | null
           short_name?: string | null
           social_links?: Json
@@ -2999,6 +3002,7 @@ export type Database = {
           votes: number
         }[]
       }
+      norm_search: { Args: { _t: string }; Returns: string }
       player_follower_count: { Args: { _player_id: string }; Returns: number }
       public_profile: {
         Args: { _id: string }
@@ -3028,6 +3032,13 @@ export type Database = {
           followers: number
           id: string
           username: string
+        }[]
+      }
+      search_teams: {
+        Args: { _limit?: number; _q: string }
+        Returns: {
+          id: string
+          score: number
         }[]
       }
       set_club_notification: {
