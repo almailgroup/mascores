@@ -26,7 +26,7 @@ function RecordSearch({ kind, value, onPick, label }: { kind: Kind; value: Pick 
       <div className="mb-2 text-xs font-semibold text-muted-foreground">{label}</div>
       {value ? (
         <div className="flex items-center gap-2 text-sm font-semibold">
-          <span className="min-w-0 flex-1 truncate">{value.name}{value.sub ? <span className="font-normal text-muted-foreground"> · {value.sub}</span> : null}</span>
+          <span className="min-w-0 flex-1 break-words">{value.name}{value.sub ? <span className="font-normal text-muted-foreground"> · {value.sub}</span> : null}</span>
           <button onClick={() => onPick(null)} aria-label="Clear"><X className="h-4 w-4" /></button>
         </div>
       ) : (
@@ -34,7 +34,7 @@ function RecordSearch({ kind, value, onPick, label }: { kind: Kind; value: Pick 
           <input className={inputCls} placeholder="Search…" value={term} onChange={(e) => setTerm(e.target.value)} />
           <div className="mt-1 max-h-48 overflow-y-auto">
             {(q.data ?? []).map((r) => (
-              <button key={r.id} className="block w-full truncate rounded-lg px-2 py-1.5 text-start text-sm hover:bg-accent" onClick={() => { onPick(r); setTerm(""); }}>
+              <button key={r.id} className="block w-full break-words rounded-lg px-2 py-1.5 text-start text-sm hover:bg-accent" onClick={() => { onPick(r); setTerm(""); }}>
                 {r.name} <span className="text-xs text-muted-foreground">· {r.sub ?? ""}</span>
               </button>
             ))}
@@ -100,12 +100,57 @@ export function MergePanel() {
         {suggestions.data?.length === 0 && <p className="text-xs text-muted-foreground">No likely duplicates found.</p>}
         <div className="grid gap-2">
           {(suggestions.data ?? []).map((s) => (
-            <div key={`${s.a_id}-${s.b_id}`} className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-2.5 text-sm">
-              <span className="min-w-0 flex-1 truncate"><b>{s.a_name}</b> ↔ <b>{s.b_name}</b> <span className="text-xs text-muted-foreground">{Math.round(s.score * 100)}% similar</span></span>
-              <button className={btnGhost} onClick={() => { setDrop({ id: s.b_id, name: s.b_name }); setKeep({ id: s.a_id, name: s.a_name }); window.scrollTo({ top: 0, behavior: "smooth" }); }}>Review</button>
-            </div>
+            <SuggestionCard key={`${s.a_id}-${s.b_id}`} kind={kind} s={s} onApprove={(keepId, keepName, dropId, dropName) => { setKeep({ id: keepId, name: keepName }); setDrop({ id: dropId, name: dropName }); window.scrollTo({ top: 0, behavior: "smooth" }); }} />
           ))}
         </div>
+      </div>
+    </div>
+  );
+}
+
+type Sug = { a_id: string; a_name: string; b_id: string; b_name: string; score: number };
+function Profile({ kind, id, name }: { kind: Kind; id: string; name: string }) {
+  const q = useQuery({
+    queryKey: ["merge-profile", kind, id],
+    queryFn: async () => {
+      if (kind === "player") {
+        const { data } = await supabase.from("players").select("name,name_ar,position,nationality,date_of_birth,shirt_number,photo_url,team:team_id(name)").eq("id", id).maybeSingle();
+        const d = data as Record<string, unknown> | null;
+        return d ? { img: d.photo_url as string | null, lines: [d.name_ar, (d.team as { name: string } | null)?.name ?? "Free agent", d.position, d.nationality, d.date_of_birth, d.shirt_number != null ? `No. ${d.shirt_number}` : null] } : null;
+      }
+      const { data } = await supabase.from("teams").select("name,name_ar,short_name,country,logo_url").eq("id", id).maybeSingle();
+      const d = data as Record<string, unknown> | null;
+      return d ? { img: d.logo_url as string | null, lines: [d.name_ar, d.short_name, d.country] } : null;
+    },
+  });
+  const href = kind === "player" ? `/players/${id}` : `/teams/${id}`;
+  return (
+    <div className="min-w-0 rounded-lg border border-border bg-background p-2">
+      <div className="mb-1 flex items-center gap-2">
+        {q.data?.img ? <img src={q.data.img} alt="" className="h-9 w-9 shrink-0 rounded-full bg-muted object-cover" /> : <div className="h-9 w-9 shrink-0 rounded-full bg-muted" />}
+        <b className="min-w-0 break-words text-sm leading-tight">{name}</b>
+      </div>
+      <div className="space-y-0.5 text-xs text-muted-foreground">
+        {(q.data?.lines ?? []).filter(Boolean).map((l, i) => <div key={i} className="break-words">{String(l)}</div>)}
+      </div>
+      <a href={href} target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs font-semibold text-primary">Open profile</a>
+    </div>
+  );
+}
+function SuggestionCard({ kind, s, onApprove }: { kind: Kind; s: Sug; onApprove: (keepId: string, keepName: string, dropId: string, dropName: string) => void }) {
+  const [hidden, setHidden] = useState(false);
+  if (hidden) return null;
+  return (
+    <div className="rounded-xl border border-border bg-card p-2.5 text-sm">
+      <div className="mb-2 text-xs text-muted-foreground">{Math.round(s.score * 100)}% similar</div>
+      <div className="grid grid-cols-2 gap-2">
+        <Profile kind={kind} id={s.a_id} name={s.a_name} />
+        <Profile kind={kind} id={s.b_id} name={s.b_name} />
+      </div>
+      <div className="mt-2 flex flex-wrap gap-2">
+        <button className={btnPrimary} onClick={() => onApprove(s.a_id, s.a_name, s.b_id, s.b_name)}>Keep left</button>
+        <button className={btnPrimary} onClick={() => onApprove(s.b_id, s.b_name, s.a_id, s.a_name)}>Keep right</button>
+        <button className={btnGhost} onClick={() => setHidden(true)}>Not the same</button>
       </div>
     </div>
   );
