@@ -1,0 +1,111 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1791459617815,
+      "tag": "0000_reporter_details",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791461027319,
+      "tag": "0001_reporter_identity_and_ban_history",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791580633827,
+      "tag": "0002_reporter_scoped_news_uploads",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791586505577,
+      "tag": "0003_round_team_and_title_history",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791643327198,
+      "tag": "0004_atomic_club_notification_preferences",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791657541560,
+      "tag": "0005_reporter_submission_owner_controls",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791658037959,
+      "tag": "0006_club_followers",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791658195100,
+      "tag": "0007_rating_driven_round_teams",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791660792986,
+      "tag": "0008_round_team_varied_formations",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791661391174,
+      "tag": "0009_player_followers_alerts",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791661929920,
+      "tag": "0010_recycle_bin",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791662770158,
+      "tag": "0011_import_staging",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1791747810545,
+      "tag": "0012_temporary_players",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1791952014071,
+      "tag": "0013_create_device_tokens",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1791977994652,
+      "tag": "0014_tighten_media_and_chat_reads",
+      "breakpoints": true
+    }
+  ]
+}

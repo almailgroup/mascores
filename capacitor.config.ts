@@ -33,21 +33,6 @@ const ownHosts = Array.from(
   ]),
 );
 
-// Google and Apple sign-in leave mascores.live for these hosts, then return.
-// A host missing from allowNavigation is opened in Safari and the session
-// never comes back into the app.
-const authHosts = [
-  "oauth.lovable.app",
-  "*.lovable.app",
-  "accounts.google.com",
-  "*.google.com",
-  "*.googleusercontent.com",
-  "*.gstatic.com",
-  "accounts.youtube.com",
-  "appleid.apple.com",
-  "*.apple.com",
-];
-
 const config: CapacitorConfig = {
   appId: "com.almailgroup.mascores",
   appName: "Mansour Almail Scores",
@@ -56,13 +41,28 @@ const config: CapacitorConfig = {
     // The site paints its own dark background; avoid a white flash on push/pop.
     backgroundColor: "#0a1628",
     contentInset: "never",
+    // No Safari-style link preview when pressing and holding.
+    allowsLinkPreview: false,
   },
+  // Present as mobile Safari so Google allows its sign-in page inside the app.
+  overrideUserAgent:
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1",
   server: {
     url: appUrl,
     cleartext: false,
-    // lovable.app 302s to mascores.live, and sign-in continues on the auth
-    // hosts above. Keep both inside the WebView so login returns to the app.
-    allowNavigation: [...ownHosts, ...authHosts],
+    // Our own hosts plus the sign-in hosts, so Google/Apple sign-in stays
+    // inside the app and returns the session to it instead of Safari.
+    allowNavigation: [
+      ...ownHosts,
+      "oauth.lovable.app",
+      "*.lovable.app",
+      "accounts.google.com",
+      "*.google.com",
+      "*.gstatic.com",
+      "appleid.apple.com",
+      "*.apple.com",
+      "*.supabase.co",
+    ],
   },
   plugins: {
     SplashScreen: {
@@ -70,6 +70,9 @@ const config: CapacitorConfig = {
       backgroundColor: "#0a1628",
       showSpinner: false,
       launchAutoHide: true,
+    },
+    LocalNotifications: {
+      iconColor: "#2563eb",
     },
     PushNotifications: {
       // Show goal alerts even while the app is open and in the foreground.

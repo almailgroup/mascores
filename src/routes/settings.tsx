@@ -2,10 +2,10 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { useI18n, type Lang } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n";
 import { useTheme } from "@/components/theme-provider";
 import { VoiceReplays } from "@/components/voice-replays";
-import { AppShell } from "@/components/app-shell";
+import { AppShell, BackButton } from "@/components/app-shell";
 import { uploadMedia } from "@/components/admin/upload";
 import { CURRENCIES, useCurrency } from "@/lib/currency";
 import { useHeightUnit } from "@/lib/units";
@@ -15,15 +15,22 @@ import { Save, LogOut, Loader2, LogIn, Camera, Trash2, BellRing } from "lucide-r
 import { ImageCropper } from "@/components/image-cropper";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import type { AlertSoundMap } from "@/lib/alert-sounds";
+import { Button } from '@/components/ui/button';
+import { useQuery } from "@tanstack/react-query";
 
 
 export const Route = createFileRoute("/settings")({
-  head: () => ({ meta: [{ title: "Settings — MansourAlmailScores" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Settings — MansourAlmailScores" }, { name: "robots", content: "noindex" }, { name: "description", content: "Manage your MA Scores account and preferences." }, { property: "og:title", content: "Settings — MansourAlmailScores" }, { property: "og:description", content: "Manage your MA Scores account and preferences." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: SettingsPage,
 });
 
 function SettingsPage() {
   const { user, loading: authLoading } = useAuth();
+  const owner = useQuery({ queryKey: ["settings-owner", user?.id], enabled: !!user, queryFn: async () => {
+    if (!user) return false;
+    const { data, error } = await supabase.rpc("is_main_admin", { _uid: user.id });
+    return !error && data === true;
+  }});
   const navigate = useNavigate();
   const { t, lang, setLang } = useI18n();
   const { theme, setTheme } = useTheme();
@@ -54,17 +61,18 @@ function SettingsPage() {
       setIsPublic(prof?.is_public ?? true);
       if (prof?.notification_preferences && typeof prof.notification_preferences === "object" && !Array.isArray(prof.notification_preferences)) setAlertPrefs((prev) => ({ ...prev, ...(prof.notification_preferences as typeof prev) }));
       if (prof?.height_unit === "ft" || prof?.height_unit === "cm") setHeightUnit(prof.height_unit);
-      if (prof?.language && (prof.language === "en" || prof.language === "ar")) setLang(prof.language as Lang);
     })();
-  }, [user, authLoading, setLang]);
+  }, [user, authLoading]);
 
   const save = async () => {
     if (!user) return;
     setSaving(true);
+    const { data: savedProfile } = await supabase.from("profiles").select("notification_preferences").eq("id", user.id).maybeSingle();
+    const savedNotifications = savedProfile?.notification_preferences;
     const clean = username.trim().replace(/[^a-zA-Z0-9_.]/g, "").slice(0, 20);
     const { error } = await supabase.from("profiles").update({
       display_name: displayName, language: lang, theme, avatar_url: avatarUrl, height_unit: heightUnit,
-       username: clean || null, is_public: isPublic, notification_preferences: alertPrefs,
+       username: clean || null, is_public: isPublic, notification_preferences: { ...(savedNotifications && typeof savedNotifications === "object" && !Array.isArray(savedNotifications) ? savedNotifications : {}), ...alertPrefs },
     }).eq("id", user.id);
     setSaving(false);
     if (error) { setNotice("That username is already taken."); setTimeout(() => setNotice(null), 2500); return; }
@@ -87,7 +95,9 @@ function SettingsPage() {
 
   return (
     <AppShell>
+      <BackButton iconOnly className="mb-3" />
       <h1 className="text-3xl font-bold tracking-tight">{t("settings.title")}</h1>
+      {owner.data && <Link to="/admin" className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-primary">{lang === "ar" ? "إدارة المسابقات وسجل الأبطال" : "Competition settings & title history"}</Link>}
       {user && <p className="mt-1 text-sm text-muted-foreground">{user.email}</p>}
 
       <section className="mt-6 rounded-3xl border border-border bg-card p-6">
@@ -129,9 +139,9 @@ function SettingsPage() {
         ) : (
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-muted-foreground">{t("settings.signInHint")}</p>
-            <Link to="/auth" className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground">
-              <LogIn className="h-4 w-4" /> {t("nav.signIn")}
-            </Link>
+            <Button asChild className="rounded-full">
+              <Link to="/auth"><LogIn className="h-4 w-4" /> {lang === "ar" ? "تسجيل الدخول / إنشاء حساب" : "Sign in / Log in"}</Link>
+            </Button>
           </div>
         )}
       </section>
@@ -150,10 +160,16 @@ function SettingsPage() {
           <div className="mb-3 text-sm font-semibold">{t("settings.language")}</div>
           <div className="grid grid-cols-2 gap-2">
             {(["en", "ar"] as const).map((l) => (
-              <button key={l} type="button" onClick={() => setLang(l)}
+              <Button key={l} type="button" variant="ghost" onClick={async () => {
+                setLang(l);
+                if (user) {
+                  const { error } = await supabase.from("profiles").update({ language: l }).eq("id", user.id);
+                  if (error) setNotice(l === "ar" ? "تم حفظ اللغة على هذا الجهاز. تعذّر مزامنتها مع حسابك." : "Language saved on this device. Account sync failed.");
+                }
+              }}
                 className={`rounded-xl border px-3 py-2 text-sm ${lang === l ? "border-primary bg-primary/10 text-primary" : "border-border bg-background hover:bg-accent"}`}>
                 {l === "en" ? "English" : "العربية"}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -218,17 +234,11 @@ function SettingsPage() {
 
       <FeedbackBox />
 
-      {user && <section className="mt-10 rounded-2xl border border-destructive/30 bg-destructive/5 px-4 py-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="min-w-0">
-            <div className="text-xs font-semibold text-destructive">{t("settings.deleteAccount")}</div>
-            <p className="text-[0.65rem] text-muted-foreground">{t("settings.deleteAccountHint")}</p>
-          </div>
-          <button disabled={deleting} onClick={() => setConfirmDelete(true)}
-            className="inline-flex h-7 items-center gap-1.5 rounded-full border border-destructive/50 bg-destructive/10 px-3 text-[0.7rem] font-semibold text-destructive disabled:opacity-60">
+      {user && <section className="mt-5">
+          <Button variant="link" size="sm" disabled={deleting} onClick={() => setConfirmDelete(true)}
+            className="px-0 text-xs text-destructive">
             {deleting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />} {t("settings.deleteAccount")}
-          </button>
-        </div>
+          </Button>
         <ConfirmDelete
           open={confirmDelete}
           title={t("settings.deleteAccount")}

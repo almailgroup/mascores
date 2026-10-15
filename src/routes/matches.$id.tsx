@@ -1,14 +1,14 @@
+import { PlayerAvatar } from "@/components/player-avatar";
 import { TeamCrest } from "@/components/team-crest";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { AppShell, BackButton, EmptyState, LoadingSkeleton, SwipeTabs } from "@/components/app-shell";
 import { supabase, STATUS_LABELS, roundLabel, matchClockSeconds, formatClock, eventLabel, ratingClass, formatRating, type Match, type Team, type MatchEvent, type Lineup, type Player, type StandingRow } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
-import { ChevronRight, PlayCircle, Radio } from "lucide-react";
+import { ChevronRight, MessageCircle, PlayCircle, Radio } from "lucide-react";
 import { useTx, useNum, useDates } from "@/lib/auto-translate";
 import { useI18n } from "@/lib/i18n";
-import { MatchChat } from "@/components/match-chat";
 import { MatchVoice } from "@/components/match-voice";
 import { MatchPrediction } from "@/components/match-prediction";
 import { MatchMomentum } from "@/components/match-momentum";
@@ -18,30 +18,32 @@ import { FlagIcon } from "@/components/flag";
 import { EventIcon as EventArt, hasEventArt } from "@/components/event-icon";
 import { nationalOverrideMap, applyCallUp } from "@/lib/national";
 import { useLogoAccent } from "@/lib/logo-accent";
+import { SportsHeaderBackground } from "@/components/sports-header-background";
 import { StandingsTable, type PublicStandingRow } from "@/components/standings-table";
 import { MatchShare } from "@/components/match-share";
 import { displayShortName } from "@/lib/short-name";
 import { FavoriteButton, MatchNotificationButton, useFavorites } from "@/hooks/use-favorites";
+import { useCollapsingHeader } from "@/hooks/use-collapsing-header";
 
 /** Crest + name used inside the slim match hero. The follow star sits on the
  *  outer edge of each club: home star on the left, away star on the right. */
 function HeroTeam({ team, onFollow, starSide }: { team: Team | null; onFollow?: () => void; starSide: "start" | "end" }) {
   const reverse = starSide === "end";
   const star = team ? (
-    <span className="shrink-0 [&_button]:h-10 [&_button]:w-10 [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-white [&_svg]:h-6 [&_svg]:w-6">
+    <span className="match-team-star shrink-0 [&_button]:h-10 [&_button]:w-10 [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-match-foreground [&_svg]:h-6 [&_svg]:w-6">
       <FavoriteButton kind="team" id={team.id} onFollow={onFollow} />
     </span>
   ) : null;
-  const crest = <span className="grid h-16 w-16 shrink-0 place-items-center sm:h-[4.5rem] sm:w-[4.5rem]">
+  const crest = <span className="match-team-crest grid shrink-0 place-items-center">
     {team?.logo_url
       ? <img src={team.logo_url} alt="" className="h-full w-full object-contain drop-shadow-[0_3px_8px_rgba(0,0,0,0.35)]" />
-      : <TeamCrest name={team?.name} logo={null} className="h-14 w-14" />}
+      : <TeamCrest name={team?.name} logo={null} className="h-10 w-10" />}
   </span>;
   const column = team
     ? <Link to="/teams/$id" params={{ id: team.id }} className="flex min-w-0 flex-1 items-center justify-center">{crest}</Link>
     : <div className="flex min-w-0 flex-1 items-center justify-center">{crest}</div>;
   return (
-    <div className={`flex min-w-0 items-center gap-2 text-white ${reverse ? "flex-row-reverse" : ""}`}>
+    <div className={`flex min-w-0 items-center gap-2 text-match-foreground ${reverse ? "flex-row-reverse" : ""}`}>
       {star}{column}
     </div>
   );
@@ -64,7 +66,7 @@ function formationRows(formation: string | null | undefined): string[][] {
 }
 
 export const Route = createFileRoute("/matches/$id")({
-  head: ({ params }) => ({ meta: [{ title: `Match — MansourAlmailScores` }, { name: "description", content: `Match center ${params.id}` }] }),
+  head: ({ params }) => ({ meta: [{ title: `Match — MansourAlmailScores` }, { name: "description", content: `Match center ${params.id}` }, { property: "og:title", content: `Match — MansourAlmailScores` }, { property: "og:description", content: `Match center ${params.id}` }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: MatchPage,
 });
 
@@ -75,10 +77,10 @@ function TeamHeadline({ team }: { team: Team | null }) {
   const tx = useTx();
   const body = (
     <>
-      <span className="flex h-14 items-center justify-center">
-        <TeamCrest name={team?.name} logo={team?.logo_url} className="h-14 w-14" rounded="rounded-2xl" />
+        <span className="flex h-10 items-center justify-center">
+        <TeamCrest name={team?.name} logo={team?.logo_url} className="h-10 w-10" rounded="rounded-2xl" />
       </span>
-      <span className="mt-2 line-clamp-2 min-h-10 text-balance text-base font-bold leading-5 sm:text-lg">{tx(team?.name) ?? "TBD"}</span>
+      <span className="mt-1 line-clamp-2 min-h-8 text-balance text-[0.8rem] font-bold leading-4">{tx(team?.name) ?? "TBD"}</span>
     </>
   );
   const cls = "flex min-w-0 flex-col items-center text-center";
@@ -105,6 +107,7 @@ function MatchPage() {
       return data as (Match & { home: Team | null; away: Team | null; competition: { id: string; name: string; name_ar: string | null; slug: string; logo_url: string | null; sport: string; country: string | null; country_code: string | null } | null }) | null;
     },
   });
+  const heroRef = useCollapsingHeader(`${id}:${m.isLoading}`, 180);
   const events = useQuery({
     queryKey: ["match-events", id],
     queryFn: async () => {
@@ -118,7 +121,7 @@ function MatchPage() {
     queryKey: ["match-lineups", id, m.data?.home?.is_national, m.data?.away?.is_national],
     queryFn: async () => {
       const { data } = await supabase.from("match_lineups")
-        .select("*, player:player_id(id,name,name_ar,short_name,short_name_ar,shirt_number,position,photo_url)")
+        .select("*, player:player_id(id,name,name_ar,short_name,short_name_ar,shirt_number,position,photo_url,team_id,is_temporary)")
         .eq("match_id", id);
       const rows = (data ?? []) as unknown as (Lineup & { player: Player | null })[];
       const overrides = await nationalOverrideMap([m.data?.home ?? null, m.data?.away ?? null]);
@@ -155,12 +158,6 @@ function MatchPage() {
   // The hero blends both badges: home colour on the left, away colour on the right.
   const homeAccent = useLogoAccent(m.data?.home?.logo_url ?? null);
   const awayAccent = useLogoAccent(m.data?.away?.logo_url ?? null);
-  // Both halves are deepened so the header never glares on a phone screen.
-  const homeColor = `color-mix(in oklab, ${homeAccent?.color ?? awayAccent?.color ?? "#16224a"} 68%, #05070d 32%)`;
-  const awayColor = `color-mix(in oklab, ${awayAccent?.color ?? homeAccent?.color ?? "#070a12"} 68%, #05070d 32%)`;
-  // Two solid halves joined by a thin seam in a slightly shifted tone - never a blend of both colours.
-  const seamColor = `color-mix(in oklab, ${homeColor} 50%, #000 25%)`;
-  const heroBackground = `linear-gradient(100deg, ${homeColor} 0%, ${homeColor} 49.4%, ${seamColor} 49.4%, ${seamColor} 50.6%, ${awayColor} 50.6%, ${awayColor} 100%)`;
   const { add: addFavorite } = useFavorites();
   const [, tickClock] = useState(0);
   useEffect(() => {
@@ -181,7 +178,7 @@ function MatchPage() {
   const scorerList = (teamId: string | null | undefined) => (events.data ?? [])
     .filter((event) => ["goal", "penalty_goal", "penalty", "own_goal", "red", "second_yellow"].includes(event.type) && event.team?.id === teamId)
     .map((event) => ({
-      name: lang === "ar" && event.player?.name_ar ? event.player.name_ar : tx(event.player?.name) ?? tx(event.description ?? eventLabel(event.type)),
+      name: lang === "ar" && (event.player?.short_name_ar || event.player?.name_ar) ? ((event.player.short_name_ar ?? event.player.name_ar) ?? "") : tx(displayShortName(event.player?.short_name, event.player?.name)) ?? tx(event.player?.name) ?? tx(event.description ?? eventLabel(event.type)) ?? tx("Goal"),
       minute: `${event.minute ?? ""}${event.extra ? `+${event.extra}` : ""}'${event.type === "own_goal" ? " (OG)" : event.type === "penalty" ? " (P)" : ""}`,
       type: event.type,
     }));
@@ -193,11 +190,11 @@ function MatchPage() {
   const shareData = {
     competition: [tx(match.competition?.name) ?? "", roundLabel(match.round_number, match.round) ? tx(roundLabel(match.round_number, match.round)) : ""].filter(Boolean).join(" · "),
     kickoff: dates.kickoff(match.kickoff_at),
-    status: match.status === "live" ? formatClock(clock) : tx(STATUS_LABELS[match.status] ?? match.status) ?? match.status,
+    status: match.status === "live" ? formatClock(clock) : match.status === "scheduled" ? dates.kickoff(match.kickoff_at) : tx(STATUS_LABELS[match.status] ?? match.status) ?? match.status,
     home: { name: tx(match.home?.name) ?? "TBD", logo_url: match.home?.logo_url ?? null },
     away: { name: tx(match.away?.name) ?? "TBD", logo_url: match.away?.logo_url ?? null },
-    homeScore: String(match.home_score ?? 0),
-    awayScore: String(match.away_score ?? 0),
+    homeScore: ["scheduled", "postponed", "cancelled"].includes(match.status) ? "" : String(match.home_score ?? 0),
+    awayScore: ["scheduled", "postponed", "cancelled"].includes(match.status) ? "" : String(match.away_score ?? 0),
     homeScorers, awayScorers,
     homeLineup: starters(match.home_team_id),
     awayLineup: starters(match.away_team_id),
@@ -220,63 +217,62 @@ function MatchPage() {
 
   return (
     <AppShell>
-      {/* Slim hero split between both clubs' badge colours. */}
-      <div dir="ltr" className="relative -mx-4 -mt-6 mb-4 overflow-hidden px-4 pb-0 pt-1 text-white sm:-mx-6 sm:px-6"
-        style={{ background: heroBackground }}>
-        <div className="flex items-center justify-between px-1 pb-1">
+      <div ref={heroRef} dir="ltr" className="match-hero sports-header -mx-4 mb-4 overflow-hidden px-4 pb-0 text-match-foreground sm:-mx-6 sm:px-6">
+        <SportsHeaderBackground start={homeAccent?.color} end={awayAccent?.color} />
+        <div className="relative flex items-center justify-between px-1 pb-1">
           {/* plain arrow only, matching a native phone header */}
-          <BackButton iconOnly className="text-white" />
-          <div className="flex items-center gap-2 [&_button]:h-10 [&_button]:w-10 [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-white [&_svg]:h-5 [&_svg]:w-5">
+          <BackButton iconOnly className="text-match-foreground" />
+          <div className="flex items-center gap-1 [&_button]:h-8 [&_button]:w-8 [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-match-foreground [&_svg]:h-4 [&_svg]:w-4">
             <MatchShare data={shareData} mode="result" />
             <MatchNotificationButton matchId={match.id} teamIds={[match.home_team_id, match.away_team_id]} withSettings />
             <FavoriteButton kind="match" id={match.id} />
           </div>
         </div>
 
-        <div className="mt-4 grid items-center gap-3 px-1 sm:px-4" style={{ gridTemplateColumns: "minmax(0,1fr) minmax(5.5rem,auto) minmax(0,1fr)" }}>
+        <div className="match-hero-body">
+        <div className="match-score-row grid grid-cols-[minmax(0,1fr)_minmax(5.5rem,auto)_minmax(0,1fr)] items-center gap-3 px-1 sm:px-4">
           <HeroTeam team={match.home} onFollow={followMatch} starSide="start" />
           <div className="min-w-[5.5rem] text-center">
             {["scheduled", "postponed", "cancelled"].includes(match.status)
               ? <div className="text-sm font-bold leading-5">{tx(STATUS_LABELS[match.status] ?? match.status)}</div>
               : <>
                 {/* live matches show score and clock in red, like a broadcast ticker */}
-                <div className={`text-4xl font-black tabular-nums leading-none ${isLive ? "text-destructive" : ""}`}>
-                  {num(match.home_score ?? 0)} <span className={isLive ? "text-destructive/70" : "text-white/60"}>-</span> {num(match.away_score ?? 0)}
+                <div className={`match-score font-black tabular-nums leading-none ${isLive ? "text-match-live" : ""}`}>
+                  {num(match.home_score ?? 0)} <span className={isLive ? "text-match-live/70" : "text-match-foreground/60"}>-</span> {num(match.away_score ?? 0)}
                 </div>
                 {match.status === "pen" && match.home_pen != null && match.away_pen != null && (
-                  <div className="text-xs text-white/70">({num(match.home_pen)}–{num(match.away_pen)} {tx("pens")})</div>
+                  <div className="text-xs text-match-foreground/70">({num(match.home_pen)}–{num(match.away_pen)} {tx("pens")})</div>
                 )}
-                <div className={`mt-2 flex items-center justify-center gap-1.5 text-sm font-bold tabular-nums ${isLive ? "text-destructive" : "text-white/80"}`}>
-                  {isLive && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-destructive" />}
+                <div className={`match-clock flex items-center justify-center gap-1.5 font-bold tabular-nums ${isLive ? "text-match-live" : "text-match-foreground/80"}`}>
+                  {isLive && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-match-live" />}
                   {match.status === "live" ? num(formatClock(clock)) : tx(STATUS_LABELS[match.status] ?? match.status)}
                 </div>
               </>}
-            <div className="mt-2 text-[0.65rem] font-semibold uppercase text-white/70">{num(dates.kickoff(match.kickoff_at))}</div>
+            <div className="match-fading-detail mt-2 text-[0.65rem] font-semibold uppercase text-match-foreground/70">{num(dates.kickoff(match.kickoff_at))}</div>
           </div>
           <HeroTeam team={match.away} onFollow={followMatch} starSide="end" />
         </div>
 
-        <div className="mt-5 grid grid-cols-2 gap-8 px-5 text-center">
+        <div className="match-fading-detail mt-3 grid grid-cols-2 gap-8 px-5 text-center">
           <div className="min-w-0">
-            <Link to="/teams/$id" params={{ id: match.home?.id ?? "" }} disabled={!match.home} className="block text-balance break-words text-sm font-bold leading-5 text-white">{tx(match.home?.name) ?? "TBD"}</Link>
+            <Link to="/teams/$id" params={{ id: match.home?.id ?? "" }} disabled={!match.home} className="block text-balance break-words text-[0.75rem] font-bold leading-4 text-match-foreground">{tx(match.home?.name) ?? "TBD"}</Link>
           </div>
           <div className="min-w-0">
-            <Link to="/teams/$id" params={{ id: match.away?.id ?? "" }} disabled={!match.away} className="block text-balance break-words text-sm font-bold leading-5 text-white">{tx(match.away?.name) ?? "TBD"}</Link>
+            <Link to="/teams/$id" params={{ id: match.away?.id ?? "" }} disabled={!match.away} className="block text-balance break-words text-[0.75rem] font-bold leading-4 text-match-foreground">{tx(match.away?.name) ?? "TBD"}</Link>
           </div>
         </div>
 
         {(homeScorers.length > 0 || awayScorers.length > 0) && (
-          <div className="mt-3 grid grid-cols-2 items-start gap-8 px-4 text-[0.72rem] text-white/85">
+          <div className="match-fading-detail mt-3 grid grid-cols-2 items-start gap-8 px-4 text-[0.72rem] text-match-foreground/85">
             <div className="space-y-1.5 text-end">{homeScorers.map((scorer, index) => <div key={index} className="flex min-w-0 items-center justify-end gap-1.5"><span className="truncate" dir={lang === "ar" ? "rtl" : "ltr"}>{scorer.name} {num(scorer.minute)}</span><EventIcon type={scorer.type} /></div>)}</div>
             <div className="space-y-1.5 text-start">{awayScorers.map((scorer, index) => <div key={index} className="flex min-w-0 items-center gap-1.5"><EventIcon type={scorer.type} /><span className="truncate" dir={lang === "ar" ? "rtl" : "ltr"}>{scorer.name} {num(scorer.minute)}</span></div>)}</div>
           </div>
         )}
 
-        {match.venue && <div className="mt-5 flex justify-center px-4"><div className="rounded-full border border-white/10 bg-background/20 px-4 py-1.5 text-center text-[0.7rem] font-semibold text-white/75 backdrop-blur-sm">{tx(match.venue)}{match.city ? ` · ${tx(match.city)}` : ""}</div></div>}
-
-        <div className="mt-5 border-t border-white/10 px-1">
-          <SwipeTabs className="gap-2 text-sm">
-            {tabs.map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 pb-3 pt-3 font-semibold capitalize ${tab === item ? "border-b-2 border-white text-white" : "text-white/55"}`}>{tx(item === "media" ? "Media" : item === "previous" ? "Matches" : item === "details" ? "Details" : item === "lineups" ? "Lineups" : item === "standings" ? "Standings" : "Stats")}</button>)}
+        </div>
+        <div className="match-tabs border-t border-match-foreground/10 px-1">
+          <SwipeTabs className="gap-1.5 text-sm">
+            {tabs.map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 pb-3 pt-3 text-sm font-semibold capitalize ${tab === item ? "border-b-2 border-match-live text-match-foreground" : "text-match-foreground/55"}`}>{tx(item === "media" ? "Media" : item === "previous" ? "Matches" : item === "details" ? "Details" : item === "lineups" ? "Lineups" : item === "standings" ? "Standings" : "Stats")}</button>)}
           </SwipeTabs>
         </div>
       </div>
@@ -284,17 +280,17 @@ function MatchPage() {
       <div className="px-4 pb-6 sm:px-6">
       {tab === "details" && match.competition && (
         <Link to="/competitions/$slug" params={{ slug: match.competition.slug }}
-          className="mb-4 flex items-center gap-3 rounded-3xl border border-border bg-card px-4 py-3 shadow-sm transition hover:border-primary">
+          className="mb-3 flex items-center gap-2 rounded-2xl border border-border bg-card px-3 py-2 shadow-sm transition hover:border-primary">
           {match.competition.logo_url
-            ? <img src={match.competition.logo_url} alt="" className="h-9 w-9 shrink-0 object-contain" />
-            : <span className="h-9 w-9 shrink-0 rounded-full bg-muted" />}
-          <span className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 text-sm font-bold sm:text-base">
-            <span className="capitalize">{tx(match.competition.sport)},</span>
-            {match.competition.country && <><FlagIcon value={match.competition.country_code ?? match.competition.country} /><span>{tx(match.competition.country)},</span></>}
-             <span className="truncate">{lang === "ar" && match.competition.name_ar ? match.competition.name_ar : tx(match.competition.name)}</span>
-            {roundLabel(match.round_number, match.round) ? <span className="text-muted-foreground">, {tx(roundLabel(match.round_number, match.round))}</span> : null}
+            ? <img src={match.competition.logo_url} alt="" className="h-6 w-6 shrink-0 object-contain" />
+            : <span className="h-6 w-6 shrink-0 rounded-full bg-muted" />}
+          <span className="flex min-w-0 flex-1 flex-wrap items-center gap-x-1 text-[0.75rem] font-semibold leading-4">
+            <span className="shrink-0 capitalize">{tx(match.competition.sport)},</span>
+            {match.competition.country && <span className="shrink-0">{tx(match.competition.country)},</span>}
+            <span className="min-w-0 break-words">{lang === "ar" && match.competition.name_ar ? match.competition.name_ar : tx(match.competition.name)}</span>
+            {roundLabel(match.round_number, match.round) ? <span className="shrink-0 text-muted-foreground">, {tx(roundLabel(match.round_number, match.round))}</span> : null}
           </span>
-          <ChevronRight className="h-5 w-5 shrink-0 text-primary" />
+          <ChevronRight className="h-4 w-4 shrink-0 text-primary" />
         </Link>
       )}
 
@@ -360,7 +356,11 @@ function MatchPage() {
 
           {match.highlight_url && <a href={match.highlight_url} target="_blank" rel="noreferrer" className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4 font-semibold hover:border-primary"><PlayCircle className="h-5 w-5 text-primary" /> {tx("Watch match highlights")}</a>}
           <MatchVoice matchId={id} />
-          <MatchChat matchId={id} />
+          <Link to="/matches/$id/chat" params={{ id }} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4 font-semibold transition hover:border-primary">
+            <MessageCircle className="h-5 w-5 shrink-0 text-primary" />
+            <span className="flex-1">{tx("Match chat")}</span>
+            <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground rtl:rotate-180" />
+          </Link>
         </div>
       </div>}
 
@@ -409,7 +409,7 @@ function MatchPage() {
             formation: activeFormation,
             coach: (side === "home" ? coachNames.data?.home : coachNames.data?.away) ?? null,
             rows: formationRows(activeFormation).map((row) =>
-              row.map((slot) => starters.find((s) => s.position_code === slot)).filter(Boolean).map((lu) => shortOf(lu!))),
+              row.map((slot) => starters.find((s) => s.position_code === slot)).filter((lu): lu is (typeof starters)[number] => lu !== undefined).map(shortOf)),
             bench: bench.map(shortOf),
           },
         };
@@ -440,9 +440,7 @@ function MatchPage() {
                       return (
                         <Link key={slot} to="/players/$id" params={{ id: lu.player_id }} className="relative z-10 flex w-16 flex-col items-center gap-0.5 overflow-visible text-center">
                           <span className="relative block h-11 w-11 overflow-visible">
-                            <span className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border-2 border-white/70 bg-muted text-xs font-bold">
-                              {lu.player?.photo_url ? <img src={lu.player.photo_url} alt="" className="h-full w-full object-cover" /> : num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}
-                            </span>
+                            <PlayerAvatar src={lu.player?.photo_url} name={lu.player?.name} className={`h-11 w-11 border-2 ${lu.player?.is_temporary ? "border-dashed border-muted-foreground" : lu.player?.team_id && lu.player.team_id !== lu.team_id ? "border-primary" : ""}`} />
                             {(lu.shirt_number ?? lu.player?.shirt_number) != null && (
                               <span className="absolute -left-1 -top-1 z-30 flex h-4 min-w-4 items-center justify-center rounded-full bg-background px-1 text-[0.6rem] font-black leading-none text-foreground shadow ring-1 ring-border">{num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}</span>
                             )}
@@ -468,7 +466,7 @@ function MatchPage() {
                 return (
                   <Link key={lu.id} to="/players/$id" params={{ id: lu.player_id }} className="flex items-center gap-3 border-t border-border py-2 first:border-0">
                     <span className="w-6 shrink-0 text-center text-xs font-bold tabular-nums text-muted-foreground">{num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}</span>
-                    <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-muted">{lu.player?.photo_url && <img src={lu.player.photo_url} alt="" className="h-full w-full object-cover" />}</div>
+                    <PlayerAvatar src={lu.player?.photo_url} name={lu.player?.name} className="h-9 w-9" />
                     <span className="min-w-0 flex-1 truncate font-semibold">{tx(lu.player?.name)}</span>
                     {marks.length > 0 && <span className="flex shrink-0 items-center gap-1">{marks.slice(0, 4).map((t, k) => <EventArt key={k} type={t} className="h-4 w-4" />)}</span>}
                     {rating != null && <span className={`shrink-0 rounded px-2 py-1 text-xs font-black ${ratingClass(Number(rating))}`}>{num(formatRating(rating))}</span>}
@@ -520,7 +518,8 @@ function TeamCoach({ teamId, coachId }: { teamId: string | undefined; coachId?: 
     enabled: !!teamId || !!coachId,
     queryFn: async () => {
       if (coachId) return (await supabase.from("coaches").select("id,name,photo_url,nationality").eq("id", coachId).maybeSingle()).data;
-      return (await supabase.from("coaches").select("id,name,photo_url,nationality").eq("team_id", teamId!).limit(1).maybeSingle()).data;
+      if (!teamId) return null;
+      return (await supabase.from("coaches").select("id,name,photo_url,nationality").eq("team_id", teamId).limit(1).maybeSingle()).data;
     },
   });
   if (!q.data) return null;
@@ -528,7 +527,7 @@ function TeamCoach({ teamId, coachId }: { teamId: string | undefined; coachId?: 
     <div className="mt-3">
       <h4 className="mb-1 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Coach")}</h4>
       <Link to="/coaches/$id" params={{ id: q.data.id }} className="flex items-center gap-3 py-2 hover:text-primary">
-        <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-muted">{q.data.photo_url && <img src={q.data.photo_url} alt="" className="h-full w-full object-cover" />}</div>
+        <PlayerAvatar src={q.data.photo_url} name={q.data.name} className="h-9 w-9" />
         <span className="min-w-0 flex-1 truncate font-semibold">{tx(q.data.name)}</span>
         <span className="shrink-0 text-xs text-muted-foreground">{tx(q.data.nationality) ?? ""}</span>
       </Link>

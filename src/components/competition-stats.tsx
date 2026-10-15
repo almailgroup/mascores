@@ -8,6 +8,8 @@ import { PlayerAvatar } from "@/components/player-avatar";
 import { fetchCompetitionStats, type PlayerStat, type TeamStat } from "@/lib/comp-stats";
 import { ratingClass } from "@/lib/db";
 import { useNum, useTx } from "@/lib/auto-translate";
+import { ShareCardButton } from "@/components/share-image";
+import { drawLeaderboardCard } from "@/lib/share-cards";
 
 type Mode = "players" | "teams";
 
@@ -38,11 +40,17 @@ export function CompetitionStats({ competitionId, season }: { competitionId: str
   );
 }
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
+function Card({ title, children, rows, valueOf }: { title: string; children: React.ReactNode; rows?: PlayerStat[]; valueOf?: (p: PlayerStat) => string }) {
   const tx = useTx();
   return (
     <section className="overflow-hidden rounded-2xl border border-border bg-card">
-      <h3 className="border-b border-border px-4 py-3 text-sm font-bold">{tx(title)}</h3>
+      <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-2">
+        <h3 className="py-1 text-sm font-bold">{tx(title)}</h3>
+        {rows && valueOf && rows.length > 0 && (
+          <ShareCardButton title={tx(title)} label={tx("Share")}
+            render={() => drawLeaderboardCard({ title: tx(title), rows: rows.map((p) => ({ name: tx(p.name), sub: p.team_name ? tx(p.team_name) : null, image: p.photo_url, value: valueOf(p) })) })} />
+        )}
+      </div>
       <div className="divide-y divide-border">{children}</div>
     </section>
   );
@@ -76,19 +84,19 @@ function PlayerStats({ rows }: { rows: PlayerStat[] }) {
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      <Card title="Average match rating">
+      <Card title="Average match rating" rows={rated} valueOf={(p) => (p.avg_rating ?? 0).toFixed(2)}>
         {rated.map((p, i) => (
           <PlayerRow key={p.player_id} p={p} rank={i + 1}
             value={<span className={`rounded-md px-2 py-1 text-xs font-bold tabular-nums ${ratingClass(p.avg_rating ?? 0)}`}>{num((p.avg_rating ?? 0).toFixed(2))}</span>} />
         ))}
       </Card>
-      <Card title="Goals scored">
+      <Card title="Goals scored" rows={scorers} valueOf={(p) => String(p.goals)}>
         {scorers.map((p, i) => <PlayerRow key={p.player_id} p={p} rank={i + 1} value={<span className="text-sm font-bold tabular-nums">{num(p.goals)}</span>} />)}
       </Card>
-      <Card title="Assists">
+      <Card title="Assists" rows={assisters} valueOf={(p) => String(p.assists)}>
         {assisters.map((p, i) => <PlayerRow key={p.player_id} p={p} rank={i + 1} value={<span className="text-sm font-bold tabular-nums">{num(p.assists)}</span>} />)}
       </Card>
-      <Card title="Cards">
+      <Card title="Cards" rows={booked} valueOf={(p) => `${p.yellow}Y ${p.red}R`}>
         {booked.map((p, i) => (
           <PlayerRow key={p.player_id} p={p} rank={i + 1}
             value={<span className="flex items-center justify-end gap-1 text-xs font-semibold tabular-nums">{p.yellow > 0 && <><EventIcon type="yellow" className="h-4 w-4" />{num(p.yellow)}</>}{p.red > 0 && <><EventIcon type="red" className="h-4 w-4" />{num(p.red)}</>}</span>} />

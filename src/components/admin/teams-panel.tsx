@@ -244,6 +244,7 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
             </div>
           </Field>
            <Field label="Chairman"><input className={inputCls} value={form.chairman ?? ""} onChange={(e) => setForm({ ...form, chairman: e.target.value || null })} /></Field>
+          <Field label="Displayed followers (leave blank for real count)"><input type="number" min={0} className={inputCls} value={form.followers_override ?? ""} onChange={(e) => setForm({ ...form, followers_override: e.target.value === "" ? null : Math.max(0, Math.floor(Number(e.target.value) || 0)) })} /></Field>
           {form.id && (
             <div className="sm:col-span-2">
               <YouthLinks

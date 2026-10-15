@@ -1,4 +1,3 @@
-import { MediaWatermark } from "@/components/media-watermark";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase, type NewsPost } from "@/lib/db";
@@ -46,7 +45,6 @@ export function LinkedNews({ kind, id }: { kind: Kind; id: string }) {
           {p.cover_url && (
             <div className="relative flex h-20 w-28 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-muted">
               <img src={p.cover_url} alt="" className="h-full w-full object-contain" />
-              <MediaWatermark compact />
             </div>
           )}
 

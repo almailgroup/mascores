@@ -1,4 +1,5 @@
 import { TeamCrest } from "@/components/team-crest";
+import { PlayerAvatar } from "@/components/player-avatar";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -10,6 +11,7 @@ import { useFavorites, FavoriteButton } from "@/hooks/use-favorites";
 import { MatchGroups, MatchRow, type MatchWithTeams } from "@/components/match-list";
 import { Trophy, ChevronLeft, ChevronRight, Ticket as TicketIcon, ArrowRight } from "lucide-react";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -221,7 +223,7 @@ function ScoreBoard({ liveCount }: { liveCount: number }) {
     : day.toLocaleDateString(lang === "ar" ? "ar-EG" : "en-GB", { weekday: "short", day: "numeric", month: "short" });
 
   const chip = (key: "live" | "finished" | "upcoming", label: string) => (
-    <button
+    <Button variant="ghost" size="sm"
       key={key}
       onClick={() => setStatus(status === key ? null : key)}
       className={`rounded-full px-4 py-1.5 text-xs font-semibold transition ${
@@ -231,28 +233,27 @@ function ScoreBoard({ liveCount }: { liveCount: number }) {
       }`}
     >
       {label}{key === "live" && liveCount > 0 ? ` (${liveCount})` : ""}
-    </button>
+    </Button>
   );
 
   return (
     <section className="mb-8 overflow-hidden rounded-3xl border border-border bg-card">
-      <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-2">
-        <div className="flex items-center gap-1 overflow-x-auto">
+      <div data-no-gesture className="flex flex-col gap-2 border-b border-border px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="grid w-full min-w-0 grid-cols-3 gap-1 sm:w-auto">
           {(["all", "favourites", "competitions"] as const).map((s) => (
-            <button
+            <Button variant="ghost"
               key={s}
               onClick={() => setScope(s)}
-              className={`relative whitespace-nowrap px-3 py-2 text-sm font-bold transition ${scope === s ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}
+              className={`relative h-10 min-w-0 whitespace-normal rounded-md px-2 py-2 text-xs font-bold transition ${scope === s ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"}`}
             >
               {t(`board.${s}`)}
-              {scope === s && <span className="absolute inset-x-2 -bottom-[9px] h-0.5 rounded-full bg-primary" />}
-            </button>
+            </Button>
           ))}
         </div>
-        <div className="flex shrink-0 items-center overflow-hidden rounded-full border border-border">
-          <button onClick={() => setOffset(offset - 1)} className="px-2 py-1.5 text-primary hover:bg-accent" aria-label={tx("Previous day")}><ChevronLeft className="h-4 w-4" /></button>
-          <button onClick={() => setCalendarOpen(true)} className="min-w-24 px-2 py-1.5 text-xs font-semibold text-primary">{dayLabel}</button>
-          <button onClick={() => setOffset(offset + 1)} className="px-2 py-1.5 text-primary hover:bg-accent" aria-label={tx("Next day")}><ChevronRight className="h-4 w-4" /></button>
+        <div className="glass-picker flex w-full min-w-0 items-center justify-between rounded-lg sm:w-auto">
+          <Button variant="ghost" size="icon" onClick={() => setOffset(offset - 1)} aria-label={tx("Previous day")}><ChevronLeft className="h-4 w-4" /></Button>
+          <Button variant="ghost" onClick={() => setCalendarOpen(true)} className="min-w-0 flex-1 px-2 text-xs font-semibold">{dayLabel}</Button>
+          <Button variant="ghost" size="icon" onClick={() => setOffset(offset + 1)} aria-label={tx("Next day")}><ChevronRight className="h-4 w-4" /></Button>
         </div>
       </div>
       {calendarOpen && <MonthCalendar day={day} onPick={(selected) => {
@@ -262,7 +263,7 @@ function ScoreBoard({ liveCount }: { liveCount: number }) {
       }} onClose={() => setCalendarOpen(false)} />}
 
 
-      <div className="flex flex-wrap items-center gap-2 px-4 py-3">
+      <div data-no-gesture className="grid grid-cols-3 gap-2 px-3 py-3">
         {chip("live", t("board.live"))}
         {chip("finished", t("board.finished"))}
         {chip("upcoming", t("board.upcoming"))}
@@ -336,7 +337,7 @@ function FavoriteMatches() {
     {view === "all" && <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
       {others.data?.competitions.map((c) => <Link key={c.id} to="/competitions/$slug" params={{ slug: c.slug }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 hover:border-primary">{c.logo_url ? <img src={c.logo_url} alt="" className="h-8 w-8 object-contain" /> : <Trophy className="h-6 w-6 text-primary" />}<span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(c.name)}</span></Link>)}
       {others.data?.teams.map((team) => <Link key={team.id} to="/teams/$id" params={{ id: team.id }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 hover:border-primary"><TeamCrest name={team.name} logo={team.logo_url} className="h-8 w-8" /><span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(team.name)}</span></Link>)}
-      {others.data?.players.map((player) => <Link key={player.id} to="/players/$id" params={{ id: player.id }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 hover:border-primary"><span className="h-8 w-8 overflow-hidden rounded-full bg-muted">{player.photo_url && <img src={player.photo_url} alt="" className="h-full w-full object-cover" />}</span><span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(player.name)}</span></Link>)}
+      {others.data?.players.map((player) => <Link key={player.id} to="/players/$id" params={{ id: player.id }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 hover:border-primary"><PlayerAvatar src={player.photo_url} name={player.name} className="h-8 w-8" /><span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(player.name)}</span></Link>)}
       <Link to="/favorites" className="flex items-center justify-center rounded-xl border border-dashed border-border p-3 text-sm font-semibold text-primary">{tx("Open favorites")}</Link>
     </div>}
   </section>;

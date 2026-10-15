@@ -1,4 +1,5 @@
-import { MediaWatermark } from "@/components/media-watermark";
+import { ShareCardButton } from "@/components/share-image";
+import { drawNewsCard } from "@/lib/share-cards";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, BackButton, EmptyState, LoadingSkeleton } from "@/components/app-shell";
@@ -43,12 +44,15 @@ function ArticlePage() {
         {n.cover_url && (
           <div className="relative flex w-full items-center justify-center bg-gradient-to-br from-primary/25 via-card to-background">
             <img src={n.cover_url} alt="" className="max-h-[70vh] w-full object-contain" />
-            <MediaWatermark />
           </div>
         )}
 
         <div className="p-6 sm:p-8">
            <h1 className="text-2xl font-black tracking-tight sm:text-4xl">{lang === "ar" && n.title_ar ? n.title_ar : tx(n.title)}</h1>
+          <div className="mt-3">
+            <ShareCardButton title={lang === "ar" && n.title_ar ? n.title_ar : tx(n.title)} label={lang === "ar" ? "مشاركة الخبر" : "Share news"}
+              render={() => drawNewsCard({ title: lang === "ar" && n.title_ar ? n.title_ar : tx(n.title), summary: n.excerpt ? tx(n.excerpt) : null, date: n.published_at ? num(dates.date(n.published_at, { dateStyle: "long" })) : null, cover: n.cover_url, rtl: lang === "ar" })} />
+          </div>
           <div className="mt-2 text-xs text-muted-foreground">
             {n.published_at ? num(dates.date(n.published_at, { dateStyle: "long" })) : ""}
             {n.author_display ? ` · ${n.author_display}` : ""}

@@ -3,6 +3,9 @@ import logoLight from "@/assets/logo-mark-v2.png.asset.json";
 import logoDark from "@/assets/logo-mark-dark.png";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { PlayerAvatar } from "@/components/player-avatar";
+import { portraitSource } from "@/lib/portrait-source";
 import { AppShell, EmptyState } from "@/components/app-shell";
 import { supabase } from "@/lib/db";
 import { FlagIcon } from "@/components/flag";
@@ -11,7 +14,7 @@ import { useCompact, useReverseTranslate, useTx } from "@/lib/auto-translate";
 import { COUNTRIES } from "@/lib/countries";
 
 export const Route = createFileRoute("/search")({
-  head: () => ({ meta: [{ title: "Search — MansourAlmailScores" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Search — MansourAlmailScores" }, { name: "robots", content: "noindex" }, { name: "description", content: "Find teams, players, competitions and venues on MA Scores." }, { property: "og:title", content: "Search — MansourAlmailScores" }, { property: "og:description", content: "Find teams, players, competitions and venues on MA Scores." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: SearchPage,
 });
 
@@ -45,7 +48,7 @@ function SearchPage() {
   const router = useRouter();
   const reverse = useReverseTranslate();
   const [q, setQ] = useState("");
-  const [filter, setFilter] = useState<Filter>("all");
+  const [filter, setFilter] = useState<Filter>("clubs");
   const [history, setHistory] = useState<Visited[]>([]);
   useEffect(() => { setHistory(readHistory()); }, []);
   const writeHistory = (next: Visited[]) => {
@@ -87,12 +90,12 @@ function SearchPage() {
 
       const [teams, players, comps, coaches, venues, fTeams, fPlayers, fComps, fCoaches, fVenues] = await Promise.all([
         supabase.from("teams").select(teamCols).or(orFilter(["name", "short_name"])).limit(20),
-        supabase.from("players").select(playerCols).or(orFilter(["name"])).limit(20),
+        supabase.from("players").select(playerCols).or(orFilter(["name"])).eq("is_temporary", false).limit(20),
         supabase.from("competitions").select(compCols).or(compFilter).limit(30),
         supabase.from("coaches").select(coachCols).or(orFilter(["name"])).limit(20),
         supabase.from("venues").select(venueCols).or(orFilter(["name", "city"])).limit(20),
         fuzzyIn(idsOf("team"), (ids) => supabase.from("teams").select(teamCols).in("id", ids)),
-        fuzzyIn(idsOf("player"), (ids) => supabase.from("players").select(playerCols).in("id", ids)),
+        fuzzyIn(idsOf("player"), (ids) => supabase.from("players").select(playerCols).in("id", ids).eq("is_temporary", false)),
         fuzzyIn(idsOf("competition"), (ids) => supabase.from("competitions").select(compCols).in("id", ids)),
         fuzzyIn(idsOf("coach"), (ids) => supabase.from("coaches").select(coachCols).in("id", ids)),
         fuzzyIn(idsOf("venue"), (ids) => supabase.from("venues").select(venueCols).in("id", ids)),
@@ -116,24 +119,23 @@ function SearchPage() {
 
   return (
     <AppShell>
-      {/* Focused search surface: two-tone brand header (black→blue in light mode,
-          white→blue in dark mode) with the logo set as a faint watermark. */}
-      <div className="relative -mx-4 -mt-4 mb-4 sticky top-0 z-30 overflow-hidden bg-gradient-to-r from-[#0b0f1a] to-primary px-4 pb-3 pt-4 text-white shadow-lg dark:from-white dark:to-primary dark:text-[#0b0f1a] sm:rounded-b-3xl">
-        {/* The light header is dark, so the white mark shows there; the dark
-            header is white, so the navy mark shows there. */}
-        <img src={logoDark} alt="" aria-hidden className="pointer-events-none absolute -end-4 -top-5 h-36 w-36 rotate-[-8deg] opacity-25 dark:hidden" />
-        <img src={logoDark} alt="" aria-hidden className="pointer-events-none absolute -bottom-10 -start-6 h-24 w-24 rotate-[12deg] opacity-15 dark:hidden" />
-        <img src={logoLight.url} alt="" aria-hidden className="pointer-events-none absolute -end-4 -top-5 hidden h-36 w-36 rotate-[-8deg] opacity-25 dark:block" />
-        <img src={logoLight.url} alt="" aria-hidden className="pointer-events-none absolute -bottom-10 -start-6 hidden h-24 w-24 rotate-[12deg] opacity-15 dark:block" />
+      {/* Focused search surface with the brand logo as a faint watermark:
+          navy mark on light, white mark on dark — same pairing as BrandLogo. */}
+      <div className="search-hero relative -mx-4 mb-4 sticky top-0 z-30 overflow-hidden border-b border-border bg-background px-4 pb-3 pt-1 text-foreground sm:rounded-b-3xl">
+        {/* logo-mark-v2 (navy) belongs on light, logo-mark-dark (white) on dark. */}
+        <img src={logoLight.url} alt="" aria-hidden className="pointer-events-none absolute -end-4 -top-5 h-36 w-36 rotate-[-8deg] opacity-25 dark:hidden" />
+        <img src={logoLight.url} alt="" aria-hidden className="pointer-events-none absolute -bottom-10 -start-6 h-24 w-24 rotate-[12deg] opacity-15 dark:hidden" />
+        <img src={logoDark} alt="" aria-hidden className="pointer-events-none absolute -end-4 -top-5 hidden h-36 w-36 rotate-[-8deg] opacity-25 dark:block" />
+        <img src={logoDark} alt="" aria-hidden className="pointer-events-none absolute -bottom-10 -start-6 hidden h-24 w-24 rotate-[12deg] opacity-15 dark:block" />
         <div className="relative flex items-center gap-2">
           <button type="button" aria-label={tx("Back")} onClick={() => { if (router.history.canGoBack()) router.history.back(); else void router.navigate({ to: "/" }); }}
-            className="grid h-9 w-9 shrink-0 place-items-center rounded-full hover:bg-white/20 dark:hover:bg-black/10">
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-full hover:bg-accent">
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <div className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-full bg-card px-4 text-foreground shadow-sm">
+          <div className="mas-search-field search-field-enter flex h-11 min-w-0 flex-1 items-center gap-2 rounded-full border border-border bg-card px-4 text-foreground shadow-sm focus-within:border-primary/50">
             <SearchIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
             <input autoFocus value={q} onChange={(e) => setQ(e.target.value)}
-              placeholder={tx("Search")}
+              placeholder="Search MaScores"
               className="min-w-0 flex-1 bg-transparent text-base outline-none sm:text-sm" />
             {q && <button aria-label={tx("Clear")} onClick={() => setQ("")} className="text-muted-foreground"><X className="h-4 w-4" /></button>}
           </div>
@@ -141,7 +143,7 @@ function SearchPage() {
         <div className="relative mt-3 flex flex-wrap gap-2 text-xs">
           {FILTERS.map((f) => (
             <button key={f.key} onClick={() => setFilter(f.key)}
-              className={`whitespace-nowrap rounded-full px-3.5 py-1.5 font-bold transition ${filter === f.key ? "bg-card text-primary shadow-sm" : "bg-white/15 text-white/90 dark:bg-black/10 dark:text-[#0b0f1a]/80"}`}>
+              className={`whitespace-nowrap rounded-full px-3.5 py-1.5 font-bold transition ${filter === f.key ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
               {tx(f.label)}
             </button>
           ))}
@@ -247,7 +249,7 @@ function ResultRow({ to, params, logo, fallback, title, sub, country, round, onO
     <Link to={to as never} params={params as never} onClick={onOpen}
       className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 transition hover:border-primary/50">
       <div className={`flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden ${round ? "rounded-full" : "rounded-xl"} border border-border bg-muted/40`}>
-        {logo ? <img src={logo} alt="" className={`h-full w-full ${round ? "object-cover" : "object-contain p-1"}`} /> : fallback}
+        {logo ? <img src={round ? portraitSource(logo) : logo} alt="" loading="lazy" decoding="async" draggable={false} className={`h-full w-full ${round ? "object-cover" : "object-contain p-1"}`} /> : fallback}
       </div>
       <div className="min-w-0 flex-1">
         <div className="truncate text-sm font-semibold">{title}</div>
@@ -275,7 +277,9 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
 /** The squad of a matched team, so searching a club also surfaces its players. */
 function TeamSquadResults({ teamId }: { teamId: string }) {
   const tx = useTx();
+  const [expanded, setExpanded] = useState(false);
   const squad = useQuery({
+    enabled: expanded,
     queryKey: ["search-squad", teamId],
     queryFn: async () => {
       const club = await supabase.from("players").select("id,name,position,shirt_number,photo_url").eq("team_id", teamId).order("shirt_number", { nullsFirst: false }).limit(40);
@@ -285,21 +289,22 @@ function TeamSquadResults({ teamId }: { teamId: string }) {
       if (ids.length === 0) return [];
       const { data } = await supabase.from("players").select("id,name,position,shirt_number,photo_url").in("id", ids);
       return (data ?? []).map((p) => {
-        const call = (calls.data ?? []).find((c) => c.player_id === p.id)!;
+        const call = (calls.data ?? []).find((c) => c.player_id === p.id);
+        if (!call) return p;
         return { ...p, shirt_number: call.shirt_number ?? p.shirt_number, photo_url: call.photo_url ?? p.photo_url, position: call.position ?? p.position };
       });
     },
   });
 
-  if (!squad.data || squad.data.length === 0) return null;
+  if (!expanded) return <Button variant="ghost" size="sm" className="ms-3 text-primary" onClick={() => setExpanded(true)}>{tx("Include players")}</Button>;
+  if (!squad.data) return <span className="ms-3 text-xs text-muted-foreground">{tx("Loading")}</span>;
+  if (squad.data.length === 0) return <span className="ms-3 text-xs text-muted-foreground">{tx("No players")}</span>;
   return (
     <div className="ms-3 grid gap-1.5 border-s border-border ps-3 sm:grid-cols-2 lg:grid-cols-3">
       {squad.data.map((p) => (
         <Link key={p.id} to="/players/$id" params={{ id: p.id }}
           className="flex items-center gap-2 rounded-xl border border-border bg-card/60 px-2.5 py-2 hover:border-primary/50">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-muted/40 text-[0.6rem] font-bold">
-            {p.photo_url ? <img src={p.photo_url} alt="" className="h-full w-full object-cover" /> : (p.shirt_number ?? "")}
-          </span>
+          <PlayerAvatar src={p.photo_url} name={p.name} className="h-7 w-7" />
           <span className="min-w-0 flex-1">
             <span className="block truncate text-xs font-semibold">{tx(p.name)}</span>
             <span className="block truncate text-[0.6rem] text-muted-foreground">{[p.shirt_number != null ? `#${p.shirt_number}` : null, tx(p.position)].filter(Boolean).join(" · ")}</span>

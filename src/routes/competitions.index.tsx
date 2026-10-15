@@ -9,7 +9,7 @@ import { useNum, useTx } from "@/lib/auto-translate";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/competitions/")({
-  head: () => ({ meta: [{ title: "Competitions — MansourAlmailScores" }] }),
+  head: () => ({ meta: [{ title: "Competitions — MansourAlmailScores" }, { name: "description", content: "Explore football leagues and international competitions on MA Scores." }, { property: "og:title", content: "Competitions — MansourAlmailScores" }, { property: "og:description", content: "Explore football leagues and international competitions on MA Scores." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: CompetitionsList,
 });
 

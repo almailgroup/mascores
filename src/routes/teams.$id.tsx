@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { MediaGallery } from "@/components/media-gallery";
 import { AppShell, BackButton, EmptyState, LoadingSkeleton, SwipeTabs } from "@/components/app-shell";
 import { supabase, formatKickoff, type Team, type Player, type Match, type StandingRow, type Coach, type Transfer } from "@/lib/db";
@@ -19,7 +19,13 @@ import { useDates, useNum, useTx } from "@/lib/auto-translate";
 import { TeamStats, type TeamComp } from "@/components/team-stats";
 import { SeasonMenu } from "@/components/season-menu";
 import { StandingsTable } from "@/components/standings-table";
+import { Button } from "@/components/ui/button";
 import type { Database } from "@/integrations/supabase/types";
+import { useCollapsingHeader } from "@/hooks/use-collapsing-header";
+import { useLogoAccent } from "@/lib/logo-accent";
+import { SportsHeaderBackground } from "@/components/sports-header-background";
+import { ClubNotificationButton } from "@/components/club-notification-button";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/teams/$id")({
   head: () => ({
@@ -39,10 +45,19 @@ type Tab = "info" | "matches" | "standings" | "squad" | "stats" | "media" | "tra
 const TABS: Tab[] = ["info", "matches", "standings", "squad", "stats", "media", "transfers", "news", "rabta"];
 
 function TeamPage() {
+  const { user } = useAuth();
+  const qc = useQueryClient();
   const tx = useTx();
   const num = useNum();
   const dates = useDates();
   const { id } = Route.useParams();
+  const followerBaseline = useRef<{ id: string; count: number } | null>(null);
+  const followers = useQuery({ queryKey: ["club-followers", id], queryFn: async () => {
+    const { data, error } = await supabase.rpc("club_follower_count", { _team_id: id });
+    if (error) throw error;
+    if (followerBaseline.current?.id !== id) followerBaseline.current = { id, count: data ?? 0 };
+    return data ?? 0;
+  }});
   const { t: tr } = useI18n();
   const [tab, setTab] = useState<Tab>("info");
   useRealtime(["teams", "players", "matches", "standings_rows", "transfers"]);
@@ -51,6 +66,8 @@ function TeamPage() {
     const { data } = await supabase.from("teams").select("*").eq("id", id).maybeSingle();
     return data as Team | null;
   }});
+  const headerRef = useCollapsingHeader(`${id}:${team.isLoading}`);
+  const headerAccent = useLogoAccent(team.data?.logo_url);
   const squad = useQuery({ queryKey: ["squad", id], queryFn: async () => {
     const { data } = await supabase.from("players").select("*").eq("team_id", id).order("shirt_number");
     return (data ?? []) as Player[];
@@ -120,41 +137,62 @@ function TeamPage() {
   const losses = played.length - wins - draws;
   const gf = played.reduce((s, m) => s + (m.home_team_id === id ? m.home_score ?? 0 : m.away_score ?? 0), 0);
   const ga = played.reduce((s, m) => s + (m.home_team_id === id ? m.away_score ?? 0 : m.home_score ?? 0), 0);
-  const upcoming = [...(matches.data ?? [])].filter((m) => m.status === "scheduled" && m.kickoff_at).sort((a, b) => new Date(a.kickoff_at!).getTime() - new Date(b.kickoff_at!).getTime());
+  const upcoming = [...(matches.data ?? [])].filter((m) => m.status === "scheduled" && m.kickoff_at && new Date(m.kickoff_at).getTime() >= Date.now()).sort((a, b) => new Date(a.kickoff_at ?? 0).getTime() - new Date(b.kickoff_at ?? 0).getTime());
   const featured = upcoming[0] ?? matches.data?.[0] ?? null;
   const tournaments = [...new Map((matches.data ?? []).filter((m) => m.competition).map((m) => [m.competition!.slug, m.competition!])).values()];
   const statComps: TeamComp[] = [...new Map((matches.data ?? [])
     .filter((m) => m.competition_id && m.competition)
     .map((m) => [m.competition_id, { id: m.competition_id, name: m.competition!.name, logo_url: m.competition!.logo_url ?? null, season: (m as { season?: string | null }).season ?? null }] as const))
     .values()];
+  const followerCount = Math.max(0, (followers.data ?? 0) + (t.followers_override == null ? 0 : t.followers_override - (followerBaseline.current?.id === id ? followerBaseline.current.count : 0)));
 
 
   return (
     <AppShell>
-      <div className="mb-4 flex items-center gap-3 rounded-2xl border border-border bg-card p-3 sm:gap-4 sm:p-5">
-        <TeamCrest name={t.name} logo={t.logo_url} className="h-11 w-11 shrink-0 sm:h-14 sm:w-14" rounded="rounded-xl" />
+      <div ref={headerRef} data-refresh-header className="club-profile-header sports-header -mx-4 mb-5 px-4 sm:-mx-6 sm:px-6">
+      <SportsHeaderBackground start={headerAccent?.color} />
+      <div className="relative flex h-10 items-center justify-between">
+        <BackButton iconOnly className="text-match-foreground" />
+        <div className="profile-compact-identity pointer-events-none absolute inset-y-0 start-12 end-24 flex items-center gap-2">
+          <TeamCrest name={t.name} logo={t.logo_url} className="h-7 w-7 shrink-0" />
+          <span className="truncate text-sm font-bold">{tx(t.name)}</span>
+        </div>
+        <div data-no-gesture className="relative z-10 flex items-center gap-1 [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-current"><ClubNotificationButton teamId={t.id} /><FavoriteButton kind="team" id={t.id} size="md" onFavoriteChange={(active) => {
+          void qc.cancelQueries({ queryKey: ["club-followers", id] });
+          qc.setQueryData<number>(["club-followers", id], (count) => Math.max(0, (count ?? 0) + (active ? 1 : -1)));
+        }} onFavoriteSaved={() => { if (user) void qc.invalidateQueries({ queryKey: ["club-followers", id] }); }} /></div>
+      </div>
+      <div className="profile-expanded-identity flex items-center gap-3 py-3 sm:gap-4">
+        <TeamCrest name={t.name} logo={t.logo_url} className="h-10 w-10 shrink-0 sm:h-12 sm:w-12" rounded="rounded-xl" />
         <div className="min-w-0 flex-1">
-          <h1 className="truncate text-base font-bold leading-tight sm:text-2xl">{tx(t.name)}</h1>
+          <h1 className="profile-title">{tx(t.name)}</h1>
           {t.is_national ? null : (
-            <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[0.7rem] text-muted-foreground sm:text-xs">
+            <div className="club-country mt-0.5 flex min-w-0 items-center gap-1.5 text-[0.7rem] sm:text-xs">
               <FlagIcon value={t.country_code ?? t.country} />
               <span className="truncate">{tx(t.country)}</span>
             </div>
           )}
         </div>
-        <FavoriteButton kind="team" id={t.id} size="md" />
+        <div className="sports-header-chip w-16 shrink-0 rounded-lg px-1.5 py-2 text-center">
+          <div data-club-followers className="text-xs font-semibold leading-none tabular-nums">{num(followerCount >= 1000 ? `${(followerCount / 1000).toFixed(1)}K` : followerCount)}</div>
+          <div className="mt-1 text-[0.6rem] leading-tight opacity-70">{tx(followerCount === 1 ? "Follower" : "Followers")}</div>
+        </div>
       </div>
 
-      <SwipeTabs className="mb-5 gap-1 rounded-full border border-border bg-card p-1 text-xs">
+      <div className="club-tabs-strip border-b pt-2">
+      <SwipeTabs className="gap-1 text-xs sm:text-sm">
         {TABS.map((k) => (
           <button key={k} onClick={() => setTab(k)}
-            className={`whitespace-nowrap rounded-full px-4 py-1.5 font-semibold ${tab === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+             className={`club-tab whitespace-nowrap px-3 py-2 font-semibold ${tab === k ? "club-tab-active" : ""}`}>
             {tr(`tab.${k}`)}
           </button>
         ))}
       </SwipeTabs>
+      </div>
+      </div>
 
 
+      <div data-refresh-body>
       {tab === "matches" && (
         matches.data && matches.data.length > 0
           ? <TeamMatches data={matches.data} teamId={id} nextId={upcoming[0]?.id ?? null} />
@@ -188,10 +226,10 @@ function TeamPage() {
                     {club?.club_name ? (
                       <>
                         <span aria-hidden>·</span>
-                        {club.club_logo ? <img src={club.club_logo} alt="" className="h-3.5 w-3.5 shrink-0 object-contain" /> : null}
+                        <TeamCrest name={club.club_name} logo={club.club_logo} className="h-4 w-4 shrink-0" />
                         <span className="truncate font-semibold text-foreground/80">{tx(club.club_name)}</span>
                       </>
-                    ) : null}
+                    ) : club ? <><span aria-hidden>·</span><span className="truncate">{tr("player.freeAgent")}</span></> : null}
                   </div>
                 </div>
               </Link>
@@ -211,6 +249,7 @@ function TeamPage() {
           ) : null}
 
           <RecentForm matches={matches.data ?? []} teamId={id} />
+
 
           <SocialLinksSection value={t.social_links} />
 
@@ -236,8 +275,8 @@ function TeamPage() {
                   <DetailRow icon={<PlayerAvatar src={coaches.data[0].photo_url} name={coaches.data[0].name} size="sm" />} label={tx("Coach")} value={tx(coaches.data[0].name)} />
                 </Link>
               ) : null}
+              {t.chairman && <ClubPresident team={t} />}
               {t.is_national && fifaRank.data ? <DetailRow icon={<Trophy className="h-5 w-5 text-muted-foreground" />} label={tx("FIFA world ranking")} value={`#${num(String(fifaRank.data.rank))} · ${num(String(fifaRank.data.points))} ${tx("pts")}`} /> : null}
-              {t.chairman ? <DetailRow icon={<Crown className="h-5 w-5 text-muted-foreground" />} label={tx("Chairman")} value={tx(t.chairman)} /> : null}
               {t.contact_phone ? <a href={`tel:${t.contact_phone}`} className="block hover:bg-accent"><DetailRow icon={<Phone className="h-5 w-5 text-muted-foreground" />} label={tx("Phone")} value={t.contact_phone} chevron /></a> : null}
               {t.contact_email ? <a href={`mailto:${t.contact_email}`} className="block hover:bg-accent"><DetailRow icon={<Mail className="h-5 w-5 text-muted-foreground" />} label={tx("Email")} value={t.contact_email} chevron /></a> : null}
               {t.contact_website ? <a href={/^https?:\/\//i.test(t.contact_website.trim()) ? t.contact_website.trim() : `https://${t.contact_website.trim()}`} target="_blank" rel="noreferrer" className="block hover:bg-accent"><DetailRow icon={<Globe className="h-5 w-5 text-muted-foreground" />} label={tx("Website")} value={t.contact_website.replace(/^https?:\/\//, "")} chevron /></a> : null}
@@ -317,6 +356,7 @@ function TeamPage() {
       )}
 
       {tab === "news" && <LinkedNews kind="team" id={t.id} />}
+      </div>
     </AppShell>
   );
 }
@@ -325,13 +365,35 @@ function InfoCard({ label, value, icon }: { label: string; value: string; icon?:
   return InfoCardInner({ label, value, icon });
 }
 
+function ClubPresident({ team }: { team: Team }) {
+  const tx = useTx();
+  const { lang } = useI18n();
+  const president = useQuery({
+    queryKey: ["club-president", team.id, team.chairman],
+    queryFn: async () => {
+      const { data } = await supabase.from("team_staff").select("name,role,photo_url").eq("team_id", team.id);
+      return data?.find(person => person.name === team.chairman || /president|chairman|رئيس/i.test(person.role)) ?? null;
+    },
+  });
+  return <section aria-label={lang === "ar" ? "رئيس النادي" : "Club president"} className="flex items-center gap-3 px-4 py-3">
+    <div className="relative shrink-0">
+      <PlayerAvatar src={president.data?.photo_url} name={team.chairman} className="h-11 w-11 ring-2 ring-border" />
+      <span className="absolute -bottom-1 -end-1 flex h-4 w-4 items-center justify-center rounded-full bg-foreground text-background"><Crown className="h-2.5 w-2.5" /></span>
+    </div>
+    <div className="min-w-0 flex-1">
+      <div className="text-[0.65rem] font-semibold uppercase text-muted-foreground">{lang === "ar" ? "رئيس النادي" : "Club president"}</div>
+      <h2 className="break-words text-sm font-bold leading-snug">{tx(team.chairman)}</h2>
+    </div>
+  </section>;
+}
+
 function DetailRow({ icon, label, value, chevron }: { icon: React.ReactNode; label: string; value?: string | null; chevron?: boolean }) {
   return (
     <div className="flex items-center gap-3 px-4 py-3">
       <span className="flex h-9 w-9 shrink-0 items-center justify-center">{icon}</span>
       <span className="min-w-0 flex-1">
         <span className="block text-[0.65rem] font-semibold uppercase tracking-widest text-muted-foreground">{label}</span>
-        <span className="block truncate text-sm font-bold">{value ?? "—"}</span>
+        <span className="block break-words text-sm font-bold">{value ?? "—"}</span>
       </span>
       {chevron ? <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" /> : null}
     </div>
@@ -407,31 +469,22 @@ function StandingsTabs({ rows, labels, teamId, tx }: {
   const availableSeasons = [...new Set(rows.filter((row) => row.competition_id === current?.competition_id).map((row) => row.season).filter((value): value is string => !!value))];
   const configuredSeason = current?.competition?.season;
   const activeSeason = current ? (selectedSeasons[current.competition_id] ?? (configuredSeason && availableSeasons.includes(configuredSeason) ? configuredSeason : availableSeasons[0]) ?? "") : "";
-  const list = rows.filter((r) => r.competition_id === current?.competition_id && (!activeSeason || r.season === activeSeason));
+  const seasonRows = rows.filter((r) => r.competition_id === current?.competition_id && (!activeSeason || r.season === activeSeason));
+  const ownGroups = new Set(seasonRows.filter((r) => r.team_id === teamId).map((r) => r.group_label ?? ""));
+  const list = seasonRows.filter((r) => ownGroups.has(r.group_label ?? ""));
   const currentLabels = labels.filter((label) => label.competition_id === current?.competition_id && (!activeSeason || label.season === activeSeason));
 
   return (
     <div>
-      {comps.length > 1 && (
-        <div className="mb-4 flex gap-1 overflow-x-auto rounded-full border border-border bg-card p-1">
-          {comps.map((c) => (
-            <button key={c.competition_id} onClick={() => setActive(c.competition_id)}
-              className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold ${c.competition_id === current?.competition_id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-              {c.competition?.logo_url && <img src={c.competition.logo_url} alt="" className="h-4 w-4 object-contain" />}
-              <span className="max-w-[9rem] truncate">{tx(c.competition?.name) ?? tx("Competition")}</span>
-            </button>
-          ))}
+      <div className="space-y-3">
+        <div data-no-gesture className="flex min-w-0 items-center gap-2 py-2">
+        <SeasonMenu label="Competition" seasons={comps.map(c => c.competition_id)} value={current?.competition_id} onChange={setActive} className="min-w-0 flex-1 justify-between [&>span]:flex-1 [&>span]:text-start" formatValue={value => tx(comps.find(c => c.competition_id === value)?.competition?.name) ?? "Competition"} renderIcon={value => {
+          const comp = comps.find(c => c.competition_id === value)?.competition;
+          return comp?.logo_url ? <img src={comp.logo_url} alt="" className="h-5 w-5 shrink-0 object-contain" /> : null;
+        }} />
+        {availableSeasons.length > 0 && <SeasonMenu seasons={availableSeasons} value={activeSeason} onChange={(value) => current && setSelectedSeasons((previous) => ({ ...previous, [current.competition_id]: value }))} />}
         </div>
-      )}
-      <div className="overflow-hidden rounded-2xl border border-border bg-card">
-        <Link to="/competitions/$slug" params={{ slug: current?.competition?.slug ?? "" }}
-          className="flex items-center gap-2 border-b border-border px-4 py-3 text-sm font-bold hover:text-primary">
-          {current?.competition?.logo_url && <img src={current.competition.logo_url} alt="" className="h-6 w-6 shrink-0 object-contain" />}
-          <span className="min-w-0 flex-1 truncate">{tx(current?.competition?.name) ?? tx("Competition")}</span>
-          {availableSeasons.length > 0 && <span onClick={(event) => event.preventDefault()}><SeasonMenu seasons={availableSeasons} value={activeSeason} onChange={(value) => current && setSelectedSeasons((previous) => ({ ...previous, [current.competition_id]: value }))} /></span>}
-          <ArrowRight className="h-4 w-4 shrink-0" />
-        </Link>
-        <div className="p-3"><StandingsTable rows={list} labels={currentLabels} highlightTeamId={teamId} /></div>
+        <StandingsTable rows={list} labels={currentLabels} highlightTeamId={teamId} modern />
       </div>
     </div>
   );
@@ -468,7 +521,7 @@ function YouthTeams({ team }: { team: Team }) {
             <TeamCrest name={row.name} logo={row.logo_url} className="h-9 w-9" />
             <span className="min-w-0 flex-1">
               <span className="block truncate text-sm font-semibold">{tx(row.name)}</span>
-              <span className="mt-0.5 inline-flex rounded-full bg-primary/10 px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wide text-primary">{tx(row.tag)}</span>
+              <span className="mt-1 block text-[0.65rem] font-medium text-muted-foreground">{tx(row.tag)}</span>
             </span>
             <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
           </Link>
@@ -569,11 +622,31 @@ function TeamNewsTeaser({ teamId, onMore }: { teamId: string; onMore: () => void
  * jumps straight to the next upcoming match, so past games are just a scroll away.
  */
 function TeamMatches({ data, teamId, nextId }: { data: MatchWithTeams[]; teamId: string; nextId: string | null }) {
-  const box = useRef<HTMLDivElement>(null);
+  const tx = useTx();
+  const top = useRef<HTMLDivElement>(null);
+  const [showToday, setShowToday] = useState(false);
+  const resetPosition = useRef(0);
+  const timestamp = (m: MatchWithTeams) => m.kickoff_at ? new Date(m.kickoff_at).getTime() : 0;
+  const ordered = [...data].sort((a, b) => timestamp(b) - timestamp(a));
+  const targetId = data.find((m) => ["live", "ht"].includes(m.status))?.id ?? nextId ?? ordered.find((m) => timestamp(m) <= Date.now())?.id ?? ordered[0]?.id;
+  const goToNext = () => {
+    const target = Array.from(top.current?.querySelectorAll<HTMLElement>("[data-fixture-id]") ?? []).find((node) => node.dataset.fixtureId === targetId);
+    if (!target) return;
+    const header = document.querySelector<HTMLElement>("[data-refresh-header]");
+    const offset = header?.getBoundingClientRect().height ?? 140;
+    window.scrollTo({ top: Math.max(0, window.scrollY + target.getBoundingClientRect().top - offset - 12), behavior: "instant" });
+    resetPosition.current = window.scrollY;
+    setShowToday(false);
+  };
   useEffect(() => {
-    if (!nextId || !box.current) return;
-    const row = box.current.querySelector(`a[href*="/matches/${nextId}"]`);
-    row?.scrollIntoView({ block: "center" });
-  }, [nextId]);
-  return <div ref={box}><MatchGroups data={data} highlightTeamId={teamId} /></div>;
+    let secondFrame = 0;
+    const firstFrame = requestAnimationFrame(() => { secondFrame = requestAnimationFrame(goToNext); });
+    const onScroll = () => setShowToday(Math.abs(window.scrollY - resetPosition.current) > 40);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => { cancelAnimationFrame(firstFrame); cancelAnimationFrame(secondFrame); window.removeEventListener("scroll", onScroll); };
+  }, [targetId, teamId]);
+  return <div ref={top} className="scroll-mt-40">
+    <MatchGroups data={ordered} highlightTeamId={teamId} />
+    {showToday && <Button variant="outline" onClick={goToNext} className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] left-1/2 z-30 -translate-x-1/2 rounded-full border-border bg-background text-foreground shadow">{tx("Today")}</Button>}
+  </div>;
 }

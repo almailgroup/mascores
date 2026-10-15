@@ -1,117 +1,63 @@
 # Roadmap
-
-## A. Bug fixes (done)
-- [x] Rating colour bands (purple → shiny gold) + always one decimal (7.0)
-- [x] ft/in height unit working globally (settings + player profile)
-- [x] Pitch stays the same size for every formation / with ratings
-- [x] Group B (and later groups) can now receive teams via "Add teams"
-- [x] Standings competition bar with tournament logos on club pages
-- [x] National teams no longer repeat the country row
-- [x] "Bidoon" nationality with an Arabic wordmark flag
-- [x] "Save result" prompt when goals are logged on a scheduled match
-
-## B. Admin usability (done)
-- [x] Search + filter bars across every admin list (teams, players, matches,
-      competitions, venues, channels, transfers, news)
-- [x] Past-season squads start empty; can pull current or past players
-
-## C. Branding & content
-- [x] Zain Premier League themed competition page + 5s intro with smooth theme
-
-## D. New features
-- [x] Tickets: admin creation (optional row/seat, free tickets), QR per ticket,
-      single-use scanner in admin, public ticket section, "Pay — coming soon",
-      admin code MAMA2026 for a free ticket
-- [x] Voice chats: create room with title/photo (auto-generated when missing),
-      public or link-only, follow users + notifications, most-followed feed
-
-## E. Follow-ups (done this pass)
-- [x] Database access grants for tickets, voice rooms and follows
-- [x] Ticket checkout: details → payment (coming soon + skip) → generated QR pass
-- [x] Voice: end room, mic publishing fix, speaker/listener counts, anonymous listening
-- [x] Reporter publishing marked coming soon
-- [x] Club pages show competition stats leaderboards
-
-## Follow-up round (in progress)
-Done in this pass:
-- Host can delete a voice room at any time (live rooms are ended first); clearer mic errors + Retry microphone button.
-- Zain theme/intro limited to the Premier League only (First Division back to default look).
-- Season picker moved out of the hero metadata row, styled for coloured heroes, no longer clipped.
-- Pitch layouts (admin + public) reserve space so goalkeeper ratings/kit numbers are never cut off.
-- Tickets: full-page checkout with safe bottom spacing, passes expire 3h after kickoff, expired offers leave the shop, home page "Buy match tickets" banner, admin Hide/Show toggle and Buyers contact list.
-- Search: coloured sticky header with back arrow, rounded field, filter chips and a recent-entities list.
-- "Scroll for more" hint on match and competition pages.
-- News article: duplicate Back control removed (News link kept).
-
-Still open (needs DB columns — migration pending):
-- Per-match coach: assign or remove a coach for a single match.
-- Admin ban / timed suspension of users (chat + voice + tickets).
-- Club and player social media links section.
-- Competition logo variants for light and dark mode.
-- Link a voice room to a match and show a voice section on the match page.
-- Transfer history: upload a crest for a club typed by name only.
-Still open (frontend polish):
-- Richer awards/winner presentation and a more premium competition overview info box.
-- Confirm the "publish news" action is fully removed for reporters.
-
-## Done in this pass
-- Per-match coach picker (admin) and match-specific coach display
-- Users & moderation admin tab: ban / timed suspension / lift, enforced in chat + ticket claims
-- Social media links for clubs and players (admin editor + public section)
-- Light/dark competition logos everywhere (hero, intro, list)
-- Voice rooms linked to matches, with a voice section on the match page
-- Transfer history club crest uploads and public display
-- Professional awards board and premium competition key-numbers strip
-
-## Still open
-- [x] Voice entry now reports failed joins instead of opening a broken room
-- [x] X-style listen-first flow with hand raising, host promotion, participant counts and explicit mobile audio unlock
-- [x] Microphone starts from the user's tap, reconnects peers with ICE restart, and queues early connection candidates
-- Voice audio still needs final two-account verification on physical devices
-
-## Voice replays pass
-- [x] Hosts can record a room and save it as a replay (mixed audio upload)
-- [x] Replays listed on the voice page, on linked match pages, and in account settings
-- [x] Admin voice tab: browse rooms/replays, end, delete
-- [x] Anonymous listening stored per participant and masked in the roster
-- [x] Optional match link when starting a room from the voice page
-
-## Big request (Sep 10) — tracking list
-Fixes:
-- [x] Admin on iPhone: nothing cut off (delete competition, add season, all panels)
-- [x] Voice: bottom nav covers the "create room" button
-- [x] Search: country results must not repeat the country name
-- [x] Ban / suspend a user does not take effect
-- [x] "Edit player" should jump straight to the editor
-- [x] Match page background too bright
-- [x] Brand name -> "Mansour Almail Scores" (with space), smaller
-- [x] Back button on competition pages
-- [x] National-team squad photo should persist on the player page (squad entry only)
-Additions:
-- [x] Share button on standings and line-ups + save to camera roll
-- [x] Line-ups: choose formation+bench or names/numbers+bench
-- [x] Club Info tab: one news preview + "more news"
-- [x] Settings: send feedback to the owner
-- [x] Stadium: map link + "directions"; stadium shown under match
-- [x] Club contact info; full staff (not only coach); club/national colour choice
-- [x] National team squad: player's club shown next to the name
-Bigger builds (need database work):
-- [x] Main admin (mansouralmailscores@gmail.com) at /secretadminsafha, everyone else signed out
-- [x] Manage section: create users with limited access (news, club news, rabta), approval on/off, generated passwords
-- [x] Ultras / Rabta section with per-club editors and approval
-- [x] Public/private user profiles, usernames, followers; replays published to the host profile
-- [x] Voice rooms: live text messages during the room
-- [x] Admin moderation of match chat messages
-- [x] Tickets: Apple Wallet, resale with price cap, new QR after resale, seller contact
-- [x] Match reminders + 45/30/15 minute notifications
-- [x] Reporter desk: contact mansouralmailscores@gmail.com, social accounts on published news
-
-## Notes
-- Wallet: passes save as a calendar/wallet event file; a signed Apple Wallet pass needs an Apple developer pass certificate.
-- Match reminders fire while the app is open (browser notifications); background push is not set up.
-
-## Current request — 2026-09-12
-- [x] Redesign iPhone home ticket CTA and mobile match/club/date navigation.
-- [x] Fix Arabic competition names, match colors, lineup team selection, and Arabic player short names.
-- [x] Add feedback replies, reporter workflows, chat moderation, media watermarks, and venue match listing fixes.
-- [x] Improve voice lifecycle/reactions, notification delivery/settings/sounds, ticket hiding, and nationality options.
+- [x] Fix Mohammed Aman's Yemen flag and verify shared flags across countries
+- [x] Keep the club president crown black and white
+- [x] Update club followers immediately when starred and fix stuck star/notification controls
+- [x] Label national-squad players without clubs as Free agent and use club initials for missing club logos
+- [x] Place the custom president portrait row inside club details alongside the coach
+- [x] Modernize club statistics presentation without changing its calculations
+- [x] Show released rounds and only the current started round; explain one-hour availability and choose round-team formation from ratings
+- [x] Add club follower counts styled like competitions with admin overrides and replace club standings competition swiping with an in-app menu
+- [x] Fix Arabic Home filter overflow/scrolling, retain language when revisiting settings, and professionally present club presidents
+- [x] Polish liquid-glass season selectors and replace native Team of the Round picker with an in-app menu
+- [x] Add owner submission editing before approval and deletion at any status; separate cover/proof previews
+- [x] Modernize first-team/youth labels and fix ticket sheet/list clipping
+- [x] Restore descending club matches, next-fixture initial focus and scroll-triggered Today
+- [x] Verify submission permissions and phone-sized ticket/match flows
+- [x] Apply modern standings everywhere and restore qualification markers/labels
+- [x] Modernize season selectors and arrange Home logo/search/profile left-to-right
+- [x] Verify standings, season menus and header in the browser
+- [x] Modernize club standings without Home/Away filters
+- [x] Add club notification control next to the favourite star
+- [x] Prevent completed first-run setup from flashing on launch
+- [x] Keep club/competition refresh beneath the header as in the video
+- [x] Add automatic rating-based Team of the Round after completed rounds
+- [x] Add year-by-year title history above winners and competition settings editing
+- [x] Verify refresh, round eligibility and title-history save/read flows
+- [x] Match reference-style soft backgrounds across club, competition and match headers, with compact full-name competition layout
+- [x] Check header appearance, full-name fit and scrolling on phone and desktop
+- [x] Remove news/photo watermarks and restore original event artwork with theme contrast only
+- [x] Make club/competition headers collapse and move with the full page; match the reference match-header animation
+- [x] Verify headers and full-page pulling in the browser; original artwork restored, native iPhone verification remains pending
+- [x] Improve dark event icons and blue match accents; compact scrolling header and stadium only in details
+- [x] Rename Include players; symmetric branded language loading
+- [x] First-install team selection/skip, language choice and persistent completion
+- [x] Verify setup persistence, language switches, search and match collapse in browser
+- [x] Shorten competition background without crowding controls, show past club fixtures, move full headers during refresh
+- [x] Voice bottom tab, two-item More layout, public profile/settings entry before sign-in
+- [x] Verify these page, gesture and signed-out account flows in phone-sized browser; native iPhone verification remains below
+- [x] Fill More's remaining row with Tickets and add phone safe-area clearance to headerless pages
+- [x] Home-only main header, remove Search from More, stop ordinary scrolling from displacing bottom navigation
+- [x] Hide header on competitions/search, revise bottom tabs and animate MaScores search
+- [x] Finger-following cancellable back swipe and elastic page-displacing pull refresh
+- [x] Verify navigation, animated gestures and search on phone-sized preview
+- [x] Speed up player portraits and block photo drag/long-press menus
+- [x] Remove reporter AI, repair reporter photo/proof upload permission, fit admin news actions on iPhone
+- [x] Profile-left/logo-only header with long search; opt-in squad search
+- [x] Sticky club tabs, Today, upcoming-first matches and club-only standing groups
+- [x] Back/home hold, edge swipe back, pull refresh and stable notification press appearance
+- [x] Browser-check header, search, news actions and gestures; reporter form checked with mocked active status
+- [ ] Validate reporter upload end-to-end and native gestures on a real iPhone
+- [x] iOS sign-in Browser fallback + photo save timeout (in progress)
+- [x] Transfers: type labels cut off (e.g. "Loan return")
+- [x] Disable text selection/copy on iPhone app (keep on computer)
+- [x] Google/Apple sign-in: compact sheet with Cancel button (needs new TestFlight build)
+- [x] Kickoff reminders: saving errors, immediate phone scheduling, clear messages
+- [x] Camera-roll saving: show installed build in message, avoid duplicate app screen (needs new TestFlight build)
+- [x] Voice room: mic not working (iPhone needs new build)
+- [x] Voice room: emoji reaction shows as one emoji on my own avatar
+- [ ] Google 400 on iPhone, sign-in sheet size, mic 'cannot capture', save stuck, reminders not working (Oct 8)
+- [x] Compact match page sizing (Sofascore-style, ref IMG_3674)
+- [x] Remove border around country flags
+- [x] Player matches: competition filter uses in-app SeasonMenu
+- [x] Recycle bin for deleted data with restore
+- [ ] ACL2: fill Kuwait SC match details using existing Kuwait SC players (no new duplicates)

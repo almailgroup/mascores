@@ -386,8 +386,38 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
     queryFn: async () => (await supabase.from("player_ratings").select("*").eq("match_id", match.id)).data ?? [],
   });
 
-  const players = playersQ.data ?? [];
+  const [extraSquads, setExtraSquads] = useState<string[]>([]);
+  const [tempName, setTempName] = useState("");
+  const [anySearch, setAnySearch] = useState("");
+  const anyQ = useQuery({
+    enabled: anySearch.trim().length >= 2,
+    queryKey: ["admin", "lineup-any-player", anySearch.trim()],
+    queryFn: async () => ((await supabase.from("players").select("*").ilike("name", `%${anySearch.trim()}%`).eq("is_temporary", false).order("name").limit(30)).data ?? []) as Player[],
+  });
+  /** Linked youth / first teams for a side (parent and children). */
+  const relatedTeams = (tid: string) => {
+    const self = teams.find((t) => t.id === tid);
+    return teams.filter((t) => t.id !== tid && (t.parent_team_id === tid || (self?.parent_team_id && (t.id === self.parent_team_id || t.parent_team_id === self.parent_team_id))));
+  };
+  const lineupIds = (lineupsQ.data ?? []).map((l) => l.player_id).join(",");
+  const extraQ = useQuery({
+    queryKey: ["admin", "lineup-extra-players", match.id, extraSquads.join(","), lineupIds],
+    queryFn: async () => {
+      const out: Player[] = [];
+      if (extraSquads.length) out.push(...(((await supabase.from("players").select("*").in("team_id", extraSquads)).data ?? []) as Player[]));
+      const ids = lineupIds ? lineupIds.split(",") : [];
+      if (ids.length) out.push(...(((await supabase.from("players").select("*").in("id", ids)).data ?? []) as Player[]));
+      return out;
+    },
+  });
+  const players = [...(playersQ.data ?? []), ...(extraQ.data ?? [])].filter((p, i, all) => all.findIndex((x) => x.id === p.id) === i);
   const lineups = lineupsQ.data ?? [];
+  const addTemporary = async (teamId: string, slot: string) => {
+    const name = tempName.trim();
+    if (!name) return;
+    const { data } = await supabase.from("players").insert({ name, team_id: null, is_temporary: true } as never).select("id").single();
+    if (data) { await assignSlot(teamId, slot, (data as { id: string }).id); setTempName(""); setPicker(null); extraQ.refetch(); }
+  };
   const teamName = (id: string) => teams.find((t) => t.id === id)?.name ?? "";
 
   /** Icons a player earned in this match: goals, cards, and a swap arrow when subbed off/on. */
@@ -675,10 +705,34 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
               </section>
             );
           })()}
+          {picker && (() => {
+            const related = relatedTeams(picker.teamId);
+            return (
+              <section className="space-y-2 rounded-xl border border-border bg-background/50 p-3">
+                <input className="h-9 w-full rounded-lg border border-border bg-background px-3 text-sm" placeholder="Search any player (former players, any club)…" value={anySearch} onChange={(e) => setAnySearch(e.target.value)} />
+                {anySearch.trim().length >= 2 && <div className="max-h-56 space-y-1 overflow-y-auto">
+                  {(anyQ.data ?? []).map((p) => <button key={p.id} type="button" onClick={async () => { await assignSlot(picker.teamId, picker.slot, p.id); setAnySearch(""); setPicker(null); extraQ.refetch(); }} className="flex w-full items-center gap-2 rounded-lg border border-border bg-background p-2 text-left hover:border-primary">
+                    <PlayerAvatar src={p.photo_url} name={p.name} size="sm" />
+                    <span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{p.name}</span><span className="block truncate text-xs text-muted-foreground">{[p.position, teams.find((t) => t.id === p.team_id)?.name ?? "Free agent"].filter(Boolean).join(" · ")}</span></span>
+                  </button>)}
+                  {anyQ.data?.length === 0 && <p className="p-2 text-xs text-muted-foreground">No player found</p>}
+                </div>}
+                <div className="flex gap-2">
+                  <input className="h-9 min-w-0 flex-1 rounded-lg border border-border bg-background px-3 text-sm" placeholder="Temporary player name (this match only)" value={tempName} onChange={(e) => setTempName(e.target.value)} />
+                  <button type="button" className={btnPrimary} disabled={!tempName.trim()} onClick={() => addTemporary(picker.teamId, picker.slot)}>Add</button>
+                </div>
+                {related.length > 0 && <div className="flex flex-wrap gap-1.5">{related.map((t) => {
+                  const on = extraSquads.includes(t.id);
+                  return <button key={t.id} type="button" onClick={() => setExtraSquads((s) => on ? s.filter((x) => x !== t.id) : [...s, t.id])} className={`rounded-full border px-3 py-1 text-xs font-semibold ${on ? "border-primary bg-primary/10 text-primary" : "border-border"}`}>{on ? "Hide" : "Show"} {t.age_group ?? t.name}</button>;
+                })}</div>}
+              </section>
+            );
+          })()}
           {picker && ["Goalkeeper", "Defender", "Midfielder", "Forward", "Unknown"].map((position) => {
-            const pool = players.filter((player) => player.team_id === picker.teamId && (player.position ?? "Unknown") === position).sort((a, b) => (a.shirt_number ?? 999) - (b.shirt_number ?? 999) || a.name.localeCompare(b.name));
+            const allowed = new Set([picker.teamId, ...extraSquads.filter((id) => relatedTeams(picker.teamId).some((t) => t.id === id))]);
+            const pool = players.filter((player) => !player.is_temporary && allowed.has(player.team_id ?? "") && (player.position ?? "Unknown") === position).sort((a, b) => (a.shirt_number ?? 999) - (b.shirt_number ?? 999) || a.name.localeCompare(b.name));
             if (pool.length === 0) return null;
-            return <section key={position}><h4 className="mb-2 text-xs font-bold uppercase text-muted-foreground">{position}</h4><div className="grid gap-2">{pool.map((player) => <button key={player.id} type="button" onClick={async () => { await assignSlot(picker.teamId, picker.slot, player.id); setPicker(null); }} className="flex items-center gap-3 rounded-lg border border-border bg-background p-2 text-left hover:border-primary"><PlayerAvatar src={player.photo_url} name={player.name} size="sm" /><span className="w-8 text-center text-sm font-bold">{player.shirt_number ?? "—"}</span><span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{player.name}</span><span className="block text-xs text-muted-foreground">{player.position ?? "Unknown"}</span></span></button>)}</div></section>;
+            return <section key={position}><h4 className="mb-2 text-xs font-bold uppercase text-muted-foreground">{position}</h4><div className="grid gap-2">{pool.map((player) => { const other = player.team_id !== picker.teamId; return <button key={player.id} type="button" onClick={async () => { await assignSlot(picker.teamId, picker.slot, player.id); setPicker(null); }} className="flex items-center gap-3 rounded-lg border border-border bg-background p-2 text-left hover:border-primary"><PlayerAvatar src={player.photo_url} name={player.name} size="sm" className={other ? "ring-2 ring-primary" : ""} /><span className="w-8 text-center text-sm font-bold">{player.shirt_number ?? "—"}</span><span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{player.name}</span><span className="block text-xs text-muted-foreground">{player.position ?? "Unknown"}{other ? ` · ${teams.find((t) => t.id === player.team_id)?.age_group ?? teamName(player.team_id ?? "")}` : ""}</span></span></button>; })}</div></section>;
           })}
         </div>
       </Modal>
@@ -927,8 +981,24 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
 /** Squad-style player picker: avatars, shirt numbers, grouped by position — same feel as lineups. */
 function PlayerPickField({ label, players, value, onChange }: { label: string; players: Player[]; value: string | null | undefined; onChange: (id: string | null) => void }) {
   const [open, setOpen] = useState(false);
-  const chosen = players.find((p) => p.id === value) ?? null;
+  const [search, setSearch] = useState("");
+  // Players picked from the global search that aren't in the squad pool — kept so the field can still show them.
+  const [extras, setExtras] = useState<Player[]>([]);
+  const all = [...players, ...extras.filter((e) => !players.some((p) => p.id === e.id))];
+  const chosen = all.find((p) => p.id === value) ?? null;
   const groups = ["Goalkeeper", "Defender", "Midfielder", "Forward", "Unknown"];
+  const searchQ = useQuery({
+    enabled: open && search.trim().length > 1,
+    queryKey: ["admin", "event-player-search", search.trim()],
+    queryFn: async () => ((await supabase.from("players").select("*").ilike("name", `%${search.trim()}%`).eq("is_temporary", false).order("name").limit(30)).data ?? []) as Player[],
+  });
+  const results = (searchQ.data ?? []).filter((p) => !players.some((s) => s.id === p.id));
+  const pick = (player: Player) => {
+    if (!players.some((p) => p.id === player.id)) setExtras((prev) => [...prev.filter((e) => e.id !== player.id), player]);
+    onChange(player.id);
+    setOpen(false);
+    setSearch("");
+  };
   return (
     <div>
       <span className="mb-1 block text-[0.6rem] font-bold uppercase tracking-widest text-muted-foreground">{label}</span>
@@ -945,6 +1015,24 @@ function PlayerPickField({ label, players, value, onChange }: { label: string; p
       </button>
       <Modal open={open} onClose={() => setOpen(false)} title={label}>
         <div className="max-h-[70vh] space-y-4 overflow-y-auto">
+          <input autoFocus value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search any player…" className={inputCls} />
+          {search.trim().length > 1 && (
+            <section>
+              <h4 className="mb-2 text-xs font-bold uppercase text-muted-foreground">All players</h4>
+              <div className="grid gap-2">
+                {searchQ.isLoading && <p className="text-xs text-muted-foreground">Searching…</p>}
+                {!searchQ.isLoading && results.length === 0 && <p className="text-xs text-muted-foreground">No other players match.</p>}
+                {results.map((player) => (
+                  <button key={player.id} type="button" onClick={() => pick(player)}
+                    className="flex items-center gap-3 rounded-lg border border-border bg-background p-2 text-left hover:border-primary">
+                    <PlayerAvatar src={player.photo_url} name={player.name} size="sm" />
+                    <span className="w-8 text-center text-sm font-bold">{player.shirt_number ?? "—"}</span>
+                    <span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{player.name}</span><span className="block text-xs text-muted-foreground">{player.position ?? "Unknown"}</span></span>
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
           {groups.map((position) => {
             const pool = players.filter((p) => (p.position ?? "Unknown") === position)
               .sort((a, b) => (a.shirt_number ?? 999) - (b.shirt_number ?? 999) || a.name.localeCompare(b.name));
@@ -954,7 +1042,7 @@ function PlayerPickField({ label, players, value, onChange }: { label: string; p
                 <h4 className="mb-2 text-xs font-bold uppercase text-muted-foreground">{position}</h4>
                 <div className="grid gap-2">
                   {pool.map((player) => (
-                    <button key={player.id} type="button" onClick={() => { onChange(player.id); setOpen(false); }}
+                    <button key={player.id} type="button" onClick={() => { onChange(player.id); setOpen(false); setSearch(""); }}
                       className={`flex items-center gap-3 rounded-lg border p-2 text-left ${player.id === value ? "border-primary bg-primary/10" : "border-border bg-background hover:border-primary"}`}>
                       <PlayerAvatar src={player.photo_url} name={player.name} size="sm" />
                       <span className="w-8 text-center text-sm font-bold">{player.shirt_number ?? "—"}</span>
@@ -966,7 +1054,7 @@ function PlayerPickField({ label, players, value, onChange }: { label: string; p
               </section>
             );
           })}
-          {players.length === 0 && <p className="text-xs text-muted-foreground">Pick a team first to see its squad.</p>}
+          {players.length === 0 && search.trim().length < 2 && <p className="text-xs text-muted-foreground">Pick a team first to see its squad, or search any player above.</p>}
         </div>
       </Modal>
     </div>

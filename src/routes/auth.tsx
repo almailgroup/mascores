@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { nativeOAuthSignIn } from "@/lib/native-oauth";
 import { BrandLogo } from "@/components/brand-logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Loader2, Mail, Lock, User as UserIcon, ArrowLeft } from "lucide-react";
@@ -10,8 +11,7 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "Sign in — MansourAlmailScores" },
-      { name: "description", content: "Sign in or create your MansourAlmailScores account to follow live football scores, favorites, and personalized coverage." },
-    ],
+      { name: "description", content: "Sign in or create your MansourAlmailScores account to follow live football scores, favorites, and personalized coverage." }, { property: "og:title", content: "Sign in — MansourAlmailScores" }, { property: "og:description", content: "Sign in or create your MansourAlmailScores account to follow live football scores, favorites, and personalized coverage." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }],
   }),
   component: AuthPage,
 });
@@ -28,6 +28,13 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  // Inside the iOS app, web sign-in with Google/Apple escapes to Safari and
+  // never returns, so only email sign-in is offered there.
+  const [isNativeApp, setIsNativeApp] = useState(false);
+  useEffect(() => {
+    const cap = (window as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor;
+    setIsNativeApp(cap?.isNativePlatform?.() === true);
+  }, []);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -83,8 +90,19 @@ function AuthPage() {
     setError(null);
     setBusy(true);
     try {
+      // On the iPhone app, open sign-in in the system Safari sheet so it has
+      // a Done button, fits the screen, and returns here automatically.
+      const native = await nativeOAuthSignIn(provider);
+      if (native.handled) {
+        // Closing the sheet with Cancel just returns to this page quietly.
+        if (native.error === "Sign in was cancelled") return;
+        if (native.error) throw new Error(native.error);
+        navigate({ to: "/" });
+        return;
+      }
       const result = await lovable.auth.signInWithOAuth(provider, {
         redirect_uri: window.location.origin,
+        ...(provider === "google" ? { extraParams: { prompt: "select_account" } } : {}),
       });
       if (result.error) throw result.error;
       if (result.redirected) return;
@@ -99,7 +117,7 @@ function AuthPage() {
   return (
     <div className="relative min-h-screen bg-background text-foreground">
       <div className="pointer-events-none absolute inset-0 opacity-60 [background:radial-gradient(circle_at_50%_0%,color-mix(in_oklab,var(--primary)_30%,transparent),transparent_50%)]" />
-      <div className="relative z-10 mx-auto flex max-w-md flex-col px-6 py-8">
+      <div className="relative z-10 mx-auto flex max-w-md flex-col px-6 pb-8" style={{ paddingTop: "calc(env(safe-area-inset-top) + 2.5rem)" }}>
         <div className="flex items-center justify-between gap-2">
           <Link
             to="/"

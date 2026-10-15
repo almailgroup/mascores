@@ -3,10 +3,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./use-auth";
 import { Bell, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
+import { useClubAlerts } from "@/hooks/use-club-alerts";
+import { Button } from "@/components/ui/button";
 
 export type FavoriteKind = "team" | "player" | "competition" | "match";
 
 const MATCH_KEY = "mas.favorite_match_ids";
+const TEAM_KEY = "mas.favorite_team_ids";
+const TEAM_SYNC_KEY = "mas.favorite_teams_pending";
 const ALERT_KEY = "mas.match_notification_ids";
 const PREF_KEY = "mas.notification_preferences";
 
@@ -15,29 +19,34 @@ type FavoritesState = { team: string[]; player: string[]; competition: string[];
 /** One shared list of favourites, so a star pressed in one place updates every
  *  other star and bell on the page straight away. */
 let shared: FavoritesState | null = null;
+let revision = 0;
+let saveQueue: Promise<unknown> = Promise.resolve();
 const listeners = new Set<(next: FavoritesState) => void>();
 function publish(next: FavoritesState) {
+  revision += 1;
   shared = next;
   for (const listener of listeners) listener(next);
 }
 
 export function useFavorites() {
   const { user } = useAuth();
-  const [favorites, setFavorites] = useState<FavoritesState>(shared ?? { team: [], player: [], competition: [], match: [] });
-  const [ready, setReady] = useState(shared !== null);
+  const [favorites, setFavorites] = useState<FavoritesState>({ team: [], player: [], competition: [], match: [] });
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     listeners.add(setFavorites);
+    if (shared) setFavorites(shared);
     return () => { listeners.delete(setFavorites); };
   }, []);
 
   useEffect(() => {
     let cancel = false;
+    const loadRevision = revision;
     (async () => {
       const match = safeReadLocal(MATCH_KEY);
       if (!user) {
         if (!cancel) {
-          publish({ team: [], player: [], competition: [], match });
+          publish({ team: safeReadLocal(TEAM_KEY), player: [], competition: [], match });
           setReady(true);
         }
         return;
@@ -47,9 +56,15 @@ export function useFavorites() {
         .select("favorite_team_ids, favorite_player_ids, favorite_competition_ids, favorite_match_ids")
         .eq("id", user.id)
         .maybeSingle();
-      if (!cancel) {
+      const pendingTeams = safeReadLocal(TEAM_SYNC_KEY);
+      const team = [...new Set([...(data?.favorite_team_ids ?? []), ...pendingTeams])];
+      if (pendingTeams.length > 0 && data) {
+        const { error } = await supabase.from("profiles").update({ favorite_team_ids: team }).eq("id", user.id);
+        if (!error) { try { localStorage.removeItem(TEAM_SYNC_KEY); } catch { /* optional */ } }
+      }
+      if (!cancel && loadRevision === revision) {
         publish({
-          team: data?.favorite_team_ids ?? [],
+          team,
           player: data?.favorite_player_ids ?? [],
           competition: data?.favorite_competition_ids ?? [],
           match: data?.favorite_match_ids ?? match,
@@ -60,7 +75,7 @@ export function useFavorites() {
     return () => {
       cancel = true;
     };
-  }, [user]);
+  }, [user?.id]);
 
   const isFavorite = useCallback(
     (kind: FavoriteKind, id: string | number) => favorites[kind].includes(String(id)),
@@ -70,16 +85,27 @@ export function useFavorites() {
   const toggle = useCallback(
     async (kind: FavoriteKind, id: string | number) => {
       const strId = String(id);
-      const has = favorites[kind].includes(strId);
-      const next = has ? favorites[kind].filter((x) => x !== strId) : [...favorites[kind], strId];
-      publish({ ...favorites, [kind]: next });
+      const current = shared ?? favorites;
+      const has = current[kind].includes(strId);
+      const next = has ? current[kind].filter((x) => x !== strId) : [...current[kind], strId];
+      publish({ ...current, [kind]: next });
+      if (kind === "team") {
+        try { localStorage.setItem(TEAM_KEY, JSON.stringify(next)); if (!user) localStorage.setItem(TEAM_SYNC_KEY, JSON.stringify(next)); } catch { /* optional */ }
+      }
       if (kind === "match") {
         try {
           localStorage.setItem(MATCH_KEY, JSON.stringify(next));
         } catch {
           /* ignore */
         }
-        if (user) await supabase.from("profiles").update({ favorite_match_ids: next }).eq("id", user.id);
+        if (user) {
+          const save = saveQueue.catch(() => {}).then(async () => {
+            const { error } = await supabase.from("profiles").update({ favorite_match_ids: next }).eq("id", user.id);
+            if (error) throw error;
+          });
+          saveQueue = save;
+          await save;
+        }
         return;
       }
       if (!user) return;
@@ -87,7 +113,16 @@ export function useFavorites() {
         kind === "team" ? { favorite_team_ids: next }
         : kind === "player" ? { favorite_player_ids: next }
         : { favorite_competition_ids: next };
-      await supabase.from("profiles").update(patch).eq("id", user.id);
+      const save = saveQueue.catch(() => {}).then(async () => {
+        const { error } = await supabase.from("profiles").update(patch).eq("id", user.id);
+        if (error) throw error;
+      });
+      saveQueue = save;
+      try { await save; } catch (error) {
+        const latest = shared ?? current;
+        if (latest[kind] === next) publish({ ...latest, [kind]: current[kind] });
+        throw error;
+      }
     },
     [favorites, user],
   );
@@ -101,7 +136,17 @@ export function useFavorites() {
     [favorites, toggle],
   );
 
-  return { favorites, isFavorite, toggle, add, ready };
+  const addTeams = useCallback(async (ids: string[]) => {
+    if (ids.length === 0) return;
+    const team = [...new Set([...(shared?.team ?? []), ...safeReadLocal(TEAM_KEY), ...ids])];
+    publish({ ...(shared ?? favorites), team });
+    try { localStorage.setItem(TEAM_KEY, JSON.stringify(team)); localStorage.setItem(TEAM_SYNC_KEY, JSON.stringify(team)); } catch { /* optional */ }
+    if (user) {
+      const { error } = await supabase.from("profiles").update({ favorite_team_ids: team }).eq("id", user.id);
+      if (!error) { try { localStorage.removeItem(TEAM_SYNC_KEY); } catch { /* optional */ } }
+    }
+  }, [favorites, user]);
+  return { favorites, isFavorite, toggle, add, addTeams, ready };
 }
 
 function safeReadLocal(key: string): string[] {
@@ -114,21 +159,26 @@ function safeReadLocal(key: string): string[] {
   }
 }
 
-export function FavoriteButton({ kind, id, size = "sm", onFollow }: { kind: FavoriteKind; id: string | number; size?: "sm" | "md"; onFollow?: () => void }) {
+export function FavoriteButton({ kind, id, size = "sm", onFollow, onFavoriteChange, onFavoriteSaved }: { kind: FavoriteKind; id: string | number; size?: "sm" | "md"; onFollow?: () => void; onFavoriteChange?: (active: boolean) => void; onFavoriteSaved?: (active: boolean) => void }) {
   const { user } = useAuth();
   const { isFavorite, toggle } = useFavorites();
   const active = isFavorite(kind, id);
-  const disabled = kind !== "match" && !user;
+  const disabled = kind !== "match" && kind !== "team" && !user;
   const dim = size === "md" ? "h-10 w-10" : "h-8 w-8";
   return (
-    <button
+    <Button variant="ghost" data-no-gesture
       type="button"
+      aria-label={active ? "Remove favorite" : "Add to favorites"}
+      aria-pressed={active}
       title={disabled ? "Sign in to save favorites" : active ? "Remove favorite" : "Add to favorites"}
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
         if (disabled) return;
-        toggle(kind, id);
+        const nextActive = !active;
+        const save = toggle(kind, id);
+        onFavoriteChange?.(nextActive);
+        void save.then(() => onFavoriteSaved?.(nextActive)).catch(() => { onFavoriteChange?.(!nextActive); toast.error("Unable to save favorite"); });
         if (!active) onFollow?.();
       }}
       className={`inline-flex ${dim} items-center justify-center rounded-full border transition ${
@@ -140,7 +190,7 @@ export function FavoriteButton({ kind, id, size = "sm", onFollow }: { kind: Favo
       <svg width="16" height="16" viewBox="0 0 24 24" fill={active ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <polygon points="12 2 15 8.5 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 9 8.5 12 2" />
       </svg>
-    </button>
+    </Button>
   );
 }
 
@@ -158,6 +208,7 @@ const PREF_ROWS: { key: keyof AlertPrefs; label: string }[] = [
  * sliders button next to it chooses which moments are announced.
  */
 export function MatchNotificationButton({ matchId, teamIds = [], withSettings = false }: { matchId: string; teamIds?: (string | null | undefined)[]; withSettings?: boolean }) {
+  const { overrides } = useClubAlerts();
   const { user } = useAuth();
   const { favorites } = useFavorites();
   const [alerts, setAlerts] = useState<string[]>([]);
@@ -165,7 +216,7 @@ export function MatchNotificationButton({ matchId, teamIds = [], withSettings = 
   const [prefs, setPrefs] = useState<AlertPrefs>({});
   const [openPrefs, setOpenPrefs] = useState(false);
   const box = useRef<HTMLDivElement>(null);
-  const inherited = teamIds.some((id) => Boolean(id && favorites.team.includes(id)));
+  const inherited = teamIds.some((id) => Boolean(id && (overrides[id] ?? favorites.team.includes(id))));
 
   useEffect(() => {
     let cancelled = false;
@@ -203,7 +254,11 @@ export function MatchNotificationButton({ matchId, teamIds = [], withSettings = 
   const savePrefs = async (next: AlertPrefs) => {
     setPrefs(next);
     try { localStorage.setItem(PREF_KEY, JSON.stringify(next)); } catch { /* optional */ }
-    if (user) await supabase.from("profiles").update({ notification_preferences: next as never }).eq("id", user.id);
+    if (user) {
+      const { data } = await supabase.from("profiles").select("notification_preferences").eq("id", user.id).maybeSingle();
+      const saved = data?.notification_preferences;
+      await supabase.from("profiles").update({ notification_preferences: { ...(saved && typeof saved === "object" && !Array.isArray(saved) ? saved : {}), ...next } }).eq("id", user.id);
+    }
     window.dispatchEvent(new Event("mas:alerts-changed"));
   };
 

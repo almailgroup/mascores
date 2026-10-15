@@ -1,4 +1,3 @@
-import { MediaWatermark } from "@/components/media-watermark";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, EmptyState, LoadingSkeleton, SectionHeader } from "@/components/app-shell";
@@ -9,7 +8,7 @@ import { useI18n } from "@/lib/i18n";
 import { PenLine } from "lucide-react";
 
 export const Route = createFileRoute("/news/")({
-  head: () => ({ meta: [{ title: "News — MansourAlmailScores" }, { name: "description", content: "Latest football news from MansourAlmailScores." }] }),
+  head: () => ({ meta: [{ title: "News — MansourAlmailScores" }, { name: "description", content: "Latest football news from MansourAlmailScores." }, { property: "og:title", content: "News — MansourAlmailScores" }, { property: "og:description", content: "Latest football news from MansourAlmailScores." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: NewsPage,
 });
 
@@ -28,14 +27,9 @@ function NewsPage() {
     <AppShell>
        <SectionHeader title={t("nav.news")} />
 
-      <div className="mb-5 flex items-center gap-4 overflow-hidden rounded-2xl border border-border bg-card p-4">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><PenLine className="h-5 w-5" /></span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-sm font-bold">{tx("Publish news")}</span>
-          <span className="block text-xs text-muted-foreground">{tx("Join the reporter desk — contact mansouralmailscores@gmail.com for access.")}</span>
-        </span>
-        <span className="shrink-0 rounded-full bg-primary/15 px-3 py-1 text-xs font-semibold text-primary">{tx("Coming soon")}</span>
-      </div>
+      <Link to="/contribute" className="mb-5 inline-flex items-center gap-2 rounded-full border border-border px-3 py-1.5 text-xs font-semibold hover:border-primary/50">
+        <PenLine className="h-3.5 w-3.5" /> {tx("Publish news")}
+      </Link>
 
 
       {q.isLoading ? <LoadingSkeleton /> : !q.data || q.data.length === 0 ? (
@@ -47,7 +41,6 @@ function NewsPage() {
               {n.cover_url && (
                 <div className="relative flex aspect-video w-full items-center justify-center bg-gradient-to-br from-primary/25 via-card to-background">
                   <img src={n.cover_url} alt="" className="relative h-full w-full object-contain" />
-                  <MediaWatermark compact />
                 </div>
               )}
 

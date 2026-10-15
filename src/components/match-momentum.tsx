@@ -22,7 +22,7 @@ function deriveMomentum(events: MomentumEvent[], total: number, homeId?: string,
     if (e.minute == null || !e.team_id) continue;
     const weight = WEIGHTS[e.type];
     if (!weight) continue;
-    // positive = home pressure (red, on top), negative = away pressure (blue, below)
+    // positive = home pressure (blue, on top), negative = away pressure (green, below)
     const side = e.team_id === homeId ? 1 : e.team_id === awayId ? -1 : 0;
     if (!side) continue;
     const at = Math.min(Math.max(e.minute, 1), total);
@@ -34,7 +34,7 @@ function deriveMomentum(events: MomentumEvent[], total: number, homeId?: string,
   return values.map((v, i) => ({ minute: i + 1, value: Math.max(-100, Math.min(100, Math.round(v))) }));
 }
 
-/** SofaScore-style match momentum: red = home (top), blue = away (bottom), black line = half time. */
+/** Match momentum: brand blue for home, green for away, theme-aware half-time line. */
 export function MatchMomentum({
   home, away, minutes = 90, events = [],
 }: { matchId: string; home: Team | null; away: Team | null; minutes?: number; events?: MomentumEvent[] }) {
@@ -47,7 +47,7 @@ export function MatchMomentum({
   const markRow = (side: "home" | "away") => (
     <div className="relative h-6">
       {marks.filter((e) => (side === "home" ? e.team_id === home?.id : e.team_id === away?.id)).map((e, i) => (
-        <span key={i} className="absolute -translate-x-1/2" style={{ left: `${((Math.min(e.minute!, total) - 0.5) / total) * 100}%` }}><EventIcon type={e.type} className="h-4 w-4" /></span>
+         <span key={i} className="absolute -translate-x-1/2" style={{ left: `${((Math.min(e.minute ?? 0, total) - 0.5) / total) * 100}%` }}><EventIcon type={e.type} className="h-4 w-4" /></span>
       ))}
     </div>
   );
@@ -67,8 +67,8 @@ export function MatchMomentum({
             <span className="pointer-events-none absolute bottom-0 top-0 z-10 w-px bg-foreground" style={{ left: `${(45 / total) * 100}%` }} />
             {list.map((item) => (
               <div key={item.minute} className="relative flex-1">
-                {item.value > 0 && <span className="absolute bottom-1/2 left-px right-px rounded-t-sm bg-destructive" style={{ height: `${Math.min(Math.abs(item.value), 100) / 2}%` }} />}
-                {item.value < 0 && <span className="absolute left-px right-px top-1/2 rounded-b-sm bg-primary" style={{ height: `${Math.min(Math.abs(item.value), 100) / 2}%` }} />}
+                {item.value > 0 && <span className="absolute bottom-1/2 left-px right-px rounded-t-sm bg-primary" style={{ height: `${Math.min(Math.abs(item.value), 100) / 2}%` }} />}
+                {item.value < 0 && <span className="absolute left-px right-px top-1/2 rounded-b-sm bg-success" style={{ height: `${Math.min(Math.abs(item.value), 100) / 2}%` }} />}
               </div>
             ))}
           </div>

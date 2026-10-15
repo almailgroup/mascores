@@ -23,6 +23,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as TicketsRouteImport } from './routes/tickets'
 import { Route as TransfersRouteImport } from './routes/transfers'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as CoachesIdRouteImport } from './routes/coaches.$id'
 import { Route as CompetitionsIndexRouteImport } from './routes/competitions.index'
 import { Route as CompetitionsSlugRouteImport } from './routes/competitions.$slug'
@@ -35,6 +36,7 @@ import { Route as UUsernameRouteImport } from './routes/u.$username'
 import { Route as VenuesIdRouteImport } from './routes/venues.$id'
 import { Route as VoiceIndexRouteImport } from './routes/voice/index'
 import { Route as VoiceIdRouteImport } from './routes/voice/$id'
+import { Route as MatchesIdChatRouteImport } from './routes/matches_.$id.chat'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -106,6 +108,11 @@ const TransfersRoute = TransfersRouteImport.update({
   path: '/transfers',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/callback',
+  path: '/callback',
+  getParentRoute: () => AuthRoute,
+} as any)
 const CoachesIdRoute = CoachesIdRouteImport.update({
   id: '/coaches/$id',
   path: '/coaches/$id',
@@ -166,11 +173,16 @@ const VoiceIdRoute = VoiceIdRouteImport.update({
   path: '/voice/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MatchesIdChatRoute = MatchesIdChatRouteImport.update({
+  id: '/matches_/$id/chat',
+  path: '/matches/$id/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/contribute': typeof ContributeRoute
   '/favorites': typeof FavoritesRoute
   '/privacypolicy': typeof PrivacypolicyRoute
@@ -182,6 +194,7 @@ export interface FileRoutesByFullPath {
   '/support': typeof SupportRoute
   '/tickets': typeof TicketsRoute
   '/transfers': typeof TransfersRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/coaches/$id': typeof CoachesIdRoute
   '/competitions/$slug': typeof CompetitionsSlugRoute
   '/matches/$id': typeof MatchesIdRoute
@@ -194,11 +207,12 @@ export interface FileRoutesByFullPath {
   '/competitions/': typeof CompetitionsIndexRoute
   '/news/': typeof NewsIndexRoute
   '/voice/': typeof VoiceIndexRoute
+  '/matches/$id/chat': typeof MatchesIdChatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/contribute': typeof ContributeRoute
   '/favorites': typeof FavoritesRoute
   '/privacypolicy': typeof PrivacypolicyRoute
@@ -210,6 +224,7 @@ export interface FileRoutesByTo {
   '/support': typeof SupportRoute
   '/tickets': typeof TicketsRoute
   '/transfers': typeof TransfersRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/coaches/$id': typeof CoachesIdRoute
   '/competitions/$slug': typeof CompetitionsSlugRoute
   '/matches/$id': typeof MatchesIdRoute
@@ -222,12 +237,13 @@ export interface FileRoutesByTo {
   '/competitions': typeof CompetitionsIndexRoute
   '/news': typeof NewsIndexRoute
   '/voice': typeof VoiceIndexRoute
+  '/matches/$id/chat': typeof MatchesIdChatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/contribute': typeof ContributeRoute
   '/favorites': typeof FavoritesRoute
   '/privacypolicy': typeof PrivacypolicyRoute
@@ -239,6 +255,7 @@ export interface FileRoutesById {
   '/support': typeof SupportRoute
   '/tickets': typeof TicketsRoute
   '/transfers': typeof TransfersRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/coaches/$id': typeof CoachesIdRoute
   '/competitions/$slug': typeof CompetitionsSlugRoute
   '/matches/$id': typeof MatchesIdRoute
@@ -251,6 +268,7 @@ export interface FileRoutesById {
   '/competitions/': typeof CompetitionsIndexRoute
   '/news/': typeof NewsIndexRoute
   '/voice/': typeof VoiceIndexRoute
+  '/matches_/$id/chat': typeof MatchesIdChatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -269,6 +287,7 @@ export interface FileRouteTypes {
     | '/support'
     | '/tickets'
     | '/transfers'
+    | '/auth/callback'
     | '/coaches/$id'
     | '/competitions/$slug'
     | '/matches/$id'
@@ -281,6 +300,7 @@ export interface FileRouteTypes {
     | '/competitions/'
     | '/news/'
     | '/voice/'
+    | '/matches/$id/chat'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -297,6 +317,7 @@ export interface FileRouteTypes {
     | '/support'
     | '/tickets'
     | '/transfers'
+    | '/auth/callback'
     | '/coaches/$id'
     | '/competitions/$slug'
     | '/matches/$id'
@@ -309,6 +330,7 @@ export interface FileRouteTypes {
     | '/competitions'
     | '/news'
     | '/voice'
+    | '/matches/$id/chat'
   id:
     | '__root__'
     | '/'
@@ -325,6 +347,7 @@ export interface FileRouteTypes {
     | '/support'
     | '/tickets'
     | '/transfers'
+    | '/auth/callback'
     | '/coaches/$id'
     | '/competitions/$slug'
     | '/matches/$id'
@@ -337,12 +360,13 @@ export interface FileRouteTypes {
     | '/competitions/'
     | '/news/'
     | '/voice/'
+    | '/matches_/$id/chat'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
-  AuthRoute: typeof AuthRoute
+  AuthRoute: typeof AuthRouteWithChildren
   ContributeRoute: typeof ContributeRoute
   FavoritesRoute: typeof FavoritesRoute
   PrivacypolicyRoute: typeof PrivacypolicyRoute
@@ -366,6 +390,7 @@ export interface RootRouteChildren {
   CompetitionsIndexRoute: typeof CompetitionsIndexRoute
   NewsIndexRoute: typeof NewsIndexRoute
   VoiceIndexRoute: typeof VoiceIndexRoute
+  MatchesIdChatRoute: typeof MatchesIdChatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -468,6 +493,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TransfersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof AuthRoute
+    }
     '/coaches/$id': {
       id: '/coaches/$id'
       path: '/coaches/$id'
@@ -552,13 +584,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VoiceIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/matches_/$id/chat': {
+      id: '/matches_/$id/chat'
+      path: '/matches/$id/chat'
+      fullPath: '/matches/$id/chat'
+      preLoaderRoute: typeof MatchesIdChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
+
+interface AuthRouteChildren {
+  AuthCallbackRoute: typeof AuthCallbackRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthCallbackRoute: AuthCallbackRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
-  AuthRoute: AuthRoute,
+  AuthRoute: AuthRouteWithChildren,
   ContributeRoute: ContributeRoute,
   FavoritesRoute: FavoritesRoute,
   PrivacypolicyRoute: PrivacypolicyRoute,
@@ -582,6 +631,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompetitionsIndexRoute: CompetitionsIndexRoute,
   NewsIndexRoute: NewsIndexRoute,
   VoiceIndexRoute: VoiceIndexRoute,
+  MatchesIdChatRoute: MatchesIdChatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

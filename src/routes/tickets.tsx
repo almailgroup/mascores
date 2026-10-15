@@ -10,6 +10,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { claimTicket, ticketAvailability, listTicketForSale, unlistTicket, listResaleTickets, buyResaleTicket } from "@/lib/tickets.functions";
 import { formatKickoff } from "@/lib/db";
 import { useTx } from "@/lib/auto-translate";
+import { TicketOverlay } from "@/components/ticket-overlay";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/tickets")({
   head: () => ({
@@ -237,11 +239,11 @@ function TicketRow({ ticket, onOpen }: { ticket: MyTicket; onOpen: () => void })
   const used = ticket.status === "used";
   const expired = !used && isExpired(info.kickoff);
   return (
-    <button onClick={onOpen} className={`flex w-full items-center gap-3 rounded-2xl border p-3 text-start ${used || expired ? "border-border bg-muted/40" : "border-primary/40 bg-card"}`}>
+    <Button variant="ghost" onClick={onOpen} className={`flex h-auto w-full items-center gap-3 whitespace-normal rounded-lg border p-3 text-start ${used || expired ? "border-border bg-muted/40" : "border-primary/40 bg-card"}`}>
       <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><TicketIcon className="h-4 w-4" /></span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-bold">{tx(info.home)} <span className="text-muted-foreground">{tx("vs")}</span> {tx(info.away)}</span>
-        <span className="block truncate text-[0.7rem] text-muted-foreground">
+        <span className="block break-words text-sm font-bold">{tx(info.home)} <span className="text-muted-foreground">{tx("vs")}</span> {tx(info.away)}</span>
+        <span className="mt-1 block break-words text-[0.7rem] leading-relaxed text-muted-foreground">
           {[info.competition ? tx(info.competition) : null, formatKickoff(info.kickoff), info.venue ? tx(info.venue) : null].filter(Boolean).join(" · ")}
         </span>
         <span className={`mt-0.5 block text-[0.65rem] font-bold ${used || expired ? "text-muted-foreground" : "text-primary"}`}>
@@ -249,7 +251,7 @@ function TicketRow({ ticket, onOpen }: { ticket: MyTicket; onOpen: () => void })
         </span>
       </span>
       <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-    </button>
+    </Button>
   );
 }
 
@@ -257,16 +259,16 @@ function TicketRow({ ticket, onOpen }: { ticket: MyTicket; onOpen: () => void })
 function TicketSheet({ ticket, onClose }: { ticket: MyTicket; onClose: () => void }) {
   const tx = useTx();
   return (
-    <div className="fixed inset-0 z-[90] flex items-end justify-center bg-black/60 sm:items-center sm:p-4" onClick={onClose}>
-      <div className="max-h-[90dvh] w-full max-w-md overflow-y-auto overscroll-contain rounded-t-3xl bg-background p-4 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-[calc(1rem+env(safe-area-inset-top))] sm:max-h-[85dvh] sm:rounded-3xl sm:pb-4 sm:pt-4" onClick={(e) => e.stopPropagation()}>
+    <TicketOverlay><div role="dialog" aria-modal="true" aria-label={tx("Your ticket")} className="fixed inset-0 z-[90] flex items-end justify-center bg-foreground/60 sm:items-center sm:p-4" onClick={onClose}>
+      <div className="max-h-[calc(100dvh-env(safe-area-inset-top,0px)-1rem)] w-full max-w-md overflow-y-auto overscroll-contain rounded-t-3xl bg-background p-4 pb-[calc(2rem+env(safe-area-inset-bottom,0px))] sm:max-h-[85dvh] sm:rounded-3xl" onClick={(e) => e.stopPropagation()}>
 
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground">{tx("Your ticket")}</h3>
-          <button className="grid h-8 w-8 place-items-center rounded-full border border-border" onClick={onClose}><X className="h-4 w-4" /></button>
+          <Button variant="ghost" size="icon" aria-label="Close ticket" onClick={onClose}><X className="h-4 w-4" /></Button>
         </div>
         <TicketCard ticket={ticket} />
       </div>
-    </div>
+    </div></TicketOverlay>
   );
 }
 
@@ -277,7 +279,7 @@ function TicketCard({ ticket }: { ticket: MyTicket }) {
   const info = ticketEvent(ticket);
   const expired = !used && isExpired(info.kickoff);
   return (
-    <div className={`relative flex overflow-hidden rounded-3xl border shadow-sm ${used || expired ? "border-border bg-muted/40" : "border-primary/40 bg-card"}`}>
+    <div className={`relative flex flex-col overflow-hidden rounded-lg border shadow-sm sm:flex-row ${used || expired ? "border-border bg-muted/40" : "border-primary/40 bg-card"}`}>
       {expired && <span className="absolute end-3 top-3 z-10 rounded-full bg-muted px-2 py-0.5 text-[0.6rem] font-black uppercase tracking-widest text-muted-foreground">{tx("Expired")}</span>}
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2 bg-gradient-to-r from-primary to-primary/70 px-4 py-2.5 text-primary-foreground">
@@ -298,14 +300,14 @@ function TicketCard({ ticket }: { ticket: MyTicket }) {
           </div>
           <div className={`mt-3 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.65rem] font-bold ${used ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary"}`}>
             {used ? <Clock className="h-3 w-3" /> : <CheckCircle2 className="h-3 w-3" />}
-            {used ? tx("Scanned") : tx("Valid — scan once at the gate")}
+            {used ? tx("Scanned") : expired ? tx("Expired") : tx("Valid — scan once at the gate")}
           </div>
           <TicketActions ticket={ticket} />
         </div>
       </div>
-      <div className="relative flex w-[122px] shrink-0 flex-col items-center justify-center gap-2 border-s border-dashed border-border bg-muted/30 p-3">
+      <div className="relative flex w-full shrink-0 flex-col items-center justify-center gap-2 border-t border-dashed border-border bg-muted/30 p-4 sm:w-[122px] sm:border-s sm:border-t-0 sm:p-3">
         <QrCode value={ticket.code} size={92} className={used ? "opacity-40" : ""} />
-        <div className="text-center font-mono text-[0.58rem] leading-tight tracking-wider text-muted-foreground">{ticket.code}</div>
+        <div className="max-w-full break-all text-center font-mono text-[0.65rem] leading-tight text-muted-foreground">{ticket.code}</div>
         <span className="absolute -start-2 -top-2 h-4 w-4 rounded-full bg-background" />
         <span className="absolute -bottom-2 -start-2 h-4 w-4 rounded-full bg-background" />
       </div>
@@ -471,8 +473,8 @@ function SellSheet({ ticket, onClose, onDone }: { ticket: MyTicket; onClose: () 
 
   const field = "h-11 w-full rounded-xl border border-border bg-background px-3 text-sm";
   return (
-    <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4" onClick={onClose}>
-      <div className="w-full max-w-md rounded-t-3xl border border-border bg-card p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:rounded-3xl sm:pb-5" onClick={(e) => e.stopPropagation()}>
+    <TicketOverlay><div className="fixed inset-0 z-[130] flex items-end justify-center bg-foreground/60 p-0 sm:items-center sm:p-4" onClick={onClose}>
+      <div className="max-h-[90dvh] w-full max-w-md overflow-y-auto overscroll-contain rounded-t-3xl border border-border bg-card p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] sm:rounded-3xl sm:pb-5" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between">
           <h3 className="text-base font-black">{tx("Sell this ticket")}</h3>
           <button className="grid h-8 w-8 place-items-center rounded-full border border-border" onClick={onClose}><X className="h-4 w-4" /></button>
@@ -497,7 +499,7 @@ function SellSheet({ ticket, onClose, onDone }: { ticket: MyTicket; onClose: () 
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}{tx("List for sale")}
         </button>
       </div>
-    </div>
+    </div></TicketOverlay>
   );
 }
 
@@ -505,7 +507,7 @@ function Cell({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
       <div className="text-[0.6rem] font-semibold uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className="truncate font-semibold">{value}</div>
+      <div className="break-words font-semibold">{value}</div>
     </div>
   );
 }
@@ -562,7 +564,7 @@ function CheckoutModal({ offer, remaining, onClose }: { offer: OfferRow; remaini
   return (
     /* Buying takes over the whole page: extra bottom padding keeps the action
        buttons clear of the mobile navigation bar. */
-    <div className="fixed inset-0 z-[120] overflow-y-auto bg-background">
+    <TicketOverlay><div className="fixed inset-0 z-[120] overflow-y-auto overscroll-contain bg-background">
       {/* Own back bar, above the site header, so leaving checkout is always tappable. */}
       <div className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-lg items-center gap-2 px-5 py-3">
@@ -664,7 +666,7 @@ function CheckoutModal({ offer, remaining, onClose }: { offer: OfferRow; remaini
           </div>
         )}
       </div>
-    </div>
+    </div></TicketOverlay>
   );
 }
 

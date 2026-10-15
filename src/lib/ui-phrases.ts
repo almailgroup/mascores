@@ -4,6 +4,17 @@
  */
 export const UI_AR: Record<string, string> = {
   // navigation & tabs
+  "Team of the Round": "فريق الجولة",
+  "Turn on club notifications": "تفعيل إشعارات النادي",
+  "Turn off club notifications": "إيقاف إشعارات النادي",
+  "Unable to save notifications": "تعذر حفظ الإشعارات",
+  "Title history": "سجل الأبطال",
+  "No title history yet": "لا يوجد سجل للأبطال بعد",
+  "Unable to load title history": "تعذر تحميل سجل الأبطال",
+  "Unable to load round ratings": "تعذر تحميل تقييمات الجولة",
+  "Available one hour after the round ends": "متاح بعد ساعة من نهاية الجولة",
+  "Not enough rated players for a complete team": "لا يوجد عدد كافٍ من اللاعبين المقيمين لتشكيلة كاملة",
+  "Top-rated players at each position, based on their rating from that round’s match.": "اللاعبون الأعلى تقييماً في كل مركز بناءً على تقييمهم في مباراة الجولة.",
   "Overview": "نظرة عامة",
   "Matches": "المباريات",
   "Match": "مباراة",
@@ -21,6 +32,7 @@ export const UI_AR: Record<string, string> = {
   "Competitions": "المسابقات",
   "Competition": "المسابقة",
   "Players": "اللاعبون",
+  "Include players": "تضمين اللاعبين",
   "Player": "لاعب",
   "Coaches": "المدربون",
   "Coach": "المدرب",

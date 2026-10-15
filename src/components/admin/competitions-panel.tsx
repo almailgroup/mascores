@@ -7,6 +7,7 @@ import { Plus, Pencil, Trash2, ChevronRight } from "lucide-react";
 import { CountrySelect } from "@/components/country-select";
 import { useAdminAbility } from "@/lib/admin-ability";
 import { ConfirmDelete } from "@/components/confirm-delete";
+import { TitleHistoryEditor } from "./title-history-editor";
 
 type Form = Partial<Competition>;
 const empty: Form = { name: "", slug: "", sport: "football", format: "league", featured: false, sort_order: 0 };
@@ -190,6 +191,7 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
 
           <Field label="Title holder"><select className={inputCls} value={form.title_holder_team_id ?? ""} onChange={(e) => setForm({ ...form, title_holder_team_id: e.target.value || null })}><option value="">None</option>{titleHolderTeams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}</select></Field>
           <Field label="Standings mode"><select className={inputCls} value={form.standings_mode ?? "table"} onChange={(e) => setForm({ ...form, standings_mode: e.target.value })}><option value="table">League table</option><option value="groups">Groups</option><option value="knockout">Knockout</option></select></Field>
+          {isOwner && form.id && <div className="sm:col-span-2"><TitleHistoryEditor competitionId={form.id} teams={teams.data ?? []} /></div>}
           {/* Choose which sections people see, switch a knockout bracket on, and correct the follower number. */}
           <div className="sm:col-span-2"><Field label="Sections to hide on the public page">
             <div className="flex flex-wrap gap-2">

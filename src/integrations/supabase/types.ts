@@ -463,6 +463,45 @@ export type Database = {
           },
         ]
       }
+      competition_title_history: {
+        Row: {
+          competition_id: string
+          created_at: string
+          id: string
+          season: string
+          team_id: string
+        }
+        Insert: {
+          competition_id: string
+          created_at?: string
+          id?: string
+          season: string
+          team_id: string
+        }
+        Update: {
+          competition_id?: string
+          created_at?: string
+          id?: string
+          season?: string
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competition_title_history_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competition_title_history_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       competitions: {
         Row: {
           category: string | null
@@ -597,6 +636,72 @@ export type Database = {
           },
         ]
       }
+      deleted_records: {
+        Row: {
+          batch_id: number
+          data: Json
+          deleted_at: string
+          deleted_by: string | null
+          id: number
+          label: string | null
+          record_id: string | null
+          restored_at: string | null
+          table_name: string
+        }
+        Insert: {
+          batch_id?: number
+          data: Json
+          deleted_at?: string
+          deleted_by?: string | null
+          id?: number
+          label?: string | null
+          record_id?: string | null
+          restored_at?: string | null
+          table_name: string
+        }
+        Update: {
+          batch_id?: number
+          data?: Json
+          deleted_at?: string
+          deleted_by?: string | null
+          id?: number
+          label?: string | null
+          record_id?: string | null
+          restored_at?: string | null
+          table_name?: string
+        }
+        Relationships: []
+      }
+      device_tokens: {
+        Row: {
+          created_at: string
+          id: string
+          locale: string
+          platform: string
+          token: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          locale?: string
+          platform?: string
+          token: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          locale?: string
+          platform?: string
+          token?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       fifa_rankings: {
         Row: {
           created_at: string
@@ -640,6 +745,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      import_staging: {
+        Row: {
+          created_at: string
+          id: string
+          sql: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          sql: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          sql?: string
+        }
+        Relationships: []
       }
       match_broadcasts: {
         Row: {
@@ -1071,6 +1194,7 @@ export type Database = {
           away_team_id: string | null
           city: string | null
           competition_id: string
+          completed_at: string | null
           created_at: string
           highlight_url: string | null
           home_coach_id: string | null
@@ -1106,6 +1230,7 @@ export type Database = {
           away_team_id?: string | null
           city?: string | null
           competition_id: string
+          completed_at?: string | null
           created_at?: string
           highlight_url?: string | null
           home_coach_id?: string | null
@@ -1141,6 +1266,7 @@ export type Database = {
           away_team_id?: string | null
           city?: string | null
           competition_id?: string
+          completed_at?: string | null
           created_at?: string
           highlight_url?: string | null
           home_coach_id?: string | null
@@ -1421,14 +1547,19 @@ export type Database = {
       news_reporters: {
         Row: {
           access_code: string | null
+          civil_id_photo_path: string | null
           code_redeemed_at: string | null
+          company_name: string | null
           created_at: string
           email: string | null
+          entity_type: string
           full_name: string | null
           handle: string
           id: string
+          national_id: string | null
           phone: string | null
           platform: string
+          social_links: Json
           status: string
           subscription_status: string
           updated_at: string
@@ -1436,14 +1567,19 @@ export type Database = {
         }
         Insert: {
           access_code?: string | null
+          civil_id_photo_path?: string | null
           code_redeemed_at?: string | null
+          company_name?: string | null
           created_at?: string
           email?: string | null
+          entity_type?: string
           full_name?: string | null
           handle: string
           id?: string
+          national_id?: string | null
           phone?: string | null
           platform?: string
+          social_links?: Json
           status?: string
           subscription_status?: string
           updated_at?: string
@@ -1451,14 +1587,19 @@ export type Database = {
         }
         Update: {
           access_code?: string | null
+          civil_id_photo_path?: string | null
           code_redeemed_at?: string | null
+          company_name?: string | null
           created_at?: string
           email?: string | null
+          entity_type?: string
           full_name?: string | null
           handle?: string
           id?: string
+          national_id?: string | null
           phone?: string | null
           platform?: string
+          social_links?: Json
           status?: string
           subscription_status?: string
           updated_at?: string
@@ -1600,6 +1741,7 @@ export type Database = {
           dob: string | null
           height_cm: number | null
           id: string
+          is_temporary: boolean
           market_value: string | null
           media_urls: string[]
           name: string
@@ -1620,6 +1762,7 @@ export type Database = {
           dob?: string | null
           height_cm?: number | null
           id?: string
+          is_temporary?: boolean
           market_value?: string | null
           media_urls?: string[]
           name: string
@@ -1640,6 +1783,7 @@ export type Database = {
           dob?: string | null
           height_cm?: number | null
           id?: string
+          is_temporary?: boolean
           market_value?: string | null
           media_urls?: string[]
           name?: string
@@ -2055,6 +2199,7 @@ export type Database = {
           country_code: string | null
           created_at: string
           description: string | null
+          followers_override: number | null
           founded_on: string | null
           group_label: string | null
           id: string
@@ -2085,6 +2230,7 @@ export type Database = {
           country_code?: string | null
           created_at?: string
           description?: string | null
+          followers_override?: number | null
           founded_on?: string | null
           group_label?: string | null
           id?: string
@@ -2115,6 +2261,7 @@ export type Database = {
           country_code?: string | null
           created_at?: string
           description?: string | null
+          followers_override?: number | null
           founded_on?: string | null
           group_label?: string | null
           id?: string
@@ -2462,6 +2609,42 @@ export type Database = {
           },
         ]
       }
+      user_ban_history: {
+        Row: {
+          action: string
+          banned: boolean
+          created_at: string
+          id: string
+          moderator_id: string | null
+          reason: string | null
+          strike: number
+          suspended_until: string | null
+          user_id: string
+        }
+        Insert: {
+          action?: string
+          banned?: boolean
+          created_at?: string
+          id?: string
+          moderator_id?: string | null
+          reason?: string | null
+          strike?: number
+          suspended_until?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          banned?: boolean
+          created_at?: string
+          id?: string
+          moderator_id?: string | null
+          reason?: string | null
+          strike?: number
+          suspended_until?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_suspensions: {
         Row: {
           banned: boolean
@@ -2781,9 +2964,14 @@ export type Database = {
           id: string
         }[]
       }
+      club_follower_count: { Args: { _team_id: string }; Returns: number }
       competition_follower_count: {
         Args: { _competition_id: string }
         Returns: number
+      }
+      competition_round_teams: {
+        Args: { _competition_id: string; _season?: string }
+        Returns: Json
       }
       fuzzy_search: {
         Args: { _limit?: number; _q: string }
@@ -2801,6 +2989,7 @@ export type Database = {
       is_admin: { Args: { _uid: string }; Returns: boolean }
       is_main_admin: { Args: { _uid: string }; Returns: boolean }
       is_suspended: { Args: { _uid: string }; Returns: boolean }
+      player_follower_count: { Args: { _player_id: string }; Returns: number }
       public_profile: {
         Args: { _id: string }
         Returns: {
@@ -2819,6 +3008,7 @@ export type Database = {
         Args: { _succeeded: boolean; _uid: string }
         Returns: undefined
       }
+      restore_deleted_batch: { Args: { _batch_id: number }; Returns: number }
       revoke_admin: { Args: { _uid: string }; Returns: undefined }
       search_profiles: {
         Args: { _limit?: number; _q: string }
@@ -2829,6 +3019,14 @@ export type Database = {
           id: string
           username: string
         }[]
+      }
+      set_club_notification: {
+        Args: { _enabled: boolean; _team_id: string }
+        Returns: Json
+      }
+      set_player_notification: {
+        Args: { _enabled: boolean; _player_id: string }
+        Returns: Json
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }

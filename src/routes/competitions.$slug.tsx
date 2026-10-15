@@ -1,4 +1,5 @@
 import { TeamCrest } from "@/components/team-crest";
+import { PlayerAvatar } from "@/components/player-avatar";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -13,13 +14,18 @@ import { CompetitionStats } from "@/components/competition-stats";
 import { useI18n } from "@/lib/i18n";
 import type { Database } from "@/integrations/supabase/types";
 import { ArrowLeft, CalendarDays, ChevronRight, Play, Trophy, Bell, Medal, Star, Users, Shapes, Globe2, Flag as FlagIco, ListOrdered } from "lucide-react";
-import { competitionTheme, DEFAULT_HERO } from "@/lib/competition-theme";
+import { competitionTheme } from "@/lib/competition-theme";
 import { useFavorites } from "@/hooks/use-favorites";
 import { SeasonMenu } from "@/components/season-menu";
 import { StandingsTable } from "@/components/standings-table";
 import { useCompetitionLogo } from "@/lib/comp-logo";
 import { useLogoAccent } from "@/lib/logo-accent";
 import { compareGroupLabels } from "@/lib/group-order";
+import { useCollapsingHeader } from "@/hooks/use-collapsing-header";
+import { SportsHeaderBackground } from "@/components/sports-header-background";
+import { Button } from "@/components/ui/button";
+import { CompetitionRoundTeam } from "@/components/competition-round-team";
+import { CompetitionTitleHistory } from "@/components/competition-title-history";
 
 type PositionLabel = Database["public"]["Tables"]["standings_position_labels"]["Row"];
 type Row = StandingRow & { team: Team | null };
@@ -35,7 +41,7 @@ function groupsOf(rows: Row[]): [string | null, Row[]][] {
 }
 
 export const Route = createFileRoute("/competitions/$slug")({
-  head: ({ params }) => ({ meta: [{ title: `${params.slug} — MansourAlmailScores` }] }),
+  head: ({ params }) => ({ meta: [{ title: `${params.slug} — MansourAlmailScores` }, { name: "description", content: "Competition fixtures, standings, squads and statistics on MA Scores." }, { property: "og:title", content: `${params.slug} — MansourAlmailScores` }, { property: "og:description", content: "Competition fixtures, standings, squads and statistics on MA Scores." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: CompetitionPage,
 });
 
@@ -184,6 +190,7 @@ function CompetitionPage() {
 
 
 
+       <div data-refresh-body>
        {activeTab === "overview" && <CompetitionOverviewTab c={c} season={season} teams={teams.data ?? []} titleHolder={friendly ? null : (titleHolder ?? null)} titles={friendly ? [] : (compTitles.data ?? [])} divisions={friendly ? [] : (divisions.data ?? [])} matches={matches.data ?? []} media={media.data ?? []} friendly={friendly} />}
 
       {activeTab === "matches" && <><SectionHeader title={t("tab.matches")} />
@@ -214,6 +221,7 @@ function CompetitionPage() {
       {activeTab === "awards" && !friendly && <AwardsBoard awards={awards.data ?? []} />}
       {activeTab === "media" && <>{media.data && media.data.length > 0 ? <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{media.data.map((item) => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="rounded-lg border border-border bg-card p-4 hover:border-primary"><div className="text-xs font-bold uppercase text-primary">{item.source}</div><div className="mt-1 font-semibold">{tx(item.title) || tx("Open media")}</div><div className="mt-1 truncate text-xs text-muted-foreground">{item.url}</div></a>)}</div> : <EmptyState title={tx("No competition media yet")} />}</>}
       {activeTab === "news" && <LinkedNews kind="competition" id={c.id} />}
+       </div>
       </div>
     </AppShell>
   );
@@ -296,12 +304,9 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
   const tx = useTx();
   const num = useNum();
   const compact = useCompact();
+  const headerRef = useCollapsingHeader(c.id);
   const { t, lang } = useI18n();
   const accent = useLogoAccent(hero ? null : logo);
-  // No custom hero and no logo to sample: use a clean white band instead of navy.
-  const noLogo = !hero && !logo;
-  const background = hero ?? (noLogo ? "linear-gradient(160deg, #ffffff 0%, #f1f5f9 100%)" : accent?.hero ?? DEFAULT_HERO);
-  const onLight = noLogo || (!hero && Boolean(accent?.onLight));
 
 
   const followers = useQuery({
@@ -330,41 +335,44 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
   };
 
   const router = useRouter();
-  const fg = onLight ? "oklch(0.2 0.04 260)" : "oklch(1 0 0)";
-  const chip = onLight ? "bg-black/10" : "bg-white/15";
 
   return (
-    <div className="-mx-4 -mt-6 mb-4 px-4 pb-0 pt-1 sm:-mx-6 sm:px-6" style={{ background, color: fg }}>
-      <div className="flex items-center gap-1">
-        <button
+    <div ref={headerRef} data-refresh-header className="comp-hero collapsing-comp-header sports-header -mx-4 -mt-6 mb-4 px-4 pb-0 pt-0 sm:-mx-6 sm:px-6">
+      <SportsHeaderBackground start={accent?.color} background={hero} />
+      <div className="relative flex items-center gap-2">
+        <div className="profile-compact-identity pointer-events-none absolute inset-y-0 start-10 end-24 flex items-center gap-2">
+          {logo && <img src={logo} alt="" className="h-7 w-7 shrink-0 object-contain" />}
+          <span className="truncate text-sm font-bold">{lang === "ar" && c.name_ar ? c.name_ar : tx(c.name)}</span>
+        </div>
+        <Button variant="ghost" size="icon"
           onClick={() => { if (router.history.canGoBack()) router.history.back(); else router.navigate({ to: "/competitions" }); }}
           aria-label={tx("Back")}
-          className={`-ms-2 me-auto inline-flex h-9 w-9 items-center justify-center rounded-full ${chip.replace("bg-", "hover:bg-")}`}
+           className="sports-header-control -ms-2 me-auto h-10 w-10 text-match-foreground hover:text-match-foreground"
         >
           <ArrowLeft className="h-5 w-5" />
-        </button>
-        <button
+        </Button>
+        <Button variant="ghost" size="icon"
           onClick={toggleAlert}
           aria-label={tx("Notifications")}
-          className={`inline-flex h-9 w-9 items-center justify-center rounded-full ${chip.replace("bg-", "hover:bg-")} ${alerted ? "opacity-100" : "opacity-70"}`}
+           className={`sports-header-control h-10 w-10 text-match-foreground hover:text-match-foreground ${alerted ? "opacity-100" : "opacity-70"}`}
         >
           <Bell className="h-5 w-5" fill={alerted ? "currentColor" : "none"} />
-        </button>
-        <button
+        </Button>
+        <Button variant="ghost" size="icon"
           onClick={() => { onToggleFav(); setBump((v) => (faved ? v - 1 : v + 1)); }}
           aria-label={tx("Follow")}
-          className={`-me-2 inline-flex h-9 w-9 items-center justify-center rounded-full ${chip.replace("bg-", "hover:bg-")} ${faved ? "text-amber-400" : "opacity-70"}`}
+           className={`sports-header-control -me-2 h-10 w-10 hover:text-match-foreground ${faved ? "text-warning" : "text-match-foreground opacity-70"}`}
         >
           <Star className="h-5 w-5" fill={faved ? "currentColor" : "none"} />
-        </button>
+        </Button>
       </div>
 
-      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-1 shadow-md">
+      <div className="profile-expanded-identity grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-primary-foreground p-1">
           {logo ? <img src={logo} alt="" className="h-full w-full object-contain" /> : <Trophy className="h-6 w-6 text-primary" />}
         </div>
         <div className="min-w-0">
-          <h1 className="truncate text-base font-black leading-tight sm:text-xl">{lang === "ar" && c.name_ar ? c.name_ar : tx(c.name)}</h1>
+          <h1 className="profile-title">{lang === "ar" && c.name_ar ? c.name_ar : tx(c.name)}</h1>
           <div className="mt-0.5 flex min-w-0 items-center gap-2">
             {(c.seasons?.length ?? 0) > 0
               ? <SeasonMenu seasons={c.seasons} value={activeSeason} onChange={onSeason} onHero />
@@ -372,9 +380,9 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
             {!friendly && <FlagIcon value={c.country_code ?? c.country} />}
           </div>
         </div>
-        <div className={`shrink-0 rounded-xl px-2.5 py-1.5 text-center backdrop-blur-sm ${chip}`}>
-          <div className="text-sm font-black leading-none tabular-nums">{compact(followerCount)}</div>
-          <div className="mt-1 text-[0.6rem] font-semibold uppercase tracking-wide opacity-80">
+        <div className="sports-header-chip w-16 shrink-0 rounded-lg px-1.5 py-2 text-center">
+          <div className="text-xs font-semibold leading-none tabular-nums">{compact(followerCount)}</div>
+          <div className="mt-1 text-[0.6rem] leading-tight opacity-70">
             {tx(followerCount === 1 ? "Follower" : "Followers")}
           </div>
         </div>
@@ -425,15 +433,22 @@ function CompetitionMatches({ data }: { data: MatchWithTeams[] }) {
     bucket.matches.push(m);
     buckets.set(key, bucket);
   });
-  // Grouped cards run A, B, C…; rounds inside a group keep their order and any
-  // card without a group (knockout, qualifying) stays where the calendar puts it.
+  // Cards follow the calendar: each card sits where its earliest match falls,
+  // so Group A and Group B rounds interleave by date instead of all of Group A
+  // running before Group B. Ties fall back to group then round order.
+  const firstDate = (b: { matches: MatchWithTeams[] }) =>
+    Math.min(...b.matches.map((m) => new Date(m.kickoff_at ?? 0).getTime()));
+  for (const bucket of buckets.values()) {
+    bucket.matches.sort((a, b) => new Date(a.kickoff_at ?? 0).getTime() - new Date(b.kickoff_at ?? 0).getTime());
+  }
   const list = [...buckets.values()].sort((a, b) => {
+    const byDate = firstDate(a) - firstDate(b);
+    if (byDate) return byDate;
     const byGroup = compareGroupLabels(a.group, b.group, false);
     if (byGroup) return byGroup;
     const ra = a.round.startsWith("#") ? Number(a.round.slice(1)) : null;
     const rb = b.round.startsWith("#") ? Number(b.round.slice(1)) : null;
     if (ra != null && rb != null && ra !== rb) return ra - rb;
-    // The list arrives in date order, so the first card seen keeps its place.
     return a.order - b.order;
   });
   return (
@@ -510,6 +525,7 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
         <div className="mt-3"><DurationBar startsOn={c.starts_on} endsOn={c.ends_on} /></div>
       </section>
 
+      {!friendly && <CompetitionRoundTeam competitionId={c.id} season={season ?? c.season ?? null} />}
       {/* Key numbers strip — plain neutral cards. */}
       <section className="overflow-hidden rounded-2xl border border-border bg-card p-3 shadow-sm sm:p-4">
         <div className={`grid gap-2 ${friendly ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6"}`}>
@@ -565,6 +581,7 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
         </section>
       )}
 
+      {!friendly && <CompetitionTitleHistory competitionId={c.id} />}
       {showHonours && winners.length > 0 && (
         <section className="overflow-hidden rounded-xl border border-border bg-card">
           <div className="border-b border-border bg-muted/40 px-3 py-2 text-[0.7rem] font-bold uppercase tracking-wide text-muted-foreground">{tx("Title winners")}</div>
@@ -672,9 +689,7 @@ function AwardsBoard({ awards }: { awards: { id: string; award_type: string; rou
                 <Medal className="h-3 w-3" /> {tx("Player of the season")}
               </span>
               <div className="flex items-center gap-4">
-                {award.player?.photo_url
-                  ? <img src={award.player.photo_url} alt="" className="h-20 w-20 shrink-0 rounded-2xl object-cover ring-2 ring-amber-400/60" />
-                  : <div className="h-20 w-20 shrink-0 rounded-2xl bg-muted" />}
+                <PlayerAvatar src={award.player?.photo_url} name={award.player?.name} className="h-20 w-20 rounded-2xl ring-2 ring-amber-400/60" />
                 <div className="min-w-0">
                   <div className="truncate text-lg font-black leading-tight">{tx(award.player?.name) ?? tx("Player")}</div>
                   {award.season && <div className="mt-1 text-xs font-bold text-muted-foreground">{num(award.season)}</div>}
@@ -694,9 +709,7 @@ function AwardsBoard({ awards }: { awards: { id: string; award_type: string; rou
                 <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[0.7rem] font-black text-primary">
                   {award.round_number != null ? num(award.round_number) : "—"}
                 </span>
-                {award.player?.photo_url
-                  ? <img src={award.player.photo_url} alt="" className="h-10 w-10 shrink-0 rounded-full object-cover" />
-                  : <div className="h-10 w-10 shrink-0 rounded-full bg-muted" />}
+                <PlayerAvatar src={award.player?.photo_url} name={award.player?.name} />
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-bold">{tx(award.player?.name) ?? tx("Player")}</div>
                   <div className="truncate text-[0.7rem] text-muted-foreground">
