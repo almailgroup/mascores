@@ -13,7 +13,7 @@
  *   APNS_BUNDLE_ID    com.almailgroup.mascores
  *   APNS_HOST         api.sandbox.push.apple.com | api.push.apple.com
  */
-import { createClient } from "jsr:@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 
 const encoder = new TextEncoder();
 
@@ -73,16 +73,76 @@ type AlertRequest = {
   path?: string;
 };
 
+async function sendTo(tokens: string[], title: string, body: string, path: string | undefined, threadId?: string) {
+  const jwt = await apnsJwt();
+  const host = Deno.env.get("APNS_HOST") ?? "api.push.apple.com";
+  const topic = Deno.env.get("APNS_BUNDLE_ID")!;
+  return Promise.all(tokens.map(async (token) => {
+    const res = await fetch(`https://${host}/3/device/${token}`, {
+      method: "POST",
+      headers: { authorization: `bearer ${jwt}`, "apns-topic": topic, "apns-push-type": "alert", "apns-priority": "10" },
+      body: JSON.stringify({ aps: { alert: { title, body }, sound: "default", "thread-id": threadId }, path }),
+    });
+    return { token, ok: res.ok, status: res.status };
+  }));
+}
+
+/** Sofascore-style automatic alert: claims one queued match alert and sends it to everyone following the match, club or player. */
+// deno-lint-ignore no-explicit-any
+async function dispatchQueued(admin: any, queueId: string) {
+  const { data: rows } = await admin.from("push_queue").update({ sent_at: new Date().toISOString() })
+    .eq("id", queueId).is("sent_at", null).select("*");
+  const q = rows?.[0] as Record<string, string> | undefined;
+  if (!q) return Response.json({ skipped: true });
+  const { data: m } = await admin.from("matches").select("home_team_id,away_team_id").eq("id", q.match_id).single();
+  const teams = [m?.home_team_id, m?.away_team_id].filter(Boolean) as string[];
+  const ors = [`match_notification_ids.cs.{${q.match_id}}`, ...teams.map((t) => `favorite_team_ids.cs.{${t}}`)];
+  if (q.player_id) ors.push(`favorite_player_ids.cs.{${q.player_id}}`);
+  const { data: profiles } = await admin.from("profiles")
+    .select("id,match_notification_ids,favorite_team_ids,favorite_player_ids,notification_preferences").or(ors.join(","));
+  const userIds = (profiles ?? []).filter((p: any) => {
+    const prefs = p.notification_preferences ?? {};
+    if (prefs[q.category] === false) return false;
+    if ((p.match_notification_ids ?? []).includes(q.match_id)) return true;
+    const clubOv = prefs.club_alert_overrides ?? {};
+    if (teams.some((t) => (p.favorite_team_ids ?? []).includes(t) && clubOv[t] !== false)) return true;
+    const plOv = prefs.player_alert_overrides ?? {};
+    return !!q.player_id && (p.favorite_player_ids ?? []).includes(q.player_id) && plOv[q.player_id] !== false;
+  }).map((p: any) => p.id);
+  if (!userIds.length) return Response.json({ sent: 0 });
+  const { data: devices } = await admin.from("device_tokens").select("token,locale").in("user_id", userIds);
+  const ar = (devices ?? []).filter((d: any) => d.locale === "ar").map((d: any) => d.token);
+  const en = (devices ?? []).filter((d: any) => d.locale !== "ar").map((d: any) => d.token);
+  const path = `/matches/${q.match_id}`;
+  const results = [
+    ...(en.length ? await sendTo(en, q.title_en, q.body_en, path, q.match_id) : []),
+    ...(ar.length ? await sendTo(ar, q.title_ar, q.body_ar, path, q.match_id) : []),
+  ];
+  const stale = results.filter((r) => r.status === 410 || r.status === 400).map((r) => r.token);
+  if (stale.length) await admin.from("device_tokens").delete().in("token", stale);
+  return Response.json({ sent: results.filter((r) => r.ok).length, failed: results.filter((r) => !r.ok).length });
+}
+
 Deno.serve(async (req) => {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
-
-  const authHeader = req.headers.get("Authorization") ?? "";
-  if (!authHeader.startsWith("Bearer ")) return new Response("Unauthorized", { status: 401 });
 
   const admin = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
+
+  const raw = await req.text();
+  let parsed: any = null;
+  try { parsed = JSON.parse(raw); } catch { /* handled below */ }
+  // Database triggers send only a queue id; the content comes from the queue row itself,
+  // so a caller can never choose who receives what.
+  if (parsed && typeof parsed.queueId === "string" && /^[0-9a-f-]{36}$/i.test(parsed.queueId)) {
+    return dispatchQueued(admin, parsed.queueId);
+  }
+
+  const authHeader = req.headers.get("Authorization") ?? "";
+  if (!authHeader.startsWith("Bearer ")) return new Response("Unauthorized", { status: 401 });
+
 
   // Only an existing admin may send pushes to other people's devices.
   const { data: caller, error: callerError } = await admin.auth.getUser(authHeader.slice(7));
@@ -92,11 +152,8 @@ Deno.serve(async (req) => {
   if (!isAdmin) return new Response("Forbidden", { status: 403 });
 
   let payload: AlertRequest;
-  try {
-    payload = await req.json();
-  } catch {
-    return new Response("Invalid JSON", { status: 400 });
-  }
+  if (!parsed) return new Response("Invalid JSON", { status: 400 });
+  payload = parsed;
   if (!Array.isArray(payload.userIds) || !payload.title || !payload.body) {
     return new Response("userIds, title and body are required", { status: 400 });
   }

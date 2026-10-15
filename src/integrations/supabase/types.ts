@@ -1896,6 +1896,48 @@ export type Database = {
         }
         Relationships: []
       }
+      push_queue: {
+        Row: {
+          body_ar: string
+          body_en: string
+          category: string
+          created_at: string
+          id: string
+          match_id: string
+          player_id: string | null
+          sent_at: string | null
+          team_id: string | null
+          title_ar: string
+          title_en: string
+        }
+        Insert: {
+          body_ar: string
+          body_en: string
+          category: string
+          created_at?: string
+          id?: string
+          match_id: string
+          player_id?: string | null
+          sent_at?: string | null
+          team_id?: string | null
+          title_ar: string
+          title_en: string
+        }
+        Update: {
+          body_ar?: string
+          body_en?: string
+          category?: string
+          created_at?: string
+          id?: string
+          match_id?: string
+          player_id?: string | null
+          sent_at?: string | null
+          team_id?: string | null
+          title_ar?: string
+          title_en?: string
+        }
+        Relationships: []
+      }
       standing_labels: {
         Row: {
           color: string
@@ -2979,6 +3021,19 @@ export type Database = {
       competition_round_teams: {
         Args: { _competition_id: string; _season?: string }
         Returns: Json
+      }
+      enqueue_match_push: {
+        Args: {
+          _ba: string
+          _be: string
+          _cat: string
+          _match: string
+          _player: string
+          _ta: string
+          _te: string
+          _team: string
+        }
+        Returns: undefined
       }
       fuzzy_search: {
         Args: { _limit?: number; _q: string }
