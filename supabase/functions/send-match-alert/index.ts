@@ -88,7 +88,8 @@ async function sendTo(tokens: string[], title: string, body: string, path: strin
 }
 
 /** Sofascore-style automatic alert: claims one queued match alert and sends it to everyone following the match, club or player. */
-async function dispatchQueued(admin: ReturnType<typeof createClient>, queueId: string) {
+// deno-lint-ignore no-explicit-any
+async function dispatchQueued(admin: any, queueId: string) {
   const { data: rows } = await admin.from("push_queue").update({ sent_at: new Date().toISOString() })
     .eq("id", queueId).is("sent_at", null).select("*");
   const q = rows?.[0] as Record<string, string> | undefined;
@@ -142,10 +143,6 @@ Deno.serve(async (req) => {
   const authHeader = req.headers.get("Authorization") ?? "";
   if (!authHeader.startsWith("Bearer ")) return new Response("Unauthorized", { status: 401 });
 
-  const admin = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-  );
 
   // Only an existing admin may send pushes to other people's devices.
   const { data: caller, error: callerError } = await admin.auth.getUser(authHeader.slice(7));
