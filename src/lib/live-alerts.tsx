@@ -32,36 +32,36 @@ type Info = {
 };
 
 /** How each moment of the match is announced. */
-const EVENT_TEXT: Record<string, { emoji: string; label: string }> = {
-  goal: { emoji: "⚽", label: "Goal" },
-  own_goal: { emoji: "🥴", label: "Own goal" },
-  penalty_goal: { emoji: "⚽", label: "Penalty scored" },
-  penalty: { emoji: "⚽", label: "Penalty scored" },
-  penalty_missed: { emoji: "❌", label: "Penalty missed" },
-  missed_penalty: { emoji: "❌", label: "Penalty missed" },
-  yellow_card: { emoji: "🟨", label: "Yellow card" },
-  yellow: { emoji: "🟨", label: "Yellow card" },
-  second_yellow: { emoji: "🟨🟥", label: "Second yellow" },
-  red_card: { emoji: "🟥", label: "Red card" },
-  red: { emoji: "🟥", label: "Red card" },
-  substitution: { emoji: "🔁", label: "Substitution" },
-  sub: { emoji: "🔁", label: "Substitution" },
-  var: { emoji: "📺", label: "VAR check" },
-  assist: { emoji: "🎯", label: "Assist" },
-  injury: { emoji: "🩹", label: "Injury" },
-  save: { emoji: "🧤", label: "Save" },
+const EVENT_TEXT: Record<string, { label: string }> = {
+  goal: { label: "Goal" },
+  own_goal: { label: "Own goal" },
+  penalty_goal: { label: "Penalty scored" },
+  penalty: { label: "Penalty scored" },
+  penalty_missed: { label: "Penalty missed" },
+  missed_penalty: { label: "Penalty missed" },
+  yellow_card: { label: "Yellow card" },
+  yellow: { label: "Yellow card" },
+  second_yellow: { label: "Second yellow" },
+  red_card: { label: "Red card" },
+  red: { label: "Red card" },
+  substitution: { label: "Substitution" },
+  sub: { label: "Substitution" },
+  var: { label: "VAR check" },
+  assist: { label: "Assist" },
+  injury: { label: "Injury" },
+  save: { label: "Save" },
 };
 
-const STATUS_TEXT: Record<string, { emoji: string; label: string }> = {
-  live: { emoji: "🟢", label: "Kick-off" },
-  "1h": { emoji: "🟢", label: "Kick-off" },
-  ht: { emoji: "⏸️", label: "Half time" },
-  "2h": { emoji: "🟢", label: "Second half" },
-  ft: { emoji: "🏁", label: "Full time" },
-  aet: { emoji: "🏁", label: "After extra time" },
-  pen: { emoji: "🥊", label: "Penalty shoot-out" },
-  postponed: { emoji: "⏳", label: "Postponed" },
-  cancelled: { emoji: "🚫", label: "Cancelled" },
+const STATUS_TEXT: Record<string, { label: string }> = {
+  live: { label: "Kick-off" },
+  "1h": { label: "Kick-off" },
+  ht: { label: "Half time" },
+  "2h": { label: "Second half" },
+  ft: { label: "Full time" },
+  aet: { label: "After extra time" },
+  pen: { label: "Penalty shoot-out" },
+  postponed: { label: "Postponed" },
+  cancelled: { label: "Cancelled" },
 };
 
 type AlertPreferences = { goals?: boolean; cards?: boolean; kickoff?: boolean; final?: boolean; sound?: string; sounds?: AlertSoundMap };
