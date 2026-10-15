@@ -18,6 +18,7 @@ import { fetchCallUps, applyCallUp } from "@/lib/national";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
+import { MinuteWheel } from "./minute-wheel";
 
 type MatchStat = Database["public"]["Tables"]["match_stats"]["Row"];
 type Channel = Database["public"]["Tables"]["broadcast_channels"]["Row"];
@@ -37,8 +38,8 @@ export const EVENT_TYPES = [
 ];
 
 const GOAL_KINDS = [
-  { v: "goal", l: "Normal goal" },
-  { v: "penalty_goal", l: "Penalty" },
+  { v: "goal", l: "Goal" },
+  { v: "penalty_goal", l: "Penalty shot" },
   { v: "own_goal", l: "Own goal" },
 ];
 
@@ -942,7 +943,7 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
         {/* Quick event buttons */}
         <h3 className="mb-2 mt-5 text-sm font-bold">Add match event</h3>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {EVENT_TYPES.map((t) => (
+          {EVENT_TYPES.filter((t) => t.v !== "penalty_goal" && t.v !== "own_goal").map((t) => (
             <button key={t.v} className={btnGhost} onClick={() => setComposer({ type: t.v })}><EventIcon type={t.v} className="h-5 w-5" /> {t.l}</button>
           ))}
         </div>
@@ -1134,16 +1135,25 @@ function EventForm({
     <Modal open onClose={onCancel} title={title}>
       <div className="grid gap-3">
         {isGoal && (
-          <div className="flex flex-wrap gap-2">
-            {GOAL_KINDS.map((g) => (
-              <button key={g.v} type="button" onClick={() => setEv({ ...ev, type: g.v })}
-                className={`rounded-full border px-3 py-1 text-[0.65rem] font-semibold ${ev.type === g.v ? "border-primary bg-primary/10 text-primary" : "border-border"}`}>{g.l}</button>
-            ))}
+          <div>
+            <div className="mb-1.5 text-xs font-semibold text-muted-foreground">Goal type</div>
+            <div className="grid grid-cols-3 gap-2">
+              {GOAL_KINDS.map((g) => {
+                const on = ev.type === g.v;
+                return (
+                  <button key={g.v} type="button" onClick={() => setEv({ ...ev, type: g.v })}
+                    className={`flex min-h-20 flex-col items-start justify-between gap-2 rounded-xl p-3 text-start ${on ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
+                    <EventIcon type={g.v} className="h-6 w-6" />
+                    <span className="text-xs font-semibold leading-tight">{g.l}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
-        <div className="grid grid-cols-2 gap-2">
-          <Field label="Minute"><input type="number" placeholder="Minute" className={inputCls} value={ev.minute ?? ""} onChange={(e) => setEv({ ...ev, minute: e.target.value ? Number(e.target.value) : null })} /></Field>
-          <Field label="Added time"><input type="number" placeholder="+" className={inputCls} value={ev.extra ?? ""} onChange={(e) => setEv({ ...ev, extra: e.target.value ? Number(e.target.value) : null })} /></Field>
+        <div>
+          <div className="mb-1.5 text-xs font-semibold text-muted-foreground">{isGoal ? "Goal time" : "Time"}</div>
+          <MinuteWheel minute={ev.minute} extra={ev.extra} onChange={(m, x) => setEv((cur) => ({ ...cur, minute: m, extra: x }))} />
         </div>
         <div>
           <div className="mb-1.5 text-xs font-semibold text-muted-foreground">Select team</div>
