@@ -7,8 +7,8 @@ import { Lock, Loader2 } from "lucide-react";
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
     meta: [
-      { title: "Reset password — MansourAlmailScores" },
-      { name: "description", content: "Set a new password for your MansourAlmailScores account." }, { property: "og:title", content: "Reset password — MansourAlmailScores" }, { property: "og:description", content: "Set a new password for your MansourAlmailScores account." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }],
+      { title: "Reset password — MA Scores" },
+      { name: "description", content: "Set a new password for your MA Scores account." }, { property: "og:title", content: "Reset password — MA Scores" }, { property: "og:description", content: "Set a new password for your MA Scores account." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }],
   }),
   component: ResetPassword,
 });

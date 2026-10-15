@@ -10,10 +10,10 @@ import { useI18n } from "@/lib/i18n";
 export const Route = createFileRoute("/news/$slug")({
   head: ({ params }) => ({
     meta: [
-      { title: `${params.slug.replace(/-/g, " ")} — MansourAlmailScores` },
-      { name: "description", content: "Full article on MansourAlmailScores." },
-      { property: "og:title", content: "MansourAlmailScores news" },
-      { property: "og:description", content: "Full article on MansourAlmailScores." },
+      { title: `${params.slug.replace(/-/g, " ")} — MA Scores` },
+      { name: "description", content: "Full article on MA Scores." },
+      { property: "og:title", content: "MA Scores news" },
+      { property: "og:description", content: "Full article on MA Scores." },
       { property: "og:type", content: "article" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

@@ -16,9 +16,9 @@ import { suspensionMessage, useMySuspension } from "@/lib/suspension";
 export const Route = createFileRoute("/voice/")({
   head: () => ({
     meta: [
-      { title: "Voice rooms — MansourAlmailScores" },
+      { title: "Voice rooms — MA Scores" },
       { name: "description", content: "Join live football voice rooms, listen to fans and pundits, host your own room and follow the voices you like." },
-      { property: "og:title", content: "Voice rooms — MansourAlmailScores" },
+      { property: "og:title", content: "Voice rooms — MA Scores" },
       { property: "og:description", content: "Live football talk rooms: listen, speak and follow your favourite hosts." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
