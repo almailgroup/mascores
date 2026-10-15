@@ -1471,6 +1471,7 @@ export type Database = {
           body_markdown: string
           body_markdown_ar: string | null
           competition_id: string | null
+          cover_focus: string | null
           cover_url: string | null
           created_at: string
           excerpt: string | null
@@ -1489,6 +1490,7 @@ export type Database = {
           body_markdown?: string
           body_markdown_ar?: string | null
           competition_id?: string | null
+          cover_focus?: string | null
           cover_url?: string | null
           created_at?: string
           excerpt?: string | null
@@ -1507,6 +1509,7 @@ export type Database = {
           body_markdown?: string
           body_markdown_ar?: string | null
           competition_id?: string | null
+          cover_focus?: string | null
           cover_url?: string | null
           created_at?: string
           excerpt?: string | null
