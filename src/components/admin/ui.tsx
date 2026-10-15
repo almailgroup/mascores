@@ -59,6 +59,21 @@ export function ImageInput({ value, onChange, onFile, placeholder, aspect = 1 }:
   const [pending, setPending] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [bgBusy, setBgBusy] = useState<"transparent" | "white" | null>(null);
+  const cleanBackground = async (mode: "transparent" | "white") => {
+    if (!value) return;
+    setBgBusy(mode); setError(null);
+    try {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { data } = await supabase.auth.getSession();
+      const res = await fetch("/api/remove-bg", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${data.session?.access_token ?? ""}` }, body: JSON.stringify({ imageUrl: value, mode }) });
+      const json = (await res.json()) as { b64?: string; error?: string };
+      if (!res.ok || !json.b64) throw new Error(json.error ?? "Background change failed.");
+      const bytes = Uint8Array.from(atob(json.b64), (c) => c.charCodeAt(0));
+      await finish(new File([bytes], `photo-${mode}.png`, { type: "image/png" }));
+    } catch (e) { setError(e instanceof Error ? e.message : "Background change failed."); }
+    finally { setBgBusy(null); }
+  };
   const finish = async (file: File) => {
     setUploading(true);
     setError(null);
@@ -75,6 +90,8 @@ export function ImageInput({ value, onChange, onFile, placeholder, aspect = 1 }:
          <input type="file" accept="image/*" disabled={uploading} onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) setPending(f); }} className="sr-only" />
        </label>
       {value && <button type="button" onClick={() => setCropExisting(true)} className="text-xs font-semibold text-primary">Crop</button>}
+      {value && <button type="button" disabled={!!bgBusy} onClick={() => cleanBackground("transparent")} className="text-xs font-semibold text-primary disabled:opacity-50">{bgBusy === "transparent" ? "Removing…" : "Remove bg"}</button>}
+      {value && <button type="button" disabled={!!bgBusy} onClick={() => cleanBackground("white")} className="text-xs font-semibold text-primary disabled:opacity-50">{bgBusy === "white" ? "Whitening…" : "White background"}</button>}
       {value && <button type="button" onClick={() => onChange(null)} className="text-xs text-muted-foreground hover:text-destructive">{placeholder ?? "Clear"}</button>}
       {/* A freshly chosen picture opens the crop box first; skipping it keeps the original. */}
       {pending && (

@@ -120,6 +120,20 @@
       "when": 1792073898164,
       "tag": "0016_news_cover_focus",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1792093237579,
+      "tag": "0017_bilingual_team_search_and_second_owner",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1792093525861,
+      "tag": "0018_merge_players_and_teams",
+      "breakpoints": true
     }
   ]
 }

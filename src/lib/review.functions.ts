@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
-import { OWNER_EMAIL } from "@/lib/owner.functions";
+import { isOwnerEmail } from "@/lib/owner.functions";
 
 const TABLES = {
   player: "players",
@@ -15,7 +15,7 @@ export const listChangeRequests = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const email = String((context.claims as Record<string, unknown>)?.["email"] ?? "").toLowerCase();
-    if (email !== OWNER_EMAIL) return [] as { id: string; entity: string; action: string; label: string; created_at: string; requester_email: string | null }[];
+    if (!isOwnerEmail(email)) return [] as { id: string; entity: string; action: string; label: string; created_at: string; requester_email: string | null }[];
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data } = await supabaseAdmin
       .from("admin_change_requests")
@@ -39,7 +39,7 @@ export const decideChangeRequest = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const email = String((context.claims as Record<string, unknown>)?.["email"] ?? "").toLowerCase();
-    if (email !== OWNER_EMAIL) throw new Error("Owner access only.");
+    if (!isOwnerEmail(email)) throw new Error("Owner access only.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row } = await supabaseAdmin.from("admin_change_requests").select("*").eq("id", data.id).maybeSingle();
     if (!row) throw new Error("That request is gone.");
