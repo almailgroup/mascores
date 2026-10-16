@@ -311,7 +311,7 @@ function MatchPage() {
                   <span className="min-w-0 flex-1">
                     {entry.event.player ? (
                       <Link to="/players/$id" params={{ id: entry.event.player.id }} className="block truncate text-sm font-semibold after:absolute after:inset-0 after:content-['']">{tx(entry.event.player.name)}</Link>
-                    ) : <span className="block truncate text-sm font-semibold">{entry.event.description ?? tx(entry.event.type)}</span>}
+                    ) : <span className="block truncate text-sm font-semibold">{entry.event.description ?? tx(eventLabel(entry.event.type))}</span>}
                     <span className="block truncate text-[0.65rem] text-muted-foreground">{tx(eventLabel(entry.event.type))}{entry.event.team ? ` · ${tx(entry.event.team.name)}` : ""}</span>
                   </span>
                 </li>
