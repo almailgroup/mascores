@@ -5,7 +5,7 @@ import { z } from "zod";
 /** The single owner account that can hand out and take away access. */
 export const OWNER_EMAIL = "mansouralmailscores@gmail.com";
 /** Every main-admin (owner-level) account. */
-export const OWNER_EMAILS = [OWNER_EMAIL, "11061@dbs.edu.kw"];
+export const OWNER_EMAILS = [OWNER_EMAIL, "11061@dbs.edu.kw", "hensi.g@elaunchinfotech.in"];
 export const isOwnerEmail = (email: string | null | undefined) => OWNER_EMAILS.includes((email ?? "").trim().toLowerCase());
 
 export const GRANT_SCOPES = [
