@@ -1,3 +1,4 @@
+import { Bell } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -60,7 +61,11 @@ export function TransfersEditor({ personType, personId, personName }: { personTy
   const add = async () => {
     if (!draft.from_club && !draft.to_club) return;
     const { data: row } = await supabase.from("transfers").insert({ ...draft, person_type: personType, person_id: personId } as never).select("id").single();
-    if (notify && row) { await supabase.rpc("send_transfer_push", { _transfer_id: (row as { id: string }).id }); setNotify(false); }
+    if (notify && row) {
+      const { error } = await supabase.rpc("send_transfer_push", { _transfer_id: (row as { id: string }).id });
+      window.alert(error ? "Transfer saved, but the notification failed: " + error.message : "Transfer saved and notification sent");
+      setNotify(false);
+    }
     setDraft({ transfer_type: "Transfer", season: currentSeason() });
     qc.invalidateQueries({ queryKey: key });
   };
@@ -140,6 +145,7 @@ export function TransfersEditor({ personType, personId, personName }: { personTy
             <span className="flex-1 truncate">{tr.from_club ?? "Free agent"} → {tr.to_club ?? "Free agent"}</span>
             <span className="shrink-0 text-muted-foreground">{[tr.transfer_type, tr.fee].filter(Boolean).join(" · ")}</span>
             <button onClick={() => { setEditId(tr.id); setEditRow(tr); }} className="text-muted-foreground hover:text-primary"><Pencil className="h-3 w-3" /></button>
+            <button title="Send notification" onClick={async () => { if (!window.confirm("Send a transfer notification?")) return; const { error } = await supabase.rpc("send_transfer_push", { _transfer_id: tr.id }); window.alert(error ? "Could not send: " + error.message : "Notification sent"); }} className="text-muted-foreground hover:text-primary"><Bell className="h-3 w-3" /></button>
             <button onClick={() => remove(tr.id)} className="text-destructive"><Trash2 className="h-3 w-3" /></button>
           </div>
         ))}
