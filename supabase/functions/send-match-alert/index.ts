@@ -33,6 +33,18 @@ function pemToDer(pem: string): Uint8Array {
 let cachedToken: { jwt: string; madeAt: number } | null = null;
 const TOKEN_TTL_MS = 45 * 60 * 1000;
 
+/** Finds the 32-byte private scalar (04 20 ..) and the uncompressed public point (03 42 00 04 ..). */
+function derToJwk(der: Uint8Array): JsonWebKey | null {
+  let d: Uint8Array | null = null;
+  let pub: Uint8Array | null = null;
+  for (let i = 0; i < der.length - 2; i++) {
+    if (!d && der[i] === 0x04 && der[i + 1] === 0x20 && i + 34 <= der.length) d = der.slice(i + 2, i + 34);
+    if (!pub && der[i] === 0x03 && der[i + 1] === 0x42 && der[i + 2] === 0x00 && der[i + 3] === 0x04 && i + 68 <= der.length) pub = der.slice(i + 4, i + 68);
+  }
+  if (!d || !pub) return null;
+  return { kty: "EC", crv: "P-256", d: base64url(d), x: base64url(pub.slice(0, 32)), y: base64url(pub.slice(32)), ext: true };
+}
+
 async function apnsJwt(): Promise<string> {
   if (cachedToken && Date.now() - cachedToken.madeAt < TOKEN_TTL_MS) return cachedToken.jwt;
 
@@ -49,9 +61,14 @@ async function apnsJwt(): Promise<string> {
   try {
     key = await crypto.subtle.importKey("pkcs8", der, { name: "ECDSA", namedCurve: "P-256" }, false, ["sign"]);
   } catch {
-    // Shape only (never the key itself): a real Apple .p8 key decodes to ~138 bytes.
-    const label = pem.match(/-----BEGIN ([^-]+)-----/)?.[1] ?? "none";
-    throw new Error(`APNS_PRIVATE_KEY is not a valid .p8 key (label ${label}, ${der.length} bytes, text length ${pem.length})`);
+    // Some exports wrap the key with extra curve fields the runtime rejects;
+    // pull the raw private scalar and public point out and import as JWK.
+    const jwk = derToJwk(der);
+    if (!jwk) {
+      const label = pem.match(/-----BEGIN ([^-]+)-----/)?.[1] ?? "none";
+      throw new Error(`APNS_PRIVATE_KEY is not a valid .p8 key (label ${label}, ${der.length} bytes, text length ${pem.length})`);
+    }
+    key = await crypto.subtle.importKey("jwk", jwk, { name: "ECDSA", namedCurve: "P-256" }, false, ["sign"]);
   }
   const header = base64url(encoder.encode(JSON.stringify({ alg: "ES256", kid: keyId })));
   const payload = base64url(encoder.encode(JSON.stringify({ iss: teamId, iat: Math.floor(Date.now() / 1000) })));
