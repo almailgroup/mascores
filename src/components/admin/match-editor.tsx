@@ -1212,3 +1212,47 @@ async function loadMatchPlayers(teamIds: string[], teams: { id: string; is_natio
   });
   return [...clubPlayers.filter((p) => !nationalIds.includes(p.team_id ?? "")), ...nationals] as Player[];
 }
+
+/** Sofascore-style period boxes: main periods first, then the extra statuses as smaller boxes. */
+function PeriodBoxes({ match, seconds, patchMatch }: { match: Match; seconds: number; patchMatch: (p: Partial<Match>) => Promise<void> | void }) {
+  const now = () => new Date().toISOString();
+  const stop = { timer_running: false, timer_started_at: null } as Partial<Match>;
+  const live = match.status === "live";
+  const secondHalf = live && seconds >= 2700;
+  const firstHalf = live && !secondHalf;
+  const clock = formatClock(seconds);
+  const main: { key: string; label: string; sub?: string; active: boolean; run: () => void }[] = [
+    { key: "1h", label: "1st half", sub: firstHalf ? clock : "-", active: firstHalf,
+      run: () => patchMatch({ status: "live", timer_running: true, timer_started_at: now(), ...(match.status === "scheduled" ? { timer_elapsed_seconds: 0 } : {}) }) },
+    { key: "ht", label: "HT", active: match.status === "ht",
+      run: () => patchMatch({ status: "ht", ...stop, timer_elapsed_seconds: 2700, live_minute: 45 }) },
+    { key: "2h", label: "2nd half", sub: secondHalf ? clock : "-", active: secondHalf,
+      run: () => patchMatch({ status: "live", timer_running: true, timer_started_at: now(), timer_elapsed_seconds: Math.max(2700, match.status === "ht" ? 2700 : seconds) }) },
+    { key: "ft", label: "Confirm FT", active: match.status === "ft", run: () => patchMatch({ status: "ft", ...stop }) },
+  ];
+  const extras = ["scheduled", "aet", "pen", "postponed", "cancelled", "awarded", "interrupted"];
+  const box = (active: boolean) => `relative flex min-h-[4.5rem] flex-col items-center justify-center rounded-lg p-2 text-center text-xs ${active ? "border-2 border-foreground bg-background" : "bg-muted hover:bg-accent"}`;
+  return (
+    <div className="mt-4 text-left">
+      <div className="mb-2 text-center text-sm font-bold">Edit period</div>
+      <div className="grid grid-cols-4 gap-2">
+        {main.map((b) => (
+          <button key={b.key} type="button" onClick={b.run} className={box(b.active)}>
+            {b.active && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive" />}
+            <span className="font-semibold leading-tight">{b.label}</span>
+            {b.sub !== undefined && <><span className="my-1 h-px w-6 bg-muted-foreground/50" /><span className="tabular-nums">{b.sub}</span></>}
+          </button>
+        ))}
+      </div>
+      <div className="mt-2 grid grid-cols-4 gap-2">
+        {extras.map((k) => (
+          <button key={k} type="button" onClick={() => patchMatch({ status: k, ...(k !== "scheduled" ? stop : {}) })}
+            className={`${box(match.status === k)} min-h-[3rem] text-[0.65rem]`}>
+            {match.status === k && <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-destructive" />}
+            <span className="font-semibold leading-tight">{STATUS_LABELS[k]}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
