@@ -41,7 +41,16 @@ async function apnsJwt(): Promise<string> {
   const pem = Deno.env.get("APNS_PRIVATE_KEY") ?? "";
   if (!keyId || !teamId || !pem) throw new Error("APNs secrets missing");
 
-  const key = await crypto.subtle.importKey("pkcs8", pemToDer(pem), { name: "ECDSA", namedCurve: "P-256" }, false, ["sign"]);
+  let der: Uint8Array;
+  try { der = pemToDer(pem); } catch { throw new Error(`APNS_PRIVATE_KEY is not valid base64 (length ${pem.length})`); }
+  let key: CryptoKey;
+  try {
+    key = await crypto.subtle.importKey("pkcs8", der, { name: "ECDSA", namedCurve: "P-256" }, false, ["sign"]);
+  } catch {
+    // Shape only (never the key itself): a real Apple .p8 key decodes to ~138 bytes.
+    const label = pem.match(/-----BEGIN ([^-]+)-----/)?.[1] ?? "none";
+    throw new Error(`APNS_PRIVATE_KEY is not a valid .p8 key (label ${label}, ${der.length} bytes, text length ${pem.length})`);
+  }
   const header = base64url(encoder.encode(JSON.stringify({ alg: "ES256", kid: keyId })));
   const payload = base64url(encoder.encode(JSON.stringify({ iss: teamId, iat: Math.floor(Date.now() / 1000) })));
   // WebCrypto ECDSA already returns the raw r||s form APNs expects.
