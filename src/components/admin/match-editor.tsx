@@ -1228,46 +1228,97 @@ async function loadMatchPlayers(teamIds: string[], teams: { id: string; is_natio
   return [...clubPlayers.filter((p) => !nationalIds.includes(p.team_id ?? "")), ...nationals] as Player[];
 }
 
-/** Sofascore-style period boxes: main periods first, then the extra statuses as smaller boxes. */
+/** Sofascore-style period boxes: main periods, extra time, penalties, then the other statuses. Every change asks for confirmation. */
 function PeriodBoxes({ match, seconds, patchMatch }: { match: Match; seconds: number; patchMatch: (p: Partial<Match>) => Promise<void> | void }) {
+  const [pending, setPending] = useState<{ label: string; run: () => Promise<void> | void } | null>(null);
+  const [busy, setBusy] = useState(false);
   const now = () => new Date().toISOString();
   const stop = { timer_running: false, timer_started_at: null } as Partial<Match>;
   const live = match.status === "live";
-  const secondHalf = live && seconds >= 2700;
-  const firstHalf = live && !secondHalf;
+  const shootout = live && match.home_pen != null;
+  const base = match.timer_elapsed_seconds ?? 0;
+  const phase = shootout ? "pens"
+    : live ? (seconds >= 6300 ? "et2" : seconds >= 5400 ? "et1" : seconds >= 2700 ? "2h" : "1h")
+    : match.status === "ht" ? (base >= 5400 ? "etht" : "ht") : match.status;
   const clock = formatClock(seconds);
-  const main: { key: string; label: string; sub?: string; active: boolean; run: () => void }[] = [
-    { key: "1h", label: "1st half", sub: firstHalf ? clock : "-", active: firstHalf,
-      run: () => patchMatch({ status: "live", timer_running: true, timer_started_at: now(), ...(match.status === "scheduled" ? { timer_elapsed_seconds: 0 } : {}) }) },
-    { key: "ht", label: "HT", active: match.status === "ht",
-      run: () => patchMatch({ status: "ht", ...stop, timer_elapsed_seconds: 2700, live_minute: 45 }) },
-    { key: "2h", label: "2nd half", sub: secondHalf ? clock : "-", active: secondHalf,
-      run: () => patchMatch({ status: "live", timer_running: true, timer_started_at: now(), timer_elapsed_seconds: Math.max(2700, match.status === "ht" ? 2700 : seconds) }) },
-    { key: "ft", label: "Confirm FT", active: match.status === "ft", run: () => patchMatch({ status: "ft", ...stop }) },
+  const startAt = (from: number, extra: Partial<Match> = {}) => patchMatch({ status: "live", timer_running: true, timer_started_at: now(), timer_elapsed_seconds: from, home_pen: null, away_pen: null, ...extra });
+  const keep = (lo: number, hi: number) => (seconds >= lo && seconds < hi ? seconds : lo);
+  type B = { key: string; label: string; sub?: string; active: boolean; run: () => Promise<void> | void };
+  const main: B[] = [
+    { key: "1h", label: "1st half", sub: phase === "1h" ? clock : "-", active: phase === "1h", run: () => startAt(phase === "1h" || phase === "ht" ? keep(0, 2700) : 0) },
+    { key: "ht", label: "HT", active: phase === "ht", run: () => patchMatch({ status: "ht", ...stop, timer_elapsed_seconds: 2700, live_minute: 45 }) },
+    { key: "2h", label: "2nd half", sub: phase === "2h" ? clock : "-", active: phase === "2h", run: () => startAt(keep(2700, 5400)) },
+    { key: "ft", label: "Confirm FT", active: match.status === "ft", run: () => patchMatch({ status: "ft", ...stop, timer_elapsed_seconds: 5400, home_pen: null, away_pen: null }) },
   ];
-  const extras = ["scheduled", "aet", "pen", "postponed", "cancelled", "awarded", "interrupted"];
+  const et: B[] = [
+    { key: "et1", label: "Extra time 1st half", sub: phase === "et1" ? clock : "-", active: phase === "et1", run: () => startAt(keep(5400, 6300)) },
+    { key: "etht", label: "Extra time break", active: phase === "etht", run: () => patchMatch({ status: "ht", ...stop, timer_elapsed_seconds: 6300, live_minute: 105 }) },
+    { key: "et2", label: "Extra time 2nd half", sub: phase === "et2" ? clock : "-", active: phase === "et2", run: () => startAt(keep(6300, 7200)) },
+    { key: "aet", label: "Confirm FT after ET", active: match.status === "aet", run: () => patchMatch({ status: "aet", ...stop, timer_elapsed_seconds: 7200, home_pen: null, away_pen: null }) },
+  ];
+  const pens: B[] = [
+    { key: "pens", label: "Penalties", sub: shootout ? `${match.home_pen}-${match.away_pen}` : "-", active: shootout,
+      run: () => patchMatch({ status: "live", ...stop, timer_elapsed_seconds: Math.max(base, 5400), home_pen: match.home_pen ?? 0, away_pen: match.away_pen ?? 0 }) },
+    { key: "pen", label: "Confirm FT after penalties", active: match.status === "pen", run: () => patchMatch({ status: "pen", ...stop, home_pen: match.home_pen ?? 0, away_pen: match.away_pen ?? 0 }) },
+  ];
+  const resetToScheduled = async () => {
+    await supabase.from("match_events").delete().eq("match_id", match.id).in("type", ["goal", "penalty_goal", "own_goal"]);
+    await patchMatch({ status: "scheduled", ...stop, timer_elapsed_seconds: 0, live_minute: null, home_score: null, away_score: null, home_pen: null, away_pen: null });
+  };
+  const extras = ["scheduled", "postponed", "cancelled", "awarded", "interrupted"];
+  const ask = (b: { label: string; run: () => Promise<void> | void }) => setPending(b);
   const box = (active: boolean) => `relative flex min-h-[4.5rem] flex-col items-center justify-center rounded-lg p-2 text-center text-xs ${active ? "border-2 border-foreground bg-background" : "bg-muted hover:bg-accent"}`;
+  const row = (items: B[], cols: string) => (
+    <div className={`grid ${cols} gap-2`}>
+      {items.map((b) => (
+        <button key={b.key} type="button" onClick={() => ask(b)} className={box(b.active)}>
+          {b.active && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive" />}
+          <span className="font-semibold leading-tight">{b.label}</span>
+          {b.sub !== undefined && <><span className="my-1 h-px w-6 bg-muted-foreground/50" /><span className="tabular-nums">{b.sub}</span></>}
+        </button>
+      ))}
+    </div>
+  );
+  const penInput = (side: "home_pen" | "away_pen") => (
+    <div className="flex items-center gap-1">
+      <button type="button" className="h-9 w-9 rounded-md bg-muted text-lg" onClick={() => patchMatch({ [side]: Math.max(0, (match[side] ?? 0) - 1) } as Partial<Match>)}>-</button>
+      <span className="w-8 text-center text-lg font-bold tabular-nums">{match[side] ?? 0}</span>
+      <button type="button" className="h-9 w-9 rounded-md bg-muted text-lg" onClick={() => patchMatch({ [side]: (match[side] ?? 0) + 1 } as Partial<Match>)}>+</button>
+    </div>
+  );
   return (
     <div className="mt-4 text-left">
       <div className="mb-2 text-center text-sm font-bold">Edit period</div>
-      <div className="grid grid-cols-4 gap-2">
-        {main.map((b) => (
-          <button key={b.key} type="button" onClick={b.run} className={box(b.active)}>
-            {b.active && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive" />}
-            <span className="font-semibold leading-tight">{b.label}</span>
-            {b.sub !== undefined && <><span className="my-1 h-px w-6 bg-muted-foreground/50" /><span className="tabular-nums">{b.sub}</span></>}
-          </button>
-        ))}
-      </div>
-      <div className="mt-2 grid grid-cols-4 gap-2">
+      {row(main, "grid-cols-4")}
+      <div className="mb-1 mt-3 text-[0.7rem] font-semibold uppercase text-muted-foreground">Extra time</div>
+      {row(et, "grid-cols-4")}
+      <div className="mb-1 mt-3 text-[0.7rem] font-semibold uppercase text-muted-foreground">Penalty shootout</div>
+      {row(pens, "grid-cols-2")}
+      {(shootout || match.status === "pen") && (
+        <div className="mt-2 flex items-center justify-between rounded-lg bg-muted/60 p-2 text-xs">
+          <span className="font-semibold">Home</span>{penInput("home_pen")}<span className="text-muted-foreground">pens</span>{penInput("away_pen")}<span className="font-semibold">Away</span>
+        </div>
+      )}
+      <div className="mt-3 grid grid-cols-5 gap-2">
         {extras.map((k) => (
-          <button key={k} type="button" onClick={() => patchMatch({ status: k, ...(k !== "scheduled" ? stop : {}) })}
+          <button key={k} type="button"
+            onClick={() => ask({ label: k === "scheduled" ? "Scheduled (clears the score and goals)" : STATUS_LABELS[k], run: k === "scheduled" ? resetToScheduled : () => patchMatch({ status: k, ...stop }) })}
             className={`${box(match.status === k)} min-h-[3rem] text-[0.65rem]`}>
             {match.status === k && <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-destructive" />}
             <span className="font-semibold leading-tight">{STATUS_LABELS[k]}</span>
           </button>
         ))}
       </div>
+      {pending && (
+        <div className="mt-3 flex items-center justify-between gap-2 rounded-lg border-2 border-foreground bg-background p-3">
+          <span className="text-sm">Change to <b>{pending.label}</b>?</span>
+          <div className="flex gap-2">
+            <button type="button" className="rounded-md bg-muted px-3 py-2 text-sm" onClick={() => setPending(null)}>Cancel</button>
+            <button type="button" disabled={busy} className="rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground"
+              onClick={async () => { setBusy(true); try { await pending.run(); } finally { setBusy(false); setPending(null); } }}>Confirm</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
