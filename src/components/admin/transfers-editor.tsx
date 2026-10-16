@@ -56,9 +56,11 @@ export function TransfersEditor({ personType, personId, personName }: { personTy
     },
   });
 
+  const [notify, setNotify] = useState(false);
   const add = async () => {
     if (!draft.from_club && !draft.to_club) return;
-    await supabase.from("transfers").insert({ ...draft, person_type: personType, person_id: personId } as never);
+    const { data: row } = await supabase.from("transfers").insert({ ...draft, person_type: personType, person_id: personId } as never).select("id").single();
+    if (notify && row) { await supabase.rpc("send_transfer_push", { _transfer_id: (row as { id: string }).id }); setNotify(false); }
     setDraft({ transfer_type: "Transfer", season: currentSeason() });
     qc.invalidateQueries({ queryKey: key });
   };
@@ -153,6 +155,7 @@ export function TransfersEditor({ personType, personId, personName }: { personTy
         <select className={inputCls} value={draft.transfer_type ?? "Transfer"} onChange={(e) => setDraft({ ...draft, transfer_type: e.target.value })}>
           {TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
         </select>
+        <label className="flex items-center gap-2 text-xs sm:col-span-2"><input type="checkbox" checked={notify} onChange={(e) => setNotify(e.target.checked)} /> Send notification that he joined</label>
         <button className={btnPrimary} onClick={add}><Plus className="h-3.5 w-3.5" /> Add transfer</button>
       </div>
     </div>

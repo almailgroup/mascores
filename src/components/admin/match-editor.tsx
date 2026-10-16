@@ -1293,6 +1293,7 @@ function PeriodBoxes({ match, seconds, patchMatch }: { match: Match; seconds: nu
   );
   return (
     <div className="mt-4 text-left">
+      <label className="mb-3 flex items-center justify-center gap-2 text-xs"><input type="checkbox" checked={!!match.alerts_muted} onChange={(e) => patchMatch({ alerts_muted: e.target.checked })} /> Hide notifications for this match</label>
       <div className="mb-2 text-center text-sm font-bold">Edit period</div>
       {row(main, "grid-cols-4")}
       <div className="mb-1 mt-3 text-[0.7rem] font-semibold uppercase text-muted-foreground">Extra time</div>

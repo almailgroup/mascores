@@ -201,6 +201,13 @@ async function dispatchBroadcast(admin: any, id: string) {
       : { data: [] };
     const muted = new Set((off ?? []).map((p: { id: string }) => p.id));
     userIds = ids.filter((id) => !muted.has(id));
+  } else if (b.audience_type === "player" && b.audience_user_id) {
+    // Transfer: followers of the player plus fans of the new club (if it is saved).
+    const { data: pf } = await admin.from("profiles").select("id").contains("favorite_player_ids", [b.audience_user_id]);
+    const { data: tf } = b.audience_team_id
+      ? await admin.from("profiles").select("id").contains("favorite_team_ids", [b.audience_team_id])
+      : { data: [] };
+    userIds = [...new Set([...(pf ?? []), ...(tf ?? [])].map((p: { id: string }) => p.id))] as string[];
   } else if (b.audience_type === "team" && b.audience_team_id) {
     const t = b.audience_team_id as string;
     const { data } = await admin.from("profiles").select("id,notification_preferences").contains("favorite_team_ids", [t]);
