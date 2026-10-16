@@ -13,9 +13,9 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
     public let identifier = "LiveActivityPlugin"
     public let jsName = "LiveActivity"
     public let pluginMethods: [CAPPluginMethod] = [
-        CAPPluginMethod(name: "start", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "update", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "end", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(#selector(start(_:))),
+        CAPPluginMethod(#selector(update(_:))),
+        CAPPluginMethod(#selector(end(_:))),
     ]
 
     /// Live activities in flight, keyed by matchId so update/end can find them.

@@ -9,7 +9,9 @@ import AuthenticationServices
 public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin {
     public let identifier = "PhotoLibraryPlugin"
     public let jsName = "PhotoLibrary"
-    public let pluginMethods = [CAPPluginMethod(name: "save", returnType: CAPPluginReturnPromise)]
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(#selector(save(_:)))
+    ]
 
     @objc func save(_ call: CAPPluginCall) {
         guard let base64 = call.getString("base64"),
@@ -56,7 +58,9 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin {
 public class AuthSheetPlugin: CAPPlugin, CAPBridgedPlugin, ASWebAuthenticationPresentationContextProviding {
     public let identifier = "AuthSheetPlugin"
     public let jsName = "AuthSheet"
-    public let pluginMethods = [CAPPluginMethod(name: "open", returnType: CAPPluginReturnPromise)]
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(#selector(open(_:)))
+    ]
     private var session: ASWebAuthenticationSession?
 
     @objc func open(_ call: CAPPluginCall) {
