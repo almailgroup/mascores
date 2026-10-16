@@ -1900,6 +1900,7 @@ export type Database = {
         Row: {
           audience_team_id: string | null
           audience_type: string
+          audience_user_id: string | null
           body_ar: string
           body_en: string
           created_at: string
@@ -1915,6 +1916,7 @@ export type Database = {
         Insert: {
           audience_team_id?: string | null
           audience_type?: string
+          audience_user_id?: string | null
           body_ar?: string
           body_en?: string
           created_at?: string
@@ -1930,6 +1932,7 @@ export type Database = {
         Update: {
           audience_team_id?: string | null
           audience_type?: string
+          audience_user_id?: string | null
           body_ar?: string
           body_en?: string
           created_at?: string
