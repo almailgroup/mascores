@@ -69,3 +69,4 @@
 - [x] Automatic 60/30/5-minute kick-off reminders for followed matches and clubs
 - [x] Owner news "send as notification" on publish/approve and custom notification sender
 - [ ] Re-enter the Apple push key (.p8) — waiting on the user
+- [ ] Add a Settings switch for voice room live alerts
