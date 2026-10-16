@@ -162,6 +162,13 @@
       "when": 1792140258672,
       "tag": "0022_push_broadcasts_and_reminders",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1792140495763,
+      "tag": "0023_enable_pg_cron",
+      "breakpoints": true
     }
   ]
 }
