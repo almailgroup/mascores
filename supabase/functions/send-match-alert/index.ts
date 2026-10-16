@@ -192,7 +192,16 @@ async function dispatchBroadcast(admin: any, id: string) {
   const b = rows?.[0];
   if (!b) return Response.json({ skipped: true });
   let userIds: string[];
-  if (b.audience_type === "team" && b.audience_team_id) {
+  if (b.audience_type === "followers" && b.audience_user_id) {
+    // Voice room went live: everyone following the host, minus anyone who turned voice alerts off.
+    const { data: f } = await admin.from("profile_follows").select("follower_id").eq("following_id", b.audience_user_id);
+    const ids = [...new Set((f ?? []).map((r: { follower_id: string }) => r.follower_id))] as string[];
+    const { data: off } = ids.length
+      ? await admin.from("profiles").select("id").in("id", ids).eq("notification_preferences->>voice", "false")
+      : { data: [] };
+    const muted = new Set((off ?? []).map((p: { id: string }) => p.id));
+    userIds = ids.filter((id) => !muted.has(id));
+  } else if (b.audience_type === "team" && b.audience_team_id) {
     const t = b.audience_team_id as string;
     const { data } = await admin.from("profiles").select("id,notification_preferences").contains("favorite_team_ids", [t]);
     // deno-lint-ignore no-explicit-any

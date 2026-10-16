@@ -225,6 +225,13 @@
       "when": 1792147808560,
       "tag": "0031_sub_in_out_and_var_kind_push",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1792148147731,
+      "tag": "0032_voice_room_live_push",
+      "breakpoints": true
     }
   ]
 }
