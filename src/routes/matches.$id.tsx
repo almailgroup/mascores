@@ -305,12 +305,12 @@ function MatchPage() {
                   {tx(entry.label)}{entry.score ? <span className="tabular-nums">{num(entry.score)}</span> : null}
                 </li>
               ) : (
-                <li key={entry.event.id} className={`flex items-center gap-3 px-4 py-2.5 ${entry.side === "away" ? "flex-row-reverse text-end" : ""}`}>
+                <li key={entry.event.id} className={`relative flex items-center gap-3 px-4 py-2.5 ${entry.event.player ? "active:bg-muted/60 hover:bg-muted/40" : ""} ${entry.side === "away" ? "flex-row-reverse text-end" : ""}`}>
                   <span className="w-9 shrink-0 font-mono text-[0.7rem] text-muted-foreground">{entry.event.minute != null ? num(entry.event.minute) : "-"}{entry.event.extra ? `+${num(entry.event.extra)}` : ""}'</span>
                   <EventIcon type={entry.event.type} />
                   <span className="min-w-0 flex-1">
                     {entry.event.player ? (
-                      <Link to="/players/$id" params={{ id: entry.event.player.id }} className="block truncate text-sm font-semibold hover:text-primary">{tx(entry.event.player.name)}</Link>
+                      <Link to="/players/$id" params={{ id: entry.event.player.id }} className="block truncate text-sm font-semibold after:absolute after:inset-0 after:content-['']">{tx(entry.event.player.name)}</Link>
                     ) : <span className="block truncate text-sm font-semibold">{entry.event.description ?? tx(entry.event.type)}</span>}
                     <span className="block truncate text-[0.65rem] text-muted-foreground">{tx(eventLabel(entry.event.type))}{entry.event.team ? ` · ${tx(entry.event.team.name)}` : ""}</span>
                   </span>

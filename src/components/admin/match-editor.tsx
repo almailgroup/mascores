@@ -817,13 +817,14 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
       const base = await loadMatchPlayers(teamIds, teams);
       // Lineup players (temporary, borrowed, former) count for the side they were listed under in this match.
       const { data: rows } = await supabase.from("match_lineups").select("team_id, player:players(*)").eq("match_id", match.id);
-      const byId = new Map(base.map((p) => [p.id, p]));
+      // Keyed per player AND side, so someone listed for both teams can be picked for either.
+      const byKey = new Map(base.map((p) => [`${p.id}:${p.team_id}`, p]));
       for (const r of (rows ?? []) as unknown as { team_id: string; player: Player | null }[]) {
         if (!r.player) continue;
-        const cur = byId.get(r.player.id);
-        if (!cur || cur.team_id !== r.team_id) byId.set(r.player.id, { ...(cur ?? r.player), team_id: r.team_id });
+        const k = `${r.player.id}:${r.team_id}`;
+        if (!byKey.has(k)) byKey.set(k, { ...r.player, team_id: r.team_id });
       }
-      return [...byId.values()];
+      return [...byKey.values()];
     },
   });
   const players = playersQ.data ?? [];
