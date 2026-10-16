@@ -169,6 +169,13 @@
       "when": 1792140495763,
       "tag": "0023_enable_pg_cron",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1792140548295,
+      "tag": "0024_push_owner_only",
+      "breakpoints": true
     }
   ]
 }
