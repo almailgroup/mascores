@@ -43,6 +43,8 @@ async function apnsJwt(): Promise<string> {
 
   let der: Uint8Array;
   try { der = pemToDer(pem); } catch { throw new Error(`APNS_PRIVATE_KEY is not valid base64 (length ${pem.length})`); }
+  // Trim anything pasted after the key: the DER header states the real length.
+  if (der[0] === 0x30 && der[1] === 0x81 && der.length > der[2] + 3) der = der.slice(0, der[2] + 3);
   let key: CryptoKey;
   try {
     key = await crypto.subtle.importKey("pkcs8", der, { name: "ECDSA", namedCurve: "P-256" }, false, ["sign"]);
