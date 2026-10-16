@@ -191,7 +191,7 @@ export function useLiveEventAlerts() {
     const onMatch = async (row: { id: string; status: string; home_score: number | null; away_score: number | null }) => {
       const meta = STATUS_TEXT[row.status];
       if (!meta) return;
-      const category: "final" | "kickoff" | null = ["ft", "aet", "pen"].includes(row.status) ? "final" : ["live", "1h", "2h"].includes(row.status) ? "kickoff" : null;
+      const category: "final" | "kickoff" | null = ["ft", "aet", "pen"].includes(row.status) ? "final" : ["live", "1h", "2h", "etwait"].includes(row.status) ? "kickoff" : null;
       if (category && preferences[category] === false) return;
       const key = `${row.id}:${row.status}`;
       if (seen.current.has(key)) return;
