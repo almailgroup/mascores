@@ -23,9 +23,12 @@ export const Route = createFileRoute("/auth/native")({
 function NativeReturnPage() {
   const [target, setTarget] = useState<string | null>(null);
   useEffect(() => {
+    // The start step (?start=google) is handled by the early script in the
+    // page head, which is already moving on to the sign-in service.
+    if (new URLSearchParams(window.location.search).has("start")) return;
     const t = `${APP_SCHEME}://auth/callback${window.location.search}${window.location.hash}`;
     setTarget(t);
-    window.location.replace(t);
+    if (!(window as { __masNativeHandoff?: number }).__masNativeHandoff) window.location.replace(t);
   }, []);
   return (
     <div className="grid min-h-screen place-items-center bg-background px-6 text-center">
