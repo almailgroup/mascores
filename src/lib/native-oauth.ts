@@ -61,15 +61,11 @@ export async function nativeOAuthSignIn(provider: "google" | "apple"): Promise<{
   // security check and drops the user back on the sign-in page. Explain instead.
   if (!hasSheet && !hasBrowser) return { handled: true, error: NATIVE_UPDATE_NEEDED };
 
-  // Use the app's managed sign-in service (the same one the website uses).
-  // Calling Google directly fails with "400 malformed request".
-  const params = new URLSearchParams({
-    provider,
-    redirect_uri: CALLBACK_URL,
-    state: Math.random().toString(36).slice(2) + Date.now().toString(36),
-    ...(provider === "google" ? { prompt: "select_account" } : {}),
-  });
-  const data = { url: `${new URL(CALLBACK_URL).origin}/~oauth/initiate?${params.toString()}` };
+  // Start on our own page: it marks the sheet as an app sign-in, then goes to
+  // the managed sign-in service. Whatever page the service returns to, the
+  // early head script hands the result back to the app instead of signing in
+  // inside the sheet (the sheet's storage is separate from the app's).
+  const data = { url: `${CALLBACK_URL}?start=${provider}` };
 
   if (hasSheet) {
     try {
