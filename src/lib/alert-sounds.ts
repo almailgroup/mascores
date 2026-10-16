@@ -18,7 +18,9 @@ export const ALERT_SOUNDS: { id: AlertSoundId; label: string }[] = [
 export const ALERT_EVENTS = [
   { key: "goal", label: "Goal", fallback: "stadium" as AlertSoundId },
   { key: "penalty", label: "Penalty", fallback: "horn" as AlertSoundId },
-  { key: "card", label: "Yellow or red card", fallback: "whistle" as AlertSoundId },
+  { key: "miss", label: "Penalty missed", fallback: "miss" as AlertSoundId },
+  { key: "card", label: "Yellow card", fallback: "whistle" as AlertSoundId },
+  { key: "redcard", label: "Red card", fallback: "redcard" as AlertSoundId },
   { key: "kickoff", label: "Kick-off and reminders", fallback: "bell" as AlertSoundId },
   { key: "final", label: "Full time", fallback: "whistle" as AlertSoundId },
   { key: "voice", label: "Voice room starts", fallback: "soft" as AlertSoundId },
@@ -50,6 +52,15 @@ const RECIPES: Record<Exclude<AlertSoundId, "none">, Tone[]> = {
   bell: [
     { freq: 880, at: 0, length: 0.45, type: "sine", gain: 0.1 },
     { freq: 1320, at: 0.02, length: 0.4, type: "sine", gain: 0.05 },
+  ],
+  miss: [
+    { freq: 320, to: 170, at: 0, length: 0.4, type: "sine", gain: 0.1 },
+    { freq: 260, to: 130, at: 0.42, length: 0.5, type: "sine", gain: 0.08 },
+  ],
+  redcard: [
+    { freq: 180, at: 0, length: 0.22, type: "square", gain: 0.11 },
+    { freq: 180, at: 0.28, length: 0.22, type: "square", gain: 0.11 },
+    { freq: 140, at: 0.56, length: 0.4, type: "square", gain: 0.1 },
   ],
   soft: [
     { freq: 520, to: 700, at: 0, length: 0.35, type: "sine", gain: 0.08 },
