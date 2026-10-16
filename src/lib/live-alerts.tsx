@@ -60,6 +60,7 @@ const STATUS_TEXT: Record<string, { label: string }> = {
   ht: { label: "Half time" },
   "2h": { label: "Second half" },
   ft: { label: "Full time" },
+  etwait: { label: "Waiting for extra time" },
   aet: { label: "After extra time" },
   pen: { label: "Penalty shoot-out" },
   postponed: { label: "Postponed" },
@@ -174,7 +175,10 @@ export function useLiveEventAlerts() {
         m ? `${m.home} ${score || "vs"} ${m.away}` : "",
         [minute, who, row.description].filter(Boolean).join(" · "),
       ].filter(Boolean).join("\n");
-      const soundKey: AlertEventKey = ["penalty", "penalty_goal", "penalty_missed", "missed_penalty"].includes(row.type) ? "penalty" : category === "cards" ? "card" : category === "goals" ? "goal" : "kickoff";
+      const soundKey: AlertEventKey = ["penalty_missed", "missed_penalty"].includes(row.type) ? "miss"
+        : ["red", "red_card", "second_yellow"].includes(row.type) ? "redcard"
+        : ["penalty", "penalty_goal"].includes(row.type) ? "penalty"
+        : category === "cards" ? "card" : category === "goals" ? "goal" : "kickoff";
       void announce(title, body, soundFor(preferences.sounds, soundKey), `/matches/${row.match_id}`);
 
     };
