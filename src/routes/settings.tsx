@@ -81,6 +81,18 @@ function SettingsPage() {
     setTimeout(() => setNotice(null), 1500);
   };
 
+  /** Notification switches save at once, so phone alerts follow them without pressing Save. */
+  const saveAlertPrefs = async (next: typeof alertPrefs) => {
+    setAlertPrefs(next);
+    if (!user) return;
+    const { data: prof } = await supabase.from("profiles").select("notification_preferences").eq("id", user.id).maybeSingle();
+    const saved = prof?.notification_preferences;
+    await supabase.from("profiles").update({
+      notification_preferences: { ...(saved && typeof saved === "object" && !Array.isArray(saved) ? saved : {}), ...next },
+    }).eq("id", user.id);
+    window.dispatchEvent(new Event("mas:alerts-changed"));
+  };
+
   const pickAvatar = async (file: File | undefined) => {
     if (!file || !user) return;
     setUploading(true);
@@ -149,9 +161,9 @@ function SettingsPage() {
       {user && <section className="mt-4 rounded-3xl border border-border bg-card p-6">
         <div className="flex items-center gap-2 text-sm font-semibold"><BellRing className="h-4 w-4 text-primary" /> {t("settings.notifications")}</div>
         <div className="mt-4 grid gap-2 sm:grid-cols-2">
-          {([['goals','Goals and penalties'],['cards','Cards'],['kickoff','Kick-off and reminders'],['final','Full-time results'],['voice','Followed voice hosts']] as const).map(([key,label]) => <label key={key} className="flex items-center justify-between rounded-xl border border-border bg-background px-3 py-2 text-sm"><span>{label}</span><input type="checkbox" checked={alertPrefs[key]} onChange={(event) => setAlertPrefs({ ...alertPrefs, [key]: event.target.checked })} /></label>)}
+          {([['goals','Goals and penalties','الأهداف وركلات الجزاء'],['cards','Cards','البطاقات'],['kickoff','Kick-off and reminders','انطلاق المباراة والتذكيرات'],['final','Full-time results','نتائج نهاية المباراة'],['voice','Voice rooms — someone you follow goes live','غرف صوتية — شخص تتابعه يبدأ بثًا']] as const).map(([key,label,labelAr]) => <label key={key} className="flex items-center justify-between gap-3 rounded-xl border border-border bg-background px-3 py-2 text-sm"><span>{lang === "ar" ? labelAr : label}</span><input type="checkbox" checked={alertPrefs[key]} onChange={(event) => void saveAlertPrefs({ ...alertPrefs, [key]: event.target.checked })} /></label>)}
         </div>
-        <p className="mt-2 text-[0.7rem] text-muted-foreground">Alerts work while the app is open. System delivery depends on your phone and browser permissions.</p>
+        <p className="mt-2 text-[0.7rem] text-muted-foreground">{lang === "ar" ? "تصل تنبيهات الهاتف حتى لو كان التطبيق مغلقًا، أما التنبيهات داخل التطبيق فتظهر أثناء فتحه." : "Phone alerts arrive even when the app is closed. In-app alerts appear while the app is open."}</p>
       </section>}
       {avatarFile && <ImageCropper file={avatarFile} aspect={1} onCancel={() => setAvatarFile(null)} onDone={async (file) => { await pickAvatar(file); setAvatarFile(null); }} />}
 
