@@ -98,6 +98,14 @@ const NAV: NavItem[] = [...PRIMARY_NAV, ...SECONDARY_NAV];
 
 export function AppShell({ children, bare = false }: { children: ReactNode; bare?: boolean }) {
   const { user, loading } = useAuth();
+  const { data: hasGrants = false } = useQuery({
+    queryKey: ["has-admin-grants", user?.id],
+    enabled: !!user && !isOwnerEmail(user?.email),
+    queryFn: async () => {
+      const { count } = await supabase.from("admin_grants").select("id", { count: "exact", head: true }).eq("user_id", user!.id);
+      return (count ?? 0) > 0;
+    },
+  });
   const { t } = useI18n();
   const location = useLocation();
   const router = useRouter();
