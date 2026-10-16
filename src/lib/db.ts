@@ -49,6 +49,7 @@ export const STATUS_LABELS: Record<string, string> = {
   live: "Live",
   ht: "Half-time",
   ft: "Full-time",
+  etwait: "Waiting for extra time",
   aet: "After extra time",
   pen: "After penalties",
   postponed: "Postponed",

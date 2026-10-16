@@ -260,6 +260,13 @@
       "when": 1792150257475,
       "tag": "0036_keep_clubs_on_competition_delete",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1792162479286,
+      "tag": "0037_etwait_status_and_reminder_fix",
+      "breakpoints": true
     }
   ]
 }
