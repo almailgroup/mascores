@@ -1,6 +1,6 @@
 /** Alert sounds used for goals, cards, kick-off, full time and voice rooms.
  *  Each one is synthesised in the browser so nothing has to be downloaded. */
-export type AlertSoundId = "stadium" | "whistle" | "soft" | "horn" | "drum" | "bell" | "none";
+export type AlertSoundId = "stadium" | "whistle" | "soft" | "horn" | "drum" | "bell" | "miss" | "redcard" | "none";
 
 export const ALERT_SOUNDS: { id: AlertSoundId; label: string }[] = [
   { id: "stadium", label: "Stadium roar" },
@@ -8,6 +8,8 @@ export const ALERT_SOUNDS: { id: AlertSoundId; label: string }[] = [
   { id: "whistle", label: "Referee whistle" },
   { id: "drum", label: "Ultras drum" },
   { id: "bell", label: "Bell" },
+  { id: "miss", label: "Missed chance groan" },
+  { id: "redcard", label: "Red card sting" },
   { id: "soft", label: "Soft chime" },
   { id: "none", label: "Silent" },
 ];
