@@ -222,6 +222,7 @@ function MainTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
   const [form, setForm] = useState<Partial<Match>>(match);
   useEffect(() => setForm(match), [match.id]);
 
+  const [notifyHighlights, setNotifyHighlights] = useState(false);
   const save = async () => {
     await supabase.from("matches").update({
       home_team_id: form.home_team_id ?? null,
@@ -238,9 +239,12 @@ function MainTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
       timer_running: ["live", "ht"].includes(form.status ?? "") ? form.timer_running ?? false : false,
       timer_started_at: ["live", "ht"].includes(form.status ?? "") ? form.timer_started_at ?? null : null,
     }).eq("id", match.id);
+    if (notifyHighlights && form.highlight_url) {
+      await supabase.rpc("send_highlights_push" as never, { _match_id: match.id } as never);
+      setNotifyHighlights(false);
+    }
     onSaved();
   };
-
   const local = form.kickoff_at ? new Date(new Date(form.kickoff_at).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : "";
 
   return (
@@ -269,7 +273,8 @@ function MainTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
           <Field label="Venue"><VenueSelect venue={form.venue} city={form.city} onChange={(v, c) => setForm({ ...form, venue: v, city: c })} /></Field>
         </div>
         <Field label="Referee"><input className={inputCls} value={form.referee ?? ""} onChange={(e) => setForm({ ...form, referee: e.target.value })} /></Field>
-        <Field label="Highlights link"><input className={inputCls} placeholder="YouTube link" value={form.highlight_url ?? ""} onChange={(e) => setForm({ ...form, highlight_url: e.target.value })} /></Field>
+        <Field label="Highlights link"><input className={inputCls} placeholder="YouTube link" value={form.highlight_url ?? ""} onChange={(e) => setForm({ ...form, highlight_url: e.target.value })} />
+          <label className="mt-2 flex items-center gap-2 text-xs"><input type="checkbox" checked={notifyHighlights} onChange={(e) => setNotifyHighlights(e.target.checked)} /> Send "Highlights available" notification on save</label></Field>
         <div className="sm:col-span-2"><Field label="Notes"><textarea rows={2} className={inputCls} value={form.notes ?? ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></Field></div>
       </div>
       <div className="mt-4 flex justify-end"><button className={btnPrimary} onClick={save}>Save details</button></div>
