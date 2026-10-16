@@ -15,10 +15,10 @@ import { Loader2, LogIn, ImagePlus, Send, BadgeCheck, Mail, KeyRound, Share2, Ch
 export const Route = createFileRoute("/contribute")({
   head: () => ({
     meta: [
-      { title: "Reporter desk — MansourAlmailScores" },
-      { name: "description", content: "Join the MansourAlmailScores reporter programme and submit football news for editorial review." },
-      { property: "og:title", content: "Reporter desk — MansourAlmailScores" },
-      { property: "og:description", content: "Submit football news for review as a subscribed MansourAlmailScores reporter." },
+      { title: "Reporter desk — MA Scores" },
+      { name: "description", content: "Join the MA Scores reporter programme and submit football news for editorial review." },
+      { property: "og:title", content: "Reporter desk — MA Scores" },
+      { property: "og:description", content: "Submit football news for review as a subscribed MA Scores reporter." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "robots", content: "noindex" },

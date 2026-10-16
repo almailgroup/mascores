@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
-import { OWNER_EMAIL } from "@/lib/owner.functions";
+import { isOwnerEmail } from "@/lib/owner.functions";
 
 /**
  * Turning someone down removes their reporter account completely, together with
@@ -12,7 +12,7 @@ export const deleteReporter = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const email = String((context.claims as Record<string, unknown>)?.["email"] ?? "").toLowerCase();
-    if (email !== OWNER_EMAIL) throw new Error("Owner access only.");
+    if (!isOwnerEmail(email)) throw new Error("Owner access only.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row } = await supabaseAdmin.from("news_reporters").select("user_id").eq("id", data.id).maybeSingle();
     if (row?.user_id) {

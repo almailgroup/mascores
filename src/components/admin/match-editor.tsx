@@ -1,3 +1,5 @@
+import { useServerFn } from "@tanstack/react-start";
+import { readStatsPhoto } from "@/lib/stats-photo.functions";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -16,6 +18,7 @@ import { fetchCallUps, applyCallUp } from "@/lib/national";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
+import { MinuteWheel } from "./minute-wheel";
 
 type MatchStat = Database["public"]["Tables"]["match_stats"]["Row"];
 type Channel = Database["public"]["Tables"]["broadcast_channels"]["Row"];
@@ -35,8 +38,8 @@ export const EVENT_TYPES = [
 ];
 
 const GOAL_KINDS = [
-  { v: "goal", l: "Normal goal" },
-  { v: "penalty_goal", l: "Penalty" },
+  { v: "goal", l: "Goal" },
+  { v: "penalty_goal", l: "Penalty shot" },
   { v: "own_goal", l: "Own goal" },
 ];
 
@@ -136,6 +139,15 @@ function NumberPicker({ value, onChange, max, step = 1, suffix }: { value: strin
   );
 }
 
+async function shrinkImage(file: File): Promise<string> {
+  const bmp = await createImageBitmap(file);
+  const scale = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
+  const c = document.createElement("canvas");
+  c.width = Math.round(bmp.width * scale); c.height = Math.round(bmp.height * scale);
+  c.getContext("2d")!.drawImage(bmp, 0, 0, c.width, c.height);
+  return c.toDataURL("image/jpeg", 0.85);
+}
+
 function MatchStatsEditor({ match, teams }: { match: Match; teams: Team[] }) {
   const qc = useQueryClient();
   const [label, setLabel] = useState(STAT_PRESETS[0].label);
@@ -153,9 +165,33 @@ function MatchStatsEditor({ match, teams }: { match: Match; teams: Team[] }) {
     setHome(""); setAway("");
     qc.invalidateQueries({ queryKey: ["admin", "match-stats", match.id] });
   };
+  const readPhoto = useServerFn(readStatsPhoto);
+  const [reading, setReading] = useState(false);
+  const fromPhoto = async (file: File) => {
+    setReading(true);
+    try {
+      const image = await shrinkImage(file);
+      const { stats } = await readPhoto({ data: { image, home: homeName, away: awayName, labels: STAT_PRESETS.map((p) => p.label) } });
+      if (!stats.length) { toast.error("No statistics found in that photo."); return; }
+      const current = [...(statsQ.data ?? [])];
+      for (const st of stats) {
+        const existing = current.find((x) => x.label.toLowerCase() === st.label.toLowerCase());
+        if (existing) await supabase.from("match_stats").update({ home_value: st.home, away_value: st.away }).eq("id", existing.id);
+        else { await supabase.from("match_stats").insert({ label: st.label, home_value: st.home, away_value: st.away, match_id: match.id, sort_order: current.length } as never); current.push({ label: st.label } as MatchStat); }
+      }
+      toast.success(`Added ${stats.length} statistics from the photo`);
+      qc.invalidateQueries({ queryKey: ["admin", "match-stats", match.id] });
+    } catch (e) { toast.error((e as Error).message); } finally { setReading(false); }
+  };
   return (
     <section className="mt-5 rounded-lg border border-border bg-background/40 p-3">
-      <h4 className="mb-3 text-sm font-bold">Match statistics</h4>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <h4 className="text-sm font-bold">Match statistics</h4>
+        <label className={`${btnGhost} cursor-pointer`}>
+          <input type="file" accept="image/*" className="hidden" disabled={reading} onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) void fromPhoto(f); }} />
+          {reading ? "Reading photo…" : "Read from photo"}
+        </label>
+      </div>
       <div className="grid gap-2">
         {statsQ.data?.map((item) => (
           <div key={item.id} className="grid grid-cols-[1fr_2fr_1fr_auto] items-center gap-2 rounded-lg border border-border p-2 text-sm">
@@ -783,7 +819,7 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
   const teamName = (id: string | null | undefined) => teams.find((t) => t.id === id)?.name ?? "";
   const playerName = (id: string | null | undefined) => players.find((p) => p.id === id)?.name ?? "";
 
-  const [composer, setComposer] = useState<{ type: string } | null>(null);
+  const [composer, setComposer] = useState<{ type: string; teamId?: string } | null>(null);
   const [editing, setEditing] = useState<MatchEvent | null>(null);
 
   const patchMatch = async (patch: Partial<Match>) => {
@@ -888,10 +924,26 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
         )}
 
 
+        {/* Quick goal: + beside each team opens a goal already set to that team. */}
+        <div className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-xl border border-border bg-background/60 p-3">
+          {[match.home_team_id, match.away_team_id].map((tid, i) => {
+            const t = teams.find((x) => x.id === tid);
+            const plus = <button key="p" type="button" disabled={!tid} aria-label={`Goal for ${t?.name ?? "team"}`} onClick={() => setComposer({ type: "goal", teamId: tid ?? undefined })} className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-muted text-2xl font-light hover:bg-accent">+</button>;
+            const crest = <TeamCrest key="c" name={t?.name} logo={t?.logo_url} className="h-9 w-9 shrink-0" />;
+            const cell = (
+              <div key={i} className={`flex min-w-0 flex-col gap-1.5 ${i ? "items-end text-end" : "items-start"}`}>
+                <span className="w-full break-words text-[0.7rem] font-semibold leading-tight">{t?.name ?? "TBD"}</span>
+                <div className="flex items-center gap-2">{i ? [plus, crest] : [crest, plus]}</div>
+              </div>
+            );
+            return i === 0 ? [cell, <div key="s" className="px-1 text-2xl font-black tabular-nums">{match.home_score ?? 0} - {match.away_score ?? 0}</div>] : cell;
+          })}
+        </div>
+
         {/* Quick event buttons */}
         <h3 className="mb-2 mt-5 text-sm font-bold">Add match event</h3>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {EVENT_TYPES.map((t) => (
+          {EVENT_TYPES.filter((t) => t.v !== "penalty_goal" && t.v !== "own_goal").map((t) => (
             <button key={t.v} className={btnGhost} onClick={() => setComposer({ type: t.v })}><EventIcon type={t.v} className="h-5 w-5" /> {t.l}</button>
           ))}
         </div>
@@ -899,7 +951,7 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
         {composer && (
           <EventForm
             title={EVENT_TYPES.find((t) => t.v === composer.type)?.l ?? "Event"}
-            initial={{ type: composer.type, minute }}
+            initial={{ type: composer.type, minute, team_id: composer.teamId ?? null }}
             teamIds={teamIds}
             teams={teams}
             players={players}
@@ -1083,23 +1135,42 @@ function EventForm({
     <Modal open onClose={onCancel} title={title}>
       <div className="grid gap-3">
         {isGoal && (
-          <div className="flex flex-wrap gap-2">
-            {GOAL_KINDS.map((g) => (
-              <button key={g.v} type="button" onClick={() => setEv({ ...ev, type: g.v })}
-                className={`rounded-full border px-3 py-1 text-[0.65rem] font-semibold ${ev.type === g.v ? "border-primary bg-primary/10 text-primary" : "border-border"}`}>{g.l}</button>
-            ))}
+          <div>
+            <div className="mb-1.5 text-xs font-semibold text-muted-foreground">Goal type</div>
+            <div className="grid grid-cols-3 gap-2">
+              {GOAL_KINDS.map((g) => {
+                const on = ev.type === g.v;
+                return (
+                  <button key={g.v} type="button" onClick={() => setEv({ ...ev, type: g.v })}
+                    className={`flex min-h-20 flex-col items-start justify-between gap-2 rounded-xl p-3 text-start ${on ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
+                    <EventIcon type={g.v} className="h-6 w-6" />
+                    <span className="text-xs font-semibold leading-tight">{g.l}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
-        <div className="grid grid-cols-2 gap-2">
-          <Field label="Minute"><input type="number" placeholder="Minute" className={inputCls} value={ev.minute ?? ""} onChange={(e) => setEv({ ...ev, minute: e.target.value ? Number(e.target.value) : null })} /></Field>
-          <Field label="Added time"><input type="number" placeholder="+" className={inputCls} value={ev.extra ?? ""} onChange={(e) => setEv({ ...ev, extra: e.target.value ? Number(e.target.value) : null })} /></Field>
+        <div>
+          <div className="mb-1.5 text-xs font-semibold text-muted-foreground">{isGoal ? "Goal time" : "Time"}</div>
+          <MinuteWheel minute={ev.minute} extra={ev.extra} onChange={(m, x) => setEv((cur) => ({ ...cur, minute: m, extra: x }))} />
         </div>
-        <Field label="Team">
-          <select className={inputCls} value={ev.team_id ?? ""} onChange={(e) => setEv({ ...ev, team_id: e.target.value || null, player_id: null, assist_player_id: null, sub_out_player_id: null })}>
-            <option value="">Team</option>
-            {teamIds.map((id) => <option key={id} value={id}>{teamName(id)}</option>)}
-          </select>
-        </Field>
+        <div>
+          <div className="mb-1.5 text-xs font-semibold text-muted-foreground">Select team</div>
+          <div className="grid grid-cols-2 gap-2">
+            {teamIds.map((id) => {
+              const t = teams.find((x) => x.id === id);
+              const on = ev.team_id === id;
+              return (
+                <button key={id} type="button" onClick={() => setEv({ ...ev, team_id: id, player_id: null, assist_player_id: null, sub_out_player_id: null })}
+                  className={`flex min-w-0 flex-col items-start gap-2 rounded-xl border p-3 text-start ${on ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background"}`}>
+                  <TeamCrest name={t?.name} logo={t?.logo_url} className="h-8 w-8" />
+                  <span className="w-full break-words text-xs font-semibold leading-tight">{teamName(id)}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
         <PlayerPickField label={isSub ? "Player coming on" : "Player"} players={pool} value={ev.player_id} onChange={(id) => setEv({ ...ev, player_id: id })} />
         {ev.type === "goal" && (
           <PlayerPickField label="Assist (optional)" players={pool} value={ev.assist_player_id} onChange={(id) => setEv({ ...ev, assist_player_id: id })} />

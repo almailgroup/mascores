@@ -16,9 +16,9 @@ import { suspensionMessage, useMySuspension } from "@/lib/suspension";
 export const Route = createFileRoute("/voice/")({
   head: () => ({
     meta: [
-      { title: "Voice rooms — MansourAlmailScores" },
+      { title: "Voice rooms — MA Scores" },
       { name: "description", content: "Join live football voice rooms, listen to fans and pundits, host your own room and follow the voices you like." },
-      { property: "og:title", content: "Voice rooms — MansourAlmailScores" },
+      { property: "og:title", content: "Voice rooms — MA Scores" },
       { property: "og:description", content: "Live football talk rooms: listen, speak and follow your favourite hosts." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -108,13 +108,13 @@ function VoicePage() {
   return (
     <AppShell>
       <BackButton />
-      <div className="overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/15 via-card to-card p-5 sm:p-7">
+      <div className="overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/15 via-card to-card p-6 sm:p-8">
         <div className="inline-flex items-center gap-2 text-[0.7rem] font-bold uppercase tracking-widest text-primary">
           <Radio className="h-4 w-4" /> {tx("Voice rooms")}
         </div>
         <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">{tx("Live football talk")}</h1>
         <p className="mt-1 max-w-xl text-sm text-muted-foreground">{tx("Join a room to listen, raise your hand to speak, or start your own room. Follow hosts to know when they go live.")}</p>
-        <div className="mt-4 flex flex-wrap items-center gap-2">
+        <div className="mt-5 flex flex-wrap items-center gap-3">
           <button onClick={() => (user ? (suspension.data ? setCodeError(tx(suspensionMessage(suspension.data))) : setCreating(true)) : navigate({ to: "/auth" }))} className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-4 text-sm font-bold text-primary-foreground shadow">
             <Plus className="h-4 w-4" /> {tx("Start a room")}
           </button>
@@ -130,21 +130,21 @@ function VoicePage() {
       </div>
 
       {followed.length > 0 && (
-        <section className="mt-8">
+        <section className="mt-10">
           <SectionHeader title={tx("From people you follow")} />
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-5">
             {followed.map((room) => <RoomCard key={room.id} room={room} host={rooms.data?.hosts[room.host_id]} lang={lang} following onFollow={() => toggleFollow(room.host_id)} isSelf={room.host_id === user?.id} />)}
           </div>
         </section>
       )}
 
-      <section className="mt-8">
+      <section className="mt-10">
         <SectionHeader title={tx("Live now")} />
         {rooms.isLoading && <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>}
         {!rooms.isLoading && (rooms.data?.list.length ?? 0) === 0 && (
           <EmptyState title={tx("No live rooms right now")} description={tx("Start the first one and fans can join in seconds.")} />
         )}
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-5">
           {(rooms.data?.list ?? []).map((room) => (
             <RoomCard key={room.id} room={room} host={rooms.data?.hosts[room.host_id]} lang={lang}
               following={(following.data ?? []).includes(room.host_id)}
@@ -154,7 +154,7 @@ function VoicePage() {
         </div>
       </section>
 
-      <section className="mt-8">
+      <section className="mt-10">
         <SectionHeader title={tx("Replays")} />
         <VoiceReplays />
       </section>
@@ -182,16 +182,16 @@ function RoomCard({ room, host, lang, following, onFollow, isSelf }: {
             </div>
           </div>
         </div>
-        <div className="p-3">
+        <div className="p-4">
           <div className="line-clamp-2 text-sm font-bold">{room.title}</div>
-          <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
             {host?.avatar_url ? <img src={host.avatar_url} alt="" className="h-6 w-6 rounded-full object-cover" /> : <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-muted text-[0.6rem] font-bold">{(host?.display_name ?? "?").slice(0, 1).toUpperCase()}</span>}
             <span className="truncate">{host?.display_name ?? tx("Host")}</span>
             <span className="ms-auto inline-flex items-center gap-1"><Users className="h-3 w-3" /> {room.listeners}</span>
           </div>
         </div>
       </Link>
-      <div className="flex items-center justify-between border-t border-border px-3 py-2">
+      <div className="flex items-center justify-between border-t border-border px-4 py-3">
         <span className="text-[0.65rem] text-muted-foreground">{tx("Followers")}: {compact(host?.followers ?? 0)}</span>
         {!isSelf && (
           <button onClick={onFollow} className={`inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-bold ${following ? "border border-border bg-card text-muted-foreground" : "bg-primary text-primary-foreground"}`}>

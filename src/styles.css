@@ -138,7 +138,7 @@
   --sports-header-surface: oklch(0.17 0.015 260);
   --sports-header-foreground: oklch(0.98 0.005 240);
   --sports-header-chip: oklch(1 0 0 / 10%);
-  /* MansourAlmailScores — Light mode */
+  /* MA Scores — Light mode */
   --background: oklch(0.985 0.005 240);
   --foreground: oklch(0.18 0.05 260);
   --card: oklch(1 0 0);
@@ -181,7 +181,7 @@
   --glass-highlight: oklch(1 0 0 / 16%);
   --glass-shadow: 0 3px 12px oklch(0 0 0 / 18%);
   --event-ink: oklch(0.98 0.005 240);
-  /* MansourAlmailScores — Dark mode (stadium night) */
+  /* MA Scores — Dark mode (stadium night) */
   --background: oklch(0.16 0.03 260);
   --foreground: oklch(0.98 0.005 240);
   --card: oklch(0.21 0.04 262);
@@ -255,6 +255,8 @@
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
     overflow-x: clip;
+    /* Prevent accidental double-tap zoom while preserving pinch zoom. */
+    touch-action: manipulation;
   }
 
   body {
@@ -282,13 +284,15 @@
   }
 }
 
-/* iOS zooms the page in when a focused field is under 16px, then snaps
-   back out while typing. Kept outside @layer so it wins over text-sm. */
+/* iOS zooms the viewport when focusing fields smaller than 16px and can
+   retain that zoom after blur. Override compact field utilities on touch
+   devices only, leaving surrounding rows, labels and buttons unchanged. */
 @media (hover: none) and (pointer: coarse) {
-  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="file"]):not([type="hidden"]),
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]),
   textarea,
-  select {
-    font-size: 16px;
+  select,
+  [contenteditable]:not([contenteditable="false"]) {
+    font-size: max(16px, 1rem) !important;
   }
 }
 

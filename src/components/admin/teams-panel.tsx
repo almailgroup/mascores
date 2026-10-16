@@ -244,6 +244,13 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
             </div>
           </Field>
            <Field label="Chairman"><input className={inputCls} value={form.chairman ?? ""} onChange={(e) => setForm({ ...form, chairman: e.target.value || null })} /></Field>
+          {form.id && form.chairman && (
+            <div className="sm:col-span-2">
+              <Field label="Chairman photo (shown as the club president on the club page)">
+                <PresidentPhotoField teamId={form.id} chairman={form.chairman} />
+              </Field>
+            </div>
+          )}
           <Field label="Displayed followers (leave blank for real count)"><input type="number" min={0} className={inputCls} value={form.followers_override ?? ""} onChange={(e) => setForm({ ...form, followers_override: e.target.value === "" ? null : Math.max(0, Math.floor(Number(e.target.value) || 0)) })} /></Field>
           {form.id && (
             <div className="sm:col-span-2">
@@ -616,5 +623,31 @@ function YouthLinks({ team, library, onUseParentLogo }: { team: Team; library: T
         </div>
       )}
     </div>
+  );
+}
+
+/** Photo for the club president: stored on the matching team_staff row so the club page picks it up. */
+function PresidentPhotoField({ teamId, chairman }: { teamId: string; chairman: string }) {
+  const qc = useQueryClient();
+  const q = useQuery({
+    queryKey: ["admin", "president-staff", teamId, chairman],
+    queryFn: async () => {
+      const { data } = await supabase.from("team_staff").select("id,name,role,photo_url").eq("team_id", teamId);
+      const rows = (data ?? []) as { id: string; name: string; role: string; photo_url: string | null }[];
+      return rows.find((person) => person.name === chairman || /president|chairman|رئيس/i.test(person.role)) ?? null;
+    },
+  });
+  const setPhoto = async (url: string | null) => {
+    if (q.data) await supabase.from("team_staff").update({ photo_url: url }).eq("id", q.data.id);
+    else if (url) await supabase.from("team_staff").insert({ team_id: teamId, name: chairman, role: "President", photo_url: url } as never);
+    qc.invalidateQueries({ queryKey: ["admin", "president-staff", teamId] });
+    qc.invalidateQueries({ queryKey: ["club-president", teamId] });
+  };
+  return (
+    <ImageInput
+      value={q.data?.photo_url ?? null}
+      onChange={(v) => { void setPhoto(v); }}
+      onFile={async (f) => { const url = await uploadMedia("player-photos", f); if (url) await setPhoto(url); }}
+    />
   );
 }

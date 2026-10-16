@@ -13,8 +13,8 @@ interface BrandLogoProps {
 export function LogoMark({ className }: { className?: string }) {
   return (
     <>
-      <img src={logoLight.url} alt="MansourAlmailScores" className={`${className ?? ""} dark:hidden`} />
-      <img src={logoDark} alt="MansourAlmailScores" className={`hidden ${className ?? ""} dark:block`} />
+      <img src={logoLight.url} alt="MA Scores" className={`${className ?? ""} dark:hidden`} />
+      <img src={logoDark} alt="MA Scores" className={`hidden ${className ?? ""} dark:block`} />
     </>
   );
 }

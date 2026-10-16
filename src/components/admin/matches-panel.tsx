@@ -144,16 +144,16 @@ export function MatchesPanel({ competitionId, season = null, friendly = false }:
         onImported={() => qc.invalidateQueries({ queryKey: ["admin", "matches", competitionId] })}
       />
 
-      <div className="grid gap-5">
+      <div className="grid min-w-0 gap-5">
         {grouped.map(([round, list]) => (
           <div key={round}>
             <div className="mb-2 flex items-center gap-2">
               <span className="rounded-full bg-primary/10 px-3 py-1 text-[0.65rem] font-bold uppercase tracking-widest text-primary">{round}</span>
               <span className="text-[0.65rem] text-muted-foreground">{list.length} match{list.length === 1 ? "" : "es"}</span>
             </div>
-            <div className="grid gap-2">
+            <div className="grid min-w-0 grid-cols-1 gap-2">
               {list.map((m) => (
-                <div key={m.id} className="rounded-xl border border-border bg-card p-3">
+                <div key={m.id} className="min-w-0 max-w-full overflow-hidden rounded-xl border border-border bg-card p-3">
                   <div className="mb-2 inline-flex rounded-full bg-muted px-2.5 py-1 text-[0.6rem] font-bold uppercase tracking-wide text-muted-foreground">{(STATUS_LABELS[m.status] ?? m.status)}</div>
                   <div className="flex min-w-0 items-start gap-2">
                     <div className="min-w-0 flex-1 space-y-1">

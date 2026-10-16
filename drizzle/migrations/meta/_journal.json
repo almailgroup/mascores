@@ -106,6 +106,55 @@
       "when": 1791977994652,
       "tag": "0014_tighten_media_and_chat_reads",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1792073631814,
+      "tag": "0015_tighten_votes_tickets_feedback",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1792073898164,
+      "tag": "0016_news_cover_focus",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1792093237579,
+      "tag": "0017_bilingual_team_search_and_second_owner",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1792093525861,
+      "tag": "0018_merge_players_and_teams",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1792096280648,
+      "tag": "0019_migration",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1792097512830,
+      "tag": "0020_match_push_dispatch",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1792097537306,
+      "tag": "0021_push_dispatch_url",
+      "breakpoints": true
     }
   ]
 }

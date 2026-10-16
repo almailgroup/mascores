@@ -1471,6 +1471,7 @@ export type Database = {
           body_markdown: string
           body_markdown_ar: string | null
           competition_id: string | null
+          cover_focus: string | null
           cover_url: string | null
           created_at: string
           excerpt: string | null
@@ -1489,6 +1490,7 @@ export type Database = {
           body_markdown?: string
           body_markdown_ar?: string | null
           competition_id?: string | null
+          cover_focus?: string | null
           cover_url?: string | null
           created_at?: string
           excerpt?: string | null
@@ -1507,6 +1509,7 @@ export type Database = {
           body_markdown?: string
           body_markdown_ar?: string | null
           competition_id?: string | null
+          cover_focus?: string | null
           cover_url?: string | null
           created_at?: string
           excerpt?: string | null
@@ -1893,6 +1896,48 @@ export type Database = {
         }
         Relationships: []
       }
+      push_queue: {
+        Row: {
+          body_ar: string
+          body_en: string
+          category: string
+          created_at: string
+          id: string
+          match_id: string
+          player_id: string | null
+          sent_at: string | null
+          team_id: string | null
+          title_ar: string
+          title_en: string
+        }
+        Insert: {
+          body_ar: string
+          body_en: string
+          category: string
+          created_at?: string
+          id?: string
+          match_id: string
+          player_id?: string | null
+          sent_at?: string | null
+          team_id?: string | null
+          title_ar: string
+          title_en: string
+        }
+        Update: {
+          body_ar?: string
+          body_en?: string
+          category?: string
+          created_at?: string
+          id?: string
+          match_id?: string
+          player_id?: string | null
+          sent_at?: string | null
+          team_id?: string | null
+          title_ar?: string
+          title_en?: string
+        }
+        Relationships: []
+      }
       standing_labels: {
         Row: {
           color: string
@@ -2208,6 +2253,7 @@ export type Database = {
           logo_url: string | null
           media_urls: string[]
           name: string
+          name_ar: string | null
           parent_team_id: string | null
           short_name: string | null
           social_links: Json
@@ -2239,6 +2285,7 @@ export type Database = {
           logo_url?: string | null
           media_urls?: string[]
           name: string
+          name_ar?: string | null
           parent_team_id?: string | null
           short_name?: string | null
           social_links?: Json
@@ -2270,6 +2317,7 @@ export type Database = {
           logo_url?: string | null
           media_urls?: string[]
           name?: string
+          name_ar?: string | null
           parent_team_id?: string | null
           short_name?: string | null
           social_links?: Json
@@ -2956,6 +3004,7 @@ export type Database = {
     }
     Functions: {
       admin_unlock_allowed: { Args: { _uid: string }; Returns: boolean }
+      ar_skeleton: { Args: { _t: string }; Returns: string }
       chat_author_profiles: {
         Args: { _ids: string[] }
         Returns: {
@@ -2973,6 +3022,19 @@ export type Database = {
         Args: { _competition_id: string; _season?: string }
         Returns: Json
       }
+      enqueue_match_push: {
+        Args: {
+          _ba: string
+          _be: string
+          _cat: string
+          _match: string
+          _player: string
+          _ta: string
+          _te: string
+          _team: string
+        }
+        Returns: undefined
+      }
       fuzzy_search: {
         Args: { _limit?: number; _q: string }
         Returns: {
@@ -2989,6 +3051,28 @@ export type Database = {
       is_admin: { Args: { _uid: string }; Returns: boolean }
       is_main_admin: { Args: { _uid: string }; Returns: boolean }
       is_suspended: { Args: { _uid: string }; Returns: boolean }
+      match_prediction_tally: {
+        Args: { _match_id: string }
+        Returns: {
+          choice: string
+          votes: number
+        }[]
+      }
+      merge_records: {
+        Args: { _drop: string; _keep: string; _kind: string }
+        Returns: undefined
+      }
+      merge_suggestions: {
+        Args: { _kind: string; _limit?: number }
+        Returns: {
+          a_id: string
+          a_name: string
+          b_id: string
+          b_name: string
+          score: number
+        }[]
+      }
+      norm_search: { Args: { _t: string }; Returns: string }
       player_follower_count: { Args: { _player_id: string }; Returns: number }
       public_profile: {
         Args: { _id: string }
@@ -3018,6 +3102,13 @@ export type Database = {
           followers: number
           id: string
           username: string
+        }[]
+      }
+      search_teams: {
+        Args: { _limit?: number; _q: string }
+        Returns: {
+          id: string
+          score: number
         }[]
       }
       set_club_notification: {

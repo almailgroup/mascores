@@ -1,5 +1,6 @@
 import { autoShortName } from "@/lib/short-name";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useAdminAbility } from "@/lib/admin-ability";
@@ -80,16 +81,25 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
     } finally { setAiBusy(false); }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto overscroll-contain bg-background">
-      <div className="mx-auto max-w-6xl space-y-5 px-4 py-5 lg:px-8">
-        <div className="flex flex-wrap items-center gap-3">
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, []);
+  if (typeof document === "undefined") return null;
+  // Portalled so page transforms can never push the editor off-screen; opens at the top instantly.
+  return createPortal(
+    <div data-no-gesture className="fixed inset-0 z-[120] overflow-y-auto overscroll-contain bg-background">
+      <div className="sticky top-0 z-10 border-b border-border bg-background/95 px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] backdrop-blur lg:px-8">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3">
           <button className={btnGhost} onClick={onClose}><ArrowLeft className="h-3.5 w-3.5" /> Back</button>
           <button className={btnPrimary} disabled={busy || !form.name?.trim()} onClick={save}>
             {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />} {form.id ? "Save" : needsApproval ? "Send for review" : "Create"}
           </button>
           <div className="min-w-0 flex-1 truncate text-sm font-bold">{form.name || "New player"}{clubName ? ` · ${clubName}` : " · Free agent"}</div>
         </div>
+      </div>
+      <div className="mx-auto max-w-6xl space-y-5 px-4 py-5 lg:px-8">
         <div className="rounded-2xl border border-primary/30 bg-primary/5 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2 text-sm font-bold"><Sparkles className="h-4 w-4 text-primary" /> Almail AI player assistant</div>
@@ -189,6 +199,7 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
           <button className={btnGhost} onClick={onClose}><ArrowLeft className="h-3.5 w-3.5" /> Back</button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

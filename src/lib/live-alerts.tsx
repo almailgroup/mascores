@@ -31,37 +31,39 @@ type Info = {
   competition: string | null;
 };
 
+const GOAL_TYPES = ["goal", "own_goal", "penalty_goal", "penalty"];
+
 /** How each moment of the match is announced. */
-const EVENT_TEXT: Record<string, { emoji: string; label: string }> = {
-  goal: { emoji: "⚽", label: "Goal" },
-  own_goal: { emoji: "🥴", label: "Own goal" },
-  penalty_goal: { emoji: "⚽", label: "Penalty scored" },
-  penalty: { emoji: "⚽", label: "Penalty scored" },
-  penalty_missed: { emoji: "❌", label: "Penalty missed" },
-  missed_penalty: { emoji: "❌", label: "Penalty missed" },
-  yellow_card: { emoji: "🟨", label: "Yellow card" },
-  yellow: { emoji: "🟨", label: "Yellow card" },
-  second_yellow: { emoji: "🟨🟥", label: "Second yellow" },
-  red_card: { emoji: "🟥", label: "Red card" },
-  red: { emoji: "🟥", label: "Red card" },
-  substitution: { emoji: "🔁", label: "Substitution" },
-  sub: { emoji: "🔁", label: "Substitution" },
-  var: { emoji: "📺", label: "VAR check" },
-  assist: { emoji: "🎯", label: "Assist" },
-  injury: { emoji: "🩹", label: "Injury" },
-  save: { emoji: "🧤", label: "Save" },
+const EVENT_TEXT: Record<string, { label: string }> = {
+  goal: { label: "Goal" },
+  own_goal: { label: "Own goal" },
+  penalty_goal: { label: "Penalty scored" },
+  penalty: { label: "Penalty scored" },
+  penalty_missed: { label: "Penalty missed" },
+  missed_penalty: { label: "Penalty missed" },
+  yellow_card: { label: "Yellow card" },
+  yellow: { label: "Yellow card" },
+  second_yellow: { label: "Second yellow" },
+  red_card: { label: "Red card" },
+  red: { label: "Red card" },
+  substitution: { label: "Substitution" },
+  sub: { label: "Substitution" },
+  var: { label: "VAR check" },
+  assist: { label: "Assist" },
+  injury: { label: "Injury" },
+  save: { label: "Save" },
 };
 
-const STATUS_TEXT: Record<string, { emoji: string; label: string }> = {
-  live: { emoji: "🟢", label: "Kick-off" },
-  "1h": { emoji: "🟢", label: "Kick-off" },
-  ht: { emoji: "⏸️", label: "Half time" },
-  "2h": { emoji: "🟢", label: "Second half" },
-  ft: { emoji: "🏁", label: "Full time" },
-  aet: { emoji: "🏁", label: "After extra time" },
-  pen: { emoji: "🥊", label: "Penalty shoot-out" },
-  postponed: { emoji: "⏳", label: "Postponed" },
-  cancelled: { emoji: "🚫", label: "Cancelled" },
+const STATUS_TEXT: Record<string, { label: string }> = {
+  live: { label: "Kick-off" },
+  "1h": { label: "Kick-off" },
+  ht: { label: "Half time" },
+  "2h": { label: "Second half" },
+  ft: { label: "Full time" },
+  aet: { label: "After extra time" },
+  pen: { label: "Penalty shoot-out" },
+  postponed: { label: "Postponed" },
+  cancelled: { label: "Cancelled" },
 };
 
 type AlertPreferences = { goals?: boolean; cards?: boolean; kickoff?: boolean; final?: boolean; sound?: string; sounds?: AlertSoundMap };
@@ -158,16 +160,16 @@ export function useLiveEventAlerts() {
       seen.current.add(row.id);
       const m = await loadMatch(row.match_id);
       if (cancelled || !wanted(m, row.match_id)) return;
-      const meta = EVENT_TEXT[row.type] ?? { emoji: "🔔", label: row.type.replace(/_/g, " ") };
+      const meta = EVENT_TEXT[row.type] ?? { label: row.type.replace(/_/g, " ") };
       const category: "cards" | "goals" | null = ["yellow", "yellow_card", "second_yellow", "red", "red_card"].includes(row.type) ? "cards" : ["goal", "own_goal", "penalty", "penalty_goal", "penalty_missed", "missed_penalty"].includes(row.type) ? "goals" : null;
       if (category && preferences[category] === false) return;
       const side = m && row.team_id ? (row.team_id === m.homeId ? m.home : row.team_id === m.awayId ? m.away : null) : null;
       const who = await playerName(row.player_id);
       const minute = row.minute != null ? `${row.minute}${row.extra ? `+${row.extra}` : ""}'` : "";
-      const isGoal = meta.emoji === "⚽" || row.type === "own_goal";
+      const isGoal = GOAL_TYPES.includes(row.type);
       const fresh = isGoal ? await refreshScore(row.match_id) : m;
       const score = fresh && fresh.homeScore != null && fresh.awayScore != null ? `${fresh.homeScore} - ${fresh.awayScore}` : "";
-      const title = `${meta.emoji} ${meta.label}${side ? ` · ${side}` : ""}`;
+      const title = `${meta.label}${side ? ` · ${side}` : ""}`;
       const body = [
         m ? `${m.home} ${score || "vs"} ${m.away}` : "",
         [minute, who, row.description].filter(Boolean).join(" · "),
@@ -194,7 +196,7 @@ export function useLiveEventAlerts() {
       seen.current.add(key);
       info.set(row.id, { ...(m as Info), homeScore: row.home_score, awayScore: row.away_score });
       const score = row.home_score != null && row.away_score != null ? `${row.home_score} - ${row.away_score}` : "vs";
-      void announce(`${meta.emoji} ${meta.label}`, `${m?.home ?? "Home"} ${score} ${m?.away ?? "Away"}`, soundFor(preferences.sounds, category === "final" ? "final" : "kickoff"), `/matches/${row.id}`);
+      void announce(meta.label, `${m?.home ?? "Home"} ${score} ${m?.away ?? "Away"}`, soundFor(preferences.sounds, category === "final" ? "final" : "kickoff"), `/matches/${row.id}`);
     };
 
     loadAlerts();

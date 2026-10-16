@@ -11,9 +11,9 @@ import { myAccess } from "@/lib/owner.functions";
 export const Route = createFileRoute("/scanner")({
   head: () => ({
     meta: [
-      { title: "Ticket scanner — MansourAlmailScores" },
+      { title: "Ticket scanner — MA Scores" },
       { name: "description", content: "Gate staff scan supporter tickets here. Each QR code is accepted once." },
-      { property: "og:title", content: "Ticket scanner — MansourAlmailScores" },
+      { property: "og:title", content: "Ticket scanner — MA Scores" },
       { property: "og:description", content: "Gate staff scan supporter tickets here. Each QR code is accepted once." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

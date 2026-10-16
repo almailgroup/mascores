@@ -66,7 +66,7 @@ function formationRows(formation: string | null | undefined): string[][] {
 }
 
 export const Route = createFileRoute("/matches/$id")({
-  head: ({ params }) => ({ meta: [{ title: `Match — MansourAlmailScores` }, { name: "description", content: `Match center ${params.id}` }, { property: "og:title", content: `Match — MansourAlmailScores` }, { property: "og:description", content: `Match center ${params.id}` }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
+  head: ({ params }) => ({ meta: [{ title: `Match — MA Scores` }, { name: "description", content: `Match center ${params.id}` }, { property: "og:title", content: `Match — MA Scores` }, { property: "og:description", content: `Match center ${params.id}` }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: MatchPage,
 });
 
@@ -102,9 +102,9 @@ function MatchPage() {
     queryKey: ["match", id],
     queryFn: async () => {
       const { data } = await supabase.from("matches")
-        .select("*, home:home_team_id(id,name,logo_url,is_national), away:away_team_id(id,name,logo_url,is_national), competition:competition_id(id,name,name_ar,slug,logo_url,sport,country,country_code)")
+        .select("*, home:home_team_id(id,name,logo_url,is_national), away:away_team_id(id,name,logo_url,is_national), competition:competition_id(id,name,name_ar,slug,logo_url,sport,country,country_code,format)")
         .eq("id", id).maybeSingle();
-      return data as (Match & { home: Team | null; away: Team | null; competition: { id: string; name: string; name_ar: string | null; slug: string; logo_url: string | null; sport: string; country: string | null; country_code: string | null } | null }) | null;
+      return data as (Match & { home: Team | null; away: Team | null; competition: { id: string; name: string; name_ar: string | null; slug: string; logo_url: string | null; sport: string; country: string | null; country_code: string | null; format?: string | null } | null }) | null;
     },
   });
   const heroRef = useCollapsingHeader(`${id}:${m.isLoading}`, 180);
@@ -172,7 +172,7 @@ function MatchPage() {
   const isLive = ["live", "ht"].includes(match.status);
   const hasStarted = !["scheduled", "postponed", "cancelled"].includes(match.status);
   const lineupsVisible = match.lineups_published && (lineups.data?.length ?? 0) > 0;
-  const tabs: ("details" | "lineups" | "stats" | "standings" | "previous" | "media")[] = ["details", ...(lineupsVisible ? ["lineups" as const] : []), "stats", "standings", "previous", "media"];
+  const tabs: ("details" | "lineups" | "stats" | "standings" | "previous" | "media")[] = ["details", ...(lineupsVisible ? ["lineups" as const] : []), "stats", ...(match.competition?.format === "friendly" ? [] : ["standings" as const]), "previous", "media"];
   const clock = matchClockSeconds(match);
 
   const scorerList = (teamId: string | null | undefined) => (events.data ?? [])
