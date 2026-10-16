@@ -253,6 +253,13 @@
       "when": 1792149754545,
       "tag": "0035_resume_after_ft_push",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1792150257475,
+      "tag": "0036_keep_clubs_on_competition_delete",
+      "breakpoints": true
     }
   ]
 }

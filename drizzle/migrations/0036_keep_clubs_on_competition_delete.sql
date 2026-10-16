@@ -1,0 +1,2 @@
+ALTER TABLE public.teams DROP CONSTRAINT teams_competition_id_fkey;
+ALTER TABLE public.teams ADD CONSTRAINT teams_competition_id_fkey FOREIGN KEY (competition_id) REFERENCES public.competitions(id) ON DELETE SET NULL;
