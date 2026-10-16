@@ -1,0 +1,67 @@
+-- 1) Extend the insert trigger: yellow cards and substitutions also queue a push,
+--    and a goal without a scorer announces the team only.
+CREATE OR REPLACE FUNCTION public.match_event_push() RETURNS trigger
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE m matches; h teams; a teams; t teams; p players; cat text; te text; ta text; mn text; pe text; pa text;
+BEGIN
+  IF NEW.type NOT IN ('goal','penalty_goal','own_goal','red','second_yellow','penalty_miss','yellow','substitution','injury_sub') THEN RETURN NEW; END IF;
+  SELECT * INTO m FROM matches WHERE id = NEW.match_id;
+  IF m.status NOT IN ('live','1h','ht','2h','et') THEN RETURN NEW; END IF;
+  SELECT * INTO h FROM teams WHERE id = m.home_team_id;
+  SELECT * INTO a FROM teams WHERE id = m.away_team_id;
+  SELECT * INTO t FROM teams WHERE id = NEW.team_id;
+  SELECT * INTO p FROM players WHERE id = NEW.player_id;
+  mn := coalesce(NEW.minute::text || '''', '');
+  pe := coalesce(p.short_name, p.name, ''); pa := coalesce(p.name_ar, p.short_name, p.name, '');
+  IF NEW.type IN ('goal','penalty_goal','own_goal') THEN
+    cat := 'goals';
+    te := 'Goal';
+    ta := 'هدف';
+    IF NEW.type='penalty_goal' THEN te := 'Penalty scored'; ta := 'هدف من ركلة جزاء';
+      pe := pe || ' (pen)'; pa := pa || ' (ركلة جزاء)'; END IF;
+    IF NEW.type='own_goal' THEN te := 'Own goal'; ta := 'هدف عكسي';
+      pe := pe || ' (OG)'; pa := pa || ' (هدف عكسي)'; END IF;
+    -- No scorer attached yet: announce the team only.
+    IF pe = '' OR pe = ' (pen)' OR pe = ' (OG)' THEN pe := coalesce(t.name, ''); END IF;
+    IF pa = '' OR pa = ' (ركلة جزاء)' OR pa = ' (هدف عكسي)' THEN pa := coalesce(t.name_ar, t.name, ''); END IF;
+  ELSIF NEW.type='penalty_miss' THEN cat:='goals'; te:='Penalty missed'; ta:='ركلة جزاء ضائعة';
+  ELSIF NEW.type='yellow' THEN cat:='cards'; te:='Yellow card'; ta:='بطاقة صفراء';
+  ELSIF NEW.type IN ('substitution','injury_sub') THEN cat:='other'; te:='Substitution'; ta:='تبديل';
+  ELSE cat:='cards'; te:='Red card'; ta:='بطاقة حمراء';
+  END IF;
+  PERFORM enqueue_match_push(m.id, cat, NEW.team_id, NEW.player_id,
+    te, trim(mn || ' ' || pe) || ' · ' || coalesce(h.name,'') || ' vs ' || coalesce(a.name,''),
+    ta, trim(mn || ' ' || pa) || ' · ' || coalesce(h.name_ar,h.name,'') || ' ضد ' || coalesce(a.name_ar,a.name,''));
+  RETURN NEW;
+END $$;
+
+-- 2) Scorer follow-up: when a goal event later gets its scorer attached (or the
+--    scorer is corrected), send one more push naming the scorer.
+CREATE OR REPLACE FUNCTION public.match_event_scorer_push() RETURNS trigger
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE m matches; h teams; a teams; t teams; p players; te text; ta text; mn text; pe text; pa text;
+BEGIN
+  IF NEW.type NOT IN ('goal','penalty_goal','own_goal') THEN RETURN NEW; END IF;
+  IF NEW.player_id IS NULL OR NEW.player_id IS NOT DISTINCT FROM OLD.player_id THEN RETURN NEW; END IF;
+  SELECT * INTO m FROM matches WHERE id = NEW.match_id;
+  IF m.status NOT IN ('live','1h','ht','2h','et') THEN RETURN NEW; END IF;
+  SELECT * INTO h FROM teams WHERE id = m.home_team_id;
+  SELECT * INTO a FROM teams WHERE id = m.away_team_id;
+  SELECT * INTO t FROM teams WHERE id = NEW.team_id;
+  SELECT * INTO p FROM players WHERE id = NEW.player_id;
+  mn := coalesce(NEW.minute::text || '''', '');
+  pe := coalesce(p.short_name, p.name, ''); pa := coalesce(p.name_ar, p.short_name, p.name, '');
+  te := 'Goal'; ta := 'هدف';
+  IF NEW.type='penalty_goal' THEN te := 'Penalty scored'; ta := 'هدف من ركلة جزاء';
+    pe := pe || ' (pen)'; pa := pa || ' (ركلة جزاء)'; END IF;
+  IF NEW.type='own_goal' THEN te := 'Own goal'; ta := 'هدف عكسي';
+    pe := pe || ' (OG)'; pa := pa || ' (هدف عكسي)'; END IF;
+  PERFORM enqueue_match_push(m.id, 'goals', NEW.team_id, NEW.player_id,
+    te, trim(mn || ' ' || pe) || ' · ' || coalesce(h.name,'') || ' vs ' || coalesce(a.name,''),
+    ta, trim(mn || ' ' || pa) || ' · ' || coalesce(h.name_ar,h.name,'') || ' ضد ' || coalesce(a.name_ar,a.name,''));
+  RETURN NEW;
+END $$;
+
+DROP TRIGGER IF EXISTS match_event_scorer_push ON public.match_events;
+CREATE TRIGGER match_event_scorer_push AFTER UPDATE OF player_id ON public.match_events
+FOR EACH ROW EXECUTE FUNCTION public.match_event_scorer_push();
