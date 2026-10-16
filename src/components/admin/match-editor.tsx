@@ -1184,6 +1184,20 @@ function EventForm({
         {isSub && (
           <PlayerPickField label="Player going off" players={pool} value={ev.sub_out_player_id} onChange={(id) => setEv({ ...ev, sub_out_player_id: id })} />
         )}
+        {ev.type === "var" && (
+          <div>
+            <div className="mb-1.5 text-xs font-semibold text-muted-foreground">VAR check for</div>
+            <div className="grid grid-cols-3 gap-2">
+              {["Goal VAR", "Penalty VAR", "Red card VAR"].map((k) => {
+                const on = ev.description === k;
+                return (
+                  <button key={k} type="button" onClick={() => setEv({ ...ev, description: k })}
+                    className={`flex min-h-16 items-center justify-center rounded-xl p-3 text-center text-xs font-semibold ${on ? "bg-primary text-primary-foreground" : "bg-muted"}`}>{k}</button>
+                );
+              })}
+            </div>
+          </div>
+        )}
         <Field label="Description (optional)"><input className={inputCls} placeholder="Description" value={ev.description ?? ""} onChange={(e) => setEv({ ...ev, description: e.target.value })} /></Field>
         <div className="flex justify-end gap-2">
           <button className={btnGhost} onClick={onCancel}>Cancel</button>
