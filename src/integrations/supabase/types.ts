@@ -1896,6 +1896,62 @@ export type Database = {
         }
         Relationships: []
       }
+      push_broadcasts: {
+        Row: {
+          audience_team_id: string | null
+          audience_type: string
+          body_ar: string
+          body_en: string
+          created_at: string
+          created_by: string | null
+          id: string
+          kind: string
+          path: string | null
+          result: Json | null
+          sent_at: string | null
+          title_ar: string
+          title_en: string
+        }
+        Insert: {
+          audience_team_id?: string | null
+          audience_type?: string
+          body_ar?: string
+          body_en?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: string
+          path?: string | null
+          result?: Json | null
+          sent_at?: string | null
+          title_ar: string
+          title_en: string
+        }
+        Update: {
+          audience_team_id?: string | null
+          audience_type?: string
+          body_ar?: string
+          body_en?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: string
+          path?: string | null
+          result?: Json | null
+          sent_at?: string | null
+          title_ar?: string
+          title_en?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_broadcasts_audience_team_id_fkey"
+            columns: ["audience_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       push_queue: {
         Row: {
           body_ar: string
@@ -1905,6 +1961,7 @@ export type Database = {
           id: string
           match_id: string
           player_id: string | null
+          result: Json | null
           sent_at: string | null
           team_id: string | null
           title_ar: string
@@ -1918,6 +1975,7 @@ export type Database = {
           id?: string
           match_id: string
           player_id?: string | null
+          result?: Json | null
           sent_at?: string | null
           team_id?: string | null
           title_ar: string
@@ -1931,12 +1989,42 @@ export type Database = {
           id?: string
           match_id?: string
           player_id?: string | null
+          result?: Json | null
           sent_at?: string | null
           team_id?: string | null
           title_ar?: string
           title_en?: string
         }
         Relationships: []
+      }
+      push_reminders_sent: {
+        Row: {
+          created_at: string
+          kickoff_at: string
+          match_id: string
+          minutes: number
+        }
+        Insert: {
+          created_at?: string
+          kickoff_at: string
+          match_id: string
+          minutes: number
+        }
+        Update: {
+          created_at?: string
+          kickoff_at?: string
+          match_id?: string
+          minutes?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_reminders_sent_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       standing_labels: {
         Row: {
@@ -3003,6 +3091,32 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_recent_pushes: {
+        Args: { _limit?: number }
+        Returns: {
+          audience_type: string
+          body_en: string
+          created_at: string
+          id: string
+          kind: string
+          result: Json
+          sent_at: string
+          title_en: string
+        }[]
+      }
+      admin_send_push: {
+        Args: {
+          _audience_type: string
+          _body_ar: string
+          _body_en: string
+          _kind: string
+          _path: string
+          _team_id: string
+          _title_ar: string
+          _title_en: string
+        }
+        Returns: string
+      }
       admin_unlock_allowed: { Args: { _uid: string }; Returns: boolean }
       ar_skeleton: { Args: { _t: string }; Returns: string }
       chat_author_profiles: {
@@ -3087,6 +3201,7 @@ export type Database = {
           username: string
         }[]
       }
+      queue_match_reminders: { Args: never; Returns: number }
       recompute_standings: { Args: { _comp: string }; Returns: undefined }
       record_admin_unlock_attempt: {
         Args: { _succeeded: boolean; _uid: string }
