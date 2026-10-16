@@ -813,7 +813,18 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
   const playersQ = useQuery({
     enabled: teamIds.length > 0,
     queryKey: ["admin", "players-of-match", match.id, teamIds.join(",")],
-    queryFn: () => loadMatchPlayers(teamIds, teams),
+    queryFn: async () => {
+      const base = await loadMatchPlayers(teamIds, teams);
+      // Lineup players (temporary, borrowed, former) count for the side they were listed under in this match.
+      const { data: rows } = await supabase.from("match_lineups").select("team_id, player:players(*)").eq("match_id", match.id);
+      const byId = new Map(base.map((p) => [p.id, p]));
+      for (const r of (rows ?? []) as unknown as { team_id: string; player: Player | null }[]) {
+        if (!r.player) continue;
+        const cur = byId.get(r.player.id);
+        if (!cur || cur.team_id !== r.team_id) byId.set(r.player.id, { ...(cur ?? r.player), team_id: r.team_id });
+      }
+      return [...byId.values()];
+    },
   });
   const players = playersQ.data ?? [];
   const teamName = (id: string | null | undefined) => teams.find((t) => t.id === id)?.name ?? "";
