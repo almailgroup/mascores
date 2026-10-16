@@ -10,6 +10,10 @@ import { Ban } from "lucide-react";
 import { BanHistory } from './ban-history';
 import { viewReporterIdentity } from '@/lib/reporter.functions';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/use-auth';
+import { isOwnerEmail } from '@/lib/owner.functions';
+import { sendPush, newsPush } from '@/lib/push-send';
+import { toast } from 'sonner';
 
 type Submission = {
   id: string;
@@ -67,12 +71,18 @@ export function NewsSubmissionsPanel() {
     },
   });
 
+  const { user } = useAuth();
+  const isOwner = isOwnerEmail(user?.email);
+  const [notify, setNotify] = useState(false);
+  const [notifyClub, setNotifyClub] = useState(false);
+
   const approve = async (s: Submission) => {
     const author = (reporters.data ?? []).find((r) => r.user_id === s.author_id);
-    await supabase.from("news_posts").insert({
+    const slug = slugify(s.title);
+    const { error: insertError } = await supabase.from("news_posts").insert({
       author_display: author?.handle ? `@${author.handle}` : null,
       title: s.title,
-      slug: slugify(s.title),
+      slug,
       body_markdown: s.body_markdown,
       excerpt: s.excerpt,
       cover_url: s.cover_url,
@@ -81,6 +91,11 @@ export function NewsSubmissionsPanel() {
       player_id: s.player_id,
       published_at: new Date().toISOString(),
     } as never);
+    if (!insertError && isOwner && notify) {
+      try { await sendPush(newsPush({ title: s.title, excerpt: s.excerpt, slug, team_id: s.team_id }, notifyClub)); toast.success("Notification sent"); }
+      catch (e) { toast.error(e instanceof Error ? e.message : "Could not send the notification"); }
+    }
+    setNotify(false); setNotifyClub(false);
     await supabase.from("news_submissions").update({ status: "approved", review_note: note || null }).eq("id", s.id);
     setOpen(null); setNote("");
     qc.invalidateQueries({ queryKey: ["admin", "news-submissions"] });
@@ -173,6 +188,12 @@ export function NewsSubmissionsPanel() {
               {open.proof_url && <a href={open.proof_url} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-xs text-primary">Open attachment <ExternalLink className="h-3 w-3" /></a>}
             </div>
             <textarea className={inputCls} rows={2} placeholder="Note back to the reporter (optional)" value={note} onChange={(e) => setNote(e.target.value)} />
+            {isOwner && (
+              <div className="grid gap-2 rounded-xl border border-border bg-background p-3 text-sm">
+                <label className="flex items-center gap-2"><input type="checkbox" checked={notify} onChange={(e) => setNotify(e.target.checked)} /> Also send as a phone notification</label>
+                {notify && open.team_id && <label className="flex items-center gap-2 pl-6 text-muted-foreground"><input type="checkbox" checked={notifyClub} onChange={(e) => setNotifyClub(e.target.checked)} /> Only to followers of the linked club</label>}
+              </div>
+            )}
             <div className="flex justify-end gap-2">
               <button className={btnDanger} onClick={() => reject(open)}><X className="h-3.5 w-3.5" /> Reject</button>
               <button className={btnPrimary} onClick={() => approve(open)}><Check className="h-3.5 w-3.5" /> Approve & publish</button>
