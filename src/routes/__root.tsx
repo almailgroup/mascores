@@ -142,6 +142,15 @@ function RootShell({ children }: { children: ReactNode }) {
             __html: `(function(){var R=/Importing a module script failed|Failed to fetch dynamically imported module|error loading dynamically imported module|Unable to preload CSS/i,K="mas-chunk-reload";function go(m){if(!R.test(String(m||"")))return;try{var l=+sessionStorage.getItem(K)||0;if(Date.now()-l<10000)return;sessionStorage.setItem(K,String(Date.now()))}catch(e){}location.reload()}addEventListener("error",function(e){var t=e&&e.target;if(t&&(t.tagName==="SCRIPT"||(t.tagName==="LINK"&&t.rel==="modulepreload"))){go("Importing a module script failed");return}go(e&&(e.message||(e.error&&e.error.message)))},true);addEventListener("unhandledrejection",function(e){go(e&&e.reason&&(e.reason.message||e.reason))});addEventListener("vite:preloadError",function(e){e.preventDefault&&e.preventDefault();go("Unable to preload CSS")})})();`,
           }}
         />
+        {/* iPhone Google/Apple sign-in sheet handoff. Runs before the site
+            loads: /auth/native?start=<provider> marks this sheet tab and goes
+            to the sign-in service; when it comes back (to any page) with the
+            sign-in result, pass it straight to the app and never sign in here. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var l=location,s=sessionStorage,K="mas-native-oauth",p=new URLSearchParams(l.search);if(l.pathname==="/auth/native"&&p.get("start")){var v=p.get("start");s.setItem(K,"1");var q=new URLSearchParams({provider:v,redirect_uri:l.origin+"/auth/native",state:p.get("state")||(Math.random().toString(36).slice(2)+Date.now().toString(36))});if(v==="google")q.set("prompt","select_account");l.replace("/~oauth/initiate?"+q.toString());return}var has=/[#&](access_token|error|error_description)=/.test("&"+l.hash.slice(1))||p.has("code")||p.has("error");if(has&&(l.pathname==="/auth/native"||s.getItem(K))){s.removeItem(K);window.__masNativeHandoff=1;l.replace("com.almailgroup.mascores://auth/callback"+l.search+l.hash)}}catch(e){}})();`,
+          }}
+        />
         <HeadContent />
       </head>
       <body>
