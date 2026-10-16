@@ -25,6 +25,7 @@ import { Route as TicketsRouteImport } from './routes/tickets'
 import { Route as TransfersRouteImport } from './routes/transfers'
 import { Route as ApiRemoveBgRouteImport } from './routes/api/remove-bg'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
+import { Route as AuthNativeRouteImport } from './routes/auth.native'
 import { Route as CoachesIdRouteImport } from './routes/coaches.$id'
 import { Route as CompetitionsIndexRouteImport } from './routes/competitions.index'
 import { Route as CompetitionsSlugRouteImport } from './routes/competitions.$slug'
@@ -119,6 +120,11 @@ const AuthCallbackRoute = AuthCallbackRouteImport.update({
   path: '/callback',
   getParentRoute: () => AuthRoute,
 } as any)
+const AuthNativeRoute = AuthNativeRouteImport.update({
+  id: '/native',
+  path: '/native',
+  getParentRoute: () => AuthRoute,
+} as any)
 const CoachesIdRoute = CoachesIdRouteImport.update({
   id: '/coaches/$id',
   path: '/coaches/$id',
@@ -202,6 +208,7 @@ export interface FileRoutesByFullPath {
   '/transfers': typeof TransfersRoute
   '/api/remove-bg': typeof ApiRemoveBgRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/auth/native': typeof AuthNativeRoute
   '/coaches/$id': typeof CoachesIdRoute
   '/competitions/$slug': typeof CompetitionsSlugRoute
   '/matches/$id': typeof MatchesIdRoute
@@ -233,6 +240,7 @@ export interface FileRoutesByTo {
   '/transfers': typeof TransfersRoute
   '/api/remove-bg': typeof ApiRemoveBgRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/auth/native': typeof AuthNativeRoute
   '/coaches/$id': typeof CoachesIdRoute
   '/competitions/$slug': typeof CompetitionsSlugRoute
   '/matches/$id': typeof MatchesIdRoute
@@ -265,6 +273,7 @@ export interface FileRoutesById {
   '/transfers': typeof TransfersRoute
   '/api/remove-bg': typeof ApiRemoveBgRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/auth/native': typeof AuthNativeRoute
   '/coaches/$id': typeof CoachesIdRoute
   '/competitions/$slug': typeof CompetitionsSlugRoute
   '/matches/$id': typeof MatchesIdRoute
@@ -298,6 +307,7 @@ export interface FileRouteTypes {
     | '/transfers'
     | '/api/remove-bg'
     | '/auth/callback'
+    | '/auth/native'
     | '/coaches/$id'
     | '/competitions/$slug'
     | '/matches/$id'
@@ -329,6 +339,7 @@ export interface FileRouteTypes {
     | '/transfers'
     | '/api/remove-bg'
     | '/auth/callback'
+    | '/auth/native'
     | '/coaches/$id'
     | '/competitions/$slug'
     | '/matches/$id'
@@ -360,6 +371,7 @@ export interface FileRouteTypes {
     | '/transfers'
     | '/api/remove-bg'
     | '/auth/callback'
+    | '/auth/native'
     | '/coaches/$id'
     | '/competitions/$slug'
     | '/matches/$id'
@@ -520,6 +532,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/auth/native': {
+      id: '/auth/native'
+      path: '/native'
+      fullPath: '/auth/native'
+      preLoaderRoute: typeof AuthNativeRouteImport
+      parentRoute: typeof AuthRoute
+    }
     '/coaches/$id': {
       id: '/coaches/$id'
       path: '/coaches/$id'
@@ -616,10 +635,12 @@ declare module '@tanstack/react-router' {
 
 interface AuthRouteChildren {
   AuthCallbackRoute: typeof AuthCallbackRoute
+  AuthNativeRoute: typeof AuthNativeRoute
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
   AuthCallbackRoute: AuthCallbackRoute,
+  AuthNativeRoute: AuthNativeRoute,
 }
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
