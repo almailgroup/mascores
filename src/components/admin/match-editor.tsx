@@ -1256,6 +1256,7 @@ function PeriodBoxes({ match, seconds, patchMatch }: { match: Match; seconds: nu
     { key: "ft", label: "Confirm FT", active: match.status === "ft", run: () => patchMatch({ status: "ft", ...stop, timer_elapsed_seconds: 5400, home_pen: null, away_pen: null }) },
   ];
   const et: B[] = [
+    { key: "etwait", label: "Waiting for extra time", active: match.status === "etwait", run: () => patchMatch({ status: "etwait", ...stop, timer_elapsed_seconds: 5400, live_minute: 90, home_pen: null, away_pen: null }) },
     { key: "et1", label: "Extra time 1st half", sub: phase === "et1" ? clock : "-", active: phase === "et1", run: () => startAt(keep(5400, 6300)) },
     { key: "etht", label: "Extra time break", active: phase === "etht", run: () => patchMatch({ status: "ht", ...stop, timer_elapsed_seconds: 6300, live_minute: 105 }) },
     { key: "et2", label: "Extra time 2nd half", sub: phase === "et2" ? clock : "-", active: phase === "et2", run: () => startAt(keep(6300, 7200)) },

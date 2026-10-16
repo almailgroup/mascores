@@ -60,6 +60,7 @@ const STATUS_TEXT: Record<string, { label: string }> = {
   ht: { label: "Half time" },
   "2h": { label: "Second half" },
   ft: { label: "Full time" },
+  etwait: { label: "Waiting for extra time" },
   aet: { label: "After extra time" },
   pen: { label: "Penalty shoot-out" },
   postponed: { label: "Postponed" },
@@ -174,7 +175,10 @@ export function useLiveEventAlerts() {
         m ? `${m.home} ${score || "vs"} ${m.away}` : "",
         [minute, who, row.description].filter(Boolean).join(" · "),
       ].filter(Boolean).join("\n");
-      const soundKey: AlertEventKey = ["penalty", "penalty_goal", "penalty_missed", "missed_penalty"].includes(row.type) ? "penalty" : category === "cards" ? "card" : category === "goals" ? "goal" : "kickoff";
+      const soundKey: AlertEventKey = ["penalty_missed", "missed_penalty"].includes(row.type) ? "miss"
+        : ["red", "red_card", "second_yellow"].includes(row.type) ? "redcard"
+        : ["penalty", "penalty_goal"].includes(row.type) ? "penalty"
+        : category === "cards" ? "card" : category === "goals" ? "goal" : "kickoff";
       void announce(title, body, soundFor(preferences.sounds, soundKey), `/matches/${row.match_id}`);
 
     };
@@ -187,7 +191,7 @@ export function useLiveEventAlerts() {
     const onMatch = async (row: { id: string; status: string; home_score: number | null; away_score: number | null }) => {
       const meta = STATUS_TEXT[row.status];
       if (!meta) return;
-      const category: "final" | "kickoff" | null = ["ft", "aet", "pen"].includes(row.status) ? "final" : ["live", "1h", "2h"].includes(row.status) ? "kickoff" : null;
+      const category: "final" | "kickoff" | null = ["ft", "aet", "pen"].includes(row.status) ? "final" : ["live", "1h", "2h", "etwait"].includes(row.status) ? "kickoff" : null;
       if (category && preferences[category] === false) return;
       const key = `${row.id}:${row.status}`;
       if (seen.current.has(key)) return;

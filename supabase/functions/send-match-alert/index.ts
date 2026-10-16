@@ -88,7 +88,11 @@ type Msg = { title_en: string; body_en: string; title_ar: string; body_ar: strin
 function soundFor(category: string, title: string): string {
   if (title.includes("Penalty missed") || title.includes("ضائعة")) return "miss.caf";
   if (category === "goals") return "goal.caf";
-  if (category === "cards") return "card.caf";
+  if (category === "cards") {
+    // Red (incl. second yellow) gets the harsher card sound; yellow gets a whistle.
+    if (title.includes("Red") || title.includes("Second yellow") || title.includes("حمراء") || title.includes("ثانية")) return "card.caf";
+    return "whistle.caf";
+  }
   if (category === "kickoff" || category === "final") return "whistle.caf";
   return "default";
 }

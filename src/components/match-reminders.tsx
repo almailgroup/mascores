@@ -26,20 +26,28 @@ export function MatchReminders({ matchId, kickoffAt }: { matchId: string; kickof
 
   const chosen = new Set((reminders.data ?? []).map((r) => r.minutes_before));
 
+  type Row = { id: string; minutes_before: number };
+  const setRows = (fn: (rows: Row[]) => Row[]) => qc.setQueryData<Row[]>(key, (old) => fn(old ?? []));
+
   const toggle = async (minutes: number) => {
     if (!user) { toast.error(tx("Sign in to set a reminder")); return; }
     const reminderKey = `reminder:${matchId}:${minutes}`;
     if (chosen.has(minutes)) {
+      // Show the change instantly, then confirm it with the server.
+      setRows((rows) => rows.filter((r) => r.minutes_before !== minutes));
       const { error } = await supabase.from("match_reminders").delete().eq("match_id", matchId).eq("user_id", user.id).eq("minutes_before", minutes);
-      if (error) { toast.error(tx("Could not remove the reminder. Please try again.")); return; }
+      if (error) { qc.invalidateQueries({ queryKey: key }); toast.error(tx("Could not remove the reminder. Please try again.")); return; }
       void nativeCancel([reminderKey]);
       toast.success(tx("Reminder removed"));
-      qc.invalidateQueries({ queryKey: key });
+      void qc.invalidateQueries({ queryKey: key });
       return;
     }
     if (!kickoffAt) return;
     const at = new Date(new Date(kickoffAt).getTime() - minutes * 60000);
     if (at.getTime() <= Date.now()) { toast.error(tx("That time has already passed — pick a shorter reminder.")); return; }
+
+    // Light the button up right away; permission and saving happen behind it.
+    setRows((rows) => [...rows.filter((r) => r.minutes_before !== minutes), { id: `local-${minutes}`, minutes_before: minutes }]);
 
     let allowed = true;
     // Older app builds never answer, so never wait more than a few seconds.
@@ -51,8 +59,8 @@ export function MatchReminders({ matchId, kickoffAt }: { matchId: string; kickof
     }
 
     const { error } = await supabase.from("match_reminders").insert({ match_id: matchId, user_id: user.id, minutes_before: minutes });
-    if (error && error.code !== "23505") { toast.error(tx("Could not save the reminder. Please try again.")); return; }
-    qc.invalidateQueries({ queryKey: key });
+    if (error && error.code !== "23505") { qc.invalidateQueries({ queryKey: key }); toast.error(tx("Could not save the reminder. Please try again.")); return; }
+    void qc.invalidateQueries({ queryKey: key });
 
     if (isNativeApp()) {
       // Schedule on the phone right away so it fires even if the app is closed.
