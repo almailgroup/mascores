@@ -64,3 +64,8 @@
 - [x] Bilingual club search, 2nd main admin, merge section, popup player editor, remove/white bg
 - [x] Admin venue edit as popup with sticky Save/close header
 - [x] Voice section: more spacing, less cramped design
+- [x] Diagnose failing phone notifications (sender errored on the saved Apple key) and record delivery results
+- [x] Align club-follow and match-bell rules between app and sender
+- [x] Automatic 60/30/5-minute kick-off reminders for followed matches and clubs
+- [x] Owner news "send as notification" on publish/approve and custom notification sender
+- [ ] Re-enter the Apple push key (.p8) — waiting on the user

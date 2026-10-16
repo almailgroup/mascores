@@ -35,7 +35,8 @@ import { AdminAbilityProvider } from "@/lib/admin-ability";
 import { SeasonMenu } from "@/components/season-menu";
 import { RecycleBinPanel } from "@/components/admin/recycle-bin-panel";
 import { MergePanel } from "@/components/admin/merge-panel";
-import { GitMerge } from "lucide-react";
+import { GitMerge, BellRing } from "lucide-react";
+import { NotificationsPanel } from "@/components/admin/notifications-panel";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — Mansour Almail Scores" }, { name: "robots", content: "noindex" }, { name: "description", content: "Manage football content and access in MA Scores." }, { property: "og:title", content: "Admin — Mansour Almail Scores" }, { property: "og:description", content: "Manage football content and access in MA Scores." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
@@ -51,7 +52,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [tab, setTab] = useState<"competitions" | "teams" | "countries" | "players" | "news" | "ai" | "venues" | "channels" | "transfers" | "reports" | "tickets" | "users" | "voice" | "rabta" | "approvals" | "appeals" | "manage" | "requests" | "bin" | "merge">("competitions");
+  const [tab, setTab] = useState<"competitions" | "teams" | "countries" | "players" | "news" | "ai" | "venues" | "channels" | "transfers" | "reports" | "tickets" | "users" | "voice" | "rabta" | "approvals" | "appeals" | "manage" | "requests" | "bin" | "merge" | "notifications">("competitions");
   const [openComp, setOpenComp] = useState<Competition | null>(null);
   const [adminSeason, setAdminSeason] = useState<string | null>(null);
   const [compTab, setCompTab] = useState<"overview" | "teams" | "matches" | "standings" | "knockout" | "awards" | "media">("overview");
@@ -73,7 +74,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
     // The owner keeps people, approvals, Manage and the reporter desk to himself,
     // even for someone given "everything".
     if (key === "requests") return !isOwner;
-    if (key === "bin" || key === "merge") return isOwner;
+    if (key === "bin" || key === "merge" || key === "notifications") return isOwner;
     if (key === "users" || key === "approvals" || key === "appeals" || key === "manage" || key === "rabta") return isOwner || (key === "rabta" && scopes.has("rabta"));
     if (everything) return true;
     switch (key) {
@@ -202,7 +203,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
           </div>
           <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
             {([
-              ["competitions", Trophy], ["teams", Shield], ["countries", Globe], ["players", Users], ["news", Newspaper], ["ai", Bot], ["venues", Landmark], ["channels", Radio], ["transfers", Repeat2], ["tickets", Ticket], ["reports", Flag], ["voice", Mic], ...(canRabta ? [["rabta", Megaphone] as const] : []), ...(isOwner ? [["users", UserCog] as const, ["approvals", CheckCheck] as const, ["appeals", LifeBuoy] as const] : []), ...(!isOwner ? [["requests", ClipboardList] as const] : []), ...(isOwner ? [["manage", KeyRound] as const, ["merge", GitMerge] as const, ["bin", Trash2] as const] : []),
+              ["competitions", Trophy], ["teams", Shield], ["countries", Globe], ["players", Users], ["news", Newspaper], ["ai", Bot], ["venues", Landmark], ["channels", Radio], ["transfers", Repeat2], ["tickets", Ticket], ["reports", Flag], ["voice", Mic], ...(canRabta ? [["rabta", Megaphone] as const] : []), ...(isOwner ? [["users", UserCog] as const, ["approvals", CheckCheck] as const, ["appeals", LifeBuoy] as const] : []), ...(!isOwner ? [["requests", ClipboardList] as const] : []), ...(isOwner ? [["notifications", BellRing] as const, ["manage", KeyRound] as const, ["merge", GitMerge] as const, ["bin", Trash2] as const] : []),
             ] as const)
               .filter(([k]) => allowed(k))
               .map(([k, Icon]) => (
@@ -252,6 +253,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
             {tab === "manage" && isOwner && <ManagePanel />}
             {tab === "bin" && isOwner && <RecycleBinPanel />}
             {tab === "merge" && isOwner && <MergePanel />}
+            {tab === "notifications" && isOwner && <NotificationsPanel />}
 
           </div>
         </div>
