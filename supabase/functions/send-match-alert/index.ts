@@ -24,7 +24,8 @@ function base64url(bytes: ArrayBuffer | Uint8Array): string {
 
 /** Strips the PEM armour and decodes the base64 body to DER. */
 function pemToDer(pem: string): Uint8Array {
-  const body = pem.replace(/-----(BEGIN|END) PRIVATE KEY-----/g, "").replace(/\s+/g, "");
+  // Tolerates keys pasted with literal "\n", quotes, or any BEGIN/END label.
+  const body = pem.replace(/\\n/g, "\n").replace(/["']/g, "").replace(/-----[^-]+-----/g, "").replace(/[^A-Za-z0-9+/=]/g, "");
   return Uint8Array.from(atob(body), (c) => c.charCodeAt(0));
 }
 
@@ -92,7 +93,8 @@ async function sendTo(tokens: string[], title: string, body: string, path: strin
       headers: { authorization: `bearer ${jwt}`, "apns-topic": topic, "apns-push-type": "alert", "apns-priority": "10" },
       body: JSON.stringify({ aps: { alert: { title, body }, sound, "thread-id": threadId }, path }),
     });
-    return { token, ok: res.ok, status: res.status };
+    const reason = res.ok ? null : await res.text().catch(() => "");
+    return { token, ok: res.ok, status: res.status, reason };
   }));
 }
 
@@ -146,7 +148,14 @@ Deno.serve(async (req) => {
   // Database triggers send only a queue id; the content comes from the queue row itself,
   // so a caller can never choose who receives what.
   if (parsed && typeof parsed.queueId === "string" && /^[0-9a-f-]{36}$/i.test(parsed.queueId)) {
-    return dispatchQueued(admin, parsed.queueId);
+    try {
+      return await dispatchQueued(admin, parsed.queueId);
+    } catch (e) {
+      const message = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
+      console.error("[send-match-alert] dispatch failed", message);
+      await admin.from("push_queue").update({ result: { error: message } }).eq("id", parsed.queueId);
+      return Response.json({ error: message }, { status: 500 });
+    }
   }
 
   const authHeader = req.headers.get("Authorization") ?? "";
