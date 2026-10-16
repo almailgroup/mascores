@@ -240,7 +240,7 @@ function MainTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
       timer_started_at: ["live", "ht"].includes(form.status ?? "") ? form.timer_started_at ?? null : null,
     }).eq("id", match.id);
     if (notifyHighlights && form.highlight_url) {
-      await supabase.rpc("send_highlights_push" as never, { _match_id: match.id } as never);
+      await supabase.rpc("send_highlights_push", { _match_id: match.id });
       setNotifyHighlights(false);
     }
     onSaved();

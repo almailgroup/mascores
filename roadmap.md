@@ -70,4 +70,4 @@
 - [x] Owner news "send as notification" on publish/approve and custom notification sender
 - [ ] Re-enter the Apple push key (.p8) — waiting on the user
 - [x] Add a Settings switch for voice room live alerts
-- [ ] Match highlights: 'send notification' option -> 'Highlights available' alert
+- [x] Match highlights: 'send notification' option -> 'Highlights available' alert
