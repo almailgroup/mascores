@@ -183,6 +183,13 @@
       "when": 1792142111673,
       "tag": "0025_add_hensi_main_admin",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1792142163563,
+      "tag": "0026_revert_hensi_main_admin",
+      "breakpoints": true
     }
   ]
 }
