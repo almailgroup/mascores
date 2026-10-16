@@ -913,12 +913,7 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
             <input type="number" placeholder="Set minute" className="h-9 w-28 rounded-full border border-border bg-background px-3 text-xs"
               onKeyDown={(e) => { if (e.key === "Enter") setMinute(Number((e.target as HTMLInputElement).value || 0)); }} />
           </div>
-          <div className="mt-3 flex items-center justify-center gap-2">
-            <select className="rounded-lg border border-border bg-background px-2 py-1 text-xs" value={match.status} onChange={(e) => { const status = e.target.value; patchMatch({ status, ...(["ft", "aet", "pen", "awarded", "cancelled", "postponed", "interrupted"].includes(status) ? { timer_running: false, timer_started_at: null } : {}) }); }}>
-              {Object.entries(STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-            </select>
-            <span className="text-sm font-bold tabular-nums">{notStarted && match.home_score == null && match.away_score == null ? "– : –" : `${match.home_score ?? 0} – ${match.away_score ?? 0}`}</span>
-          </div>
+          <PeriodBoxes match={match} seconds={seconds} patchMatch={patchMatch} />
         </div>
 
         {/* Goals logged without the clock running: offer to close the match as full-time. */}
