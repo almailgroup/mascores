@@ -6,7 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 // Must be on the auth allow-list (https), so the sheet lands on our callback
 // page, which hands the code back to the app via the custom URL scheme.
-const CALLBACK_URL = "https://mascores.live/auth/callback?native=1";
+// A dedicated path (not a query flag) so the sign-in service can't drop it.
+const CALLBACK_URL = "https://mascores.live/auth/native";
 const APP_SCHEME = "com.almailgroup.mascores";
 
 export const NATIVE_UPDATE_NEEDED =
