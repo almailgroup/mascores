@@ -24,7 +24,8 @@ function base64url(bytes: ArrayBuffer | Uint8Array): string {
 
 /** Strips the PEM armour and decodes the base64 body to DER. */
 function pemToDer(pem: string): Uint8Array {
-  const body = pem.replace(/-----(BEGIN|END) PRIVATE KEY-----/g, "").replace(/\s+/g, "");
+  // Tolerates keys pasted with literal "\n", quotes, or any BEGIN/END label.
+  const body = pem.replace(/\\n/g, "\n").replace(/["']/g, "").replace(/-----[^-]+-----/g, "").replace(/[^A-Za-z0-9+/=]/g, "");
   return Uint8Array.from(atob(body), (c) => c.charCodeAt(0));
 }
 
