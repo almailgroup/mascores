@@ -3229,6 +3229,7 @@ export type Database = {
           score: number
         }[]
       }
+      send_highlights_push: { Args: { _match_id: string }; Returns: undefined }
       set_club_notification: {
         Args: { _enabled: boolean; _team_id: string }
         Returns: Json

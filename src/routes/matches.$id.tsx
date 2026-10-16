@@ -240,7 +240,7 @@ function MatchPage() {
                 <div className={`match-score font-black tabular-nums leading-none ${isLive ? "text-match-live" : ""}`}>
                   {num(match.home_score ?? 0)} <span className={isLive ? "text-match-live/70" : "text-match-foreground/60"}>-</span> {num(match.away_score ?? 0)}
                 </div>
-                {match.status === "pen" && match.home_pen != null && match.away_pen != null && (
+                {(match.status === "pen" || match.status === "live") && match.home_pen != null && match.away_pen != null && (
                   <div className="text-xs text-match-foreground/70">({num(match.home_pen)}–{num(match.away_pen)} {tx("pens")})</div>
                 )}
                 <div className={`match-clock flex items-center justify-center gap-1.5 font-bold tabular-nums ${isLive ? "text-match-live" : "text-match-foreground/80"}`}>
