@@ -11,6 +11,10 @@ import { readAiImages, type AiImageInput } from "@/lib/image-files";
 import { NewsLinkPicker, type NewsLinks } from "./news-link-picker";
 import { NewsSubmissionsPanel } from "./news-submissions-panel";
 import { detectCoverFocus } from "@/lib/cover-focus.functions";
+import { useAuth } from "@/hooks/use-auth";
+import { isOwnerEmail } from "@/lib/owner.functions";
+import { sendPush, newsPush } from "@/lib/push-send";
+import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Sparkles, ImagePlus, Loader2 } from "lucide-react";
 
 type Form = Partial<NewsPost>;
@@ -20,6 +24,14 @@ export function NewsPanel() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [form, setForm] = useState<Form>({});
+  const { user } = useAuth();
+  const isOwner = isOwnerEmail(user?.email);
+  const [notify, setNotify] = useState(false);
+  const [notifyClub, setNotifyClub] = useState(false);
+  const pushNews = async (post: Parameters<typeof newsPush>[0], clubOnly: boolean) => {
+    try { await sendPush(newsPush(post, clubOnly)); toast.success("Notification sent"); }
+    catch (e) { toast.error(e instanceof Error ? e.message : "Could not send the notification"); }
+  };
   const detectFocus = useServerFn(detectCoverFocus);
   // AI finds the players' faces so the cropped thumbnail keeps them in view.
   const focusCover = async (url: string) => {
@@ -58,7 +70,8 @@ export function NewsPanel() {
     };
     if (form.id) await supabase.from("news_posts").update(payload).eq("id", form.id);
     else await supabase.from("news_posts").insert(payload as never);
-    setOpen(false); setForm({});
+    if (isOwner && notify && payload.published_at) void pushNews({ ...payload, title: payload.title! }, notifyClub);
+    setOpen(false); setForm({}); setNotify(false); setNotifyClub(false);
     qc.invalidateQueries({ queryKey: ["admin", "news"] });
   };
 
@@ -69,7 +82,12 @@ export function NewsPanel() {
   };
 
   const togglePublish = async (p: NewsPost) => {
+    const publishing = !p.published_at;
     await supabase.from("news_posts").update({ published_at: p.published_at ? null : new Date().toISOString() }).eq("id", p.id);
+    if (publishing && isOwner && confirm("Also send this news as a phone notification?")) {
+      const clubOnly = !!p.team_id && confirm("Send only to followers of the linked club? (Cancel = everyone)");
+      void pushNews(p, clubOnly);
+    }
     qc.invalidateQueries({ queryKey: ["admin", "news"] });
   };
 
@@ -95,7 +113,7 @@ export function NewsPanel() {
         <h2 className="text-lg font-bold">News</h2>
         <div className="flex flex-wrap justify-end gap-2">
           <button className={btnGhost} onClick={() => { setAiError(null); setAiOpen(true); }}><Sparkles className="h-3.5 w-3.5" /> Write with Almail AI</button>
-          <button className={btnPrimary} onClick={() => { setForm({}); setOpen(true); }}><Plus className="h-3.5 w-3.5" /> New post</button>
+          <button className={btnPrimary} onClick={() => { setForm({}); setNotify(false); setNotifyClub(false); setOpen(true); }}><Plus className="h-3.5 w-3.5" /> New post</button>
         </div>
       </div>
 
@@ -162,6 +180,12 @@ export function NewsPanel() {
            <Field label="Arabic excerpt"><textarea dir="rtl" rows={2} className={inputCls} value={form.excerpt_ar ?? ""} onChange={(e) => setForm({ ...form, excerpt_ar: e.target.value })} /></Field>
            <Field label="Arabic body (Markdown)"><textarea dir="rtl" rows={8} className={inputCls} value={form.body_markdown_ar ?? ""} onChange={(e) => setForm({ ...form, body_markdown_ar: e.target.value })} /></Field>
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={!!form.published_at} onChange={(e) => setForm({ ...form, published_at: e.target.checked ? new Date().toISOString() : null })} /> Publish now</label>
+          {isOwner && !!form.published_at && (
+            <div className="grid gap-2 rounded-xl border border-border bg-background p-3 text-sm">
+              <label className="flex items-center gap-2"><input type="checkbox" checked={notify} onChange={(e) => setNotify(e.target.checked)} /> Also send as a phone notification</label>
+              {notify && form.team_id && <label className="flex items-center gap-2 pl-6 text-muted-foreground"><input type="checkbox" checked={notifyClub} onChange={(e) => setNotifyClub(e.target.checked)} /> Only to followers of the linked club</label>}
+            </div>
+          )}
         </div>
         <div className="mt-5 flex justify-end gap-2">
           <button className={btnGhost} onClick={() => setOpen(false)}>Cancel</button>
