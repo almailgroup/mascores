@@ -28,9 +28,54 @@ function publish(next: FavoritesState) {
   for (const listener of listeners) listener(next);
 }
 
+/** Which account the shared list was loaded for, so every star and bell on a page
+ *  reuses one load instead of each one fetching and republishing (which made the
+ *  bells flicker between the device list and the account list after sign-in). */
+let loadedFor: string | null | undefined;
+let loading: Promise<void> | null = null;
+let loadingFor: string | null | undefined;
+
+function loadShared(userId: string | null): Promise<void> {
+  if (loadedFor === userId && shared) return Promise.resolve();
+  if (loading && loadingFor === userId) return loading;
+  const loadRevision = revision;
+  loadingFor = userId;
+  loading = (async () => {
+    const match = safeReadLocal(MATCH_KEY);
+    if (!userId) {
+      publish({ team: safeReadLocal(TEAM_KEY), player: [], competition: [], match });
+      loadedFor = null;
+      return;
+    }
+    const { data } = await supabase
+      .from("profiles")
+      .select("favorite_team_ids, favorite_player_ids, favorite_competition_ids, favorite_match_ids")
+      .eq("id", userId)
+      .maybeSingle();
+    const pendingTeams = safeReadLocal(TEAM_SYNC_KEY);
+    const team = [...new Set([...(data?.favorite_team_ids ?? []), ...pendingTeams])];
+    if (pendingTeams.length > 0 && data) {
+      const { error } = await supabase.from("profiles").update({ favorite_team_ids: team }).eq("id", userId);
+      if (!error) { try { localStorage.removeItem(TEAM_SYNC_KEY); } catch { /* optional */ } }
+    }
+    try { localStorage.setItem(TEAM_KEY, JSON.stringify(team)); } catch { /* optional */ }
+    if (loadingFor !== userId) return;
+    const loaded = {
+      team,
+      player: data?.favorite_player_ids ?? [],
+      competition: data?.favorite_competition_ids ?? [],
+      match: data?.favorite_match_ids ?? match,
+    };
+    // A star pressed while loading wins over the older account copy.
+    if (loadRevision === revision) publish(loaded);
+    loadedFor = userId;
+  })().finally(() => { if (loadingFor === userId) loading = null; });
+  return loading;
+}
+
 export function useFavorites() {
-  const { user } = useAuth();
-  const [favorites, setFavorites] = useState<FavoritesState>({ team: [], player: [], competition: [], match: [] });
+  const { user, loading: authLoading } = useAuth();
+  const [favorites, setFavorites] = useState<FavoritesState>(() => shared ?? { team: [], player: [], competition: [], match: [] });
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -39,43 +84,15 @@ export function useFavorites() {
     return () => { listeners.delete(setFavorites); };
   }, []);
 
+  const userId = user?.id ?? null;
   useEffect(() => {
+    // Wait until we know whether someone is signed in, so the device list never
+    // briefly replaces the account list.
+    if (authLoading) return;
     let cancel = false;
-    const loadRevision = revision;
-    (async () => {
-      const match = safeReadLocal(MATCH_KEY);
-      if (!user) {
-        if (!cancel) {
-          publish({ team: safeReadLocal(TEAM_KEY), player: [], competition: [], match });
-          setReady(true);
-        }
-        return;
-      }
-      const { data } = await supabase
-        .from("profiles")
-        .select("favorite_team_ids, favorite_player_ids, favorite_competition_ids, favorite_match_ids")
-        .eq("id", user.id)
-        .maybeSingle();
-      const pendingTeams = safeReadLocal(TEAM_SYNC_KEY);
-      const team = [...new Set([...(data?.favorite_team_ids ?? []), ...pendingTeams])];
-      if (pendingTeams.length > 0 && data) {
-        const { error } = await supabase.from("profiles").update({ favorite_team_ids: team }).eq("id", user.id);
-        if (!error) { try { localStorage.removeItem(TEAM_SYNC_KEY); } catch { /* optional */ } }
-      }
-      if (!cancel && loadRevision === revision) {
-        publish({
-          team,
-          player: data?.favorite_player_ids ?? [],
-          competition: data?.favorite_competition_ids ?? [],
-          match: data?.favorite_match_ids ?? match,
-        });
-        setReady(true);
-      }
-    })();
-    return () => {
-      cancel = true;
-    };
-  }, [user?.id]);
+    void loadShared(userId).then(() => { if (!cancel) { if (shared) setFavorites(shared); setReady(true); } });
+    return () => { cancel = true; };
+  }, [userId, authLoading]);
 
   const isFavorite = useCallback(
     (kind: FavoriteKind, id: string | number) => favorites[kind].includes(String(id)),
