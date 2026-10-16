@@ -220,13 +220,37 @@ const PREF_ROWS: { key: keyof AlertPrefs; label: string }[] = [
   { key: "final", label: "Full time" },
 ];
 
+/** One shared copy of the bell list for the signed-in account (see loadShared). */
+let alertShared: { userId: string | null; alerts: string[]; prefs: AlertPrefs } | null = null;
+let alertLoading: Promise<void> | null = null;
+let alertLoadingFor: string | null | undefined;
+const alertListeners = new Set<() => void>();
+function loadAlerts(userId: string | null): Promise<void> {
+  if (alertShared && alertShared.userId === userId) return Promise.resolve();
+  if (alertLoading && alertLoadingFor === userId) return alertLoading;
+  alertLoadingFor = userId;
+  alertLoading = (async () => {
+    const local = safeReadLocal(ALERT_KEY);
+    let localPrefs: AlertPrefs = {};
+    try { localPrefs = JSON.parse(localStorage.getItem(PREF_KEY) ?? "{}") as AlertPrefs; } catch { /* none yet */ }
+    if (!userId) { alertShared = { userId, alerts: local, prefs: localPrefs }; return; }
+    const { data } = await supabase.from("profiles").select("match_notification_ids,notification_preferences").eq("id", userId).maybeSingle();
+    const saved = data?.notification_preferences;
+    const alerts = data?.match_notification_ids ?? local;
+    try { localStorage.setItem(ALERT_KEY, JSON.stringify(alerts)); } catch { /* optional */ }
+    if (alertLoadingFor !== userId) return;
+    alertShared = { userId, alerts, prefs: saved && typeof saved === "object" && !Array.isArray(saved) ? { ...localPrefs, ...(saved as AlertPrefs) } : localPrefs };
+  })().finally(() => { if (alertLoadingFor === userId) alertLoading = null; });
+  return alertLoading;
+}
+
 /**
  * Match bell. Pressing it switches the match alerts on or off; the small
  * sliders button next to it chooses which moments are announced.
  */
 export function MatchNotificationButton({ matchId, teamIds = [], withSettings = false }: { matchId: string; teamIds?: (string | null | undefined)[]; withSettings?: boolean }) {
   const { overrides } = useClubAlerts();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { favorites } = useFavorites();
   const [alerts, setAlerts] = useState<string[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -235,26 +259,15 @@ export function MatchNotificationButton({ matchId, teamIds = [], withSettings = 
   const box = useRef<HTMLDivElement>(null);
   const inherited = teamIds.some((id) => Boolean(id && (overrides[id] ?? favorites.team.includes(id))));
 
+  const alertUserId = user?.id ?? null;
   useEffect(() => {
+    if (authLoading) return;
     let cancelled = false;
-    (async () => {
-      const local = safeReadLocal(ALERT_KEY);
-      let localPrefs: AlertPrefs = {};
-      try { localPrefs = JSON.parse(localStorage.getItem(PREF_KEY) ?? "{}") as AlertPrefs; } catch { /* none yet */ }
-      if (!user) {
-        if (!cancelled) { setAlerts(local); setPrefs(localPrefs); setLoaded(true); }
-        return;
-      }
-      const { data } = await supabase.from("profiles").select("match_notification_ids,notification_preferences").eq("id", user.id).maybeSingle();
-      if (!cancelled) {
-        setAlerts(data?.match_notification_ids ?? local);
-        const saved = data?.notification_preferences;
-        setPrefs(saved && typeof saved === "object" && !Array.isArray(saved) ? { ...localPrefs, ...(saved as AlertPrefs) } : localPrefs);
-        setLoaded(true);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [user]);
+    const apply = () => { if (!cancelled && alertShared) { setAlerts(alertShared.alerts); setPrefs(alertShared.prefs); setLoaded(true); } };
+    alertListeners.add(apply);
+    void loadAlerts(alertUserId).then(apply);
+    return () => { cancelled = true; alertListeners.delete(apply); };
+  }, [alertUserId, authLoading]);
 
   useEffect(() => {
     if (!openPrefs) return;
@@ -270,6 +283,7 @@ export function MatchNotificationButton({ matchId, teamIds = [], withSettings = 
 
   const savePrefs = async (next: AlertPrefs) => {
     setPrefs(next);
+    if (alertShared) alertShared = { ...alertShared, prefs: next };
     try { localStorage.setItem(PREF_KEY, JSON.stringify(next)); } catch { /* optional */ }
     if (user) {
       const { data } = await supabase.from("profiles").select("notification_preferences").eq("id", user.id).maybeSingle();
@@ -291,6 +305,7 @@ export function MatchNotificationButton({ matchId, teamIds = [], withSettings = 
           const next = explicit ? alerts.filter((id) => id !== matchId) : [...alerts, matchId];
           const turningOn = inherited ? explicit : !explicit;
           setAlerts(next);
+          if (alertShared) { alertShared = { ...alertShared, alerts: next }; for (const l of alertListeners) l(); }
           try { localStorage.setItem(ALERT_KEY, JSON.stringify(next)); } catch { /* optional */ }
           if (user) await supabase.from("profiles").update({ match_notification_ids: next }).eq("id", user.id);
           // Tell the live alert listener to pick the new selection up straight away.
