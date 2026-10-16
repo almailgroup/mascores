@@ -1187,6 +1187,7 @@ export type Database = {
       }
       matches: {
         Row: {
+          alerts_muted: boolean
           away_coach_id: string | null
           away_formation: string | null
           away_pen: number | null
@@ -1223,6 +1224,7 @@ export type Database = {
           venue_id: string | null
         }
         Insert: {
+          alerts_muted?: boolean
           away_coach_id?: string | null
           away_formation?: string | null
           away_pen?: number | null
@@ -1259,6 +1261,7 @@ export type Database = {
           venue_id?: string | null
         }
         Update: {
+          alerts_muted?: boolean
           away_coach_id?: string | null
           away_formation?: string | null
           away_pen?: number | null
@@ -3230,6 +3233,7 @@ export type Database = {
         }[]
       }
       send_highlights_push: { Args: { _match_id: string }; Returns: undefined }
+      send_transfer_push: { Args: { _transfer_id: string }; Returns: undefined }
       set_club_notification: {
         Args: { _enabled: boolean; _team_id: string }
         Returns: Json
