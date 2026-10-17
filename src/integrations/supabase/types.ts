@@ -3098,6 +3098,7 @@ export type Database = {
           is_public: boolean
           match_id: string | null
           room_id: string | null
+          speaker_timeline: Json
           title: string
           updated_at: string
         }
@@ -3111,6 +3112,7 @@ export type Database = {
           is_public?: boolean
           match_id?: string | null
           room_id?: string | null
+          speaker_timeline?: Json
           title: string
           updated_at?: string
         }
@@ -3124,6 +3126,7 @@ export type Database = {
           is_public?: boolean
           match_id?: string | null
           room_id?: string | null
+          speaker_timeline?: Json
           title?: string
           updated_at?: string
         }

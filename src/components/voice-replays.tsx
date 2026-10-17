@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2, Trash2, Mic, Pencil } from 'lucide-react';
+import { RecordingPlayer } from '@/components/recording-player';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/use-auth';
@@ -10,13 +11,13 @@ import { Button } from '@/components/ui/button';
 import { SocialScreen } from '@/components/social-screen';
 import { RecordingSocial } from '@/components/recording-social';
 
-export type Replay={id:string;host_id:string;title:string;cover_url:string|null;audio_url:string;duration_seconds:number;created_at:string;match_id:string|null;is_public:boolean};
+export type Replay={id:string;host_id:string;title:string;cover_url:string|null;audio_url:string;duration_seconds:number;created_at:string;match_id:string|null;is_public:boolean;speaker_timeline?:unknown};
 export function VoiceReplays({hostId,matchId,mine=false,limit=50,publicOnly=false,reposts=false,focusId}:{hostId?:string;matchId?:string;mine?:boolean;limit?:number;publicOnly?:boolean;reposts?:boolean;focusId?:string}) {
   const {user}=useAuth();const {lang}=useI18n();const label=(en:string,ar:string)=>lang==='ar'?ar:en;const qc=useQueryClient();
   const owner=mine?user?.id:hostId;const own=!!user&&owner===user.id;
   const [visibility,setVisibility]=useState<'all'|'public'|'private'>('all');const [editing,setEditing]=useState<Replay|null>(null);const [title,setTitle]=useState('');const [photo,setPhoto]=useState<File|null>(null);const [busy,setBusy]=useState(false);
   const replays=useQuery({queryKey:['voice-replays',owner,matchId,limit,publicOnly,visibility,reposts,user?.id],enabled:!mine||!!user,queryFn:async()=>{
-    let query=supabase.from('voice_recordings').select('id,host_id,title,cover_url,audio_url,duration_seconds,created_at,match_id,is_public').order('created_at',{ascending:false}).limit(limit);
+    let query=supabase.from('voice_recordings').select('id,host_id,title,cover_url,audio_url,duration_seconds,created_at,match_id,is_public,speaker_timeline').order('created_at',{ascending:false}).limit(limit);
     if(owner&&!reposts)query=query.eq('host_id',owner);
     if(reposts&&owner){const {data,error}=await supabase.from('recording_interactions').select('recording_id').eq('user_id',owner).eq('kind','repost');if(error)throw error;if(!data?.length)return [];query=query.in('id',data.map(r=>r.recording_id));}
     if(matchId)query=query.eq('match_id',matchId);
@@ -40,8 +41,8 @@ export function VoiceReplays({hostId,matchId,mine=false,limit=50,publicOnly=fals
 function ReplayAudio({replay,focus}:{replay:Replay;focus:boolean}) {
   const ref=useRef<HTMLDivElement>(null);const {user}=useAuth();
   const audio=useQuery({queryKey:['recording-audio',replay.id,user?.id],staleTime:240000,queryFn:async()=>{
-    const marker='/voice-recordings/';const index=replay.audio_url.indexOf(marker);if(index<0)throw new Error('Recording unavailable');const path=decodeURIComponent(replay.audio_url.slice(index+marker.length).split('?')[0]??'');const {data,error}=await supabase.storage.from('voice-recordings').createSignedUrl(path,300);if(error)throw error;return data.signedUrl;
+    const marker='/voice-recordings/';const index=replay.audio_url.indexOf(marker);if(index<0)throw new Error('Recording unavailable');const path=decodeURIComponent(replay.audio_url.slice(index+marker.length).split('?')[0]??'');const {data,error}=await supabase.storage.from('voice-recordings').createSignedUrl(path,3600);if(error)throw error;return data.signedUrl;
   }});
   useEffect(()=>{if(focus)ref.current?.scrollIntoView({block:'center'});},[focus]);
-  return <div ref={ref}>{audio.data?<audio controls preload="none" src={audio.data} className="w-full" onError={()=>void audio.refetch()}/>:audio.isError?<Button variant="outline" onClick={()=>void audio.refetch()}>Retry audio</Button>:<Loader2 className="h-4 w-4 animate-spin"/>}</div>;
+  return <div ref={ref}><RecordingPlayer src={audio.data} loading={audio.isLoading} failed={audio.isError} onRetry={()=>void audio.refetch()} duration={replay.duration_seconds} cover={replay.cover_url} timeline={replay.speaker_timeline}/></div>;
 }

@@ -138,7 +138,8 @@ function VoiceRoomPage() {
       }
     : null;
 
-  const { roster, remote, muted, toggleMute, forceMute, hand, setHand, micError, retryMic, connected, audioReady, speakerCount, listenerCount, recording, startRecording, stopRecording } = useVoiceRoom({ roomId: id, me, enabled: !!me && live, storedPeers: participants.data ?? [] });
+  const { roster, remote, muted, toggleMute, forceMute, hand, setHand, micError, retryMic, connected, audioReady, speakerCount, listenerCount, recording, startRecording, stopRecording, sendModeration } = useVoiceRoom({ roomId: id, me, enabled: !!me && live, storedPeers: participants.data ?? [], onModeration: () => { void qc.invalidateQueries({ queryKey: ["voice-membership", id] }); void qc.invalidateQueries({ queryKey: ["voice-participants", id] }); } });
+  const [pending, setPending] = useState<Record<string, boolean>>({});
 
   const { latest: reactions, react } = useVoiceReactions(id, user?.id);
   const hostSpeaking = roster.some((peer) => peer.self && peer.speaking);
@@ -191,9 +192,7 @@ function VoiceRoomPage() {
         if (!count) throw new Error(lang === "ar" ? "سجل الغرفة أولاً لحفظها في ملفك الشخصي." : "Record the room first to save it to your profile.");
       }
       if (keep) {
-        if (recording) await saveRecording(true);
-        const result = await supabase.from("voice_recordings").update({ is_public: true }).eq("room_id", id).eq("host_id", user.id);
-        if (result.error) throw result.error;
+        if (recording) await saveRecording();
         const { error } = await supabase.rpc("voice_end_room", { _room_id: id });
         if (error) throw error;
       } else {
@@ -219,22 +218,28 @@ function VoiceRoomPage() {
     void navigate({ to: "/voice" });
   };
 
-  const saveRecording = async (isPublic: boolean) => {
+  // Saved replays stay private until the host publishes them from their profile.
+  const saveRecording = async () => {
     const result = await stopRecording();
     if (!result || !user || !room.data) throw new Error(tx("No recording is available."));
     const ext = result.blob.type.includes("mp4") ? "m4a" : "webm";
     const file = new File([result.blob], `${crypto.randomUUID()}.${ext}`, { type: result.blob.type });
-    if (!isPublic && ending) return;
     const url = await uploadMedia("voice-recordings", file, user.id);
     if (!url) throw new Error(tx("The replay could not be saved."));
-    const { error } = await supabase.from("voice_recordings").insert({ room_id: id, host_id: user.id, match_id: room.data.match_id ?? null, title: room.data.title, cover_url: room.data.photo_url, audio_url: url, duration_seconds: result.seconds, is_public: isPublic });
+    const { error } = await supabase.from("voice_recordings").insert({ room_id: id, host_id: user.id, match_id: room.data.match_id ?? null, title: room.data.title, cover_url: room.data.photo_url, audio_url: url, duration_seconds: result.seconds, is_public: false, speaker_timeline: { moments: result.timeline, people: result.people } });
     if (error) throw error;
     await qc.invalidateQueries({ queryKey: ["voice-replays"] });
   };
 
   const manage = async (userId: string, action: "promote" | "demote" | "mute" | "remove") => {
+    if (pending[userId]) return;
+    setPending((p) => ({ ...p, [userId]: true }));
+    // Move the person immediately so one tap is enough.
+    qc.setQueryData(["voice-participants", id], (rows: typeof participants.data) => rows?.flatMap((row) => row.userId !== userId ? [row] : action === "remove" ? [] : [{ ...row, role: action === "promote" ? "speaker" as VoiceRole : action === "demote" ? "listener" as VoiceRole : row.role, muted: action === "mute" ? true : row.muted, hand: action === "promote" || action === "demote" ? false : row.hand }]));
     const { error } = await supabase.rpc("voice_manage_participant", { _room_id: id, _user_id: userId, _action: action });
-    if (error) { setActionError(error.message); return; }
+    setPending((p) => { const next = { ...p }; delete next[userId]; return next; });
+    if (error) { setActionError(error.message); await qc.invalidateQueries({ queryKey: ["voice-participants", id] }); return; }
+    sendModeration(userId, action);
     await qc.invalidateQueries({ queryKey: ["voice-membership", id] });
     await qc.invalidateQueries({ queryKey: ["voice-participants", id] });
   };
@@ -277,7 +282,9 @@ function VoiceRoomPage() {
   // React only to a stored mute-state change (for example a host moderation
   // action). Including local `muted` here caused the initial stored `true`
   // value to immediately undo a speaker's own Unmute gesture.
-  useEffect(() => { if (membership.data?.is_muted) forceMute(); }, [membership.data?.is_muted, forceMute]);
+  // Host mutes now arrive as an instant room message (see onModeration), so a
+  // stale stored value can never silence a speaker who just unmuted.
+  void forceMute;
 
   useEffect(() => { if (membership.data?.anonymous) setAnon(true); }, [membership.data?.anonymous]);
 
@@ -415,10 +422,11 @@ function VoiceRoomPage() {
               )}
               {actionError && <p className="mb-3 rounded-xl bg-destructive/10 p-3 text-xs font-semibold text-destructive">{actionError}</p>}
 
+              <NowSpeaking peers={roster.filter((peer) => peer.speaking)} />
               <h2 className="text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Speakers")} ({speakerCount})</h2>
               <div className="mt-4 grid grid-cols-3 gap-4 sm:grid-cols-5 sm:gap-5">
                 {speakers.map((peer) => (
-                  <PeerTile key={peer.userId} peer={peer} reaction={reactions[peer.userId]} canManage={isHost && !peer.self} onDemote={() => manage(peer.userId, "demote")} onMute={() => manage(peer.userId, "mute")} onRemove={() => manage(peer.userId, "remove")} />
+                  <PeerTile key={peer.userId} peer={peer} busy={!!pending[peer.userId]} reaction={reactions[peer.userId]} canManage={isHost && !peer.self} onDemote={() => manage(peer.userId, "demote")} onMute={() => manage(peer.userId, "mute")} onRemove={() => manage(peer.userId, "remove")} />
                 ))}
                 {speakers.length === 0 && <p className="col-span-full text-xs text-muted-foreground">{tx("No one is speaking yet.")}</p>}
               </div>
@@ -440,7 +448,7 @@ function VoiceRoomPage() {
               <h2 className="mt-5 text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Listeners")} ({listenerCount})</h2>
               <div className="mt-4 grid grid-cols-3 gap-4 sm:grid-cols-6 sm:gap-5">
                 {listeners.map((peer) => (
-                  <PeerTile key={peer.userId} peer={peer} reaction={reactions[peer.userId]} small canManage={isHost && !peer.self} onPromote={() => manage(peer.userId, "promote")} onRemove={() => manage(peer.userId, "remove")} />
+                  <PeerTile key={peer.userId} peer={peer} busy={!!pending[peer.userId]} reaction={reactions[peer.userId]} small canManage={isHost && !peer.self} onPromote={() => manage(peer.userId, "promote")} onRemove={() => manage(peer.userId, "remove")} />
                 ))}
                 {listeners.length === 0 && <p className="col-span-full text-xs text-muted-foreground">{tx("No listeners yet.")}</p>}
               </div>
@@ -481,19 +489,38 @@ function VoiceRoomPage() {
   );
 }
 
-function PeerTile({ peer, reaction, small = false, canManage = false, onPromote, onDemote, onMute, onRemove }: {
+function SpeakingBars({ className = "" }: { className?: string }) {
+  return <span className={`inline-flex h-3 items-end gap-[2px] ${className}`} aria-hidden>{[0, 1, 2, 3].map((i) => <span key={i} className="w-[3px] origin-bottom rounded-full bg-current animate-[voicebar_0.9s_ease-in-out_infinite]" style={{ animationDelay: `${i * 0.15}s`, height: "100%" }} />)}</span>;
+}
+
+function NowSpeaking({ peers }: { peers: { userId: string; name: string; avatar: string | null; self?: boolean }[] }) {
+  const tx = useTx();
+  return (
+    <div className={`mb-4 flex min-h-12 items-center gap-2 rounded-2xl border px-3 py-2 transition-colors ${peers.length ? "border-primary/50 bg-primary/10" : "border-border bg-muted/40"}`} aria-live="polite">
+      {peers.length ? <>
+        <div className="flex -space-x-2">{peers.slice(0, 4).map((p) => p.avatar ? <img key={p.userId} src={p.avatar} alt="" className="h-8 w-8 rounded-full border-2 border-card object-cover" /> : <span key={p.userId} className="inline-flex h-8 w-8 items-center justify-center rounded-full border-2 border-card bg-muted text-xs font-bold">{p.name.slice(0, 1).toUpperCase()}</span>)}</div>
+        <div className="min-w-0 flex-1 truncate text-xs font-bold text-primary">{peers.map((p) => (p.self ? tx("You") : p.name)).join(", ")} <span className="font-semibold text-muted-foreground">{tx("is speaking")}</span></div>
+        <SpeakingBars className="text-primary" />
+      </> : <span className="text-xs font-semibold text-muted-foreground">{tx("No one is talking right now")}</span>}
+    </div>
+  );
+}
+
+function PeerTile({ peer, reaction, busy = false, small = false, canManage = false, onPromote, onDemote, onMute, onRemove }: {
   peer: { userId: string; name: string; avatar: string | null; role: VoiceRole; muted: boolean; speaking: boolean; hand: boolean; self?: boolean };
-  reaction?: string; small?: boolean; canManage?: boolean; onPromote?: () => void; onDemote?: () => void; onMute?: () => void; onRemove?: () => void;
+  reaction?: string; busy?: boolean; small?: boolean; canManage?: boolean; onPromote?: () => void; onDemote?: () => void; onMute?: () => void; onRemove?: () => void;
 }) {
   const tx = useTx();
   const size = small ? "h-11 w-11" : "h-16 w-16";
   return (
     <div className="flex flex-col items-center gap-1.5 text-center">
-      <div className={`relative rounded-full ${peer.speaking ? "ring-2 ring-primary ring-offset-2 ring-offset-card" : ""}`}>
+      <div className={`relative rounded-full transition-transform duration-150 ${peer.speaking ? "scale-105 ring-[3px] ring-primary ring-offset-2 ring-offset-card" : ""}`}>
+        {peer.speaking && <span className="pointer-events-none absolute -inset-1.5 animate-ping rounded-full border-2 border-primary/60" />}
+        {peer.speaking && <span className="absolute -bottom-1 left-1/2 z-10 inline-flex -translate-x-1/2 items-center rounded-full bg-primary px-1.5 py-0.5 text-primary-foreground shadow"><SpeakingBars /></span>}
         {peer.avatar
           ? <img src={peer.avatar} alt="" className={`${size} rounded-full object-cover`} />
           : <span className={`${size} inline-flex items-center justify-center rounded-full bg-muted text-sm font-bold`}>{peer.name.slice(0, 1).toUpperCase()}</span>}
-        {peer.role !== "listener" && peer.muted && (
+        {peer.role !== "listener" && peer.muted && !peer.speaking && (
           <span className="absolute -bottom-0.5 -end-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-background text-muted-foreground shadow"><MicOff className="h-3 w-3" /></span>
         )}
         {reaction && (
@@ -501,10 +528,10 @@ function PeerTile({ peer, reaction, small = false, canManage = false, onPromote,
         )}
         {peer.hand && <span className="absolute -top-1 -end-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground shadow"><Hand className="h-3 w-3" /></span>}
       </div>
-      <div className="w-full truncate text-[0.65rem] font-semibold">{peer.self ? tx("You") : peer.name}</div>
+      <div className={`w-full truncate text-[0.65rem] font-semibold ${peer.speaking ? "text-primary" : ""}`}>{peer.self ? tx("You") : peer.name}</div>
       {peer.role === "host" && <div className="text-[0.6rem] font-bold uppercase tracking-wider text-primary">{tx("Host")}</div>}
       {canManage && <div className="flex flex-wrap justify-center gap-1">
-        {onPromote && <button onClick={onPromote} className="text-[0.6rem] font-bold text-primary">{tx("Add as speaker")}</button>}
+        {onPromote && <button disabled={busy} onClick={onPromote} className="inline-flex items-center gap-1 text-[0.6rem] font-bold text-primary disabled:opacity-60">{busy && <Loader2 className="h-3 w-3 animate-spin" />}{tx("Add as speaker")}</button>}
         {onMute && peer.role === "speaker" && !peer.muted && <button onClick={onMute} aria-label={tx("Mute speaker")} className="text-muted-foreground"><MicOff className="h-3 w-3" /></button>}
         {onDemote && peer.role === "speaker" && <button onClick={onDemote} className="text-[0.6rem] font-bold text-destructive">{tx("Listener")}</button>}
         {onRemove && <button onClick={onRemove} aria-label={tx("Remove from room")} className="text-destructive"><UserMinus className="h-3 w-3" /></button>}
