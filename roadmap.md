@@ -86,3 +86,4 @@
 - [x] Removing a coach from a club releases him (no delete)
 - [x] Admin: nothing preselected on entry; each section opens as a popup; Countries fits the phone
 - [x] Lineup logo watermark light white
+- [x] Profile: followers/following popups with search, recordings count, edit-profile popup with public/private, verification request page, owner Verify section, replay public/private filter, removed My voice replays from settings
