@@ -50,9 +50,11 @@ export function VoiceReplays({ hostId, matchId, mine = false, limit = 12, public
   });
 
   const owner = mine ? user?.id : hostId;
+  const own = !!user && owner === user.id;
+  const [visibility, setVisibility] = useState<"all" | "public" | "private">("all");
 
   const replays = useQuery({
-    queryKey: ["voice-replays", owner ?? null, matchId ?? null, limit, publicOnly],
+    queryKey: ["voice-replays", owner ?? null, matchId ?? null, limit, publicOnly, own ? visibility : "all"],
     enabled: !mine || !!user,
     queryFn: async () => {
       let query = supabase
@@ -63,6 +65,7 @@ export function VoiceReplays({ hostId, matchId, mine = false, limit = 12, public
       if (owner) query = query.eq("host_id", owner);
       if (matchId) query = query.eq("match_id", matchId);
       if (publicOnly) query = query.eq("is_public", true);
+      else if (own && visibility !== "all") query = query.eq("is_public", visibility === "public");
       const { data, error } = await query;
       if (error) throw error;
       return (data ?? []) as Replay[];
@@ -77,12 +80,30 @@ export function VoiceReplays({ hostId, matchId, mine = false, limit = 12, public
   };
 
   if (replays.isLoading) return <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
+
+  const chips = own && !publicOnly ? (
+    <div className="flex gap-2">
+      {(["all", "public", "private"] as const).map((v) => (
+        <button key={v} onClick={() => setVisibility(v)}
+          className={`rounded-full px-3 py-1 text-[0.65rem] font-bold capitalize ${visibility === v ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+          {tx(v)}
+        </button>
+      ))}
+    </div>
+  ) : null;
+
   if ((replays.data?.length ?? 0) === 0) {
-    return <p className="rounded-2xl border border-dashed border-border p-4 text-xs text-muted-foreground">{tx("No saved voice chats yet. Hosts can record a room and it appears here to replay.")}</p>;
+    return (
+      <div className="space-y-3">
+        {chips}
+        <p className="rounded-2xl border border-dashed border-border p-4 text-xs text-muted-foreground">{tx("No saved voice chats yet. Hosts can record a room and it appears here to replay.")}</p>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-3">
+      {chips}
       <Dialog open={!!editing} onOpenChange={(open) => { if (!open && !busy) setEditing(null); }}>
         <DialogContent><DialogHeader><DialogTitle>{label("Edit replay", "تعديل التسجيل")}</DialogTitle></DialogHeader>
           <form className="space-y-4" onSubmit={async (event) => {
