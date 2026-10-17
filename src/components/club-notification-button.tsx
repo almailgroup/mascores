@@ -20,7 +20,7 @@ export function ClubNotificationButton({ teamId }: { teamId: string }) {
     event.preventDefault(); event.stopPropagation();
     if (!user) { signIn(); return; }
     try {
-      if (!(await requestAlertPermission())) return;
+      if (!active) void requestAlertPermission();
       await setClubAlert(teamId, !active);
     } catch { toast.error(tx("Unable to save notifications")); }
   }}><Bell className="h-4 w-4" fill={active ? "currentColor" : "none"} /></Button>;
