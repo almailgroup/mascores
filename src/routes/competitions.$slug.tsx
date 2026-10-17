@@ -333,8 +333,8 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
     if (!user) { signIn(); return; }
     const enabled = !alerted;
     // Flip on the first tap; the permission prompt and save follow behind it.
-    const save = setCompetitionAlert(c.id, enabled).catch(() => { toast.error(tx("Could not save notifications")); });
-    if (enabled && !(await requestAlertPermission())) { await save; void setCompetitionAlert(c.id, false).catch(() => {}); }
+    if (enabled) void requestAlertPermission();
+    await setCompetitionAlert(c.id, enabled).catch(() => { toast.error(tx("Could not save notifications")); });
   };
 
   const router = useRouter();

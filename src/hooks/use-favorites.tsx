@@ -333,7 +333,8 @@ export function MatchNotificationButton({ matchId, competitionId, teamIds = [], 
           };
           // Flip the bell on the first tap; permission and saving follow behind it.
           write(next);
-          if (turningOn && !(await requestAlertPermission())) { write(current); return; }
+          // The choice is saved either way; the phone permission is asked alongside it.
+          if (turningOn) void requestAlertPermission();
           const save = alertSaveQueue.catch(() => {}).then(async () => {
             const { error } = await supabase.from("profiles").update({ match_notification_ids: alertShared?.alerts ?? next }).eq("id", user.id);
             if (error) throw error;
