@@ -263,7 +263,15 @@ export function MatchNotificationButton({ matchId, teamIds = [], withSettings = 
   const [prefs, setPrefs] = useState<AlertPrefs>({});
   const [openPrefs, setOpenPrefs] = useState(false);
   const box = useRef<HTMLDivElement>(null);
-  const inherited = teamIds.some((id) => Boolean(id && (overrides[id] ?? favorites.team.includes(id))));
+  const [competitionAlert, setCompetitionAlert] = useState(false);
+  const inherited = competitionAlert || teamIds.some((id) => Boolean(id && (overrides[id] ?? favorites.team.includes(id))));
+  useEffect(() => {
+    if (!user) { setCompetitionAlert(false); return; }
+    void Promise.all([supabase.from("matches").select("competition_id").eq("id", matchId).maybeSingle(), supabase.from("profiles").select("notification_preferences").eq("id", user.id).maybeSingle()]).then(([match, profile]) => {
+      const prefs = profile.data?.notification_preferences as { competition_alert_overrides?: Record<string, boolean> } | undefined;
+      setCompetitionAlert(!!match.data && prefs?.competition_alert_overrides?.[match.data.competition_id] === true);
+    });
+  }, [user?.id, matchId]);
 
   const alertUserId = user?.id ?? null;
   useEffect(() => {

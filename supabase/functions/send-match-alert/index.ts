@@ -162,7 +162,7 @@ async function dispatchQueued(admin: any, queueId: string) {
     .eq("id", queueId).is("sent_at", null).select("*");
   const q = rows?.[0] as Record<string, string> | undefined;
   if (!q) return Response.json({ skipped: true });
-  const { data: m } = await admin.from("matches").select("home_team_id,away_team_id").eq("id", q.match_id).single();
+  const { data: m } = await admin.from("matches").select("home_team_id,away_team_id,competition_id").eq("id", q.match_id).single();
   const teams = [m?.home_team_id, m?.away_team_id].filter(Boolean) as string[];
   const ors = [`match_notification_ids.cs.{${q.match_id}}`, ...teams.map((t) => `favorite_team_ids.cs.{${t}}`)];
   if (q.player_id) ors.push(`favorite_player_ids.cs.{${q.player_id}}`);
@@ -172,6 +172,10 @@ async function dispatchQueued(admin: any, queueId: string) {
   const bellOn = new Set<string>();
   for (const t of teams) {
     const { data } = await admin.from("profiles").select("id").eq(`notification_preferences->club_alert_overrides->>${t}`, "true");
+    for (const p of data ?? []) bellOn.add(p.id);
+  }
+  if (m?.competition_id) {
+    const { data } = await admin.from("profiles").select("id").eq(`notification_preferences->competition_alert_overrides->>${m.competition_id}`, "true");
     for (const p of data ?? []) bellOn.add(p.id);
   }
   const extra = [...bellOn].filter((id) => !(profiles ?? []).some((p: { id: string }) => p.id === id));
@@ -187,7 +191,7 @@ async function dispatchQueued(admin: any, queueId: string) {
     const clubOv = prefs.club_alert_overrides ?? {};
     // A followed club (or a club whose bell is on) covers all its matches; the
     // match bell is then a per-match mute, exactly as the app's bell shows it.
-    const viaClub = teams.some((t) => clubOv[t] === true || ((p.favorite_team_ids ?? []).includes(t) && clubOv[t] !== false));
+    const viaClub = teams.some((t) => clubOv[t] === true || ((p.favorite_team_ids ?? []).includes(t) && clubOv[t] !== false)) || prefs.competition_alert_overrides?.[m?.competition_id] === true;
     const matchMarked = (p.match_notification_ids ?? []).includes(q.match_id);
     if (viaClub) return !matchMarked;
     if (matchMarked) return true;

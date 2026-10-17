@@ -327,18 +327,20 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
 
   const [alerts, setAlerts] = useState<string[]>([]);
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(COMP_ALERT_KEY);
-      setAlerts(raw ? (JSON.parse(raw) as string[]) : []);
-    } catch { /* ignore */ }
-  }, []);
+    if (!user) { setAlerts([]); return; }
+    void supabase.from("profiles").select("notification_preferences").eq("id", user.id).maybeSingle().then(({ data }) => {
+      const prefs = data?.notification_preferences as { competition_alert_overrides?: Record<string, boolean> } | undefined;
+      setAlerts(Object.entries(prefs?.competition_alert_overrides ?? {}).filter(([, on]) => on).map(([id]) => id));
+    });
+  }, [user?.id]);
   const alerted = alerts.includes(c.id);
   const toggleAlert = async () => {
     if (!user) { signIn(); return; }
     if (!(await requestAlertPermission())) return;
     const next = alerted ? alerts.filter((id) => id !== c.id) : [...alerts, c.id];
     setAlerts(next);
-    try { window.localStorage.setItem(COMP_ALERT_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+    const { error } = await supabase.rpc("set_competition_notification", { _competition_id: c.id, _enabled: !alerted });
+    if (error) setAlerts(alerts);
   };
 
   const router = useRouter();

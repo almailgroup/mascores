@@ -289,6 +289,7 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
             settingAnswerRef.current.add(signal.from);
             await pc.setRemoteDescription(new RTCSessionDescription(signal.data as RTCSessionDescriptionInit));
             settingAnswerRef.current.delete(signal.from);
+            ignoredOffersRef.current.delete(signal.from);
             const waiting = pendingIceRef.current.get(signal.from) ?? [];
             for (const candidate of waiting) await pc.addIceCandidate(new RTCIceCandidate(candidate));
             pendingIceRef.current.delete(signal.from);

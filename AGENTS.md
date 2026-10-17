@@ -20,13 +20,13 @@
 - Keep first-run setup completion device-local, merge guest team favourites idempotently on sign-in, and gate welcome UI hydration-safely, so onboarding never repeats or flashes.
 - Use one text-free loading overlay for both languages; keep pages mounted to preserve state.
 - Keep touch fields at least 16px and document touch-action: manipulation to prevent focus/double-tap zoom while preserving pinch zoom.
-- Use the shared scroll-driven collapsing-header hook for club, competition and match headers; identity and tabs remain one sticky unit for consistent scrolling.
+- Shared collapsing headers keep sports identity and tabs sticky.
 - Calculate round teams from terminal match completion timestamps and position ratings through the public read-only function, with a one-hour availability deadline; avoid background polling.
 - Choose the legal round-team formation by how far selected players beat their position's round average (raw rating sum tie-break), so position rating bias never fixes one shape; expose published history plus only the earliest started unreleased round.
 - Keep season winners in owner-writable title history separate from cumulative title counts so editing a year never changes trophy totals.
 - Notification switches save instantly, keeping other stored keys; club alert overrides stay separate from favourites; pushes come only from stored rows through one sender that records each delivery and picks a bundled per-alert sound; a followed club covers its matches, the bell mutes per match; automatic and personal kick-off reminders are server-pushed by one per-minute pg_cron job with dedupe (no phone-local scheduling, to avoid duplicates).
-- Use the shared SportsHeaderBackground with semantic surface tokens and sampled logo colours for sports identity headers; one backdrop keeps their visual treatment consistent without changing stored artwork.
-- All public standings use the shared modern StandingsTable with position-label and row-qualification fallbacks, so views stay consistent.
+- SportsHeaderBackground uses semantic surfaces and sampled logo colours, preserving artwork.
+- Public standings share StandingsTable with position-label/qualification fallbacks.
 - Use the shared portalled SeasonMenu for season, round and club-standings competition selection, with display formatting separate from stored values, so sticky headers cannot clip keyboard-accessible in-app menus.
 - Portal ticket overlays outside the browsing wrapper and lock background scrolling so transforms and bottom navigation cannot clip them.
 - Enforce submission ownership and approval-state editing through database policies; deleting a submission removes the review record, not a published article.
@@ -37,4 +37,6 @@
 - Use TeamCrest for missing club artwork and localized free-agent labels for unattached players so national call-ups never imply club membership.
 - Update favourites and club alerts optimistically with ordered writes and ignore stale profile hydration; exclude buttons from page gestures so one tap never locks navigation.
 - Resolve retired country codes centrally and serve flag artwork from the local flag-icons package, so flags never use invalid external URLs.
-- Content-table deletes are archived by a BEFORE DELETE trigger into deleted_records (grouped per transaction) and restored only by the owner via restore_deleted_batch, keeping every deletion recoverable.
+- Content deletes archive per transaction to deleted_records; only owners restore via restore_deleted_batch.
+- Voice uses per-peer perfect negotiation and serialized signals; roles preserve channels. Speaking RPCs and message/reaction triggers track host activity; the reminder job ends inactive rooms. Aggregate-only people discovery and owner-writable badges protect profiles.
+- Stars/bells share sign-in-return and permission helpers; stored competition bell overrides inherit into match alerts.
