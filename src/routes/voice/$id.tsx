@@ -12,6 +12,7 @@ import { useVoiceRoom, type VoiceRole } from "@/lib/use-voice-room";
 import { suspensionMessage, useMySuspension } from "@/lib/suspension";
 import { uploadMedia } from "@/components/admin/upload";
 import { VoiceRoomChat } from "@/components/voice-room-chat";
+import { VoiceUserBadge } from "@/components/voice-people";
 import { VoiceReactions, useVoiceReactions } from "@/components/voice-reactions";
 
 export const Route = createFileRoute("/voice/$id")({
@@ -307,7 +308,7 @@ function VoiceRoomPage() {
               ? <img src={host.data.avatar_url} alt="" className="h-10 w-10 shrink-0 rounded-full object-cover" />
               : <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-bold">{(host.data?.display_name ?? "?").slice(0, 1).toUpperCase()}</span>}
             <div className="min-w-0 flex-1">
-              <div className="break-words text-sm font-bold leading-snug">{host.data?.display_name ?? tx("Host")}</div>
+              <div className="flex items-center gap-1 text-sm font-bold leading-snug"><span className="break-words">{host.data?.display_name ?? tx("Host")}</span><VoiceUserBadge userId={room.data.host_id} /></div>
               <div className="text-[0.7rem] text-muted-foreground">{tx("Followers")}: {compact(host.data?.followers ?? 0)}</div>
             </div>
             {!isHost && (

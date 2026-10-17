@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Mic, Loader2, Lock, Globe2, Users, Plus, Radio, UserPlus, UserCheck, ImagePlus, Link2 } from "lucide-react";
 import { VoiceReplays } from "@/components/voice-replays";
-import { VoicePeople } from "@/components/voice-people";
+import { VoicePeople, VoiceUserBadge } from "@/components/voice-people";
 import { AppShell, BackButton, EmptyState, SectionHeader } from "@/components/app-shell";
 import { ImageCropper } from "@/components/image-cropper";
 import { uploadMedia } from "@/components/admin/upload";
@@ -188,7 +188,7 @@ function RoomCard({ room, host, lang, following, onFollow, isSelf }: {
           <div className="line-clamp-2 text-sm font-bold">{room.title}</div>
           <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
             {host?.avatar_url ? <img src={host.avatar_url} alt="" className="h-6 w-6 rounded-full object-cover" /> : <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-muted text-[0.6rem] font-bold">{(host?.display_name ?? "?").slice(0, 1).toUpperCase()}</span>}
-            <span className="truncate">{host?.display_name ?? tx("Host")}</span>
+            <span className="truncate">{host?.display_name ?? tx("Host")}</span><VoiceUserBadge userId={room.host_id} />
             <span className="ms-auto inline-flex items-center gap-1"><Users className="h-3 w-3" /> {room.listeners}</span>
           </div>
         </div>

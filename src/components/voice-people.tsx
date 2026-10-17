@@ -10,6 +10,10 @@ import { toast } from "sonner";
 export function VoiceBadge({ badge }: { badge?: string | null }) {
   return badge ? <BadgeCheck aria-label={badge === "golden" ? "Golden verified" : "Verified"} className={`inline-block h-4 w-4 shrink-0 ${badge === "golden" ? "text-warning" : "text-primary"}`} /> : null;
 }
+export function VoiceUserBadge({ userId }: { userId?: string }) {
+  const result = useQuery({ queryKey: ["voice-badge", userId], enabled: !!userId, queryFn: async () => { if (!userId) return null; const { data } = await supabase.from("voice_user_badges").select("badge").eq("user_id", userId).maybeSingle(); return data?.badge; } });
+  return <VoiceBadge badge={result.data} />;
+}
 
 export function VoicePeople({ admin = false }: { admin?: boolean }) {
   const { lang } = useI18n();
