@@ -1,6 +1,6 @@
 # Roadmap
-- [ ] Move profile verification beside the top username only, above recording/follower/following counters
-- [ ] Add verification decision replies to the applicant inbox and a secure custom owner-only badge; verify permissions and delivery
+- [x] Move profile verification beside the top username only, above recording/follower/following counters; checked phone/desktop
+- [x] Add verification decision replies to the applicant inbox and a secure custom owner-only badge; checked approval/decline reply delivery and blocked owner assignment
 - [x] Add social reporting, reference-style share icons and uniform profile counters; verify submission, moderation, sharing and phone/desktop alignment in browser
 - [x] Open followers, following and Edit profile full-screen
 - [x] Redesign profiles with confirmed private/public account controls and follow requests

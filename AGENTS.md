@@ -19,7 +19,7 @@
 - Scope reporter news uploads to their user-ID folder and active reporter storage policies; admin upload access stays separate.
 - Setup stays device-local and hydration-safe; merge guest favourites idempotently on sign-in; no welcome repeats/flashes.
 - Use one text-free loading overlay for both languages; keep pages mounted to preserve state.
-- Keep touch fields at least 16px and document touch-action: manipulation to prevent focus/double-tap zoom while preserving pinch zoom.
+- Touch fields are at least 16px; document touch-action: manipulation blocks focus/double-tap zoom but preserves pinch zoom.
 - Shared collapsing headers keep sports identity and tabs sticky.
 - Round teams use terminal completion times and public read-only position ratings; available within one hour, without polling.
 - Round-team formation maximizes position-average rating surplus, raw sum tie-break; show published history plus earliest started unreleased round.
@@ -29,7 +29,7 @@
 - Public standings share StandingsTable with position-label/qualification fallbacks.
 - Portalled keyboard-accessible SeasonMenu selects seasons, rounds and club competitions; separate labels from stored values to prevent header clipping.
 - Portal ticket overlays outside the browsing wrapper and lock background scrolling so transforms and bottom navigation cannot clip them.
-- Enforce submission ownership and approval-state editing through database policies; deleting a submission removes the review record, not a published article.
+- Policies enforce submission ownership/state; deleting submissions removes reviews, never published articles.
 - Use fixture row identifiers for club match scroll targets so Today and initial focus resolve the same next fixture in a descending list.
 - Device-local language is authoritative on navigation; settings language changes sync immediately without reloading a stale profile language.
 - President portraits use existing staff matched by chairman name/role; never invent identities.
