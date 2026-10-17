@@ -5,7 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useTx } from "@/lib/auto-translate";
 import { toast } from "sonner";
-import { isNativeApp, nativeSchedule, nativeCancel, nativeNotify, ensureNativePermission } from "@/lib/native-notify";
+import { isNativeApp, nativeCancel, ensureNativePermission } from "@/lib/native-notify";
+import { playAlertSound, soundFor } from "@/lib/alert-sounds";
 
 const PRESETS = [45, 30, 15];
 
@@ -120,16 +121,14 @@ function saveFired(set: Set<string>) {
 }
 
 /**
- * Keeps the signed-in user's reminders working: on the phone they're scheduled
- * as real alerts (fire with the app closed); on the website they pop up while
- * the site is open.
+ * Reminders reach phones as server push notifications (with the app closed).
+ * On the website they also pop up while the site is open.
  */
 export function useReminderAlerts() {
   const { user } = useAuth();
   useEffect(() => {
     if (!user) return;
     const fired = loadFired();
-    const scheduled = new Map<string, boolean>();
     let running = false;
     const tick = async () => {
       if (running) return;
@@ -140,29 +139,26 @@ export function useReminderAlerts() {
           .select("id,minutes_before,match:matches(id,kickoff_at,home:teams!matches_home_team_id_fkey(name),away:teams!matches_away_team_id_fkey(name))")
           .eq("user_id", user.id);
         if (error) return;
+        if (isNativeApp()) {
+          // Older builds scheduled these on the phone too; clear them so the server push isn't doubled.
+          void nativeCancel((data ?? []).map((row) => `reminder:${(row.match as { id: string } | null)?.id}:${row.minutes_before}`));
+          return;
+        }
         for (const row of data ?? []) {
           const match = row.match as { id: string; kickoff_at: string | null; home: { name: string } | null; away: { name: string } | null } | null;
-          if (!match?.kickoff_at || fired.has(row.id)) continue;
+          if (!match?.kickoff_at) continue;
+          const firedKey = `${row.id}:${match.kickoff_at}`;
+          if (fired.has(firedKey)) continue;
           const title = `${match.home?.name ?? "Home"} vs ${match.away?.name ?? "Away"}`;
           const kickoff = new Date(match.kickoff_at).getTime();
-          const at = new Date(kickoff - row.minutes_before * 60000);
-          const schedKey = `${row.id}:${match.kickoff_at}`;
-
-          if (isNativeApp() && !scheduled.has(schedKey) && at.getTime() > Date.now()) {
-            // Real phone alert; re-done when the kickoff time changes.
-            scheduled.set(schedKey, await nativeSchedule(`reminder:${match.id}:${row.minutes_before}`, at,
-              `⏰ ${title}`, `Kick-off in ${row.minutes_before} minutes`, `/matches/${match.id}`));
-          }
-
           const minutesLeft = (kickoff - Date.now()) / 60000;
           if (minutesLeft <= row.minutes_before && minutesLeft > -5) {
-            fired.add(row.id);
+            fired.add(firedKey);
             saveFired(fired);
-            // The phone already showed its scheduled alert.
-            if (isNativeApp() && scheduled.get(schedKey)) continue;
-            const body = minutesLeft > 0 ? `Kick-off in ${Math.max(1, Math.round(minutesLeft))} minutes` : "Kick-off now";
-            if (isNativeApp()) { if (!(await nativeNotify(`⏰ ${title}`, body, `reminder-now:${row.id}`, `/matches/${match.id}`))) toast.info(`${title} — ${body}`); }
-            else if ("Notification" in window && Notification.permission === "granted") new Notification(title, { body });
+            const left = Math.max(1, Math.ceil(minutesLeft));
+            const body = minutesLeft > 0 ? `Kick-off in ${left} ${left === 1 ? "minute" : "minutes"}` : "Kick-off now";
+            playAlertSound(soundFor(undefined, "myReminder"));
+            if ("Notification" in window && Notification.permission === "granted") new Notification(title, { body });
             else toast.info(`${title} — ${body}`, { duration: 15000 });
           }
         }
