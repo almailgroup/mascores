@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { ignoreCollidingOffer } from "./voice-negotiation";
 
 export type VoiceRole = "host" | "speaker" | "listener";
 
@@ -53,6 +54,9 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
   const localRef = useRef<MediaStream | null>(null);
   const pendingIceRef = useRef<Map<string, RTCIceCandidateInit[]>>(new Map());
   const makingOfferRef = useRef<Set<string>>(new Set());
+  const ignoredOffersRef = useRef<Set<string>>(new Set());
+  const settingAnswerRef = useRef<Set<string>>(new Set());
+  const signalQueuesRef = useRef<Map<string, Promise<void>>>(new Map());
   const meRef = useRef<Me | null>(me);
   const mutedRef = useRef(true);
   const handRef = useRef(false);
@@ -91,6 +95,9 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
   const closePeer = useCallback((userId: string) => {
     pcsRef.current.get(userId)?.close();
     pcsRef.current.delete(userId);
+    makingOfferRef.current.delete(userId);
+    ignoredOffersRef.current.delete(userId);
+    settingAnswerRef.current.delete(userId);
     pendingIceRef.current.delete(userId);
     remoteSidRef.current.delete(userId);
     setRemote((prev) => prev.filter((entry) => entry.userId !== userId));
@@ -120,12 +127,16 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
       const stream = event.streams[0] ?? new MediaStream([event.track]);
       track(otherId, stream);
     };
+    pc.onnegotiationneeded = () => { void negotiateRef.current(otherId, otherRole, true); };
     pc.onconnectionstatechange = () => {
+      if (pcsRef.current.get(otherId) !== pc) return;
       if (pc.connectionState === "failed") {
         pc.restartIce();
         void negotiateRef.current(otherId, otherRole, true);
       }
-      if (pc.connectionState === "closed") closePeer(otherId);
+      if (pc.connectionState === "disconnected") window.setTimeout(() => {
+        if (pcsRef.current.get(otherId) === pc && pc.connectionState === "disconnected") void negotiateRef.current(otherId, otherRole, true);
+      }, 5000);
     };
     return pc;
   }, [closePeer, track]);
@@ -142,6 +153,8 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
       const offer = await pc.createOffer({ iceRestart: force });
       await pc.setLocalDescription(offer);
       await channel.send({ type: "broadcast", event: "signal", payload: { from: current.userId, to: otherId, sid: sidRef.current, toSid: remoteSidRef.current.get(otherId), kind: "offer", data: pc.localDescription ?? offer } satisfies SignalPayload });
+    } catch (error) {
+      console.warn("Voice offer failed", error);
     } finally {
       makingOfferRef.current.delete(otherId);
     }
@@ -163,7 +176,8 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
       localRef.current = stream;
       setAudioReady(true);
       setMicError(null);
-      const micTrack = stream.getAudioTracks()[0]!;
+      const micTrack = stream.getAudioTracks()[0];
+      if (!micTrack) return false;
       // Plug the mic into every open connection without dropping anyone's audio.
       for (const [otherId, pc] of pcsRef.current) {
         const transceiver = pc.getTransceivers().find((t) => t.receiver.track?.kind === "audio");
@@ -247,6 +261,7 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
       const signal = payload as SignalPayload;
       if (signal.to !== me.userId) return;
       if (signal.toSid && signal.toSid !== sidRef.current) return; // meant for an old session of mine
+      const processSignal = async () => {
       const knownSid = remoteSidRef.current.get(signal.from);
       if (signal.sid && knownSid && knownSid !== signal.sid) {
         if (signal.kind !== "offer") return; // stale answer/ice from their old session
@@ -258,7 +273,10 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
       if (!pc) return;
       try {
         if (signal.kind === "offer") {
-          if (pc.signalingState !== "stable") await pc.setLocalDescription({ type: "rollback" });
+          const ignore = ignoreCollidingOffer(me.userId, signal.from, makingOfferRef.current.has(signal.from), pc.signalingState, settingAnswerRef.current.has(signal.from));
+          if (ignore) { ignoredOffersRef.current.add(signal.from); return; }
+          ignoredOffersRef.current.delete(signal.from);
+          if (pc.signalingState === "have-local-offer") await pc.setLocalDescription({ type: "rollback" });
           await pc.setRemoteDescription(new RTCSessionDescription(signal.data as RTCSessionDescriptionInit));
           const answer = await pc.createAnswer();
           await pc.setLocalDescription(answer);
@@ -268,20 +286,29 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
           pendingIceRef.current.delete(signal.from);
         } else if (signal.kind === "answer") {
           if (pc.signalingState === "have-local-offer") {
+            settingAnswerRef.current.add(signal.from);
             await pc.setRemoteDescription(new RTCSessionDescription(signal.data as RTCSessionDescriptionInit));
+            settingAnswerRef.current.delete(signal.from);
+            ignoredOffersRef.current.delete(signal.from);
             const waiting = pendingIceRef.current.get(signal.from) ?? [];
             for (const candidate of waiting) await pc.addIceCandidate(new RTCIceCandidate(candidate));
             pendingIceRef.current.delete(signal.from);
           }
         } else {
+          if (ignoredOffersRef.current.has(signal.from)) return;
           const candidate = signal.data as RTCIceCandidateInit;
           if (pc.remoteDescription) await pc.addIceCandidate(new RTCIceCandidate(candidate));
           else pendingIceRef.current.set(signal.from, [...(pendingIceRef.current.get(signal.from) ?? []), candidate]);
         }
       } catch (error) {
+        settingAnswerRef.current.delete(signal.from);
         console.warn("Voice negotiation retry", error);
         window.setTimeout(() => void negotiateRef.current(signal.from, otherRole, true), 700);
       }
+      };
+      const queued = (signalQueuesRef.current.get(signal.from) ?? Promise.resolve()).catch(() => {}).then(processSignal);
+      signalQueuesRef.current.set(signal.from, queued);
+      await queued;
     });
 
     channel.subscribe((status) => {
@@ -293,13 +320,31 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
       setConnected(false);
       pcsRef.current.forEach((pc) => pc.close());
       pcsRef.current.clear();
+      pendingIceRef.current.clear();
+      makingOfferRef.current.clear();
+      ignoredOffersRef.current.clear();
+      settingAnswerRef.current.clear();
+      signalQueuesRef.current.clear();
+      remoteSidRef.current.clear();
       setRemote([]);
       channelRef.current = null;
       void supabase.removeChannel(channel);
     };
-  }, [enabled, roomId, me?.userId, me?.role]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [enabled, roomId, me?.userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { void sendPresence(); }, [muted, hand, me?.role, sendPresence]);
+  useEffect(() => {
+    const current = meRef.current;
+    if (!enabled || !current) return;
+    for (const [otherId, pc] of pcsRef.current) {
+      const transceiver = pc.getTransceivers().find((t) => t.receiver.track?.kind === "audio");
+      if (!transceiver) continue;
+      const track = publishes(current.role) ? localRef.current?.getAudioTracks()[0] ?? null : null;
+      void transceiver.sender.replaceTrack(track).catch(() => {});
+      const direction = publishes(current.role) ? "sendrecv" : "recvonly";
+      if (transceiver.direction !== direction) { transceiver.direction = direction; void negotiateRef.current(otherId, peersRef.current.find((p) => p.userId === otherId)?.role ?? "listener", true); }
+    }
+  }, [enabled, me?.role]);
 
   const toggleMute = useCallback(async () => {
     if (!mutedRef.current) {
@@ -379,6 +424,7 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
     const AudioCtx = (window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext);
     if (!AudioCtx) return;
     const ctx = new AudioCtx();
+    void ctx.resume().catch(() => {});
     const nodes: { id: string; analyser: AnalyserNode }[] = [];
     const add = (id: string, stream: MediaStream) => {
       try {
@@ -398,7 +444,7 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
       nodes.forEach(({ id, analyser }) => {
         analyser.getByteFrequencyData(buffer);
         let sum = 0;
-        for (let i = 0; i < buffer.length; i += 1) sum += buffer[i]!;
+        for (let i = 0; i < buffer.length; i += 1) sum += buffer[i] ?? 0;
         next[id] = sum / buffer.length > 12;
       });
       setSpeaking(next);

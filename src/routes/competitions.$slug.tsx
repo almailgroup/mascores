@@ -1,4 +1,7 @@
 import { TeamCrest } from "@/components/team-crest";
+import { useAuth } from "@/hooks/use-auth";
+import { useSignInAction } from "@/lib/sign-in-action";
+import { requestAlertPermission } from "@/lib/notification-permission";
 import { PlayerAvatar } from "@/components/player-avatar";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -305,6 +308,8 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
   const num = useNum();
   const compact = useCompact();
   const headerRef = useCollapsingHeader(c.id);
+  const { user } = useAuth();
+  const signIn = useSignInAction();
   const { t, lang } = useI18n();
   const accent = useLogoAccent(hero ? null : logo);
 
@@ -322,16 +327,20 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
 
   const [alerts, setAlerts] = useState<string[]>([]);
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(COMP_ALERT_KEY);
-      setAlerts(raw ? (JSON.parse(raw) as string[]) : []);
-    } catch { /* ignore */ }
-  }, []);
+    if (!user) { setAlerts([]); return; }
+    void supabase.from("profiles").select("notification_preferences").eq("id", user.id).maybeSingle().then(({ data }) => {
+      const prefs = data?.notification_preferences as { competition_alert_overrides?: Record<string, boolean> } | undefined;
+      setAlerts(Object.entries(prefs?.competition_alert_overrides ?? {}).filter(([, on]) => on).map(([id]) => id));
+    });
+  }, [user?.id]);
   const alerted = alerts.includes(c.id);
-  const toggleAlert = () => {
+  const toggleAlert = async () => {
+    if (!user) { signIn(); return; }
+    if (!(await requestAlertPermission())) return;
     const next = alerted ? alerts.filter((id) => id !== c.id) : [...alerts, c.id];
     setAlerts(next);
-    try { window.localStorage.setItem(COMP_ALERT_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+    const { error } = await supabase.rpc("set_competition_notification", { _competition_id: c.id, _enabled: !alerted });
+    if (error) setAlerts(alerts);
   };
 
   const router = useRouter();
@@ -359,7 +368,7 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
           <Bell className="h-5 w-5" fill={alerted ? "currentColor" : "none"} />
         </Button>
         <Button variant="ghost" size="icon"
-          onClick={() => { onToggleFav(); setBump((v) => (faved ? v - 1 : v + 1)); }}
+          onClick={() => { if (!user) { signIn(); return; } onToggleFav(); setBump((v) => (faved ? v - 1 : v + 1)); }}
           aria-label={tx("Follow")}
            className={`sports-header-control -me-2 h-10 w-10 hover:text-match-foreground ${faved ? "text-warning" : "text-match-foreground opacity-70"}`}
         >

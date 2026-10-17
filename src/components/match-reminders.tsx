@@ -7,11 +7,14 @@ import { useTx } from "@/lib/auto-translate";
 import { toast } from "sonner";
 import { isNativeApp, nativeCancel, ensureNativePermission } from "@/lib/native-notify";
 import { playAlertSound, soundFor } from "@/lib/alert-sounds";
+import { useSignInAction } from "@/lib/sign-in-action";
+import { requestAlertPermission } from "@/lib/notification-permission";
 
 const PRESETS = [45, 30, 15];
 
 /** Kick-off reminders: 45/30/15 minutes before, plus a custom time. */
 export function MatchReminders({ matchId, kickoffAt }: { matchId: string; kickoffAt: string | null }) {
+  const signIn = useSignInAction();
   const { user } = useAuth();
   const tx = useTx();
   const qc = useQueryClient();
@@ -31,7 +34,7 @@ export function MatchReminders({ matchId, kickoffAt }: { matchId: string; kickof
   const setRows = (fn: (rows: Row[]) => Row[]) => qc.setQueryData<Row[]>(key, (old) => fn(old ?? []));
 
   const toggle = async (minutes: number) => {
-    if (!user) { toast.error(tx("Sign in to set a reminder")); return; }
+    if (!user) { signIn(); return; }
     const reminderKey = `reminder:${matchId}:${minutes}`;
     if (chosen.has(minutes)) {
       // Show the change instantly, then confirm it with the server.
@@ -53,11 +56,7 @@ export function MatchReminders({ matchId, kickoffAt }: { matchId: string; kickof
     let allowed = true;
     // Older app builds never answer, so never wait more than a few seconds.
     const within = <T,>(p: Promise<T>, fallback: T) => Promise.race([p, new Promise<T>((r) => setTimeout(() => r(fallback), 4000))]);
-    if (isNativeApp()) allowed = await within(ensureNativePermission(), false);
-    else if ("Notification" in window) {
-      if (Notification.permission === "default") await Notification.requestPermission();
-      allowed = Notification.permission === "granted";
-    }
+    allowed = await within(requestAlertPermission(), false);
 
     const { error } = await supabase.from("match_reminders").insert({ match_id: matchId, user_id: user.id, minutes_before: minutes });
     if (error && error.code !== "23505") { qc.invalidateQueries({ queryKey: key }); toast.error(tx("Could not save the reminder. Please try again.")); return; }

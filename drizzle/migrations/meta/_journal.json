@@ -274,6 +274,20 @@
       "when": 1792257980330,
       "tag": "0038_server_side_personal_reminders",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1792258982909,
+      "tag": "0039_voice_discovery_verification_and_host_activity",
+      "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1792259119267,
+      "tag": "0040_competition_bell_preferences",
+      "breakpoints": true
     }
   ]
 }

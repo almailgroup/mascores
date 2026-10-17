@@ -1,4 +1,10 @@
 # Roadmap
+- [x] Retry permission on bells and redirect signed-out favourite/alert actions to sign-in
+- [x] Check notification preview privacy and sender content (payload has real title/body; device setting remains unverified)
+- [x] Repair voice negotiation collisions and end rooms after ten minutes of host inactivity
+- [x] Default search to All; move people search, recommendations and history to Voice
+- [x] Add secure owner-admin voice-user verified/golden verification controls; save/reload verified
+- [ ] Validate simultaneous speaking and permission denial/re-enable on real iPhones — requires multiple devices
 - [x] Fix Mohammed Aman's Yemen flag and verify shared flags across countries
 - [x] Keep the club president crown black and white
 - [x] Update club followers immediately when starred and fix stuck star/notification controls

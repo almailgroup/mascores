@@ -3044,6 +3044,7 @@ export type Database = {
           created_at: string
           description: string | null
           ended_at: string | null
+          host_active_at: string
           host_id: string
           id: string
           invite_code: string
@@ -3059,6 +3060,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           ended_at?: string | null
+          host_active_at?: string
           host_id: string
           id?: string
           invite_code?: string
@@ -3074,6 +3076,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           ended_at?: string | null
+          host_active_at?: string
           host_id?: string
           id?: string
           invite_code?: string
@@ -3091,6 +3094,32 @@ export type Database = {
             columns: ["match_id"]
             isOneToOne: false
             referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      voice_user_badges: {
+        Row: {
+          badge: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          badge: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          badge?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voice_user_badges_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -3145,6 +3174,7 @@ export type Database = {
         Args: { _competition_id: string; _season?: string }
         Returns: Json
       }
+      end_inactive_voice_rooms: { Args: never; Returns: undefined }
       enqueue_match_push: {
         Args: {
           _ba: string
@@ -3241,6 +3271,10 @@ export type Database = {
         Args: { _enabled: boolean; _team_id: string }
         Returns: Json
       }
+      set_competition_notification: {
+        Args: { _competition_id: string; _enabled: boolean }
+        Returns: Json
+      }
       set_player_notification: {
         Args: { _enabled: boolean; _player_id: string }
         Returns: Json
@@ -3249,6 +3283,7 @@ export type Database = {
       show_trgm: { Args: { "": string }; Returns: string[] }
       voice_delete_room: { Args: { _room_id: string }; Returns: undefined }
       voice_end_room: { Args: { _room_id: string }; Returns: undefined }
+      voice_host_activity: { Args: { _room_id: string }; Returns: undefined }
       voice_host_profiles: {
         Args: { _ids: string[] }
         Returns: {
@@ -3261,6 +3296,17 @@ export type Database = {
       voice_manage_participant: {
         Args: { _action: string; _room_id: string; _user_id: string }
         Returns: undefined
+      }
+      voice_people: {
+        Args: { _admin?: boolean; _q?: string }
+        Returns: {
+          avatar_url: string
+          badge: string
+          display_name: string
+          followers: number
+          id: string
+          username: string
+        }[]
       }
       voice_room_by_code: {
         Args: { _code: string }

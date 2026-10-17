@@ -45,6 +45,8 @@ const withDeviceTokens = () => supabase as unknown as SupabaseClient<DeviceToken
 
 /** The APNs token for this device, once APNs has handed one over. */
 let deviceToken: string | null = null;
+let listenersAttached = false;
+let openNotification: ((path: string) => void) | undefined;
 
 function isNative(): boolean {
   if (typeof window === "undefined") return false;
@@ -95,6 +97,7 @@ export async function syncPushToken(): Promise<void> {
  */
 export async function initNativePush(onOpen?: (path: string) => void): Promise<void> {
   if (!isNative()) return;
+  if (onOpen) openNotification = onOpen;
 
   const { PushNotifications } = await import("@capacitor/push-notifications");
 
@@ -104,6 +107,8 @@ export async function initNativePush(onOpen?: (path: string) => void): Promise<v
   }
   if (status.receive !== "granted") return;
 
+  if (!listenersAttached) {
+  listenersAttached = true;
   await PushNotifications.addListener("registration", (token) => {
     deviceToken = token.value;
     // The user may already be signed in by the time APNs answers.
@@ -116,8 +121,9 @@ export async function initNativePush(onOpen?: (path: string) => void): Promise<v
 
   await PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
     const path = action.notification.data?.path;
-    if (typeof path === "string" && path.startsWith("/")) onOpen?.(path);
+    if (typeof path === "string" && path.startsWith("/") && !path.startsWith("//")) openNotification?.(path);
   });
+  }
 
   // Asks iOS for a token; the "registration" listener above receives it.
   await PushNotifications.register();
