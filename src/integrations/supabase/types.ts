@@ -1967,6 +1967,7 @@ export type Database = {
           path: string | null
           result: Json | null
           sent_at: string | null
+          social_kind: string | null
           title_ar: string
           title_en: string
         }
@@ -1983,6 +1984,7 @@ export type Database = {
           path?: string | null
           result?: Json | null
           sent_at?: string | null
+          social_kind?: string | null
           title_ar: string
           title_en: string
         }
@@ -1999,6 +2001,7 @@ export type Database = {
           path?: string | null
           result?: Json | null
           sent_at?: string | null
+          social_kind?: string | null
           title_ar?: string
           title_en?: string
         }
