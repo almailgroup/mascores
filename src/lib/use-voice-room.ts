@@ -261,6 +261,7 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
       const signal = payload as SignalPayload;
       if (signal.to !== me.userId) return;
       if (signal.toSid && signal.toSid !== sidRef.current) return; // meant for an old session of mine
+      const processSignal = async () => {
       const knownSid = remoteSidRef.current.get(signal.from);
       if (signal.sid && knownSid && knownSid !== signal.sid) {
         if (signal.kind !== "offer") return; // stale answer/ice from their old session
@@ -272,7 +273,10 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
       if (!pc) return;
       try {
         if (signal.kind === "offer") {
-          if (pc.signalingState !== "stable") await pc.setLocalDescription({ type: "rollback" });
+          const ignore = ignoreCollidingOffer(me.userId, signal.from, makingOfferRef.current.has(signal.from), pc.signalingState, settingAnswerRef.current.has(signal.from));
+          if (ignore) { ignoredOffersRef.current.add(signal.from); return; }
+          ignoredOffersRef.current.delete(signal.from);
+          if (pc.signalingState === "have-local-offer") await pc.setLocalDescription({ type: "rollback" });
           await pc.setRemoteDescription(new RTCSessionDescription(signal.data as RTCSessionDescriptionInit));
           const answer = await pc.createAnswer();
           await pc.setLocalDescription(answer);
@@ -282,20 +286,28 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
           pendingIceRef.current.delete(signal.from);
         } else if (signal.kind === "answer") {
           if (pc.signalingState === "have-local-offer") {
+            settingAnswerRef.current.add(signal.from);
             await pc.setRemoteDescription(new RTCSessionDescription(signal.data as RTCSessionDescriptionInit));
+            settingAnswerRef.current.delete(signal.from);
             const waiting = pendingIceRef.current.get(signal.from) ?? [];
             for (const candidate of waiting) await pc.addIceCandidate(new RTCIceCandidate(candidate));
             pendingIceRef.current.delete(signal.from);
           }
         } else {
+          if (ignoredOffersRef.current.has(signal.from)) return;
           const candidate = signal.data as RTCIceCandidateInit;
           if (pc.remoteDescription) await pc.addIceCandidate(new RTCIceCandidate(candidate));
           else pendingIceRef.current.set(signal.from, [...(pendingIceRef.current.get(signal.from) ?? []), candidate]);
         }
       } catch (error) {
+        settingAnswerRef.current.delete(signal.from);
         console.warn("Voice negotiation retry", error);
         window.setTimeout(() => void negotiateRef.current(signal.from, otherRole, true), 700);
       }
+      };
+      const queued = (signalQueuesRef.current.get(signal.from) ?? Promise.resolve()).catch(() => {}).then(processSignal);
+      signalQueuesRef.current.set(signal.from, queued);
+      await queued;
     });
 
     channel.subscribe((status) => {
@@ -307,6 +319,12 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
       setConnected(false);
       pcsRef.current.forEach((pc) => pc.close());
       pcsRef.current.clear();
+      pendingIceRef.current.clear();
+      makingOfferRef.current.clear();
+      ignoredOffersRef.current.clear();
+      settingAnswerRef.current.clear();
+      signalQueuesRef.current.clear();
+      remoteSidRef.current.clear();
       setRemote([]);
       channelRef.current = null;
       void supabase.removeChannel(channel);
@@ -314,6 +332,18 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
   }, [enabled, roomId, me?.userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { void sendPresence(); }, [muted, hand, me?.role, sendPresence]);
+  useEffect(() => {
+    const current = meRef.current;
+    if (!enabled || !current) return;
+    for (const [otherId, pc] of pcsRef.current) {
+      const transceiver = pc.getTransceivers().find((t) => t.receiver.track?.kind === "audio");
+      if (!transceiver) continue;
+      const track = publishes(current.role) ? localRef.current?.getAudioTracks()[0] ?? null : null;
+      void transceiver.sender.replaceTrack(track).catch(() => {});
+      const direction = publishes(current.role) ? "sendrecv" : "recvonly";
+      if (transceiver.direction !== direction) { transceiver.direction = direction; void negotiateRef.current(otherId, peersRef.current.find((p) => p.userId === otherId)?.role ?? "listener", true); }
+    }
+  }, [enabled, me?.role]);
 
   const toggleMute = useCallback(async () => {
     if (!mutedRef.current) {
@@ -412,7 +442,7 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
       nodes.forEach(({ id, analyser }) => {
         analyser.getByteFrequencyData(buffer);
         let sum = 0;
-        for (let i = 0; i < buffer.length; i += 1) sum += buffer[i]!;
+        for (let i = 0; i < buffer.length; i += 1) sum += buffer[i] ?? 0;
         next[id] = sum / buffer.length > 12;
       });
       setSpeaking(next);
