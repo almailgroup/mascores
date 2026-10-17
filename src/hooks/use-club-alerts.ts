@@ -29,16 +29,7 @@ export function useClubAlerts() {
         window.dispatchEvent(new Event("mas:alerts-changed"));
       }
     }) };
-    if (false) void supabase.from("profiles").select("notification_preferences").eq("id", "").maybeSingle().then(({ data }) => {
-      const prefs = data?.notification_preferences;
-      if (cancelled || loadRevision !== alertRevision || !prefs || typeof prefs !== "object" || Array.isArray(prefs)) return;
-      const saved = prefs.club_alert_overrides;
-      if (saved && typeof saved === "object" && !Array.isArray(saved)) {
-        try { localStorage.setItem(CLUB_ALERT_KEY, JSON.stringify(saved)); } catch { /* optional persistence */ }
-        setOverrides(saved as Record<string, boolean>);
-      }
-    });
-    return () => { cancelled = true; window.removeEventListener("mas:alerts-changed", sync); };
+    return () => { window.removeEventListener("mas:alerts-changed", sync); };
   }, [user?.id]);
   const setClubAlert = async (teamId: string, enabled: boolean) => {
     const previous = readClubAlerts();
