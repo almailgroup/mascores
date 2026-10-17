@@ -3,6 +3,9 @@ import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { ImageCropper } from "@/components/image-cropper";
 
+let openModalCount = 0;
+let originalBodyOverflow = "";
+
 export function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="block min-w-0 break-words">
@@ -33,9 +36,13 @@ export function Modal({ open, onClose, title, children, wide, fullPage, onSave }
   }, [open]);
   useEffect(() => {
     if (!open) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = previous; };
+    if (openModalCount++ === 0) {
+      originalBodyOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+    }
+    return () => {
+      if (--openModalCount === 0) document.body.style.overflow = originalBodyOverflow;
+    };
   }, [open]);
   if (!open || !mounted || typeof document === "undefined") return null;
   return createPortal(
