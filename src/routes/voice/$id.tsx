@@ -490,7 +490,7 @@ function VoiceRoomPage() {
 }
 
 function SpeakingBars({ className = "" }: { className?: string }) {
-  return <span className={`inline-flex h-3 items-end gap-[2px] ${className}`} aria-hidden>{[0, 1, 2, 3].map((i) => <span key={i} className="w-[3px] rounded-full bg-current animate-[voicebar_0.9s_ease-in-out_infinite]" style={{ animationDelay: `${i * 0.15}s`, height: "100%" }} />)}</span>;
+  return <span className={`inline-flex h-3 items-end gap-[2px] ${className}`} aria-hidden>{[0, 1, 2, 3].map((i) => <span key={i} className="w-[3px] origin-bottom rounded-full bg-current animate-[voicebar_0.9s_ease-in-out_infinite]" style={{ animationDelay: `${i * 0.15}s`, height: "100%" }} />)}</span>;
 }
 
 function NowSpeaking({ peers }: { peers: { userId: string; name: string; avatar: string | null; self?: boolean }[] }) {
