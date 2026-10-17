@@ -372,6 +372,13 @@
       "when": 1792266352280,
       "tag": "0052_verification_replies_and_owner_identity",
       "breakpoints": true
+    },
+    {
+      "idx": 53,
+      "version": "7",
+      "when": 1792268697148,
+      "tag": "0053_migration",
+      "breakpoints": true
     }
   ]
 }
