@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { X } from "lucide-react";
 import { ImageCropper } from "@/components/image-cropper";
 
 export function Field({ label, children }: { label: string; children: ReactNode }) {
@@ -30,25 +31,32 @@ export function Modal({ open, onClose, title, children, wide, fullPage, onSave }
   useEffect(() => {
     if (open && scroller.current) scroller.current.scrollTop = 0;
   }, [open]);
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previous; };
+  }, [open]);
   if (!open || !mounted || typeof document === "undefined") return null;
   return createPortal(
     <div
       ref={scroller}
-      className={`fixed inset-0 z-[70] flex items-start justify-center overflow-y-auto overscroll-contain bg-foreground/60 ${fullPage ? "p-0" : "p-2 backdrop-blur-sm sm:p-4"}`}
+      className={`fixed inset-0 z-[70] flex items-start justify-center overflow-x-hidden overflow-y-auto overscroll-contain bg-foreground/60 ${fullPage ? "p-0" : "p-2 backdrop-blur-sm sm:p-4"}`}
       onClick={onClose}
       style={{ WebkitOverflowScrolling: "touch" }}
     >
       <div
-        className={`${fullPage ? "min-h-screen max-w-6xl rounded-none border-x sm:my-4 sm:min-h-0 sm:rounded-lg" : `my-3 ${wide ? "max-w-4xl" : "max-w-lg"} rounded-3xl sm:my-8`} w-full min-w-0 border border-border bg-card p-4 shadow-2xl sm:p-6`}
+        role="dialog" aria-modal="true" aria-label={title}
+        className={`${fullPage ? "min-h-[100dvh] max-w-full rounded-none" : `my-3 ${wide ? "max-w-4xl" : "max-w-lg"} rounded-3xl sm:my-8`} w-full min-w-0 max-w-full break-words border border-border bg-card p-4 shadow-2xl sm:p-6`}
         style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom))" }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className={`sticky z-10 -mx-4 mb-4 flex items-center justify-between border-b border-border bg-card px-4 pb-2 sm:-mx-6 sm:px-6 ${fullPage ? "-mt-4 top-0 sm:-mt-6" : "top-0 pt-1"}`} style={fullPage ? { paddingTop: "calc(0.75rem + env(safe-area-inset-top, 0px) + 1.5rem)" } : undefined}>
+        <div className={`sticky z-10 -mx-4 mb-4 flex items-center justify-between border-b border-border bg-card px-4 pb-2 sm:-mx-6 sm:px-6 ${fullPage ? "-mt-4 top-0 sm:-mt-6" : "top-0 pt-1"}`} style={fullPage ? { paddingTop: "calc(0.75rem + env(safe-area-inset-top, 0px))" } : undefined}>
           <h3 className="min-w-0 truncate text-base font-bold sm:text-lg">{title}</h3>
           {onSave && <button type="button" onClick={onSave} className={`${btnPrimary} ms-auto me-2`}>Save</button>}
-          <button onClick={onClose} aria-label="Close" className="-me-1 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm text-muted-foreground hover:bg-accent">✕</button>
+          <button onClick={onClose} aria-label="Close" className="-me-1 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm text-muted-foreground hover:bg-accent"><X className="h-5 w-5" /></button>
         </div>
-        {children}
+        <div className="min-w-0 max-w-full [&>*]:min-w-0 [&_*]:max-w-full">{children}</div>
       </div>
     </div>,
     document.body,
