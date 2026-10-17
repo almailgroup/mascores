@@ -1,6 +1,7 @@
 import { TeamCrest } from "@/components/team-crest";
 import { useAuth } from "@/hooks/use-auth";
 import { useSignInAction } from "@/lib/sign-in-action";
+import { toast } from "sonner";
 import { useCompetitionAlerts } from "@/lib/competition-alerts";
 import { requestAlertPermission } from "@/lib/notification-permission";
 import { PlayerAvatar } from "@/components/player-avatar";
