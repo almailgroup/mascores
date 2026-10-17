@@ -4,6 +4,7 @@ import { Radio, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
+import { playAlertSound } from "@/lib/alert-sounds";
 
 type Alert = { id: string; title: string; host: string };
 
@@ -42,6 +43,7 @@ export function LiveVoiceAlert() {
 
   useEffect(() => {
     if (!alert) return;
+    playAlertSound("voice");
     const timer = window.setTimeout(() => setAlert(null), 12000);
     return () => window.clearTimeout(timer);
   }, [alert]);

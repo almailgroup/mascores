@@ -20,6 +20,37 @@
 		A1B2C3D40000000000000011 /* whistle.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D40000000000000010 /* whistle.caf */; };
 		A1B2C3D40000000000000021 /* card.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D40000000000000020 /* card.caf */; };
 		A1B2C3D40000000000000031 /* miss.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D40000000000000030 /* miss.caf */; };
+		A1B2C3D50000000000000001 /* custom.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D50000000000000000 /* custom.caf */; };
+		A1B2C3D50000000000000003 /* et_break.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D50000000000000002 /* et_break.caf */; };
+		A1B2C3D50000000000000005 /* et_second.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D50000000000000004 /* et_second.caf */; };
+		A1B2C3D50000000000000007 /* et_start.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D50000000000000006 /* et_start.caf */; };
+		A1B2C3D50000000000000009 /* et_wait.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D50000000000000008 /* et_wait.caf */; };
+		A1B2C3D5000000000000000B /* fulltime.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D5000000000000000A /* fulltime.caf */; };
+		A1B2C3D5000000000000000D /* fulltime_et.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D5000000000000000C /* fulltime_et.caf */; };
+		A1B2C3D5000000000000000F /* fulltime_pens.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D5000000000000000E /* fulltime_pens.caf */; };
+		A1B2C3D50000000000000011 /* halftime.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D50000000000000010 /* halftime.caf */; };
+		A1B2C3D50000000000000013 /* highlights.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D50000000000000012 /* highlights.caf */; };
+		A1B2C3D50000000000000015 /* injury.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D50000000000000014 /* injury.caf */; };
+		A1B2C3D50000000000000017 /* kickoff.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D50000000000000016 /* kickoff.caf */; };
+		A1B2C3D50000000000000019 /* my_reminder.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D50000000000000018 /* my_reminder.caf */; };
+		A1B2C3D5000000000000001B /* news.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D5000000000000001A /* news.caf */; };
+		A1B2C3D5000000000000001D /* note.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D5000000000000001C /* note.caf */; };
+		A1B2C3D5000000000000001F /* own_goal.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D5000000000000001E /* own_goal.caf */; };
+		A1B2C3D50000000000000021 /* penalty_goal.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D50000000000000020 /* penalty_goal.caf */; };
+		A1B2C3D50000000000000023 /* reminder.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D50000000000000022 /* reminder.caf */; };
+		A1B2C3D50000000000000025 /* resumed.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D50000000000000024 /* resumed.caf */; };
+		A1B2C3D50000000000000027 /* scorer.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D50000000000000026 /* scorer.caf */; };
+		A1B2C3D50000000000000029 /* second_half.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D50000000000000028 /* second_half.caf */; };
+		A1B2C3D5000000000000002B /* second_yellow.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D5000000000000002A /* second_yellow.caf */; };
+		A1B2C3D5000000000000002D /* shootout.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D5000000000000002C /* shootout.caf */; };
+		A1B2C3D5000000000000002F /* sub.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D5000000000000002E /* sub.caf */; };
+		A1B2C3D50000000000000031 /* transfer.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D50000000000000030 /* transfer.caf */; };
+		A1B2C3D50000000000000033 /* var.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D50000000000000032 /* var.caf */; };
+		A1B2C3D50000000000000035 /* var_goal.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D50000000000000034 /* var_goal.caf */; };
+		A1B2C3D50000000000000037 /* var_penalty.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D50000000000000036 /* var_penalty.caf */; };
+		A1B2C3D50000000000000039 /* var_red.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D50000000000000038 /* var_red.caf */; };
+		A1B2C3D5000000000000003B /* voice.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D5000000000000003A /* voice.caf */; };
+		A1B2C3D5000000000000003D /* yellow.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D5000000000000003C /* yellow.caf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -39,6 +70,37 @@
 		A1B2C3D40000000000000010 /* whistle.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/whistle.caf; sourceTree = "<group>"; };
 		A1B2C3D40000000000000020 /* card.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/card.caf; sourceTree = "<group>"; };
 		A1B2C3D40000000000000030 /* miss.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/miss.caf; sourceTree = "<group>"; };
+		A1B2C3D50000000000000000 /* custom.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/custom.caf; sourceTree = "<group>"; };
+		A1B2C3D50000000000000002 /* et_break.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/et_break.caf; sourceTree = "<group>"; };
+		A1B2C3D50000000000000004 /* et_second.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/et_second.caf; sourceTree = "<group>"; };
+		A1B2C3D50000000000000006 /* et_start.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/et_start.caf; sourceTree = "<group>"; };
+		A1B2C3D50000000000000008 /* et_wait.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/et_wait.caf; sourceTree = "<group>"; };
+		A1B2C3D5000000000000000A /* fulltime.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/fulltime.caf; sourceTree = "<group>"; };
+		A1B2C3D5000000000000000C /* fulltime_et.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/fulltime_et.caf; sourceTree = "<group>"; };
+		A1B2C3D5000000000000000E /* fulltime_pens.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/fulltime_pens.caf; sourceTree = "<group>"; };
+		A1B2C3D50000000000000010 /* halftime.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/halftime.caf; sourceTree = "<group>"; };
+		A1B2C3D50000000000000012 /* highlights.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/highlights.caf; sourceTree = "<group>"; };
+		A1B2C3D50000000000000014 /* injury.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/injury.caf; sourceTree = "<group>"; };
+		A1B2C3D50000000000000016 /* kickoff.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/kickoff.caf; sourceTree = "<group>"; };
+		A1B2C3D50000000000000018 /* my_reminder.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/my_reminder.caf; sourceTree = "<group>"; };
+		A1B2C3D5000000000000001A /* news.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/news.caf; sourceTree = "<group>"; };
+		A1B2C3D5000000000000001C /* note.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/note.caf; sourceTree = "<group>"; };
+		A1B2C3D5000000000000001E /* own_goal.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/own_goal.caf; sourceTree = "<group>"; };
+		A1B2C3D50000000000000020 /* penalty_goal.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/penalty_goal.caf; sourceTree = "<group>"; };
+		A1B2C3D50000000000000022 /* reminder.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/reminder.caf; sourceTree = "<group>"; };
+		A1B2C3D50000000000000024 /* resumed.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/resumed.caf; sourceTree = "<group>"; };
+		A1B2C3D50000000000000026 /* scorer.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/scorer.caf; sourceTree = "<group>"; };
+		A1B2C3D50000000000000028 /* second_half.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/second_half.caf; sourceTree = "<group>"; };
+		A1B2C3D5000000000000002A /* second_yellow.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/second_yellow.caf; sourceTree = "<group>"; };
+		A1B2C3D5000000000000002C /* shootout.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/shootout.caf; sourceTree = "<group>"; };
+		A1B2C3D5000000000000002E /* sub.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/sub.caf; sourceTree = "<group>"; };
+		A1B2C3D50000000000000030 /* transfer.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/transfer.caf; sourceTree = "<group>"; };
+		A1B2C3D50000000000000032 /* var.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/var.caf; sourceTree = "<group>"; };
+		A1B2C3D50000000000000034 /* var_goal.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/var_goal.caf; sourceTree = "<group>"; };
+		A1B2C3D50000000000000036 /* var_penalty.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/var_penalty.caf; sourceTree = "<group>"; };
+		A1B2C3D50000000000000038 /* var_red.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/var_red.caf; sourceTree = "<group>"; };
+		A1B2C3D5000000000000003A /* voice.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/voice.caf; sourceTree = "<group>"; };
+		A1B2C3D5000000000000003C /* yellow.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sounds/yellow.caf; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -87,6 +149,37 @@
 				A1B2C3D40000000000000010 /* whistle.caf */,
 				A1B2C3D40000000000000020 /* card.caf */,
 				A1B2C3D40000000000000030 /* miss.caf */,
+				A1B2C3D50000000000000000 /* custom.caf */,
+				A1B2C3D50000000000000002 /* et_break.caf */,
+				A1B2C3D50000000000000004 /* et_second.caf */,
+				A1B2C3D50000000000000006 /* et_start.caf */,
+				A1B2C3D50000000000000008 /* et_wait.caf */,
+				A1B2C3D5000000000000000A /* fulltime.caf */,
+				A1B2C3D5000000000000000C /* fulltime_et.caf */,
+				A1B2C3D5000000000000000E /* fulltime_pens.caf */,
+				A1B2C3D50000000000000010 /* halftime.caf */,
+				A1B2C3D50000000000000012 /* highlights.caf */,
+				A1B2C3D50000000000000014 /* injury.caf */,
+				A1B2C3D50000000000000016 /* kickoff.caf */,
+				A1B2C3D50000000000000018 /* my_reminder.caf */,
+				A1B2C3D5000000000000001A /* news.caf */,
+				A1B2C3D5000000000000001C /* note.caf */,
+				A1B2C3D5000000000000001E /* own_goal.caf */,
+				A1B2C3D50000000000000020 /* penalty_goal.caf */,
+				A1B2C3D50000000000000022 /* reminder.caf */,
+				A1B2C3D50000000000000024 /* resumed.caf */,
+				A1B2C3D50000000000000026 /* scorer.caf */,
+				A1B2C3D50000000000000028 /* second_half.caf */,
+				A1B2C3D5000000000000002A /* second_yellow.caf */,
+				A1B2C3D5000000000000002C /* shootout.caf */,
+				A1B2C3D5000000000000002E /* sub.caf */,
+				A1B2C3D50000000000000030 /* transfer.caf */,
+				A1B2C3D50000000000000032 /* var.caf */,
+				A1B2C3D50000000000000034 /* var_goal.caf */,
+				A1B2C3D50000000000000036 /* var_penalty.caf */,
+				A1B2C3D50000000000000038 /* var_red.caf */,
+				A1B2C3D5000000000000003A /* voice.caf */,
+				A1B2C3D5000000000000003C /* yellow.caf */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -161,6 +254,37 @@
 				A1B2C3D40000000000000011 /* whistle.caf in Resources */,
 				A1B2C3D40000000000000021 /* card.caf in Resources */,
 				A1B2C3D40000000000000031 /* miss.caf in Resources */,
+				A1B2C3D50000000000000001 /* custom.caf in Resources */,
+				A1B2C3D50000000000000003 /* et_break.caf in Resources */,
+				A1B2C3D50000000000000005 /* et_second.caf in Resources */,
+				A1B2C3D50000000000000007 /* et_start.caf in Resources */,
+				A1B2C3D50000000000000009 /* et_wait.caf in Resources */,
+				A1B2C3D5000000000000000B /* fulltime.caf in Resources */,
+				A1B2C3D5000000000000000D /* fulltime_et.caf in Resources */,
+				A1B2C3D5000000000000000F /* fulltime_pens.caf in Resources */,
+				A1B2C3D50000000000000011 /* halftime.caf in Resources */,
+				A1B2C3D50000000000000013 /* highlights.caf in Resources */,
+				A1B2C3D50000000000000015 /* injury.caf in Resources */,
+				A1B2C3D50000000000000017 /* kickoff.caf in Resources */,
+				A1B2C3D50000000000000019 /* my_reminder.caf in Resources */,
+				A1B2C3D5000000000000001B /* news.caf in Resources */,
+				A1B2C3D5000000000000001D /* note.caf in Resources */,
+				A1B2C3D5000000000000001F /* own_goal.caf in Resources */,
+				A1B2C3D50000000000000021 /* penalty_goal.caf in Resources */,
+				A1B2C3D50000000000000023 /* reminder.caf in Resources */,
+				A1B2C3D50000000000000025 /* resumed.caf in Resources */,
+				A1B2C3D50000000000000027 /* scorer.caf in Resources */,
+				A1B2C3D50000000000000029 /* second_half.caf in Resources */,
+				A1B2C3D5000000000000002B /* second_yellow.caf in Resources */,
+				A1B2C3D5000000000000002D /* shootout.caf in Resources */,
+				A1B2C3D5000000000000002F /* sub.caf in Resources */,
+				A1B2C3D50000000000000031 /* transfer.caf in Resources */,
+				A1B2C3D50000000000000033 /* var.caf in Resources */,
+				A1B2C3D50000000000000035 /* var_goal.caf in Resources */,
+				A1B2C3D50000000000000037 /* var_penalty.caf in Resources */,
+				A1B2C3D50000000000000039 /* var_red.caf in Resources */,
+				A1B2C3D5000000000000003B /* voice.caf in Resources */,
+				A1B2C3D5000000000000003D /* yellow.caf in Resources */,
 				504EC30F1FED79650016851F /* Assets.xcassets in Resources */,
 				50379B232058CBB4000EE86E /* capacitor.config.json in Resources */,
 				504EC30D1FED79650016851F /* Main.storyboard in Resources */,

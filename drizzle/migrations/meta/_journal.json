@@ -267,6 +267,13 @@
       "when": 1792162479286,
       "tag": "0037_etwait_status_and_reminder_fix",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1792257980330,
+      "tag": "0038_server_side_personal_reminders",
+      "breakpoints": true
     }
   ]
 }

@@ -61,10 +61,24 @@ const STATUS_TEXT: Record<string, { label: string }> = {
   "2h": { label: "Second half" },
   ft: { label: "Full time" },
   etwait: { label: "Waiting for extra time" },
+  et: { label: "Extra time started" },
   aet: { label: "After extra time" },
   pen: { label: "Penalty shoot-out" },
   postponed: { label: "Postponed" },
   cancelled: { label: "Cancelled" },
+};
+
+/** Every match moment has its own sound. */
+const EVENT_SOUND: Record<string, AlertEventKey> = {
+  goal: "goal", own_goal: "ownGoal", penalty_goal: "penalty", penalty: "penalty",
+  penalty_missed: "miss", missed_penalty: "miss", penalty_miss: "miss",
+  yellow_card: "card", yellow: "card", second_yellow: "secondYellow", red_card: "redcard", red: "redcard",
+  substitution: "sub", sub: "sub", injury_sub: "injury", injury: "injury",
+  var: "var", note: "note", assist: "scorer", save: "note",
+};
+const STATUS_SOUND: Record<string, AlertEventKey> = {
+  live: "kickoff", "1h": "kickoff", ht: "halftime", "2h": "secondHalf", etwait: "etWait", et: "etStart",
+  ft: "final", aet: "finalEt", pen: "finalPens", postponed: "postponed", cancelled: "postponed",
 };
 
 type AlertPreferences = { goals?: boolean; cards?: boolean; kickoff?: boolean; final?: boolean; sound?: string; sounds?: AlertSoundMap };
@@ -175,10 +189,7 @@ export function useLiveEventAlerts() {
         m ? `${m.home} ${score || "vs"} ${m.away}` : "",
         [minute, who, row.description].filter(Boolean).join(" · "),
       ].filter(Boolean).join("\n");
-      const soundKey: AlertEventKey = ["penalty_missed", "missed_penalty"].includes(row.type) ? "miss"
-        : ["red", "red_card", "second_yellow"].includes(row.type) ? "redcard"
-        : ["penalty", "penalty_goal"].includes(row.type) ? "penalty"
-        : category === "cards" ? "card" : category === "goals" ? "goal" : "kickoff";
+      const soundKey: AlertEventKey = EVENT_SOUND[row.type] ?? "note";
       void announce(title, body, soundFor(preferences.sounds, soundKey), `/matches/${row.match_id}`);
 
     };
@@ -200,7 +211,7 @@ export function useLiveEventAlerts() {
       seen.current.add(key);
       info.set(row.id, { ...(m as Info), homeScore: row.home_score, awayScore: row.away_score });
       const score = row.home_score != null && row.away_score != null ? `${row.home_score} - ${row.away_score}` : "vs";
-      void announce(meta.label, `${m?.home ?? "Home"} ${score} ${m?.away ?? "Away"}`, soundFor(preferences.sounds, category === "final" ? "final" : "kickoff"), `/matches/${row.id}`);
+      void announce(meta.label, `${m?.home ?? "Home"} ${score} ${m?.away ?? "Away"}`, soundFor(preferences.sounds, STATUS_SOUND[row.status] ?? "kickoff"), `/matches/${row.id}`);
     };
 
     loadAlerts();
