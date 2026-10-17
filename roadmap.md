@@ -77,7 +77,7 @@
 - [ ] Re-enter the Apple push key (.p8) — waiting on the user
 - [x] Add a Settings switch for voice room live alerts
 - [x] Match highlights: 'send notification' option -> 'Highlights available' alert
-- [ ] Voice: show usernames not codes; invite-code join with Enter; top-5 recommendations (golden, verified, followers) only on search focus; clearer badge; uncut profile names; save/delete on end room + edit saved title/photo
-- [ ] Match: line-style momentum with only goal icons; lineup photos reveal together; logo watermark on lineups; new lineup share design with photos
-- [ ] Admin phone layout: notifications panel/history, teams, venues, popups for list items and channels; notification history and Almail AI main-admin only
-- [ ] Competition bell marks its matches; league followers get transfer alerts; hide temporary players from players list; keep historical coaches per match
+- [x] Voice: show usernames not codes; invite-code join with Enter; top-5 recommendations (golden, verified, followers) only on search focus; clearer badge; uncut profile names; save/delete on end room + edit saved title/photo
+- [x] Match: line-style momentum with only goal icons; lineup photos reveal together; logo watermark on lineups; new lineup share design with photos
+- [x] Admin phone layout: notifications panel/history, teams, venues, popups for list items and channels; notification history and Almail AI main-admin only
+- [x] Competition bell marks its matches; league followers get transfer alerts; hide temporary players from players list; keep historical coaches per match
