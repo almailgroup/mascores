@@ -1,3 +1,4 @@
+import { useAdminAbility } from "@/lib/admin-ability";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -11,6 +12,7 @@ type Recent = { id: string; kind: string; title_en: string; body_en: string; aud
 
 /** Owner-only custom phone notification sender. */
 export function NotificationsPanel() {
+  const { isOwner } = useAdminAbility();
   const qc = useQueryClient();
   const [titleEn, setTitleEn] = useState("");
   const [bodyEn, setBodyEn] = useState("");
@@ -22,10 +24,12 @@ export function NotificationsPanel() {
   const [busy, setBusy] = useState(false);
 
   const teams = useQuery({
+    enabled: isOwner,
     queryKey: ["admin", "push-teams"],
     queryFn: async () => (await supabase.from("teams").select("id,name,logo_url,country").eq("is_temporary", false).order("name")).data ?? [],
   });
   const recent = useQuery({
+    enabled: isOwner,
     queryKey: ["admin", "push-recent"],
     queryFn: async () => ((await supabase.rpc("admin_recent_pushes", { _limit: 15 })).data ?? []) as Recent[],
     refetchInterval: 5000,
@@ -46,20 +50,23 @@ export function NotificationsPanel() {
       await sendPush({ kind: "custom", titleEn, bodyEn, titleAr, bodyAr, path: link || null, audience: audience === "team" && teamId ? { type: "team", teamId } : { type: "all" } });
       toast.success("Notification sent");
       setTitleEn(""); setBodyEn(""); setTitleAr(""); setBodyAr(""); setPath("");
-      setTimeout(() => qc.invalidateQueries({ queryKey: ["admin", "push-recent"] }), 1500);
+      setTimeout(() => qc.invalidateQueries({ enabled: isOwner,
+    queryKey: ["admin", "push-recent"] }), 1500);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not send");
     } finally { setBusy(false); }
   };
 
+  if (!isOwner) return null;
+
   return (
-    <div className="grid gap-6">
+    <div className="grid min-w-0 grid-cols-1 gap-6">
       <div>
         <h2 className="text-lg font-bold">Send a notification</h2>
         <p className="text-sm text-muted-foreground">Goes to phones with the MA Scores app. Fill English, Arabic or both — phones set to Arabic get the Arabic text.</p>
       </div>
-      <div className="grid gap-3 rounded-2xl border border-border bg-card p-4">
-        <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid min-w-0 grid-cols-1 gap-3 rounded-2xl border border-border bg-card p-4">
+        <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
           <Field label="Title (English)"><input className={inputCls} maxLength={120} value={titleEn} onChange={(e) => setTitleEn(e.target.value)} /></Field>
           <Field label="العنوان (Arabic)"><input dir="rtl" className={inputCls} maxLength={120} value={titleAr} onChange={(e) => setTitleAr(e.target.value)} /></Field>
           <Field label="Message (English)"><textarea rows={3} className={inputCls} maxLength={400} value={bodyEn} onChange={(e) => setBodyEn(e.target.value)} /></Field>
@@ -83,14 +90,14 @@ export function NotificationsPanel() {
 
       <div>
         <h3 className="mb-2 text-sm font-bold">Recently sent</h3>
-        <div className="grid gap-2">
+        <div className="grid min-w-0 grid-cols-1 gap-2">
           {(recent.data ?? []).map((r) => (
-            <div key={r.id} className="rounded-xl border border-border bg-card p-3 text-sm">
-              <div className="flex items-center justify-between gap-2">
-                <span className="min-w-0 truncate font-semibold">{r.title_en}</span>
+            <div key={r.id} className="min-w-0 break-words [overflow-wrap:anywhere] rounded-xl border border-border bg-card p-3 text-sm">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="min-w-0 break-words font-semibold">{r.title_en}</span>
                 <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[0.65rem] font-semibold uppercase">{r.kind}</span>
               </div>
-              {r.body_en && <div className="truncate text-xs text-muted-foreground">{r.body_en}</div>}
+              {r.body_en && <div className="break-words text-xs text-muted-foreground">{r.body_en}</div>}
               <div className="mt-1 text-xs text-muted-foreground">
                 {new Date(r.created_at).toLocaleString()} · {r.audience_type === "all" ? "Everyone" : "Club followers"} ·{" "}
                 {r.result?.error ? <span className="text-destructive">Failed: {r.result.error}</span>
@@ -99,7 +106,7 @@ export function NotificationsPanel() {
               </div>
             </div>
           ))}
-          {recent.data && recent.data.length === 0 && <div className="rounded-xl border border-dashed border-border p-4 text-center text-sm text-muted-foreground">Nothing sent yet.</div>}
+          {recent.data && recent.data.length === 0 && <div className="min-w-0 break-words [overflow-wrap:anywhere] rounded-xl border border-dashed border-border p-4 text-center text-sm text-muted-foreground">Nothing sent yet.</div>}
         </div>
       </div>
     </div>

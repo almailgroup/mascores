@@ -29,7 +29,7 @@ export function PlayersPanel() {
   const [countryFilter, setCountryFilter] = useState<string | null>(null);
   const [position, setPosition] = useState<string>("");
   const [batchOpen, setBatchOpen] = useState(false);
-  const { needsApproval } = useAdminAbility();
+  const { needsApproval, isOwner } = useAdminAbility();
   const [reviewNote, setReviewNote] = useState<string | null>(null);
 
   const tree = useQuery({
@@ -100,7 +100,7 @@ export function PlayersPanel() {
         <button className={scope === "all" ? btnPrimary : btnGhost} onClick={() => setScope("all")}>All players</button>
         <button className={scope === "free" ? btnPrimary : btnGhost} onClick={() => setScope("free")}>Free agents</button>
         <button className={btnPrimary} onClick={() => setEditing({})}><Plus className="h-3.5 w-3.5" /> New player</button>
-        <button className={btnGhost} onClick={() => setBatchOpen(true)}><Sparkles className="h-3.5 w-3.5" /> AI from photos</button>
+        {isOwner && <button className={btnGhost} onClick={() => setBatchOpen(true)}><Sparkles className="h-3.5 w-3.5" /> AI from photos</button>}
       </div>
 
       {(countryFilter || compFilter || teamFilter) && (

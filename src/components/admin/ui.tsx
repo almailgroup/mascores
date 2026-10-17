@@ -4,7 +4,7 @@ import { ImageCropper } from "@/components/image-cropper";
 
 export function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <label className="block">
+    <label className="block min-w-0 break-words">
       <div className="mb-1 text-[0.65rem] font-semibold uppercase tracking-widest text-muted-foreground">{label}</div>
       {children}
     </label>
@@ -12,12 +12,12 @@ export function Field({ label, children }: { label: string; children: ReactNode 
 }
 
 // 16px minimum font-size on touch widths keeps iOS Safari from auto-zooming on focus.
-export const inputCls = "w-full max-w-full rounded-lg border border-border bg-background px-3 py-2.5 text-base outline-none focus:border-primary sm:py-2 sm:text-sm";
+export const inputCls = "min-w-0 w-full max-w-full rounded-lg border border-border bg-background px-3 py-2.5 text-base outline-none focus:border-primary sm:py-2 sm:text-sm";
 export const btnPrimary = "inline-flex h-10 shrink-0 items-center gap-2 rounded-full bg-primary px-4 text-xs font-semibold text-primary-foreground shadow disabled:opacity-60 sm:h-9";
 export const btnGhost = "inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-border bg-background px-3 text-xs font-medium hover:bg-accent sm:h-9";
 export const btnDanger = "inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-destructive/40 bg-destructive/10 px-3 text-xs font-medium text-destructive hover:bg-destructive/20 sm:h-9";
 
-export function Modal({ open, onClose, title, children, wide, fullPage }: { open: boolean; onClose: () => void; title: string; children: ReactNode; wide?: boolean; fullPage?: boolean }) {
+export function Modal({ open, onClose, title, children, wide, fullPage, onSave }: { open: boolean; onClose: () => void; title: string; children: ReactNode; wide?: boolean; fullPage?: boolean; onSave?: () => void }) {
   // Rendered through a portal so a sheet opened from inside another sheet
   // (e.g. editing an event while the match manager is open) is never trapped
   // by the parent's scroll container or stacking context — that was why
@@ -45,6 +45,7 @@ export function Modal({ open, onClose, title, children, wide, fullPage }: { open
       >
         <div className={`sticky z-10 -mx-4 mb-4 flex items-center justify-between border-b border-border bg-card px-4 pb-2 sm:-mx-6 sm:px-6 ${fullPage ? "-mt-4 top-0 sm:-mt-6" : "top-0 pt-1"}`} style={fullPage ? { paddingTop: "calc(0.75rem + env(safe-area-inset-top, 0px) + 1.5rem)" } : undefined}>
           <h3 className="min-w-0 truncate text-base font-bold sm:text-lg">{title}</h3>
+          {onSave && <button type="button" onClick={onSave} className={`${btnPrimary} ms-auto me-2`}>Save</button>}
           <button onClick={onClose} aria-label="Close" className="-me-1 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm text-muted-foreground hover:bg-accent">✕</button>
         </div>
         {children}
