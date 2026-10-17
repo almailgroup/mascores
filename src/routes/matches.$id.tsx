@@ -1,4 +1,5 @@
-import { PlayerAvatar } from "@/components/player-avatar";
+import lineupLogo from "@/assets/logo-mark-v2.png.asset.json";
+import { LineupPortraits, PlayerAvatar } from "@/components/player-avatar";
 import { TeamCrest } from "@/components/team-crest";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -146,7 +147,7 @@ function MatchPage() {
     queryFn: async () => {
       const pick = async (coachId: string | null | undefined, teamId: string | null | undefined) => {
         if (coachId) return (await supabase.from("coaches").select("name").eq("id", coachId).maybeSingle()).data?.name ?? null;
-        if (teamId) return (await supabase.from("coaches").select("name").eq("team_id", teamId).limit(1).maybeSingle()).data?.name ?? null;
+        if (teamId && m.data?.status === "scheduled") return (await supabase.from("coaches").select("name").eq("team_id", teamId).limit(1).maybeSingle()).data?.name ?? null;
         return null;
       };
       return {
@@ -376,7 +377,7 @@ function MatchPage() {
         </div>
       </div>}
 
-      {tab === "lineups" && lineupsVisible && <div className="space-y-4">
+      {tab === "lineups" && lineupsVisible && <LineupPortraits sources={(lineups.data ?? []).map((item) => item.player?.photo_url)}><div className="space-y-4">
       <div dir="ltr" className="relative grid grid-cols-2 gap-1 rounded-full border border-border bg-muted/60 p-1">
         <span
           className="absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-full bg-primary shadow-sm transition-transform duration-300 ease-out"
@@ -411,10 +412,19 @@ function MatchPage() {
         const shortOf = (lu: (typeof rows)[number]) => ({
           number: String(lu.shirt_number ?? lu.player?.shirt_number ?? ""),
           name: tx(displayShortName(lu.player?.short_name, lu.player?.name)) ?? "",
+          photo: lu.player?.photo_url,
         });
         // The shareable card mirrors what is on screen: formation, pitch, coach and bench.
         const lineupShare = {
           ...shareData,
+          lineups: (["home", "away"] as const).map((clubSide) => {
+            const club = clubSide === "home" ? match.home : match.away;
+            const shape = (clubSide === "home" ? match.home_formation : match.away_formation) ?? "4-3-3";
+            const squad = (lineups.data ?? []).filter((item) => item.team_id === club?.id);
+            return { teamName: tx(club?.name) ?? "TBD", logo: club?.logo_url, formation: shape,
+              rows: formationRows(shape).map((row) => row.map((slot) => squad.find((p) => p.is_starting && p.position_code === slot)).filter((p): p is (typeof squad)[number] => Boolean(p)).map(shortOf)),
+              bench: squad.filter((p) => !p.is_starting).map(shortOf) };
+          }),
           lineup: {
             teamName: tx(team?.name) ?? "TBD",
             logo: team?.logo_url ?? null,
@@ -435,6 +445,7 @@ function MatchPage() {
               // Turf and markings live on a clipped layer so player cards (and the
               // goalkeeper's rating on the bottom row) are never cut off.
               <div className="relative mx-auto mb-4 aspect-[3/4] w-full max-w-md rounded-2xl px-3 pb-9 pt-6">
+                <img src={lineupLogo.url} alt="" aria-hidden="true" className="pointer-events-none absolute bottom-3 right-3 z-10 h-7 w-7 object-contain opacity-30" />
                 <span className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl" style={{ background: "repeating-linear-gradient(180deg,#1b7a3f 0 28px,#17703a 28px 56px)" }} />
                 <span className="pointer-events-none absolute inset-2 rounded-lg border-2 border-white/35" />
                 <span className="pointer-events-none absolute left-2 right-2 top-1/2 border-t-2 border-white/35" />
@@ -489,7 +500,7 @@ function MatchPage() {
               return (
                 <>
                   {startersList.length > 0 && <div>{startersList.map(row)}</div>}
-                  <TeamCoach teamId={team?.id} coachId={side === "home" ? match.home_coach_id : match.away_coach_id} />
+                  <TeamCoach teamId={team?.id} coachId={side === "home" ? match.home_coach_id : match.away_coach_id} played={match.status !== "scheduled"} />
                   {benchList.length > 0 && (
                     <div className="mt-3">
                       <h4 className="mb-1 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Bench")}</h4>
@@ -505,7 +516,7 @@ function MatchPage() {
       })}
       </div>
       <MatchMomentum matchId={id} home={match.home} away={match.away} minutes={match.momentum_minutes ?? 90} events={(events.data ?? []).map((e) => ({ minute: e.minute, type: e.type, team_id: e.team_id }))} />
-      </div>}
+      </div></LineupPortraits>}
       {tab === "stats" && <MatchStatsPanel rows={stats.data ?? []} home={match.home} away={match.away} />}
       {tab === "previous" && <PreviousMatches home={match.home} away={match.away} currentId={match.id} />}
       {tab === "standings" && <MatchStandings competitionId={match.competition_id} season={match.season} liveTeamIds={isLive ? [match.home_team_id, match.away_team_id].filter(Boolean) as string[] : []} highlightIds={[match.home_team_id, match.away_team_id].filter(Boolean) as string[]} />}
@@ -523,14 +534,15 @@ function PreviousMatches(props: { home: Team | null; away: Team | null; currentI
  * Coach block under each lineup. A coach chosen for this specific match wins;
  * otherwise the club's current coach is shown as a fallback.
  */
-function TeamCoach({ teamId, coachId }: { teamId: string | undefined; coachId?: string | null }) {
+function TeamCoach({ teamId, coachId, played }: { teamId: string | undefined; coachId?: string | null; played?: boolean }) {
   const tx = useTx();
   const q = useQuery({
-    queryKey: ["lineup-coach", teamId, coachId ?? null],
+    queryKey: ["lineup-coach", teamId, coachId ?? null, !!played],
     enabled: !!teamId || !!coachId,
     queryFn: async () => {
       if (coachId) return (await supabase.from("coaches").select("id,name,photo_url,nationality").eq("id", coachId).maybeSingle()).data;
-      if (!teamId) return null;
+      // Played matches never borrow today's coach; only a stored match coach shows.
+      if (!teamId || played) return null;
       return (await supabase.from("coaches").select("id,name,photo_url,nationality").eq("team_id", teamId).limit(1).maybeSingle()).data;
     },
   });

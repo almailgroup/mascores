@@ -75,7 +75,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
     // The owner keeps people, approvals, Manage and the reporter desk to himself,
     // even for someone given "everything".
     if (key === "requests") return !isOwner;
-    if (key === "bin" || key === "merge" || key === "notifications" || key === "voice users") return isOwner;
+    if (key === "ai" || key === "bin" || key === "merge" || key === "notifications" || key === "voice users") return isOwner;
     if (key === "users" || key === "approvals" || key === "appeals" || key === "manage" || key === "rabta") return isOwner || (key === "rabta" && scopes.has("rabta"));
     if (everything) return true;
     switch (key) {
@@ -235,7 +235,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
             )}
             {tab === "players" && allowed("players") && <PlayersPanel />}
             {tab === "news" && allowed("news") && <NewsPanel />}
-             {tab === "ai" && allowed("ai") && <AlmailAiPanel onNews={() => setTab("news")} onCompetitions={() => setTab("competitions")} onVenues={() => setTab("venues")} />}
+             {isOwner && tab === "ai" && allowed("ai") && <AlmailAiPanel onNews={() => setTab("news")} onCompetitions={() => setTab("competitions")} onVenues={() => setTab("venues")} />}
             {tab === "venues" && allowed("venues") && <VenuesPanel />}
             {tab === "channels" && allowed("channels") && <ChannelsPanel />}
             {tab === "transfers" && allowed("transfers") && <TransfersAdminPanel />}
@@ -256,7 +256,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
             {tab === "manage" && isOwner && <ManagePanel />}
             {tab === "bin" && isOwner && <RecycleBinPanel />}
             {tab === "merge" && isOwner && <MergePanel />}
-            {tab === "notifications" && isOwner && <NotificationsPanel />}
+            {isOwner && tab === "notifications" && isOwner && <NotificationsPanel />}
 
           </div>
         </div>

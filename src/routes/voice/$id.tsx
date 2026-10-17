@@ -7,12 +7,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import { useCompact, useTx } from "@/lib/auto-translate";
-import { inviteLink, liveFor, roomCover, type VoiceHost, type VoiceRoom } from "@/lib/voice";
+import { voiceProfiles, liveFor, roomCover, type VoiceHost, type VoiceRoom } from "@/lib/voice";
 import { useVoiceRoom, type VoiceRole } from "@/lib/use-voice-room";
 import { suspensionMessage, useMySuspension } from "@/lib/suspension";
 import { uploadMedia } from "@/components/admin/upload";
 import { VoiceRoomChat } from "@/components/voice-room-chat";
 import { VoiceUserBadge } from "@/components/voice-people";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { VoiceReactions, useVoiceReactions } from "@/components/voice-reactions";
 
 export const Route = createFileRoute("/voice/$id")({
@@ -43,6 +44,7 @@ function VoiceRoomPage() {
   const [anon, setAnon] = useState(false);
   const [joining, setJoining] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [ending, setEnding] = useState(false);
   const [audioUnlocked, setAudioUnlocked] = useState(false);
 
   const room = useQuery({
@@ -67,7 +69,8 @@ function VoiceRoomPage() {
     queryFn: async () => {
       const { data } = await supabase.rpc("voice_host_profiles", { _ids: [room.data!.host_id] });
       const found = ((data ?? []) as VoiceHost[])[0];
-      return found ? { ...found, followers: Number(found.followers ?? 0) } : null;
+      const names = await voiceProfiles([room.data!.host_id]);
+      return found ? { ...found, ...names[0], followers: Number(found.followers ?? 0) } : null;
     },
   });
 
@@ -88,7 +91,7 @@ function VoiceRoomPage() {
     queryFn: async () => {
       const { data } = await supabase.from("voice_room_participants").select("user_id,role,is_muted,hand_raised,anonymous").eq("room_id", id).is("left_at", null);
       const ids = (data ?? []).filter((row) => !row.anonymous).map((row) => row.user_id);
-      const { data: profiles } = ids.length ? await supabase.rpc("chat_author_profiles", { _ids: ids }) : { data: [] };
+      const profiles = await voiceProfiles(ids);
       const byId = new Map((profiles ?? []).map((profile) => [profile.id, profile]));
       return (data ?? []).map((row) => ({
         userId: row.user_id,
@@ -119,7 +122,7 @@ function VoiceRoomPage() {
     enabled: !!user,
     queryKey: ["voice-me", user?.id],
     queryFn: async () => {
-      const { data } = await supabase.from("profiles").select("display_name, avatar_url").eq("id", user!.id).maybeSingle();
+      const data = (await voiceProfiles([user!.id]))[0];
       return data as { display_name: string | null; avatar_url: string | null } | null;
     },
   });
@@ -128,7 +131,7 @@ function VoiceRoomPage() {
   const me = user && joined
     ? {
         userId: user.id,
-        name: anon ? "Anonymous listener" : (profile.data?.display_name ?? user.email?.split("@")[0] ?? "Guest"),
+        name: anon ? "Anonymous listener" : (profile.data?.display_name ?? "Guest"),
         avatar: anon ? null : (profile.data?.avatar_url ?? null),
         role: anon ? ("listener" as VoiceRole) : role,
       }
@@ -174,11 +177,32 @@ function VoiceRoomPage() {
     void navigate({ to: "/voice" });
   };
 
-  const endRoom = async () => {
-    const { error } = await supabase.rpc("voice_end_room", { _room_id: id });
-    if (error) { setActionError(error.message); return; }
-    setJoined(false);
-    void navigate({ to: "/voice" });
+  const endRoom = () => setEnding(true);
+
+  const finishRoom = async (keep: boolean) => {
+    if (saving || !user) return;
+    setSaving(true);
+    setActionError(null);
+    try {
+      if (keep && !recording) {
+        const { count, error } = await supabase.from("voice_recordings").select("id", { count: "exact", head: true }).eq("room_id", id).eq("host_id", user.id);
+        if (error) throw error;
+        if (!count) throw new Error(lang === "ar" ? "سجل الغرفة أولاً لحفظها في ملفك الشخصي." : "Record the room first to save it to your profile.");
+      }
+      if (recording) await saveRecording(keep);
+      const query = supabase.from("voice_recordings");
+      const result = keep
+        ? await query.update({ is_public: true }).eq("room_id", id).eq("host_id", user.id)
+        : await query.delete().eq("room_id", id).eq("host_id", user.id);
+      if (result.error) throw result.error;
+      const { error } = await supabase.rpc("voice_end_room", { _room_id: id });
+      if (error) throw error;
+      await qc.invalidateQueries({ queryKey: ["voice-replays"] });
+      setJoined(false);
+      void navigate({ to: "/voice" });
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : tx("Could not end the room. Please try again."));
+    } finally { setSaving(false); }
   };
 
   const deleteRoom = async () => {
@@ -197,28 +221,22 @@ function VoiceRoomPage() {
       return;
     }
     setSaving(true);
+    try { await saveRecording(false); }
+    catch { setActionError(tx("The replay could not be saved.")); }
+    finally { setSaving(false); }
+  };
+
+  const saveRecording = async (isPublic: boolean) => {
     const result = await stopRecording();
-    if (result && user && room.data) {
-      const ext = result.blob.type.includes("mp4") ? "m4a" : "webm";
-      const file = new File([result.blob], `${crypto.randomUUID()}.${ext}`, { type: result.blob.type });
-      const url = await uploadMedia("voice-recordings", file, user.id);
-      if (url) {
-        await supabase.from("voice_recordings").insert({
-          room_id: id,
-          host_id: user.id,
-          match_id: room.data.match_id ?? null,
-          title: room.data.title,
-          cover_url: room.data.photo_url,
-          audio_url: url,
-          duration_seconds: result.seconds,
-          is_public: false,
-        });
-        await qc.invalidateQueries({ queryKey: ["voice-replays"] });
-      } else {
-        setActionError(tx("The replay could not be saved."));
-      }
-    }
-    setSaving(false);
+    if (!result || !user || !room.data) throw new Error(tx("No recording is available."));
+    const ext = result.blob.type.includes("mp4") ? "m4a" : "webm";
+    const file = new File([result.blob], `${crypto.randomUUID()}.${ext}`, { type: result.blob.type });
+    if (!isPublic && ending) return;
+    const url = await uploadMedia("voice-recordings", file, user.id);
+    if (!url) throw new Error(tx("The replay could not be saved."));
+    const { error } = await supabase.from("voice_recordings").insert({ room_id: id, host_id: user.id, match_id: room.data.match_id ?? null, title: room.data.title, cover_url: room.data.photo_url, audio_url: url, duration_seconds: result.seconds, is_public: isPublic });
+    if (error) throw error;
+    await qc.invalidateQueries({ queryKey: ["voice-replays"] });
   };
 
   const manage = async (userId: string, action: "promote" | "demote" | "mute" | "remove") => {
@@ -268,6 +286,7 @@ function VoiceRoomPage() {
   if (!room.data) {
     return (
       <AppShell>
+
         <BackButton />
         <div className="rounded-2xl border border-dashed border-border p-8 text-center">
           <div className="text-sm font-bold">{tx("This room is not available")}</div>
@@ -284,6 +303,13 @@ function VoiceRoomPage() {
 
   return (
     <AppShell>
+      <Dialog open={ending} onOpenChange={(open) => { if (!saving) setEnding(open); }}>
+        <DialogContent><DialogHeader><DialogTitle>{lang === "ar" ? "إنهاء الغرفة" : "End room"}</DialogTitle><DialogDescription>{lang === "ar" ? "احفظ التسجيل في ملفك الشخصي أو احذفه قبل إنهاء الغرفة. يتطلب الحفظ تسجيل الغرفة أولاً." : "Save the replay to your profile or delete it before ending. Saving requires a recorded room."}</DialogDescription></DialogHeader>
+          {actionError && <p role="alert" className="text-sm text-destructive">{actionError}</p>}
+          <button disabled={saving} onClick={() => void finishRoom(true)} className="rounded-xl bg-primary p-3 font-bold text-primary-foreground disabled:opacity-50">{lang === "ar" ? "حفظ في الملف الشخصي" : "Save to profile"}</button>
+          <button disabled={saving} onClick={() => void finishRoom(false)} className="rounded-xl bg-destructive p-3 font-bold text-destructive-foreground disabled:opacity-50">{lang === "ar" ? "حذف" : "Delete"}</button>
+        </DialogContent>
+      </Dialog>
       <BackButton />
       {remote.map((entry) => <RemoteAudio key={entry.userId} stream={entry.stream} />)}
 
@@ -333,9 +359,9 @@ function VoiceRoomPage() {
               )}
               {room.data.invite_code && (
                 <button
-                  onClick={async () => { await navigator.clipboard.writeText(inviteLink(room.data!.invite_code!)); setCopied(true); window.setTimeout(() => setCopied(false), 1500); }}
+                  onClick={async () => { await navigator.clipboard.writeText(room.data!.invite_code!); setCopied(true); window.setTimeout(() => setCopied(false), 1500); }}
                   className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-xs font-bold">
-                  {copied ? <Check className="h-3.5 w-3.5 text-primary" /> : <Copy className="h-3.5 w-3.5" />} {tx("Invite link")}
+                  {copied ? <Check className="h-3.5 w-3.5 text-primary" /> : <Copy className="h-3.5 w-3.5" />} {lang === "ar" ? "رمز الدعوة" : "Invite code"}: {room.data.invite_code}
                 </button>
               )}
             </div>

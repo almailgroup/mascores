@@ -288,6 +288,13 @@
       "when": 1792259119267,
       "tag": "0040_competition_bell_preferences",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1792261003370,
+      "tag": "0041_keep_historical_match_coaches",
+      "breakpoints": true
     }
   ]
 }

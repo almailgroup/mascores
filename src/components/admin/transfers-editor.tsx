@@ -1,3 +1,4 @@
+import { useAdminAbility } from "@/lib/admin-ability";
 import { Bell } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -101,7 +102,7 @@ export function TransfersEditor({ personType, personId, personName }: { personTy
     <div>
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <div className="text-[0.65rem] font-semibold uppercase tracking-widest text-muted-foreground">Transfer history</div>
-        <button type="button" className={btnGhost} onClick={() => { setAiError(null); setAiOpen(!aiOpen); }}><Sparkles className="h-3.5 w-3.5" /> Read with Almail AI</button>
+        {useAdminAbility().isOwner && <button type="button" className={btnGhost} onClick={() => { setAiError(null); setAiOpen(!aiOpen); }}><Sparkles className="h-3.5 w-3.5" /> Read with Almail AI</button>}
       </div>
 
       {aiOpen && (

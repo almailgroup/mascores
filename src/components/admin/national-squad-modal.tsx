@@ -25,7 +25,7 @@ export function NationalSquadModal({ team, onClose }: { team: Team; onClose: () 
     enabled: adding && poolSearch.trim().length > 1,
     queryKey: ["admin", "call-up-pool", team.id, poolSearch.trim(), anyNationality],
     queryFn: async () => {
-      let query = supabase.from("players").select("*, team:team_id(id,name)").ilike("name", `%${poolSearch.trim()}%`);
+      let query = supabase.from("players").select("*, team:team_id(id,name)").eq("is_temporary", false).ilike("name", `%${poolSearch.trim()}%`);
       // A national team can only call up players of its own nationality.
       if (!anyNationality) {
         const parts = [team.country_code ? `nationality_code.eq.${team.country_code}` : null, team.country ? `nationality.eq.${team.country}` : null].filter(Boolean);

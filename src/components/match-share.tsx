@@ -1,9 +1,10 @@
+import { drawMatchLineupsCard } from "@/lib/share-cards";
 import { ShareCardButton } from "@/components/share-image";
 import { useI18n } from "@/lib/i18n";
 
 export type ShareTeam = { name?: string | null; logo_url?: string | null };
 export type ShareScorer = { name: string; minute: string };
-export type ShareLineupPlayer = { number: string; name: string };
+export type ShareLineupPlayer = { number: string; name: string; photo?: string | null };
 
 /** One club's starting eleven laid out by formation row, plus coach and bench. */
 export type ShareLineup = {
@@ -28,6 +29,7 @@ export type MatchShareData = {
   homeLineup: ShareLineupPlayer[];
   awayLineup: ShareLineupPlayer[];
   lineup?: ShareLineup | null;
+  lineups?: ShareLineup[];
   accent: string;
   accentAway?: string;
 };
@@ -63,10 +65,9 @@ function safeColor(value: string | undefined, fallback: string) {
 
 /** Draws the branded share card: match result, or one club's line-up on a pitch. */
 async function drawCard(data: MatchShareData, mode: "result" | "lineups"): Promise<Blob | null> {
+  if (mode === "lineups") return drawMatchLineupsCard({ competition: data.competition, kickoff: data.kickoff, teams: data.lineups ?? (data.lineup ? [data.lineup] : []), accent: safeColor(data.accent, "#1d4ed8") });
   const W = 1080;
-  const lineup = data.lineup ?? null;
-  const benchCount = Math.min(lineup?.bench.length ?? 0, 10);
-  const H = mode === "lineups" ? 1180 + benchCount * 48 : 1080;
+  const H = 1080;
   const canvas = document.createElement("canvas");
   canvas.width = W;
   canvas.height = H;
@@ -76,111 +77,6 @@ async function drawCard(data: MatchShareData, mode: "result" | "lineups"): Promi
   const accent = safeColor(data.accent, "#16224a");
   const accentAway = safeColor(data.accentAway, accent);
 
-  if (mode === "lineups" && lineup) {
-    ctx.fillStyle = accent;
-    ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = "rgba(0,0,0,0.4)";
-    ctx.fillRect(0, 0, W, H);
-
-    const logo = await loadImage(lineup.logo);
-    if (logo) {
-      const size = 96;
-      const scale = Math.min(size / logo.width, size / logo.height);
-      ctx.drawImage(logo, 60, 56, logo.width * scale, logo.height * scale);
-    }
-    ctx.textAlign = "left";
-    ctx.textBaseline = "alphabetic";
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "800 46px system-ui, -apple-system, sans-serif";
-    ctx.fillText(lineup.teamName.slice(0, 24), 176, 104);
-    ctx.font = "600 28px system-ui, sans-serif";
-    ctx.fillStyle = "rgba(255,255,255,0.7)";
-    ctx.fillText(`${data.competition.slice(0, 40)}`, 176, 144);
-
-    // Formation pill
-    ctx.textAlign = "right";
-    ctx.font = "800 40px system-ui, sans-serif";
-    ctx.fillStyle = "#ffffff";
-    ctx.fillText(lineup.formation, W - 60, 116);
-
-    // Pitch
-    const px = 60, py = 200, pw = W - 120, ph = 900;
-    ctx.save();
-    roundRect(ctx, px, py, pw, ph, 32);
-    ctx.clip();
-    for (let i = 0; i * 60 < ph; i += 1) {
-      ctx.fillStyle = i % 2 === 0 ? "#1b7a3f" : "#17703a";
-      ctx.fillRect(px, py + i * 60, pw, 60);
-    }
-    ctx.strokeStyle = "rgba(255,255,255,0.35)";
-    ctx.lineWidth = 4;
-    ctx.strokeRect(px + 16, py + 16, pw - 32, ph - 32);
-    ctx.beginPath();
-    ctx.moveTo(px + 16, py + ph / 2);
-    ctx.lineTo(px + pw - 16, py + ph / 2);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(px + pw / 2, py + ph / 2, 90, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.strokeRect(px + pw / 2 - 150, py + 16, 300, 110);
-    ctx.strokeRect(px + pw / 2 - 150, py + ph - 126, 300, 110);
-    ctx.restore();
-
-    // Players by formation row (goalkeeper row last, closest to the near goal)
-    const rows = lineup.rows.filter((row) => row.length > 0);
-    const rowHeight = (ph - 120) / Math.max(rows.length, 1);
-    rows.forEach((row, ri) => {
-      const cy = py + 70 + rowHeight * ri + rowHeight / 2;
-      const step = pw / (row.length + 1);
-      row.forEach((player, ci) => {
-        const cx = px + step * (ci + 1);
-        ctx.beginPath();
-        ctx.arc(cx, cy, 34, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(0,0,0,0.55)";
-        ctx.fill();
-        ctx.lineWidth = 4;
-        ctx.strokeStyle = "rgba(255,255,255,0.85)";
-        ctx.stroke();
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillStyle = "#ffffff";
-        ctx.font = "800 30px system-ui, sans-serif";
-        ctx.fillText(player.number || "-", cx, cy + 1);
-        ctx.textBaseline = "alphabetic";
-        ctx.font = "700 24px system-ui, sans-serif";
-        ctx.fillStyle = "#ffffff";
-        ctx.fillText(player.name.slice(0, 16), cx, cy + 66);
-      });
-    });
-
-    let y = py + ph + 60;
-    if (lineup.coach) {
-      ctx.textAlign = "left";
-      ctx.font = "600 26px system-ui, sans-serif";
-      ctx.fillStyle = "rgba(255,255,255,0.6)";
-      ctx.fillText("COACH", 60, y);
-      ctx.font = "700 32px system-ui, sans-serif";
-      ctx.fillStyle = "#ffffff";
-      ctx.fillText(lineup.coach.slice(0, 30), 200, y + 2);
-      y += 56;
-    }
-    if (benchCount > 0) {
-      ctx.textAlign = "left";
-      ctx.font = "600 26px system-ui, sans-serif";
-      ctx.fillStyle = "rgba(255,255,255,0.6)";
-      ctx.fillText("BENCH", 60, y);
-      y += 44;
-      ctx.font = "600 28px system-ui, sans-serif";
-      ctx.fillStyle = "rgba(255,255,255,0.92)";
-      lineup.bench.slice(0, benchCount).forEach((player, index) => {
-        const column = index % 2;
-        const line = Math.floor(index / 2);
-        ctx.fillText(`${player.number ? player.number + "  " : ""}${player.name}`.slice(0, 24), 60 + column * (W / 2 - 40), y + line * 44);
-      });
-    }
-
-    return new Promise((resolve) => canvas.toBlob((blob) => resolve(blob), "image/png", 0.95));
-  }
 
   const H2 = H;
   // Two solid halves that meet at a thin seam - the colours never blend together.

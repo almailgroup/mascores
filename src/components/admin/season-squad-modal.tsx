@@ -46,8 +46,8 @@ export function SeasonSquadModal({ team, season, onClose }: { team: Team; season
     queryKey: ["admin", "season-squad-pool", team.id],
     queryFn: async () => {
       const current = await supabase.from("players").select("id,name,photo_url,position,nationality").eq("team_id", team.id).order("name");
-      const others = await supabase.from("players").select("id,name,photo_url,position,nationality").neq("team_id", team.id).order("name").limit(500);
-      const free = await supabase.from("players").select("id,name,photo_url,position,nationality").is("team_id", null).order("name");
+      const others = await supabase.from("players").select("id,name,photo_url,position,nationality").eq("is_temporary", false).neq("team_id", team.id).order("name").limit(500);
+      const free = await supabase.from("players").select("id,name,photo_url,position,nationality").eq("is_temporary", false).is("team_id", null).order("name");
       const rows = [...(current.data ?? []), ...(free.data ?? []), ...(others.data ?? [])] as SeasonRow["player"][];
       return rows.filter((row, i, all) => !!row && all.findIndex((r) => r?.id === row?.id) === i) as NonNullable<SeasonRow["player"]>[];
     },

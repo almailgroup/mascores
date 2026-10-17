@@ -42,7 +42,7 @@ export function MatchMomentum({
   const total = Math.max(minutes, 90, ...events.map((e) => e.minute ?? 0));
   const list = deriveMomentum(events, total, home?.id, away?.id);
   if (list.every((item) => item.value === 0)) return null;
-  const marks = events.filter((e) => e.minute != null && ["goal", "penalty_goal", "own_goal", "yellow", "second_yellow", "red", "substitution", "var"].includes(e.type));
+  const marks = events.filter((e) => e.minute != null && ["goal", "penalty_goal", "own_goal"].includes(e.type));
 
   // Normalise so the strongest spell fills the chart, then lightly smooth for a clean wave.
   const peak = Math.max(1, ...list.map((x) => Math.abs(x.value)));
@@ -52,10 +52,7 @@ export function MatchMomentum({
   });
   const W = 300, H = 120, mid = H / 2;
   const x = (i: number) => ((i + 0.5) / total) * W;
-  const area = (sign: 1 | -1) => {
-    const pts = vals.map((v, i) => `${x(i).toFixed(1)},${(mid - Math.max(0, v * sign) * sign * (mid - 4)).toFixed(1)}`);
-    return `M0,${mid} L${pts.join(" L")} L${W},${mid} Z`;
-  };
+
 
   // Stack icons that would overlap (closer than ~5% of the width) into extra rows.
   const lane = (side: "home" | "away") => {
@@ -91,8 +88,9 @@ export function MatchMomentum({
           {lane("home")}
           <div className="relative my-1 h-32 overflow-hidden rounded-lg bg-muted/40">
             <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
-              <path d={area(1)} className="fill-primary" />
-              <path d={area(-1)} className="fill-success" />
+              {vals.map((value, i) => value !== 0 && (
+                <line key={i} x1={x(i)} x2={x(i)} y1={mid} y2={mid - value * (mid - 4)} className={value > 0 ? "stroke-primary" : "stroke-success"} strokeWidth={1.6} />
+              ))}
               <line x1="0" x2={W} y1={mid} y2={mid} className="stroke-border" strokeWidth="1" vectorEffect="non-scaling-stroke" />
               <line x1={(45 / total) * W} x2={(45 / total) * W} y1="0" y2={H} className="stroke-muted-foreground" strokeDasharray="3 3" strokeWidth="1" vectorEffect="non-scaling-stroke" />
             </svg>

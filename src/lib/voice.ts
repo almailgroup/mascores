@@ -1,3 +1,5 @@
+import { supabase } from "@/integrations/supabase/client";
+
 /** Shared helpers for voice rooms: generated covers, invite links and labels. */
 
 export type VoiceRoom = {
@@ -60,4 +62,13 @@ export function liveFor(startedAt: string, lang: "en" | "ar") {
   if (mins < 60) return lang === "ar" ? `${mins} د` : `${mins} min`;
   const hours = Math.floor(mins / 60);
   return lang === "ar" ? `${hours} س ${mins % 60} د` : `${hours}h ${mins % 60}m`;
+}
+
+/** Public profile names only: never expose email prefixes or opaque IDs. */
+export async function voiceProfiles(ids: string[]) {
+  return Promise.all([...new Set(ids)].map(async (id) => {
+    const { data } = await supabase.rpc("public_profile", { _id: id });
+    const profile = data?.[0];
+    return { id, display_name: profile?.display_name?.trim() || (profile?.username ? `@${profile.username}` : null), avatar_url: profile?.avatar_url ?? null };
+  }));
 }

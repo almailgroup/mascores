@@ -69,7 +69,7 @@ function TeamPage() {
   const headerRef = useCollapsingHeader(`${id}:${team.isLoading}`);
   const headerAccent = useLogoAccent(team.data?.logo_url);
   const squad = useQuery({ queryKey: ["squad", id], queryFn: async () => {
-    const { data } = await supabase.from("players").select("*").eq("team_id", id).order("shirt_number");
+    const { data } = await supabase.from("players").select("*").eq("team_id", id).eq("is_temporary", false).order("shirt_number");
     return (data ?? []) as Player[];
   }});
   const fifaRank = useQuery({ enabled: !!team.data?.is_national, queryKey: ["fifa-rank", id], queryFn: async () => (await supabase.from("fifa_rankings").select("rank,points,previous_rank").eq("team_id", id).order("rank").maybeSingle()).data });

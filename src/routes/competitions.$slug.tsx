@@ -341,6 +341,7 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
     setAlerts(next);
     const { error } = await supabase.rpc("set_competition_notification", { _competition_id: c.id, _enabled: !alerted });
     if (error) setAlerts(alerts);
+    else window.dispatchEvent(new CustomEvent("mas:competition-alert", { detail: { id: c.id, enabled: !alerted } }));
   };
 
   const router = useRouter();
