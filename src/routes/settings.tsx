@@ -103,11 +103,13 @@ function SettingsPage() {
   const pickAvatar = async (file: File | undefined) => {
     if (!file || !user) return;
     setUploading(true);
-    const url = await uploadMedia("avatars", file);
-    setUploading(false);
-    if (!url) return;
-    setAvatarUrl(url);
-    await supabase.from("profiles").update({ avatar_url: url }).eq("id", user.id);
+    try {
+      const url = await uploadMedia("avatars", file, user.id);
+      if (!url) throw new Error('Photo upload failed');
+      const {error}=await supabase.from("profiles").update({ avatar_url: url }).eq("id", user.id);
+      if(error)throw error;
+      setAvatarUrl(url);
+    } finally { setUploading(false); }
   };
 
   if (authLoading) return <div className="flex min-h-screen items-center justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div>;

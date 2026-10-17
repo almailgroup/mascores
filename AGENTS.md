@@ -9,18 +9,18 @@
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
 
-- Store reporter identity photos in private user-scoped storage and issue short-lived owner-authorized links; identity documents must never have public URLs.
-- Generate/save shared images in one dialog; cancel rendering and revoke preview URLs to prevent duplicate work and leaks.
-- Save images on iOS through the add-only PhotoLibrary bridge registered by the scene controller; web uses file sharing with an explicit download alternative so camera-roll actions never silently download.
+- Reporter ID photos stay private/user-scoped with short-lived owner-authorized links; never public URLs.
+- One dialog generates/saves images; cancel rendering and revoke previews to avoid duplicates/leaks.
+- iOS saves through the scene-registered add-only PhotoLibrary bridge; web uses sharing plus explicit download, never silent camera-roll downloads.
 - Record and escalate bans with database triggers and per-user transaction locks, retaining history after restrictions are lifted; every write path must follow the same strike rules.
 - AppShell owns gestures: resolve targets at touch start; club/competition pulls begin below sticky identity/tabs; other pages pull whole; bottom tabs stay fixed.
 - Keep account/settings public via the Home profile icon; explicit sign-in CTAs preserve signed-out access to local preferences.
 - Resolve optimized portraits centrally; fall back to unchanged originals.
-- Scope reporter news uploads to their user-ID folder and active reporter storage policies; admin upload access stays separate.
+- Reporter uploads use user-ID folders and active-reporter policies; admin access stays separate.
 - Setup stays device-local and hydration-safe; merge guest favourites idempotently on sign-in; no welcome repeats/flashes.
 - Use one text-free loading overlay for both languages; keep pages mounted to preserve state.
-- Keep touch fields at least 16px and document touch-action: manipulation to prevent focus/double-tap zoom while preserving pinch zoom.
-- Shared collapsing headers keep sports identity and tabs sticky.
+- Touch fields are at least 16px; document touch-action: manipulation blocks focus/double-tap zoom but preserves pinch zoom.
+- Collapsing headers keep identity and tabs sticky.
 - Round teams use terminal completion times and public read-only position ratings; available within one hour, without polling.
 - Round-team formation maximizes position-average rating surplus, raw sum tie-break; show published history plus earliest started unreleased round.
 - Keep season winners in owner-writable title history separate from cumulative title counts so editing a year never changes trophy totals.
@@ -29,7 +29,7 @@
 - Public standings share StandingsTable with position-label/qualification fallbacks.
 - Portalled keyboard-accessible SeasonMenu selects seasons, rounds and club competitions; separate labels from stored values to prevent header clipping.
 - Portal ticket overlays outside the browsing wrapper and lock background scrolling so transforms and bottom navigation cannot clip them.
-- Enforce submission ownership and approval-state editing through database policies; deleting a submission removes the review record, not a published article.
+- Policies enforce submission ownership/state; deleting submissions removes reviews, never published articles.
 - Use fixture row identifiers for club match scroll targets so Today and initial focus resolve the same next fixture in a descending list.
 - Device-local language is authoritative on navigation; settings language changes sync immediately without reloading a stale profile language.
 - President portraits use existing staff matched by chairman name/role; never invent identities.
@@ -43,3 +43,5 @@
 
 - Social identity uses safe RPCs; recipient-only follow approval and shared database predicates secure private recordings. Triggered activity uses the stored-row sender and preferences; playback uses short-lived authorized links.
 - Social dialogs are portalled for phone fit; share/report controls are reused; reports use RLS and safe identity RPCs.
+- Verification review/replies use owner-authorized RPCs; owner badges derive from protected owner identity, never editable badge rows.
+- Avatar uploads use user-ID folders; crop dialogs portal outside page gestures to keep touch editing stable.
