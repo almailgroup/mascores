@@ -1,4 +1,4 @@
-import { Copy, Link2, Repeat2, Share2 } from 'lucide-react';
+import { Link2, Repeat2, Share2 } from 'lucide-react';
 import { siWhatsapp, siSnapchat, siX } from 'simple-icons';
 import { toast } from 'sonner';
 import { useI18n } from '@/lib/i18n';
@@ -10,7 +10,7 @@ export function SocialShare({open,onOpenChange,title,url,onRepost}:{open:boolean
   const {lang}=useI18n(); const label=(en:string,ar:string)=>lang==='ar'?ar:en;
   const native=async()=>{if(!navigator.share){toast.info(label('Use Copy link to share in your app.','انسخ الرابط لمشاركته في تطبيقك.'));return;}try{await navigator.share({title,url});}catch(error){if(!(error instanceof Error&&error.name==='AbortError'))toast.error(label('Could not share','تعذرت المشاركة'));}};
   const copy=async()=>{try{await navigator.clipboard.writeText(url);toast.success(label('Link copied','تم نسخ الرابط'));}catch{toast.error(label('Could not copy link','تعذر نسخ الرابط'));}};
-  const item='flex h-auto w-[88px] shrink-0 flex-col justify-start gap-3 rounded-none p-0 text-center hover:bg-transparent';
+  const item='flex h-auto w-[88px] shrink-0 flex-col justify-start gap-3 rounded-none p-0 text-center hover:bg-transparent [&_svg]:size-8';
   const circle='flex h-16 w-16 shrink-0 items-center justify-center rounded-full';
   const text='block min-h-10 w-full text-center text-sm font-semibold leading-5 whitespace-normal';
   return <Dialog open={open} onOpenChange={onOpenChange}><DialogContent aria-describedby={undefined} className="top-auto bottom-0 max-w-none translate-y-0 gap-5 rounded-t-lg border-x-0 border-b-0 px-0 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-6 sm:bottom-auto sm:top-1/2 sm:max-w-2xl sm:-translate-y-1/2 sm:rounded-lg">
