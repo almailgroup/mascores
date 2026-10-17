@@ -383,12 +383,9 @@ export async function drawNewsCard(input: { title: string; summary?: string | nu
   const coverH = 640;
   if (img) {
     ctx.save();
-    roundRect(ctx, 50, 50, W - 100, coverH, 32); ctx.clip();
-    const s = Math.max((W - 100) / img.width, coverH / img.height);
+    // Contain the original without clipping corners or fading any part of the photo.
+    const s = Math.min((W - 100) / img.width, coverH / img.height);
     ctx.drawImage(img, W / 2 - (img.width * s) / 2, 50 + coverH / 2 - (img.height * s) / 2, img.width * s, img.height * s);
-    const fade = ctx.createLinearGradient(0, 50 + coverH - 200, 0, 50 + coverH);
-    fade.addColorStop(0, "rgba(11,16,32,0)"); fade.addColorStop(1, "rgba(11,16,32,0.85)");
-    ctx.fillStyle = fade; ctx.fillRect(50, 50, W - 100, coverH);
     ctx.restore();
   }
   let y = img ? coverH + 140 : 220;
