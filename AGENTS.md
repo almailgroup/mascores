@@ -13,21 +13,21 @@
 - Generate/save shared images in one dialog; cancel rendering and revoke preview URLs to prevent duplicate work and leaks.
 - Save images on iOS through the add-only PhotoLibrary bridge registered by the scene controller; web uses file sharing with an explicit download alternative so camera-roll actions never silently download.
 - Record and escalate bans with database triggers and per-user transaction locks, retaining history after restrictions are lifted; every write path must follow the same strike rules.
-- Use the shared AppShell gesture controller: club/competition refresh opens below the sticky identity and tabs, other pages pull as a whole; resolve targets at touch start; never move fixed bottom tabs.
+- AppShell owns gestures: resolve targets at touch start; club/competition pulls begin below sticky identity/tabs; other pages pull whole; bottom tabs stay fixed.
 - Keep account/settings public via the Home profile icon; explicit sign-in CTAs preserve signed-out access to local preferences.
 - Resolve optimized portraits centrally with original-URL fallbacks to reduce transfers without changing originals.
 - Scope reporter news uploads to their user-ID folder and active reporter storage policies; admin upload access stays separate.
-- Keep first-run setup completion device-local, merge guest team favourites idempotently on sign-in, and gate welcome UI hydration-safely, so onboarding never repeats or flashes.
+- Setup stays device-local and hydration-safe; merge guest favourites idempotently on sign-in; no welcome repeats/flashes.
 - Use one text-free loading overlay for both languages; keep pages mounted to preserve state.
 - Keep touch fields at least 16px and document touch-action: manipulation to prevent focus/double-tap zoom while preserving pinch zoom.
 - Shared collapsing headers keep sports identity and tabs sticky.
 - Calculate round teams from terminal match completion timestamps and position ratings through the public read-only function, with a one-hour availability deadline; avoid background polling.
-- Choose the legal round-team formation by how far selected players beat their position's round average (raw rating sum tie-break), so position rating bias never fixes one shape; expose published history plus only the earliest started unreleased round.
+- Round-team formation maximizes position-average rating surplus, raw sum tie-break; show published history plus earliest started unreleased round.
 - Keep season winners in owner-writable title history separate from cumulative title counts so editing a year never changes trophy totals.
 - Alerts save instantly without replacing other preferences; club overrides remain separate from favourites. One stored-row sender records deliveries and per-alert sounds; club follows inherit into matches with per-match mute. One per-minute deduped server job sends reminders, never phone-local scheduling.
 - SportsHeaderBackground uses semantic surfaces and sampled logo colours, preserving artwork.
 - Public standings share StandingsTable with position-label/qualification fallbacks.
-- Use portalled, keyboard-accessible SeasonMenu for season, round and club-standings competition selection; separate display formatting from stored values to avoid sticky-header clipping.
+- Portalled keyboard-accessible SeasonMenu selects seasons, rounds and club competitions; separate labels from stored values to prevent header clipping.
 - Portal ticket overlays outside the browsing wrapper and lock background scrolling so transforms and bottom navigation cannot clip them.
 - Enforce submission ownership and approval-state editing through database policies; deleting a submission removes the review record, not a published article.
 - Use fixture row identifiers for club match scroll targets so Today and initial focus resolve the same next fixture in a descending list.
@@ -35,7 +35,7 @@
 - Resolve club president portraits from existing team staff by chairman name or president role; never invent identity images.
 - Club follower totals use a public aggregate-only function over private favourites; admin overrides affect display only, never real membership.
 - Use TeamCrest for missing club artwork and localized free-agent labels for unattached players so national call-ups never imply club membership.
-- Update favourites and club alerts optimistically with ordered writes and ignore stale profile hydration; exclude buttons from page gestures so one tap never locks navigation.
+- Favourites/club alerts use ordered optimistic writes; ignore stale hydration; exclude buttons from gestures to prevent tap locks.
 - Resolve retired country codes centrally and serve flag artwork from the local flag-icons package, so flags never use invalid external URLs.
 - Content deletes archive per transaction to deleted_records; only owners restore via restore_deleted_batch.
 - Voice uses perfect negotiation with serialized signals and preserved channels; all host activity resets inactivity. Safe discovery RPCs and owner-writable badges protect profiles.

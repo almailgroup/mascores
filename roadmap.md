@@ -1,5 +1,5 @@
 # Roadmap
-- [ ] Add social reporting, reference-style share icons and uniform profile counters; verify in browser
+- [x] Add social reporting, reference-style share icons and uniform profile counters; verify submission, moderation, sharing and phone/desktop alignment in browser
 - [x] Open followers, following and Edit profile full-screen
 - [x] Redesign profiles with confirmed private/public account controls and follow requests
 - [x] Add recording likes, comments, sharing and reposts
