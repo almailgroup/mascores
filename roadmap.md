@@ -1,4 +1,10 @@
 # Roadmap
+- [ ] Retry permission on bells and redirect signed-out favourite/alert actions to sign-in
+- [ ] Check notification preview privacy and sender content
+- [ ] Repair simultaneous voice audio and end rooms after host inactivity
+- [ ] Default search to All; move people search, recommendations and history to Voice
+- [ ] Add secure admin voice-user verified/golden verification controls
+- [ ] Verify changed flows and document native-only checks
 - [x] Fix Mohammed Aman's Yemen flag and verify shared flags across countries
 - [x] Keep the club president crown black and white
 - [x] Update club followers immediately when starred and fix stuck star/notification controls
