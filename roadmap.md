@@ -82,5 +82,6 @@
 - [x] Admin phone layout: notifications panel/history, teams, venues, popups for list items and channels; notification history and Almail AI main-admin only
 - [x] Competition bell marks its matches; league followers get transfer alerts; hide temporary players from players list; keep historical coaches per match
 - [ ] One-tap bells/stars and league bell lighting its match bells; show bench in lineup share picture
-- [ ] Merge: "Not the same" pairs must never come back
-- [ ] Removing a coach from a club releases him (no delete)
+- [x] Merge: "Not the same" pairs must never come back
+- [x] Removing a coach from a club releases him (no delete)
+- [ ] Admin: nothing preselected on entry; each section opens as a popup; Countries fits the phone
