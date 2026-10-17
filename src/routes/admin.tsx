@@ -24,6 +24,7 @@ import { ChatManagerPanel } from "@/components/admin/chat-manager-panel";
 import { TicketsPanel } from "@/components/admin/tickets-panel";
 import { UsersPanel } from "@/components/admin/users-panel";
 import { VoicePanel } from "@/components/admin/voice-panel";
+import { VoicePeople } from "@/components/voice-people";
 import { ManagePanel } from "@/components/admin/manage-panel";
 import { myAccess, isOwnerEmail } from "@/lib/owner.functions";
 import { UltrasPanel } from "@/components/admin/ultras-panel";
@@ -52,7 +53,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [tab, setTab] = useState<"competitions" | "teams" | "countries" | "players" | "news" | "ai" | "venues" | "channels" | "transfers" | "reports" | "tickets" | "users" | "voice" | "rabta" | "approvals" | "appeals" | "manage" | "requests" | "bin" | "merge" | "notifications">("competitions");
+  const [tab, setTab] = useState<"competitions" | "teams" | "countries" | "players" | "news" | "ai" | "venues" | "channels" | "transfers" | "reports" | "tickets" | "users" | "voice" | "voice users" | "rabta" | "approvals" | "appeals" | "manage" | "requests" | "bin" | "merge" | "notifications">("competitions");
   const [openComp, setOpenComp] = useState<Competition | null>(null);
   const [adminSeason, setAdminSeason] = useState<string | null>(null);
   const [compTab, setCompTab] = useState<"overview" | "teams" | "matches" | "standings" | "knockout" | "awards" | "media">("overview");
@@ -74,7 +75,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
     // The owner keeps people, approvals, Manage and the reporter desk to himself,
     // even for someone given "everything".
     if (key === "requests") return !isOwner;
-    if (key === "bin" || key === "merge" || key === "notifications") return isOwner;
+    if (key === "bin" || key === "merge" || key === "notifications" || key === "voice users") return isOwner;
     if (key === "users" || key === "approvals" || key === "appeals" || key === "manage" || key === "rabta") return isOwner || (key === "rabta" && scopes.has("rabta"));
     if (everything) return true;
     switch (key) {
@@ -202,6 +203,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
             </button>
           </div>
           <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+            {isOwner && <button onClick={() => setTab("voice users")} className="flex min-h-20 flex-col items-start justify-between rounded-lg border border-border bg-card p-3 text-left font-semibold"><ShieldCheck className="h-4 w-4" />Voice users</button>}
             {([
               ["competitions", Trophy], ["teams", Shield], ["countries", Globe], ["players", Users], ["news", Newspaper], ["ai", Bot], ["venues", Landmark], ["channels", Radio], ["transfers", Repeat2], ["tickets", Ticket], ["reports", Flag], ["voice", Mic], ...(canRabta ? [["rabta", Megaphone] as const] : []), ...(isOwner ? [["users", UserCog] as const, ["approvals", CheckCheck] as const, ["appeals", LifeBuoy] as const] : []), ...(!isOwner ? [["requests", ClipboardList] as const] : []), ...(isOwner ? [["notifications", BellRing] as const, ["manage", KeyRound] as const, ["merge", GitMerge] as const, ["bin", Trash2] as const] : []),
             ] as const)
@@ -245,6 +247,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
               </div>
             )}
             {tab === "users" && isOwner && <UsersPanel />}
+            {tab === "voice users" && isOwner && <VoicePeople admin />}
            {tab === "voice" && allowed("voice") && <VoicePanel />}
             {tab === "approvals" && isOwner && <ApprovalsPanel />}
             {tab === "appeals" && isOwner && <AppealsPanel />}

@@ -136,6 +136,14 @@ function VoiceRoomPage() {
   const { roster, remote, muted, toggleMute, forceMute, hand, setHand, micError, retryMic, connected, audioReady, speakerCount, listenerCount, recording, startRecording, stopRecording } = useVoiceRoom({ roomId: id, me, enabled: !!me && live, storedPeers: participants.data ?? [] });
 
   const { latest: reactions, react } = useVoiceReactions(id, user?.id);
+  const hostSpeaking = roster.some((peer) => peer.self && peer.speaking);
+  useEffect(() => {
+    if (!isHost || !joined || !live || !hostSpeaking) return;
+    const activity = () => { void supabase.rpc("voice_host_activity", { _room_id: id }); };
+    activity();
+    const timer = window.setInterval(activity, 15000);
+    return () => window.clearInterval(timer);
+  }, [isHost, joined, live, hostSpeaking, id]);
 
   // Join the room roster (host joins automatically when the room is created).
   const join = async (anonymous = false) => {

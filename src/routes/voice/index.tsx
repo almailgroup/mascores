@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Mic, Loader2, Lock, Globe2, Users, Plus, Radio, UserPlus, UserCheck, ImagePlus, Link2 } from "lucide-react";
 import { VoiceReplays } from "@/components/voice-replays";
+import { VoicePeople } from "@/components/voice-people";
 import { AppShell, BackButton, EmptyState, SectionHeader } from "@/components/app-shell";
 import { ImageCropper } from "@/components/image-cropper";
 import { uploadMedia } from "@/components/admin/upload";
@@ -108,6 +109,7 @@ function VoicePage() {
   return (
     <AppShell>
       <BackButton />
+      <VoicePeople />
       <div className="overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/15 via-card to-card p-6 sm:p-8">
         <div className="inline-flex items-center gap-2 text-[0.7rem] font-bold uppercase tracking-widest text-primary">
           <Radio className="h-4 w-4" /> {tx("Voice rooms")}

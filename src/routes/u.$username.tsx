@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { VoiceReplays } from "@/components/voice-replays";
 import { BackButton } from "@/components/app-shell";
 import { useCompact } from "@/lib/auto-translate";
+import { VoiceBadge } from "@/components/voice-people";
 
 export const Route = createFileRoute("/u/$username")({
   head: ({ params }) => ({
@@ -48,6 +49,7 @@ function ProfilePage() {
 
   const compactNum = useCompact();
   const target = profile.data;
+  const badge = useQuery({ queryKey: ["voice-badge", target?.id], enabled: !!target, queryFn: async () => { if (!target) return null; const { data } = await supabase.from("voice_user_badges").select("badge").eq("user_id", target.id).maybeSingle(); return data?.badge; } });
 
   useEffect(() => {
     if (!user || !target) return;
@@ -86,7 +88,7 @@ function ProfilePage() {
           {target.avatar_url ? <img src={target.avatar_url} alt="" className="h-full w-full object-cover" /> : (target.display_name ?? target.username ?? "?").slice(0, 1).toUpperCase()}
         </div>
         <div className="min-w-0 flex-1">
-          <h1 className="truncate text-xl font-bold">{target.display_name ?? target.username}</h1>
+          <h1 className="flex items-center gap-2 text-xl font-bold"><span className="truncate">{target.display_name ?? target.username}</span><VoiceBadge badge={badge.data} /></h1>
           <div className="text-sm text-muted-foreground">@{target.username}</div>
           <div className="mt-1 flex gap-4 text-xs">
             <span><b>{compactNum(target.followers)}</b> followers</span>
