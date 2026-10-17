@@ -22,6 +22,7 @@ import { HeightUnitProvider } from "../lib/units";
 import { AutoTranslateProvider, useTranslationReady } from "../lib/auto-translate";
 import { BrandLoading } from "../components/brand-loading";
 import { FirstRunSetup } from "../components/first-run-setup";
+import { Toaster } from "../components/ui/sonner";
 import { isChunkLoadError, reloadForFreshFiles } from "../lib/chunk-recovery";
 
 function NotFoundComponent() {
@@ -216,6 +217,7 @@ function RootComponent() {
             <HeightUnitProvider>
               <AutoTranslateProvider>
                 <LanguageReadyGate><FirstRunSetup><Outlet /></FirstRunSetup></LanguageReadyGate>
+                <Toaster />
               </AutoTranslateProvider>
             </HeightUnitProvider>
           </CurrencyProvider>
