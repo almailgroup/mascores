@@ -1,4 +1,10 @@
 # Roadmap
+- [x] Open followers, following and Edit profile full-screen
+- [x] Redesign profiles with confirmed private/public account controls and follow requests
+- [x] Add recording likes, comments, sharing and reposts
+- [x] Add social activity inbox and configurable phone alerts
+- [x] Verify private/public audio access, recording interactions, full-screen views and saved preferences in browser
+- [ ] Verify follow-request acceptance and social phone delivery across two accounts — requires a second account and real phones
 - [x] Retry permission on bells and redirect signed-out favourite/alert actions to sign-in
 - [x] Check notification preview privacy and sender content (payload has real title/body; device setting remains unverified)
 - [x] Repair voice negotiation collisions and end rooms after ten minutes of host inactivity

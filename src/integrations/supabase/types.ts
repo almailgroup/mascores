@@ -746,6 +746,27 @@ export type Database = {
           },
         ]
       }
+      follow_requests: {
+        Row: {
+          created_at: string
+          id: string
+          requester_id: string
+          target_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          requester_id: string
+          target_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          requester_id?: string
+          target_id?: string
+        }
+        Relationships: []
+      }
       import_staging: {
         Row: {
           created_at: string
@@ -1946,6 +1967,7 @@ export type Database = {
           path: string | null
           result: Json | null
           sent_at: string | null
+          social_kind: string | null
           title_ar: string
           title_en: string
         }
@@ -1962,6 +1984,7 @@ export type Database = {
           path?: string | null
           result?: Json | null
           sent_at?: string | null
+          social_kind?: string | null
           title_ar: string
           title_en: string
         }
@@ -1978,6 +2001,7 @@ export type Database = {
           path?: string | null
           result?: Json | null
           sent_at?: string | null
+          social_kind?: string | null
           title_ar?: string
           title_en?: string
         }
@@ -2061,6 +2085,79 @@ export type Database = {
             columns: ["match_id"]
             isOneToOne: false
             referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recording_interactions: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          kind: string
+          recording_id: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          recording_id: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          recording_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recording_interactions_recording_id_fkey"
+            columns: ["recording_id"]
+            isOneToOne: false
+            referencedRelation: "voice_recordings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_notifications: {
+        Row: {
+          actor_id: string
+          created_at: string
+          id: string
+          kind: string
+          read_at: string | null
+          recipient_id: string
+          recording_id: string | null
+        }
+        Insert: {
+          actor_id: string
+          created_at?: string
+          id?: string
+          kind: string
+          read_at?: string | null
+          recipient_id: string
+          recording_id?: string | null
+        }
+        Update: {
+          actor_id?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          read_at?: string | null
+          recipient_id?: string
+          recording_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_notifications_recording_id_fkey"
+            columns: ["recording_id"]
+            isOneToOne: false
+            referencedRelation: "voice_recordings"
             referencedColumns: ["id"]
           },
         ]
@@ -3222,6 +3319,8 @@ export type Database = {
       }
       admin_unlock_allowed: { Args: { _uid: string }; Returns: boolean }
       ar_skeleton: { Args: { _t: string }; Returns: string }
+      can_view_recording: { Args: { _id: string }; Returns: boolean }
+      can_view_social_profile: { Args: { _host: string }; Returns: boolean }
       chat_author_profiles: {
         Args: { _ids: string[] }
         Returns: {
@@ -3311,6 +3410,10 @@ export type Database = {
         Args: { _succeeded: boolean; _uid: string }
         Returns: undefined
       }
+      respond_follow_request: {
+        Args: { _accept: boolean; _request: string }
+        Returns: undefined
+      }
       restore_deleted_batch: { Args: { _batch_id: number }; Returns: number }
       revoke_admin: { Args: { _uid: string }; Returns: undefined }
       search_profiles: {
@@ -3346,6 +3449,25 @@ export type Database = {
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      social_follow_list: {
+        Args: { _kind: string; _user: string }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          id: string
+          username: string
+        }[]
+      }
+      social_identity: {
+        Args: { _ids: string[] }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          id: string
+          username: string
+        }[]
+      }
+      social_profile: { Args: { _username: string }; Returns: Json }
       voice_delete_room: { Args: { _room_id: string }; Returns: undefined }
       voice_end_room: { Args: { _room_id: string }; Returns: undefined }
       voice_host_activity: { Args: { _room_id: string }; Returns: undefined }

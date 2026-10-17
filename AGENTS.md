@@ -10,11 +10,11 @@
 <!-- LOVABLE:END -->
 
 - Store reporter identity photos in private user-scoped storage and issue short-lived owner-authorized links; identity documents must never have public URLs.
-- Keep shared-image generation and saving in one share dialog, with cancellable rendering and revoked preview URLs, to avoid redundant work and memory leaks.
+- Generate/save shared images in one dialog; cancel rendering and revoke preview URLs to prevent duplicate work and leaks.
 - Save images on iOS through the add-only PhotoLibrary bridge registered by the scene controller; web uses file sharing with an explicit download alternative so camera-roll actions never silently download.
 - Record and escalate bans with database triggers and per-user transaction locks, retaining history after restrictions are lifted; every write path must follow the same strike rules.
 - Use the shared AppShell gesture controller: club/competition refresh opens below the sticky identity and tabs, other pages pull as a whole; resolve targets at touch start; never move fixed bottom tabs.
-- Keep account/settings public and reachable from the Home profile icon; signed-out visitors reach the authentication page via an explicit account CTA, so local preferences stay available without a session.
+- Keep account/settings public via the Home profile icon; explicit sign-in CTAs preserve signed-out access to local preferences.
 - Resolve optimized portraits centrally with original-URL fallbacks to reduce transfers without changing originals.
 - Scope reporter news uploads to their user-ID folder and active reporter storage policies; admin upload access stays separate.
 - Keep first-run setup completion device-local, merge guest team favourites idempotently on sign-in, and gate welcome UI hydration-safely, so onboarding never repeats or flashes.
@@ -24,10 +24,10 @@
 - Calculate round teams from terminal match completion timestamps and position ratings through the public read-only function, with a one-hour availability deadline; avoid background polling.
 - Choose the legal round-team formation by how far selected players beat their position's round average (raw rating sum tie-break), so position rating bias never fixes one shape; expose published history plus only the earliest started unreleased round.
 - Keep season winners in owner-writable title history separate from cumulative title counts so editing a year never changes trophy totals.
-- Notification switches save instantly, keeping other stored keys; club alert overrides stay separate from favourites; pushes come only from stored rows through one sender that records each delivery and picks a bundled per-alert sound; a followed club covers its matches, the bell mutes per match; automatic and personal kick-off reminders are server-pushed by one per-minute pg_cron job with dedupe (no phone-local scheduling, to avoid duplicates).
+- Alerts save instantly without replacing other preferences; club overrides remain separate from favourites. One stored-row sender records deliveries and per-alert sounds; club follows inherit into matches with per-match mute. One per-minute deduped server job sends reminders, never phone-local scheduling.
 - SportsHeaderBackground uses semantic surfaces and sampled logo colours, preserving artwork.
 - Public standings share StandingsTable with position-label/qualification fallbacks.
-- Use the shared portalled SeasonMenu for season, round and club-standings competition selection, with display formatting separate from stored values, so sticky headers cannot clip keyboard-accessible in-app menus.
+- Use portalled, keyboard-accessible SeasonMenu for season, round and club-standings competition selection; separate display formatting from stored values to avoid sticky-header clipping.
 - Portal ticket overlays outside the browsing wrapper and lock background scrolling so transforms and bottom navigation cannot clip them.
 - Enforce submission ownership and approval-state editing through database policies; deleting a submission removes the review record, not a published article.
 - Use fixture row identifiers for club match scroll targets so Today and initial focus resolve the same next fixture in a descending list.
@@ -38,5 +38,8 @@
 - Update favourites and club alerts optimistically with ordered writes and ignore stale profile hydration; exclude buttons from page gestures so one tap never locks navigation.
 - Resolve retired country codes centrally and serve flag artwork from the local flag-icons package, so flags never use invalid external URLs.
 - Content deletes archive per transaction to deleted_records; only owners restore via restore_deleted_batch.
-- Voice uses per-peer perfect negotiation and serialized signals; roles preserve channels. Speaking RPCs and message/reaction triggers track host activity; the reminder job ends inactive rooms. Aggregate-only people discovery and owner-writable badges protect profiles.
+- Voice uses perfect negotiation with serialized signals and preserved channels; all host activity resets inactivity. Safe discovery RPCs and owner-writable badges protect profiles.
 - Stars/bells share sign-in-return and permission helpers; stored competition bell overrides inherit into match alerts.
+
+- Social identity uses safe RPCs; recipient-only follow approval and shared database predicates secure private recordings. Triggered activity uses the stored-row sender and preferences; playback uses short-lived authorized links.
+- Social full-screen views share a portalled, focus-managed dialog to prevent mobile clipping.

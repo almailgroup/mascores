@@ -1,0 +1,1 @@
+ALTER POLICY "Public or owned recordings are viewable" ON public.voice_recordings USING(host_id=auth.uid() OR public.can_view_recording(id));

@@ -1,229 +1,85 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import { Loader2, UserPlus, UserCheck, Lock, BadgeCheck, Pencil } from "lucide-react";
-import { AppShell } from "@/components/app-shell";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/use-auth";
-import { VoiceReplays } from "@/components/voice-replays";
-import { BackButton } from "@/components/app-shell";
-import { useCompact } from "@/lib/auto-translate";
-import { VoiceBadge } from "@/components/voice-people";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { toast } from "sonner";
+import { createFileRoute, Link } from '@tanstack/react-router';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { Loader2, Lock, BadgeCheck, UserRound, Settings, Grid3X3, Repeat2 } from 'lucide-react';
+import { AppShell, BackButton } from '@/components/app-shell';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/use-auth';
+import { VoiceReplays } from '@/components/voice-replays';
+import { VoiceBadge } from '@/components/voice-people';
+import { SocialScreen } from '@/components/social-screen';
+import { AccountPrivacy } from '@/components/account-privacy';
+import { SocialActivityButton } from '@/components/social-activity';
+import { Button } from '@/components/ui/button';
+import { useSignInAction } from '@/lib/sign-in-action';
+import { useI18n } from '@/lib/i18n';
+import { toast } from 'sonner';
 
-export const Route = createFileRoute("/u/$username")({
-  head: ({ params }) => ({
-    meta: [
-      { title: `@${params.username} — Mansour Almail Scores` },
-      { name: "description", content: `Football profile of @${params.username}: followers and published voice rooms.` },
-      { property: "og:title", content: `@${params.username} on Mansour Almail Scores` },
-      { property: "og:description", content: "Followers, published voice rooms and favourite clubs." },
-      { property: "og:type", content: "profile" },
-      { name: "twitter:card", content: "summary" },
-    ],
-  }),
+export const Route = createFileRoute('/u/$username')({
+  validateSearch: (search: Record<string, unknown>): { recording?: string } => ({ recording: typeof search.recording === 'string' ? search.recording : undefined }),
+  head: ({ params }) => ({meta:[{title:`@${params.username} — MA Scores`},{name:'description',content:`Football profile and recordings from @${params.username} on MA Scores.`},{property:'og:title',content:`@${params.username} — MA Scores`},{property:'og:description',content:'Recordings, followers and football conversations.'},{property:'og:type',content:'profile'},{name:'twitter:card',content:'summary'}]}),
   component: ProfilePage,
 });
-
-type Person = { id: string; username: string | null; display_name: string | null; avatar_url: string | null };
-
-/** Followers / following list popup with a search box. */
-function FollowListDialog({ userId, kind, open, onClose }: { userId: string; kind: "followers" | "following"; open: boolean; onClose: () => void }) {
-  const [q, setQ] = useState("");
-  const people = useQuery({
-    enabled: open,
-    queryKey: ["follow-list", userId, kind],
-    queryFn: async () => {
-      const column = kind === "followers" ? "following_id" : "follower_id";
-      const other = kind === "followers" ? "follower_id" : "following_id";
-      const { data: rows } = await supabase.from("profile_follows").select(other).eq(column, userId).limit(200);
-      const ids = (rows ?? []).map((r) => (r as Record<string, string>)[other]).filter(Boolean);
-      if (ids.length === 0) return [] as Person[];
-      const { data: profiles } = await supabase.from("profiles").select("id,username,display_name,avatar_url").in("id", ids);
-      return (profiles ?? []) as Person[];
-    },
-  });
-  const list = (people.data ?? []).filter((p) => {
-    const needle = q.trim().toLowerCase();
-    if (!needle) return true;
-    return (p.display_name ?? "").toLowerCase().includes(needle) || (p.username ?? "").toLowerCase().includes(needle);
-  });
-  return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
-      <DialogContent className="max-h-[80vh] overflow-y-auto">
-        <DialogHeader><DialogTitle className="capitalize">{kind}</DialogTitle></DialogHeader>
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search people…"
-          className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
-        {people.isLoading && <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>}
-        <div className="mt-2 space-y-1">
-          {list.map((p) => (
-            <Link key={p.id} to="/u/$username" params={{ username: p.username ?? p.id }} onClick={onClose}
-              className="flex items-center gap-3 rounded-xl p-2 hover:bg-accent">
-              <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-muted text-sm font-bold">
-                {p.avatar_url ? <img src={p.avatar_url} alt="" className="h-full w-full object-cover" /> : (p.display_name ?? p.username ?? "?").slice(0, 1).toUpperCase()}
-              </div>
-              <div className="min-w-0">
-                <div className="truncate text-sm font-semibold">{p.display_name ?? p.username}</div>
-                {p.username && <div className="truncate text-xs text-muted-foreground">@{p.username}</div>}
-              </div>
-            </Link>
-          ))}
-          {!people.isLoading && list.length === 0 && <p className="py-4 text-center text-xs text-muted-foreground">No one here yet.</p>}
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
+type Person = {id:string; username:string|null; display_name:string|null; avatar_url:string|null};
+type Profile = Person & {bio:string|null;is_public:boolean;can_view:boolean;followers:number;following:number;recordings:number;badge:string|null};
+function FollowList({userId,kind,onClose}:{userId:string;kind:'followers'|'following';onClose:()=>void}) {
+  const [q,setQ]=useState(''); const {lang}=useI18n();
+  const people=useQuery({queryKey:['follow-list',userId,kind],queryFn:async()=>{const {data,error}=await supabase.rpc('social_follow_list',{_user:userId,_kind:kind});if(error)throw error;return data??[];}});
+  const list=(people.data??[]).filter(p=>`${p.display_name??''} ${p.username??''}`.toLowerCase().includes(q.toLowerCase().trim()));
+  return <SocialScreen open title={kind==='followers'?(lang==='ar'?'المتابعون':'Followers'):(lang==='ar'?'يتابع':'Following')} onClose={onClose}>
+    <input autoFocus aria-label="Search users" placeholder={lang==='ar'?'البحث عن أشخاص…':'Search people…'} value={q} onChange={e=>setQ(e.target.value)} className="mb-5 w-full rounded-md border border-border bg-muted px-4 py-3 text-base"/>
+    {people.isLoading&&<Loader2 className="mx-auto animate-spin"/>}
+    {people.isError&&<Button onClick={()=>void people.refetch()}>Try again</Button>}
+    {list.map(p=><Link key={p.id} to="/u/$username" params={{username:p.username??p.id}} onClick={onClose} className="flex items-center gap-3 py-3">
+      <Avatar person={p}/><div className="min-w-0 flex-1"><div className="break-words text-sm font-semibold">{p.display_name??p.username}</div><div className="text-sm text-muted-foreground">@{p.username}</div></div>
+    </Link>)}{!people.isLoading&&list.length===0&&<p className="py-10 text-center text-sm text-muted-foreground">{lang==='ar'?'لا توجد نتائج':'No people found'}</p>}
+  </SocialScreen>;
 }
-
+function Avatar({person,large=false}:{person:Person;large?:boolean}) {
+  const [failed,setFailed]=useState(false);
+  return <div className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-muted ${large?'h-20 w-20 sm:h-28 sm:w-28':'h-11 w-11'}`}>{person.avatar_url&&!failed?<img alt="" src={person.avatar_url} onError={()=>setFailed(true)} className="h-full w-full object-cover"/>:<UserRound className={large?'h-9 w-9 text-muted-foreground':'h-5 w-5 text-muted-foreground'}/>}</div>;
+}
 function ProfilePage() {
-  const { username } = Route.useParams();
-  const { user } = useAuth();
-  const qc = useQueryClient();
-  const [following, setFollowing] = useState(false);
-  const [followList, setFollowList] = useState<"followers" | "following" | null>(null);
-  const [editing, setEditing] = useState(false);
-  const [editName, setEditName] = useState("");
-  const [editBio, setEditBio] = useState("");
-  const [editPublic, setEditPublic] = useState(true);
-  const [saving, setSaving] = useState(false);
-
-  const profile = useQuery({
-    queryKey: ["profile", username],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("id,username,display_name,avatar_url,bio,is_public")
-        .ilike("username", username)
-        .maybeSingle();
-      if (!data) return null;
-      const [{ count: followers }, { count: followingCount }, { count: recordings }] = await Promise.all([
-        supabase.from("profile_follows").select("id", { count: "exact", head: true }).eq("following_id", data.id),
-        supabase.from("profile_follows").select("id", { count: "exact", head: true }).eq("follower_id", data.id),
-        supabase.from("voice_recordings").select("id", { count: "exact", head: true }).eq("host_id", data.id),
-      ]);
-      return { ...data, followers: followers ?? 0, following: followingCount ?? 0, recordings: recordings ?? 0 };
-    },
-  });
-
-  const compactNum = useCompact();
-  const target = profile.data;
-  const badge = useQuery({ queryKey: ["voice-badge", target?.id], enabled: !!target, queryFn: async () => { if (!target) return null; const { data } = await supabase.from("voice_user_badges").select("badge").eq("user_id", target.id).maybeSingle(); return data?.badge; } });
-
-  useEffect(() => {
-    if (!user || !target) return;
-    (async () => {
-      const { data } = await supabase
-        .from("profile_follows")
-        .select("id")
-        .eq("follower_id", user.id)
-        .eq("following_id", target.id)
-        .maybeSingle();
-      setFollowing(!!data);
-    })();
-  }, [user, target]);
-
-  const toggleFollow = async () => {
-    if (!user || !target) return;
-    if (following) {
-      await supabase.from("profile_follows").delete().eq("follower_id", user.id).eq("following_id", target.id);
-    } else {
-      await supabase.from("profile_follows").insert({ follower_id: user.id, following_id: target.id } as never);
-    }
-    setFollowing(!following);
-    qc.invalidateQueries({ queryKey: ["profile", username] });
+  const {username}=Route.useParams(); const {recording}=Route.useSearch(); const {user}=useAuth();const qc=useQueryClient(); const signIn=useSignInAction();const {lang}=useI18n();const label=(en:string,ar:string)=>lang==='ar'?ar:en;
+  const [followList,setFollowList]=useState<'followers'|'following'|null>(null);const [editing,setEditing]=useState(false);const [name,setName]=useState('');const [bio,setBio]=useState('');const [saving,setSaving]=useState(false);const [followBusy,setFollowBusy]=useState(false);const [tab,setTab]=useState<'recordings'|'reposts'>('recordings');
+  const profile=useQuery({queryKey:['profile',username,user?.id],queryFn:async()=>{const {data,error}=await supabase.rpc('social_profile',{_username:username});if(error)throw error;return data as Profile|null;}});
+  const target=profile.data;const own=target?.id===user?.id;
+  const relationship=useQuery({queryKey:['social-follow',user?.id,target?.id],enabled:!!user&&!!target&&!own,queryFn:async()=>{if(!user||!target)return {following:false,requested:false};const [f,r]=await Promise.all([supabase.from('profile_follows').select('id').eq('follower_id',user.id).eq('following_id',target.id).maybeSingle(),supabase.from('follow_requests').select('id').eq('requester_id',user.id).eq('target_id',target.id).maybeSingle()]);if(f.error||r.error)throw f.error??r.error;return {following:!!f.data,requested:!!r.data};}});
+  const toggleFollow=async()=>{
+    if(!user){signIn();return;}if(!target||followBusy)return;setFollowBusy(true);
+    const f=relationship.data?.following;const requested=relationship.data?.requested;
+    const result=f?await supabase.from('profile_follows').delete().eq('follower_id',user.id).eq('following_id',target.id):requested?await supabase.from('follow_requests').delete().eq('requester_id',user.id).eq('target_id',target.id):target.is_public?await supabase.from('profile_follows').insert({follower_id:user.id,following_id:target.id}):await supabase.from('follow_requests').insert({requester_id:user.id,target_id:target.id});
+    if(result.error)toast.error(label('Could not update follow','تعذر تحديث المتابعة'));else {await qc.invalidateQueries({queryKey:['social-follow']});await qc.invalidateQueries({queryKey:['profile']});}setFollowBusy(false);
   };
-
-  const saveProfile = async () => {
-    if (!user || !target || saving) return;
-    setSaving(true);
-    const { error } = await supabase.from("profiles").update({
-      display_name: editName.trim() || null,
-      bio: editBio.trim() || null,
-      is_public: editPublic,
-    }).eq("id", user.id);
-    setSaving(false);
-    if (error) { toast.error("Could not save profile"); return; }
-    setEditing(false);
-    qc.invalidateQueries({ queryKey: ["profile", username] });
-  };
-
-  if (profile.isLoading) return <AppShell><div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin" /></div></AppShell>;
-  if (!target) return <AppShell><BackButton /><p className="mt-6 text-sm text-muted-foreground">No profile with that username.</p></AppShell>;
-
-  const hidden = !target.is_public && target.id !== user?.id;
-  const own = target.id === user?.id;
-
-  return (
-    <AppShell>
-      <BackButton />
-      <div className="mt-3 flex flex-wrap items-center gap-4 rounded-3xl border border-border bg-card p-5">
-        <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-muted text-2xl font-bold">
-          {target.avatar_url ? <img src={target.avatar_url} alt="" className="h-full w-full object-cover" /> : (target.display_name ?? target.username ?? "?").slice(0, 1).toUpperCase()}
+  if(profile.isLoading)return <AppShell><Loader2 className="mx-auto my-16 animate-spin"/></AppShell>;
+  if(profile.isError)return <AppShell><BackButton/><Button onClick={()=>void profile.refetch()}>Try again</Button></AppShell>;
+  if(!target)return <AppShell><BackButton/><p className="py-12 text-center">{label('Profile not found','الحساب غير موجود')}</p></AppShell>;
+  return <AppShell>
+    <div className="mx-auto w-full max-w-2xl">
+      <header className="mb-6 flex items-center gap-2"><BackButton iconOnly/><h1 className="min-w-0 flex-1 break-words text-lg font-bold">{!target.is_public&&<Lock className="mr-1 inline h-4 w-4"/>}{target.username}</h1>{own&&<><SocialActivityButton/><Button asChild variant="ghost" size="icon" aria-label={label('Settings','الإعدادات')}><Link to="/settings"><Settings/></Link></Button></>}</header>
+      <div className="grid grid-cols-[80px_minmax(0,1fr)] items-center gap-4 sm:grid-cols-[112px_minmax(0,1fr)] sm:gap-8">
+        <Avatar person={target} large/>
+        <div className="grid min-w-0 grid-cols-3 gap-1 text-center">
+          <div><b className="block text-lg">{target.recordings}</b><span className="text-xs sm:text-sm">{label('recordings','تسجيلات')}</span></div>
+          <Button variant="ghost" className="h-auto min-w-0 flex-col gap-0 px-0 py-2" disabled={!target.can_view&&!own} onClick={()=>setFollowList('followers')}><b className="text-lg">{target.followers}</b><span className="text-xs font-normal sm:text-sm">{label('followers','متابعون')}</span></Button>
+          <Button variant="ghost" className="h-auto min-w-0 flex-col gap-0 px-0 py-2" disabled={!target.can_view&&!own} onClick={()=>setFollowList('following')}><b className="text-lg">{target.following}</b><span className="text-xs font-normal sm:text-sm">{label('following','يتابع')}</span></Button>
         </div>
-        <div className="min-w-0 flex-1">
-          <h1 className="flex items-center gap-2 text-xl font-bold"><span className="min-w-0 whitespace-normal break-words [overflow-wrap:anywhere]">{target.display_name ?? target.username}</span><VoiceBadge badge={badge.data} /></h1>
-          <div className="text-sm text-muted-foreground">@{target.username}</div>
-          <div className="mt-1 flex gap-4 text-xs">
-            <button onClick={() => setFollowList("followers")} className="hover:text-primary"><b>{compactNum(target.followers)}</b> followers</button>
-            <button onClick={() => setFollowList("following")} className="hover:text-primary"><b>{compactNum(target.following)}</b> following</button>
-            <span><b>{compactNum(target.recordings)}</b> recordings</span>
-          </div>
-          {target.bio && <p className="mt-2 text-sm">{target.bio}</p>}
-        </div>
-        {own && (
-          <div className="flex flex-col items-end gap-2">
-            <button onClick={() => { setEditName(target.display_name ?? ""); setEditBio(target.bio ?? ""); setEditPublic(target.is_public); setEditing(true); }}
-              className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-bold">
-              <Pencil className="h-4 w-4" /> Edit profile
-            </button>
-            <Link to="/verify" className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
-              <BadgeCheck className="h-3.5 w-3.5" /> Request verification
-            </Link>
-          </div>
-        )}
-        {user && !own && !hidden && (
-          <button onClick={toggleFollow}
-            className={`inline-flex h-10 items-center gap-2 rounded-full px-4 text-sm font-bold ${following ? "border border-border bg-card" : "bg-primary text-primary-foreground"}`}>
-            {following ? <><UserCheck className="h-4 w-4" /> Following</> : <><UserPlus className="h-4 w-4" /> Follow</>}
-          </button>
-        )}
       </div>
-
-      {followList && <FollowListDialog userId={target.id} kind={followList} open onClose={() => setFollowList(null)} />}
-
-      <Dialog open={editing} onOpenChange={(o) => { if (!o && !saving) setEditing(false); }}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Edit profile</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <label className="block text-sm">Display name
-              <input value={editName} onChange={(e) => setEditName(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-background p-3 text-base" />
-            </label>
-            <label className="block text-sm">Bio
-              <textarea value={editBio} onChange={(e) => setEditBio(e.target.value)} rows={3} className="mt-1 w-full rounded-lg border border-border bg-background p-3 text-base" />
-            </label>
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={editPublic} onChange={(e) => setEditPublic(e.target.checked)} />
-              Public account — others can find and follow me
-            </label>
-            <button onClick={saveProfile} disabled={saving} className="rounded-lg bg-primary px-4 py-2 font-bold text-primary-foreground disabled:opacity-50">
-              {saving ? "Saving…" : "Save"}
-            </button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {hidden ? (
-        <div className="mt-6 flex items-center gap-2 rounded-3xl border border-border bg-card p-6 text-sm text-muted-foreground">
-          <Lock className="h-4 w-4" /> This profile is private.
-        </div>
-      ) : (
-        <section className="mt-8">
-          <h2 className="text-sm font-bold">Voice rooms</h2>
-          <p className="mb-3 text-xs text-muted-foreground">Recordings this person chose to publish.</p>
-          <VoiceReplays hostId={target.id} publicOnly={!own} />
-        </section>
-      )}
-    </AppShell>
-  );
+      <div className="mt-4"><div className="flex items-start gap-2"><h2 className="min-w-0 break-words text-base font-bold [overflow-wrap:anywhere]">{target.display_name??target.username}</h2><VoiceBadge badge={target.badge}/></div>{target.bio&&<p className="mt-1 whitespace-pre-wrap break-words text-sm">{target.bio}</p>}</div>
+      <div className="my-5 flex gap-2" data-no-gesture>{own?<><Button variant="secondary" className="flex-1" onClick={()=>{setName(target.display_name??'');setBio(target.bio??'');setEditing(true);}}>{label('Edit profile','تعديل الملف الشخصي')}</Button><Button asChild variant="outline" className="flex-1"><Link to="/verify"><BadgeCheck/>{label('Verification','التوثيق')}</Link></Button></>:<><Button className="flex-1" variant={relationship.data?.following||relationship.data?.requested?'secondary':'default'} disabled={followBusy||relationship.isLoading} onClick={()=>void toggleFollow()}>{followBusy?<Loader2 className="animate-spin"/>:relationship.data?.following?label('Following','يتابع'):relationship.data?.requested?label('Requested','تم الطلب'):label('Follow','متابعة')}</Button><Button variant="outline" size="icon" aria-label="Share profile" onClick={async()=>{const url=`https://mascores.live/u/${encodeURIComponent(target.username??target.id)}`;try {if(navigator.share)await navigator.share({title:target.display_name??target.username??'MA Scores',url});else{await navigator.clipboard.writeText(url);toast.success('Link copied');}}catch{ /* cancelled */ }}}><Repeat2/></Button></>}</div>
+      {own&&<Link to="/notifications" className="mb-5 block text-sm font-semibold text-primary">{label('Follow requests and activity','طلبات المتابعة والإشعارات')}</Link>}
+      {target.can_view||own?<><div className="mb-5 grid grid-cols-2 border-y border-border"><Button variant="ghost" className={`h-12 rounded-none ${tab==='recordings'?'border-b-2 border-foreground':'text-muted-foreground'}`} aria-label="Recordings" onClick={()=>setTab('recordings')}><Grid3X3/>{label('Recordings','التسجيلات')}</Button><Button variant="ghost" className={`h-12 rounded-none ${tab==='reposts'?'border-b-2 border-foreground':'text-muted-foreground'}`} aria-label="Reposts" onClick={()=>setTab('reposts')}><Repeat2/>{label('Reposts','إعادة النشر')}</Button></div><VoiceReplays hostId={target.id} publicOnly={!own} reposts={tab==='reposts'} focusId={recording}/></>:<div className="border-t border-border py-14 text-center"><Lock className="mx-auto mb-3 h-10 w-10"/><h2 className="font-bold">{label('This account is private','هذا الحساب خاص')}</h2><p className="mt-2 text-sm text-muted-foreground">{label('Follow this account to see their recordings.','تابع هذا الحساب لرؤية تسجيلاته.')}</p></div>}
+      {followList&&<FollowList userId={target.id} kind={followList} onClose={()=>setFollowList(null)}/>}
+      <SocialScreen open={editing} title={label('Edit profile','تعديل الملف الشخصي')} onClose={()=>{if(!saving)setEditing(false);}}>
+        <div className="mb-6 flex items-center gap-4"><Avatar person={target}/><Button asChild variant="link"><Link to="/settings" onClick={()=>setEditing(false)}>{label('Change profile photo','تغيير صورة الملف')}</Link></Button></div>
+        <form onSubmit={async e=>{e.preventDefault();if(!user||saving)return;setSaving(true);const {error}=await supabase.from('profiles').update({display_name:name.trim()||null,bio:bio.trim()||null}).eq('id',user.id);setSaving(false);if(error){toast.error(error.message.startsWith('DISPLAY_COOLDOWN')?label('You can change your display name once every 2 days.','يمكن تغيير الاسم الظاهر مرة كل يومين.'):label('Could not save profile','تعذر حفظ الملف'));return;}await qc.invalidateQueries({queryKey:['profile']});setEditing(false);}} className="space-y-5">
+          <label className="block text-sm font-medium">{label('Name','الاسم')}<input value={name} onChange={e=>setName(e.target.value)} maxLength={100} className="mt-2 w-full rounded-md border border-border bg-background p-3 text-base"/></label>
+          <label className="block text-sm font-medium">{label('Bio','النبذة')}<textarea rows={4} maxLength={500} value={bio} onChange={e=>setBio(e.target.value)} className="mt-2 w-full rounded-md border border-border bg-background p-3 text-base"/></label>
+          <Button type="submit" className="w-full" disabled={saving}>{saving?<Loader2 className="animate-spin"/>:label('Save changes','حفظ التغييرات')}</Button>
+        </form>
+        {user&&<div className="mt-6 border-y border-border"><AccountPrivacy userId={user.id} isPublic={target.is_public}/></div>}
+        <Button asChild variant="link" className="mt-4 px-0"><Link to="/verify"><BadgeCheck/>{label('Request verification','طلب التوثيق')}</Link></Button>
+      </SocialScreen>
+    </div>
+  </AppShell>;
 }
