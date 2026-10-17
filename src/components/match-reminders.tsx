@@ -62,22 +62,12 @@ export function MatchReminders({ matchId, kickoffAt }: { matchId: string; kickof
     if (error && error.code !== "23505") { qc.invalidateQueries({ queryKey: key }); toast.error(tx("Could not save the reminder. Please try again.")); return; }
     void qc.invalidateQueries({ queryKey: key });
 
-    if (isNativeApp()) {
-      // Schedule on the phone right away so it fires even if the app is closed.
-      const { data: m } = await supabase.from("matches")
-        .select("home:teams!matches_home_team_id_fkey(name),away:teams!matches_away_team_id_fkey(name)")
-        .eq("id", matchId).maybeSingle();
-      const names = m as { home: { name: string } | null; away: { name: string } | null } | null;
-      const ok = await within(nativeSchedule(reminderKey, at,
-        `⏰ ${names?.home?.name ?? "Home"} vs ${names?.away?.name ?? "Away"}`,
-        `Kick-off in ${minutes} minutes`, `/matches/${matchId}`), false);
-      if (!ok) {
-        toast.warning(allowed
-          ? tx("Reminder saved, but this app version can't schedule alerts. Install the latest TestFlight build.")
-          : tx("Reminder saved. Turn on notifications for MA Scores in iPhone Settings to get it."));
-        return;
-      }
-    } else if (!allowed) {
+    // The server sends the reminder to the phone at the right time, even with the app closed.
+    if (isNativeApp() && !allowed) {
+      toast.warning(tx("Reminder saved. Turn on notifications for MA Scores in iPhone Settings to get it."));
+      return;
+    }
+    if (!isNativeApp() && !allowed) {
       toast.success(tx("Reminder set — you'll see it here while the site is open. Allow notifications to get a pop-up."));
       return;
     }
