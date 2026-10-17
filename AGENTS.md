@@ -10,11 +10,11 @@
 <!-- LOVABLE:END -->
 
 - Store reporter identity photos in private user-scoped storage and issue short-lived owner-authorized links; identity documents must never have public URLs.
-- Keep shared-image generation and saving in one share dialog, with cancellable rendering and revoked preview URLs, to avoid redundant work and memory leaks.
+- Generate/save shared images in one dialog; cancel rendering and revoke preview URLs to prevent duplicate work and leaks.
 - Save images on iOS through the add-only PhotoLibrary bridge registered by the scene controller; web uses file sharing with an explicit download alternative so camera-roll actions never silently download.
 - Record and escalate bans with database triggers and per-user transaction locks, retaining history after restrictions are lifted; every write path must follow the same strike rules.
 - Use the shared AppShell gesture controller: club/competition refresh opens below the sticky identity and tabs, other pages pull as a whole; resolve targets at touch start; never move fixed bottom tabs.
-- Keep account/settings public and reachable from the Home profile icon; signed-out visitors reach the authentication page via an explicit account CTA, so local preferences stay available without a session.
+- Keep account/settings public via the Home profile icon; explicit sign-in CTAs preserve signed-out access to local preferences.
 - Resolve optimized portraits centrally with original-URL fallbacks to reduce transfers without changing originals.
 - Scope reporter news uploads to their user-ID folder and active reporter storage policies; admin upload access stays separate.
 - Keep first-run setup completion device-local, merge guest team favourites idempotently on sign-in, and gate welcome UI hydration-safely, so onboarding never repeats or flashes.
@@ -27,7 +27,7 @@
 - Alerts save instantly without replacing other preferences; club overrides remain separate from favourites. One stored-row sender records deliveries and per-alert sounds; club follows inherit into matches with per-match mute. One per-minute deduped server job sends reminders, never phone-local scheduling.
 - SportsHeaderBackground uses semantic surfaces and sampled logo colours, preserving artwork.
 - Public standings share StandingsTable with position-label/qualification fallbacks.
-- Use the shared portalled SeasonMenu for season, round and club-standings competition selection, with display formatting separate from stored values, so sticky headers cannot clip keyboard-accessible in-app menus.
+- Use portalled, keyboard-accessible SeasonMenu for season, round and club-standings competition selection; separate display formatting from stored values to avoid sticky-header clipping.
 - Portal ticket overlays outside the browsing wrapper and lock background scrolling so transforms and bottom navigation cannot clip them.
 - Enforce submission ownership and approval-state editing through database policies; deleting a submission removes the review record, not a published article.
 - Use fixture row identifiers for club match scroll targets so Today and initial focus resolve the same next fixture in a descending list.
