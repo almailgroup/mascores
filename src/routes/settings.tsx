@@ -67,15 +67,21 @@ function SettingsPage() {
   const save = async () => {
     if (!user) return;
     setSaving(true);
-    const { data: savedProfile } = await supabase.from("profiles").select("notification_preferences").eq("id", user.id).maybeSingle();
-    const savedNotifications = savedProfile?.notification_preferences;
     const clean = username.trim().replace(/[^a-zA-Z0-9_.]/g, "").slice(0, 20);
     const { error } = await supabase.from("profiles").update({
-      display_name: displayName, language: lang, theme, avatar_url: avatarUrl, height_unit: heightUnit,
-       username: clean || null, is_public: isPublic, notification_preferences: { ...(savedNotifications && typeof savedNotifications === "object" && !Array.isArray(savedNotifications) ? savedNotifications : {}), ...alertPrefs },
+      display_name: displayName, avatar_url: avatarUrl, username: clean || null, is_public: isPublic,
     }).eq("id", user.id);
     setSaving(false);
-    if (error) { setNotice("That username is already taken."); setTimeout(() => setNotice(null), 2500); return; }
+    if (error) {
+      const until = error.message.split(":").slice(1).join(":");
+      const when = until ? new Date(until).toLocaleString(lang === "ar" ? "ar" : "en", { dateStyle: "medium", timeStyle: "short" }) : "";
+      const msg = error.message.startsWith("USERNAME_COOLDOWN")
+        ? (lang === "ar" ? `يمكنك تغيير اسم المستخدم مرة كل 10 أيام. التغيير التالي: ${when}` : `You can change your username once every 10 days. Next change: ${when}`)
+        : error.message.startsWith("DISPLAY_COOLDOWN")
+        ? (lang === "ar" ? `يمكنك تغيير الاسم الظاهر مرة كل يومين. التغيير التالي: ${when}` : `You can change your display name once every 2 days. Next change: ${when}`)
+        : (lang === "ar" ? "اسم المستخدم مستخدم بالفعل." : "That username is already taken.");
+      setNotice(msg); setTimeout(() => setNotice(null), 4000); return;
+    }
     setUsername(clean);
     setNotice(t("settings.saved"));
     setTimeout(() => setNotice(null), 1500);
@@ -141,6 +147,11 @@ function SettingsPage() {
                 <input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} />
                 Public profile — others can find and follow me
               </label>
+              <p className="text-[0.65rem] text-muted-foreground">{lang === "ar" ? "يمكن تغيير اسم المستخدم مرة كل 10 أيام والاسم الظاهر مرة كل يومين." : "Username can change once every 10 days, display name once every 2 days."}</p>
+              {notice && <div className="rounded-md border border-primary/40 bg-primary/10 px-3 py-2 text-sm text-primary">{notice}</div>}
+              <button onClick={save} disabled={saving} className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground shadow disabled:opacity-60">
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} {t("settings.save")}
+              </button>
               {username && (
                 <Link to="/u/$username" params={{ username }} className="inline-block text-xs font-semibold text-primary">
                   View my profile
@@ -189,7 +200,7 @@ function SettingsPage() {
           <div className="mb-3 text-sm font-semibold">{t("settings.theme")}</div>
           <div className="grid grid-cols-2 gap-2">
             {(["light", "dark"] as const).map((th) => (
-              <button key={th} type="button" onClick={() => setTheme(th)}
+              <button key={th} type="button" onClick={() => { setTheme(th); if (user) void supabase.from("profiles").update({ theme: th }).eq("id", user.id); }}
                 className={`rounded-xl border px-3 py-2 text-sm capitalize ${theme === th ? "border-primary bg-primary/10 text-primary" : "border-border bg-background hover:bg-accent"}`}>
                 {t(`settings.theme.${th}`)}
               </button>
@@ -202,7 +213,7 @@ function SettingsPage() {
         <div className="mb-3 text-sm font-semibold">{t("settings.heightUnit")}</div>
         <div className="grid max-w-xs grid-cols-2 gap-2">
           {(["cm", "ft"] as const).map((u) => (
-            <button key={u} type="button" onClick={() => setHeightUnit(u)}
+            <button key={u} type="button" onClick={() => { setHeightUnit(u); if (user) void supabase.from("profiles").update({ height_unit: u }).eq("id", user.id); }}
               className={`rounded-xl border px-3 py-2 text-sm ${heightUnit === u ? "border-primary bg-primary/10 text-primary" : "border-border bg-background hover:bg-accent"}`}>
               {u === "cm" ? "cm" : "ft / in"}
             </button>
@@ -223,19 +234,6 @@ function SettingsPage() {
         </div>
       </section>
 
-      {notice && <div className="mt-4 rounded-md border border-primary/40 bg-primary/10 px-3 py-2 text-sm text-primary">{notice}</div>}
-
-      {user && (
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          <button onClick={save} disabled={saving} className="inline-flex h-11 items-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground shadow disabled:opacity-60">
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} {t("settings.save")}
-          </button>
-          <button onClick={async () => { await supabase.auth.signOut(); navigate({ to: "/" }); }} className="inline-flex h-11 items-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-medium hover:bg-accent">
-            <LogOut className="h-4 w-4" /> {t("settings.signOut")}
-          </button>
-        </div>
-      )}
-
       {user && (
         <section className="mt-10">
           <h2 className="text-sm font-bold">My voice replays</h2>
@@ -246,7 +244,10 @@ function SettingsPage() {
 
       <FeedbackBox />
 
-      {user && <section className="mt-5">
+      {user && <section className="mt-5 flex flex-wrap items-center gap-4">
+          <button onClick={async () => { await supabase.auth.signOut(); navigate({ to: "/" }); }} className="inline-flex h-9 items-center gap-2 rounded-full border border-border bg-card px-4 text-xs font-medium hover:bg-accent">
+            <LogOut className="h-3.5 w-3.5" /> {t("settings.signOut")}
+          </button>
           <Button variant="link" size="sm" disabled={deleting} onClick={() => setConfirmDelete(true)}
             className="px-0 text-xs text-destructive">
             {deleting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />} {t("settings.deleteAccount")}
