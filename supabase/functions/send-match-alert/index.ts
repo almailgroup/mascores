@@ -230,7 +230,22 @@ async function dispatchBroadcast(admin: any, id: string) {
     const { data: tf } = b.audience_team_id
       ? await admin.from("profiles").select("id").contains("favorite_team_ids", [b.audience_team_id])
       : { data: [] };
-    userIds = [...new Set([...(pf ?? []), ...(tf ?? [])].map((p: { id: string }) => p.id))] as string[];
+    // Followers of the leagues the old and new clubs play in hear about it too.
+    const { data: tr } = await admin.from("transfers").select("from_club,to_club").eq("person_id", b.audience_user_id).order("created_at", { ascending: false }).limit(1).maybeSingle();
+    const names = [tr?.from_club, tr?.to_club].filter(Boolean) as string[];
+    const { data: named } = names.length ? await admin.from("teams").select("id,competition_id").in("name", names) : { data: [] };
+    const { data: person } = await admin.from("players").select("team_id").eq("id", b.audience_user_id).maybeSingle();
+    const clubIds = [...new Set([b.audience_team_id, person?.team_id, ...(named ?? []).map((t: { id: string }) => t.id)].filter(Boolean))] as string[];
+    const { data: ct } = clubIds.length ? await admin.from("competition_teams").select("competition_id").in("team_id", clubIds) : { data: [] };
+    const compIds = [...new Set([...(ct ?? []).map((r: { competition_id: string }) => r.competition_id), ...(named ?? []).map((t: { competition_id: string | null }) => t.competition_id)].filter(Boolean))] as string[];
+    const leagueFans: string[] = [];
+    if (compIds.length) {
+      const { data: lf } = await admin.from("profiles").select("id,notification_preferences").overlaps("favorite_competition_ids", compIds);
+      // deno-lint-ignore no-explicit-any
+      for (const p of (lf ?? []) as any[]) { const o = p.notification_preferences?.competition_alert_overrides ?? {}; if (!compIds.every((c) => o[c] === false)) leagueFans.push(p.id); }
+      for (const c of compIds) { const { data: bell } = await admin.from("profiles").select("id").eq(`notification_preferences->competition_alert_overrides->>${c}`, "true"); leagueFans.push(...(bell ?? []).map((p: { id: string }) => p.id)); }
+    }
+    userIds = [...new Set([...(pf ?? []), ...(tf ?? [])].map((p: { id: string }) => p.id).concat(leagueFans))] as string[];
   } else if (b.audience_type === "team" && b.audience_team_id) {
     const t = b.audience_team_id as string;
     const { data } = await admin.from("profiles").select("id,notification_preferences").contains("favorite_team_ids", [t]);
