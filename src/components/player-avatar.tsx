@@ -5,21 +5,26 @@ import { portraitSource } from "@/lib/portrait-source";
 const PortraitBatch = createContext<{ ready: boolean; photos: Record<string, string | null> } | null>(null);
 
 /** Resolve the entire lineup before revealing any portrait, including original fallbacks. */
-export function LineupPortraits({ sources, children }: { sources: (string | null | undefined)[]; children: ReactNode }) {
+export function LineupPortraits({ sources, children, ready = true }: { sources: (string | null | undefined)[]; children: ReactNode; ready?: boolean }) {
   const key = JSON.stringify([...new Set(sources.filter((s): s is string => Boolean(s)))].sort());
   const [batch, setBatch] = useState<{ key: string; photos: Record<string, string | null> } | null>(null);
   useEffect(() => {
+    if (!ready) return;
     let active = true;
     const photos: Record<string, string | null> = {};
     const images: HTMLImageElement[] = [];
     const urls: string[] = JSON.parse(key);
     const finish = () => { if (active) setBatch({ key, photos: { ...photos } }); };
-    const timer = window.setTimeout(() => { finish(); active = false; }, 6000);
+    const timer = window.setTimeout(() => { finish(); active = false; }, 20000);
     Promise.all(urls.map((url) => new Promise<void>((resolve) => {
       const img = new Image();
       images.push(img);
       let original = false;
-      img.onload = () => { photos[url] = img.src; resolve(); };
+      img.onload = async () => {
+        // A network-complete image may still be decoding; reveal only after pixels are ready.
+        try { await img.decode(); } catch { /* Loaded images remain usable without decode support. */ }
+        photos[url] = img.src; resolve();
+      };
       img.onerror = () => {
         if (!original && portraitSource(url) !== url) { original = true; img.src = url; }
         else { photos[url] = null; resolve(); }
@@ -27,8 +32,8 @@ export function LineupPortraits({ sources, children }: { sources: (string | null
       img.src = portraitSource(url) ?? url;
     }))).then(() => { if (active) { window.clearTimeout(timer); finish(); } });
     return () => { active = false; window.clearTimeout(timer); images.forEach((img) => { img.onload = null; img.onerror = null; }); };
-  }, [key]);
-  return <PortraitBatch.Provider value={{ ready: batch?.key === key, photos: batch?.key === key ? batch.photos : {} }}>{children}</PortraitBatch.Provider>;
+  }, [key, ready]);
+  return <PortraitBatch.Provider value={{ ready: ready && batch?.key === key, photos: ready && batch?.key === key ? batch.photos : {} }}>{children}</PortraitBatch.Provider>;
 }
 
 const SIZES = { sm: "h-10 w-10", md: "h-14 w-14", lg: "h-24 w-24" } as const;

@@ -9,7 +9,7 @@ import { FavoriteButton } from "@/hooks/use-favorites";
 import { FlagIcon } from "@/components/flag";
 import { TeamCrest } from "@/components/team-crest";
 import { useI18n } from "@/lib/i18n";
-import { PlayerAvatar } from "@/components/player-avatar";
+import { LineupPortraits, PlayerAvatar } from "@/components/player-avatar";
 import { SocialLinksSection } from "@/components/social-links";
 import { LinkedNews } from "@/components/linked-news";
 import { ArrowRight, Landmark, CalendarClock, Crown, Trophy, Users, Phone, Mail, Globe } from "lucide-react";
@@ -206,6 +206,7 @@ function TeamPage() {
       )}
 
        {tab === "squad" && (
+         <LineupPortraits ready={!coaches.isPending && !(t.is_national ? nationalSquad.isPending : squad.isPending)} sources={[...(t.is_national ? nationalSquad.data ?? [] : squad.data ?? []).map(p=>p.photo_url), ...(coaches.data ?? []).map(c=>c.photo_url)]}>
          <div className="space-y-7">
            <section><h2 className="mb-3 text-sm font-bold uppercase text-muted-foreground">{tx("Coach")}</h2>{coaches.data && coaches.data.length > 0 ? <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{coaches.data.map((coach) => <Link key={coach.id} to="/coaches/$id" params={{ id: coach.id }} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 hover:border-primary/50"><PlayerAvatar src={coach.photo_url} name={coach.name} size="sm" /><div><div className="font-medium">{tx(coach.name)}</div><div className="text-xs text-muted-foreground">{tx(coach.nationality) ?? "—"}</div></div></Link>)}</div> : <EmptyState title={tx("No coach")} />}</section>
            {(["Goalkeeper", "Defender", "Midfielder", "Forward", "Unknown"] as const).map((position) => {
@@ -237,6 +238,7 @@ function TeamPage() {
              })}</div> : <EmptyState title={tx(`No ${position.toLowerCase()}s`)} />}</section>;
            })}
          </div>
+         </LineupPortraits>
       )}
 
       {tab === "info" && (

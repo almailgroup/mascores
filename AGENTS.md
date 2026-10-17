@@ -15,7 +15,7 @@
 - Record and escalate bans with database triggers and per-user transaction locks, retaining history after restrictions are lifted; every write path must follow the same strike rules.
 - AppShell owns gestures: resolve targets at touch start; club/competition pulls begin below sticky identity/tabs; other pages pull whole; bottom tabs stay fixed.
 - Keep account/settings public via the Home profile icon; explicit sign-in CTAs preserve signed-out access to local preferences.
-- Resolve optimized portraits centrally; fall back to unchanged originals.
+- Resolve portraits centrally with original fallbacks; one decoded batch reveals lineup players/coaches and club/national squads together.
 - Reporter uploads use user-ID folders and active-reporter policies; admin access stays separate.
 - Setup stays device-local and hydration-safe; merge guest favourites idempotently on sign-in; no welcome repeats/flashes.
 - Use one text-free loading overlay for both languages; keep pages mounted to preserve state.

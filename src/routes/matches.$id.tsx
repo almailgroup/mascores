@@ -140,20 +140,18 @@ function MatchPage() {
   const broadcasts = useQuery({ queryKey: ["match-broadcasts", id], queryFn: async () => (await supabase.from("match_broadcasts").select("channel:broadcast_channels(id,name,logo_url,country_code)").eq("match_id", id)).data ?? [] });
   const media = useQuery({ queryKey: ["match-media", id], queryFn: async () => (await supabase.from("media_items").select("*").eq("owner_type", "match").eq("owner_id", id).order("sort_order")).data ?? [] });
   const ratings = useQuery({ queryKey: ["match-ratings", id], queryFn: async () => (await supabase.from("player_ratings").select("player_id,rating").eq("match_id", id)).data ?? [] });
-  // Coach names for the shareable line-up card.
+  // One coach read supplies both lineup portraits and the shared card.
   const coachNames = useQuery({
-    queryKey: ["share-coaches", m.data?.home_team_id, m.data?.away_team_id, m.data?.home_coach_id, m.data?.away_coach_id],
+    queryKey: ["share-coaches", m.data?.home_team_id, m.data?.away_team_id, m.data?.home_coach_id, m.data?.away_coach_id, m.data?.status],
     enabled: !!m.data,
     queryFn: async () => {
       const pick = async (coachId: string | null | undefined, teamId: string | null | undefined) => {
-        if (coachId) return (await supabase.from("coaches").select("name").eq("id", coachId).maybeSingle()).data?.name ?? null;
-        if (teamId && m.data?.status === "scheduled") return (await supabase.from("coaches").select("name").eq("team_id", teamId).limit(1).maybeSingle()).data?.name ?? null;
+        if (coachId) return (await supabase.from("coaches").select("id,name,photo_url,nationality").eq("id", coachId).maybeSingle()).data;
+        if (teamId && m.data?.status === "scheduled") return (await supabase.from("coaches").select("id,name,photo_url,nationality").eq("team_id", teamId).limit(1).maybeSingle()).data;
         return null;
       };
-      return {
-        home: await pick(m.data?.home_coach_id, m.data?.home_team_id),
-        away: await pick(m.data?.away_coach_id, m.data?.away_team_id),
-      };
+      const [home,away]=await Promise.all([pick(m.data?.home_coach_id,m.data?.home_team_id),pick(m.data?.away_coach_id,m.data?.away_team_id)]);
+      return {home,away};
     },
   });
   // The hero blends both badges: home colour on the left, away colour on the right.
@@ -377,7 +375,7 @@ function MatchPage() {
         </div>
       </div>}
 
-      {tab === "lineups" && lineupsVisible && <LineupPortraits sources={(lineups.data ?? []).map((item) => item.player?.photo_url)}><div className="space-y-4">
+      {tab === "lineups" && lineupsVisible && <LineupPortraits ready={!lineups.isPending && !coachNames.isPending} sources={[...(lineups.data ?? []).map((item) => item.player?.photo_url),coachNames.data?.home?.photo_url,coachNames.data?.away?.photo_url]}><div className="space-y-4">
       <div dir="ltr" className="relative grid grid-cols-2 gap-1 rounded-full border border-border bg-muted/60 p-1">
         <span
           className="absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-full bg-primary shadow-sm transition-transform duration-300 ease-out"
@@ -429,7 +427,7 @@ function MatchPage() {
             teamName: tx(team?.name) ?? "TBD",
             logo: team?.logo_url ?? null,
             formation: activeFormation,
-            coach: (side === "home" ? coachNames.data?.home : coachNames.data?.away) ?? null,
+            coach: (side === "home" ? coachNames.data?.home?.name : coachNames.data?.away?.name) ?? null,
             rows: formationRows(activeFormation).map((row) =>
               row.map((slot) => starters.find((s) => s.position_code === slot)).filter((lu): lu is (typeof starters)[number] => lu !== undefined).map(shortOf)),
             bench: bench.map(shortOf),
@@ -500,7 +498,7 @@ function MatchPage() {
               return (
                 <>
                   {startersList.length > 0 && <div>{startersList.map(row)}</div>}
-                  <TeamCoach teamId={team?.id} coachId={side === "home" ? match.home_coach_id : match.away_coach_id} played={match.status !== "scheduled"} />
+                  <TeamCoach coach={side === "home" ? coachNames.data?.home : coachNames.data?.away} />
                   {benchList.length > 0 && (
                     <div className="mt-3">
                       <h4 className="mb-1 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Bench")}</h4>
@@ -534,26 +532,16 @@ function PreviousMatches(props: { home: Team | null; away: Team | null; currentI
  * Coach block under each lineup. A coach chosen for this specific match wins;
  * otherwise the club's current coach is shown as a fallback.
  */
-function TeamCoach({ teamId, coachId, played }: { teamId: string | undefined; coachId?: string | null; played?: boolean }) {
+function TeamCoach({ coach }: { coach?: { id: string; name: string; photo_url: string | null; nationality: string | null } | null }) {
   const tx = useTx();
-  const q = useQuery({
-    queryKey: ["lineup-coach", teamId, coachId ?? null, !!played],
-    enabled: !!teamId || !!coachId,
-    queryFn: async () => {
-      if (coachId) return (await supabase.from("coaches").select("id,name,photo_url,nationality").eq("id", coachId).maybeSingle()).data;
-      // Played matches never borrow today's coach; only a stored match coach shows.
-      if (!teamId || played) return null;
-      return (await supabase.from("coaches").select("id,name,photo_url,nationality").eq("team_id", teamId).limit(1).maybeSingle()).data;
-    },
-  });
-  if (!q.data) return null;
+  if (!coach) return null;
   return (
     <div className="mt-3">
       <h4 className="mb-1 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Coach")}</h4>
-      <Link to="/coaches/$id" params={{ id: q.data.id }} className="flex items-center gap-3 py-2 hover:text-primary">
-        <PlayerAvatar src={q.data.photo_url} name={q.data.name} className="h-9 w-9" />
-        <span className="min-w-0 flex-1 truncate font-semibold">{tx(q.data.name)}</span>
-        <span className="shrink-0 text-xs text-muted-foreground">{tx(q.data.nationality) ?? ""}</span>
+      <Link to="/coaches/$id" params={{ id: coach.id }} className="flex items-center gap-3 py-2 hover:text-primary">
+        <PlayerAvatar src={coach.photo_url} name={coach.name} className="h-9 w-9" />
+        <span className="min-w-0 flex-1 truncate font-semibold">{tx(coach.name)}</span>
+        <span className="shrink-0 text-xs text-muted-foreground">{tx(coach.nationality) ?? ""}</span>
       </Link>
     </div>
   );
