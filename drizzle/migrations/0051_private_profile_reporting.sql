@@ -1,0 +1,1 @@
+ALTER POLICY report_create ON public.social_reports WITH CHECK(reporter_id=auth.uid() AND status='open' AND NOT public.is_suspended(auth.uid()) AND EXISTS(SELECT 1 FROM public.social_identity(ARRAY[target_user_id])) AND (recording_id IS NULL OR EXISTS(SELECT 1 FROM public.voice_recordings WHERE id=recording_id AND host_id=target_user_id AND public.can_view_recording(id))));
