@@ -16,7 +16,7 @@ import { useI18n } from '@/lib/i18n';
 import { toast } from 'sonner';
 
 export const Route = createFileRoute('/u/$username')({
-  validateSearch: (search: Record<string, unknown>) => ({ recording: typeof search.recording === 'string' ? search.recording : undefined }),
+  validateSearch: (search: Record<string, unknown>): { recording?: string } => ({ recording: typeof search.recording === 'string' ? search.recording : undefined }),
   head: ({ params }) => ({meta:[{title:`@${params.username} — MA Scores`},{name:'description',content:`Football profile and recordings from @${params.username} on MA Scores.`},{property:'og:title',content:`@${params.username} — MA Scores`},{property:'og:description',content:'Recordings, followers and football conversations.'},{property:'og:type',content:'profile'},{name:'twitter:card',content:'summary'}]}),
   component: ProfilePage,
 });
