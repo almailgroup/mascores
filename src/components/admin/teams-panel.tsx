@@ -188,8 +188,8 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
             <TeamCrest name={t.name} logo={t.logo_url} />
             <button type="button" onClick={() => { setForm(t); setOpen(true); }} className="min-w-0 flex-1 basis-40 text-start">
               <div className="truncate font-semibold text-sm">{t.name}</div>
-              <div className="truncate text-xs text-muted-foreground">{[t.is_national ? "National team" : null, t.is_temporary ? "Temporary club" : null, t.is_national ? null : t.country, t.venue_name, `${t.trophies ?? 0} trophies`].filter(Boolean).join(" · ")}</button>
-            </div>
+              <div className="truncate text-xs text-muted-foreground">{[t.is_national ? "National team" : null, t.is_temporary ? "Temporary club" : null, t.is_national ? null : t.country, t.venue_name, `${t.trophies ?? 0} trophies`].filter(Boolean).join(" · ")}</div>
+            </button>
             {competitionId && <label className="flex shrink-0 items-center gap-1 text-[0.65rem] font-semibold uppercase text-muted-foreground">
               Titles
               <input type="number" min={0} className="w-16 rounded-lg border border-border bg-background px-2 py-1.5 text-base sm:text-sm"
