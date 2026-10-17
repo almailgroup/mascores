@@ -61,6 +61,7 @@ const STATUS_TEXT: Record<string, { label: string }> = {
   "2h": { label: "Second half" },
   ft: { label: "Full time" },
   etwait: { label: "Waiting for extra time" },
+  et: { label: "Extra time started" },
   aet: { label: "After extra time" },
   pen: { label: "Penalty shoot-out" },
   postponed: { label: "Postponed" },
