@@ -23,6 +23,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as TicketsRouteImport } from './routes/tickets'
 import { Route as TransfersRouteImport } from './routes/transfers'
+import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as ApiRemoveBgRouteImport } from './routes/api/remove-bg'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as AuthNativeRouteImport } from './routes/auth.native'
@@ -108,6 +109,11 @@ const TicketsRoute = TicketsRouteImport.update({
 const TransfersRoute = TransfersRouteImport.update({
   id: '/transfers',
   path: '/transfers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VerifyRoute = VerifyRouteImport.update({
+  id: '/verify',
+  path: '/verify',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiRemoveBgRoute = ApiRemoveBgRouteImport.update({
@@ -206,6 +212,7 @@ export interface FileRoutesByFullPath {
   '/support': typeof SupportRoute
   '/tickets': typeof TicketsRoute
   '/transfers': typeof TransfersRoute
+  '/verify': typeof VerifyRoute
   '/api/remove-bg': typeof ApiRemoveBgRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/native': typeof AuthNativeRoute
@@ -238,6 +245,7 @@ export interface FileRoutesByTo {
   '/support': typeof SupportRoute
   '/tickets': typeof TicketsRoute
   '/transfers': typeof TransfersRoute
+  '/verify': typeof VerifyRoute
   '/api/remove-bg': typeof ApiRemoveBgRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/native': typeof AuthNativeRoute
@@ -271,6 +279,7 @@ export interface FileRoutesById {
   '/support': typeof SupportRoute
   '/tickets': typeof TicketsRoute
   '/transfers': typeof TransfersRoute
+  '/verify': typeof VerifyRoute
   '/api/remove-bg': typeof ApiRemoveBgRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/native': typeof AuthNativeRoute
@@ -305,6 +314,7 @@ export interface FileRouteTypes {
     | '/support'
     | '/tickets'
     | '/transfers'
+    | '/verify'
     | '/api/remove-bg'
     | '/auth/callback'
     | '/auth/native'
@@ -337,6 +347,7 @@ export interface FileRouteTypes {
     | '/support'
     | '/tickets'
     | '/transfers'
+    | '/verify'
     | '/api/remove-bg'
     | '/auth/callback'
     | '/auth/native'
@@ -369,6 +380,7 @@ export interface FileRouteTypes {
     | '/support'
     | '/tickets'
     | '/transfers'
+    | '/verify'
     | '/api/remove-bg'
     | '/auth/callback'
     | '/auth/native'
@@ -402,6 +414,7 @@ export interface RootRouteChildren {
   SupportRoute: typeof SupportRoute
   TicketsRoute: typeof TicketsRoute
   TransfersRoute: typeof TransfersRoute
+  VerifyRoute: typeof VerifyRoute
   ApiRemoveBgRoute: typeof ApiRemoveBgRoute
   CoachesIdRoute: typeof CoachesIdRoute
   CompetitionsSlugRoute: typeof CompetitionsSlugRoute
@@ -516,6 +529,13 @@ declare module '@tanstack/react-router' {
       path: '/transfers'
       fullPath: '/transfers'
       preLoaderRoute: typeof TransfersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verify': {
+      id: '/verify'
+      path: '/verify'
+      fullPath: '/verify'
+      preLoaderRoute: typeof VerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/remove-bg': {
@@ -660,6 +680,7 @@ const rootRouteChildren: RootRouteChildren = {
   SupportRoute: SupportRoute,
   TicketsRoute: TicketsRoute,
   TransfersRoute: TransfersRoute,
+  VerifyRoute: VerifyRoute,
   ApiRemoveBgRoute: ApiRemoveBgRoute,
   CoachesIdRoute: CoachesIdRoute,
   CompetitionsSlugRoute: CompetitionsSlugRoute,
