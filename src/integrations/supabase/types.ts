@@ -1378,6 +1378,30 @@ export type Database = {
         }
         Relationships: []
       }
+      merge_dismissals: {
+        Row: {
+          a_id: string
+          b_id: string
+          created_at: string
+          created_by: string | null
+          kind: string
+        }
+        Insert: {
+          a_id: string
+          b_id: string
+          created_at?: string
+          created_by?: string | null
+          kind: string
+        }
+        Update: {
+          a_id?: string
+          b_id?: string
+          created_at?: string
+          created_by?: string | null
+          kind?: string
+        }
+        Relationships: []
+      }
       national_player_kits: {
         Row: {
           created_at: string

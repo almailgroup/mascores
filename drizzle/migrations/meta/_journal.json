@@ -295,6 +295,13 @@
       "when": 1792261003370,
       "tag": "0041_keep_historical_match_coaches",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1792261501799,
+      "tag": "0042_merge_dismissals",
+      "breakpoints": true
     }
   ]
 }
