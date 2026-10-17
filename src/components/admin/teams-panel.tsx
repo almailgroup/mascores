@@ -484,10 +484,13 @@ function CoachesModal({ team, onClose }: { team: Team; onClose: () => void }) {
     if (form.id) { setForm({}); setEditing(false); }
   };
 
+  // Removing only releases the coach from this club; his profile and past matches stay.
   const remove = async (id: string) => {
-    if (!confirm("Remove coach?")) return;
-    await supabase.from("coaches").delete().eq("id", id);
+    if (!confirm("Release this coach from the club? He stays in the app as a free agent.")) return;
+    const { error } = await supabase.from("coaches").update({ team_id: null }).eq("id", id);
+    if (error) { alert("Could not release coach"); return; }
     qc.invalidateQueries({ queryKey: key });
+    qc.invalidateQueries({ queryKey: ["coaches"] });
   };
 
   return (
