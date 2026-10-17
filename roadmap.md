@@ -85,3 +85,4 @@
 - [x] Merge: "Not the same" pairs must never come back
 - [x] Removing a coach from a club releases him (no delete)
 - [ ] Admin: nothing preselected on entry; each section opens as a popup; Countries fits the phone
+- [ ] Lineup logo watermark light white
