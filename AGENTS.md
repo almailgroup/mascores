@@ -20,7 +20,7 @@
 - Setup stays device-local and hydration-safe; merge guest favourites idempotently on sign-in; no welcome repeats/flashes.
 - Use one text-free loading overlay for both languages; keep pages mounted to preserve state.
 - Touch fields are at least 16px; document touch-action: manipulation blocks focus/double-tap zoom but preserves pinch zoom.
-- Shared collapsing headers keep sports identity and tabs sticky.
+- Collapsing headers keep identity and tabs sticky.
 - Round teams use terminal completion times and public read-only position ratings; available within one hour, without polling.
 - Round-team formation maximizes position-average rating surplus, raw sum tie-break; show published history plus earliest started unreleased round.
 - Keep season winners in owner-writable title history separate from cumulative title counts so editing a year never changes trophy totals.
