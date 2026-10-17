@@ -10,6 +10,8 @@ import { VoiceBadge } from '@/components/voice-people';
 import { SocialScreen } from '@/components/social-screen';
 import { AccountPrivacy } from '@/components/account-privacy';
 import { SocialActivityButton } from '@/components/social-activity';
+import { SocialReport } from '@/components/social-report';
+import { SocialShare } from '@/components/social-share';
 import { Button } from '@/components/ui/button';
 import { useSignInAction } from '@/lib/sign-in-action';
 import { useI18n } from '@/lib/i18n';
@@ -42,6 +44,7 @@ function Avatar({person,large=false}:{person:Person;large?:boolean}) {
 function ProfilePage() {
   const {username}=Route.useParams(); const {recording}=Route.useSearch(); const {user}=useAuth();const qc=useQueryClient(); const signIn=useSignInAction();const {lang}=useI18n();const label=(en:string,ar:string)=>lang==='ar'?ar:en;
   const [followList,setFollowList]=useState<'followers'|'following'|null>(null);const [editing,setEditing]=useState(false);const [name,setName]=useState('');const [bio,setBio]=useState('');const [saving,setSaving]=useState(false);const [followBusy,setFollowBusy]=useState(false);const [tab,setTab]=useState<'recordings'|'reposts'>('recordings');
+  const [shareOpen,setShareOpen]=useState(false);
   const profile=useQuery({queryKey:['profile',username,user?.id],queryFn:async()=>{const {data,error}=await supabase.rpc('social_profile',{_username:username});if(error)throw error;return data as Profile|null;}});
   const target=profile.data;const own=target?.id===user?.id;
   const relationship=useQuery({queryKey:['social-follow',user?.id,target?.id],enabled:!!user&&!!target&&!own,queryFn:async()=>{if(!user||!target)return {following:false,requested:false};const [f,r]=await Promise.all([supabase.from('profile_follows').select('id').eq('follower_id',user.id).eq('following_id',target.id).maybeSingle(),supabase.from('follow_requests').select('id').eq('requester_id',user.id).eq('target_id',target.id).maybeSingle()]);if(f.error||r.error)throw f.error??r.error;return {following:!!f.data,requested:!!r.data};}});
@@ -60,9 +63,9 @@ function ProfilePage() {
       <div className="grid grid-cols-[80px_minmax(0,1fr)] items-center gap-4 sm:grid-cols-[112px_minmax(0,1fr)] sm:gap-8">
         <Avatar person={target} large/>
         <div className="grid min-w-0 grid-cols-3 gap-1 text-center">
-          <div><b className="block text-lg">{target.recordings}</b><span className="text-xs sm:text-sm">{label('recordings','تسجيلات')}</span></div>
-          <Button variant="ghost" className="h-auto min-w-0 flex-col gap-0 px-0 py-2" disabled={!target.can_view&&!own} onClick={()=>setFollowList('followers')}><b className="text-lg">{target.followers}</b><span className="text-xs font-normal sm:text-sm">{label('followers','متابعون')}</span></Button>
-          <Button variant="ghost" className="h-auto min-w-0 flex-col gap-0 px-0 py-2" disabled={!target.can_view&&!own} onClick={()=>setFollowList('following')}><b className="text-lg">{target.following}</b><span className="text-xs font-normal sm:text-sm">{label('following','يتابع')}</span></Button>
+          <div className="flex h-16 min-w-0 flex-col items-center justify-center gap-1"><span className="block w-full text-center text-lg font-bold leading-6 tabular-nums">{target.recordings}</span><span className="block w-full text-center text-xs font-normal leading-4">{label('recordings','تسجيلات')}</span></div>
+          <Button variant="ghost" className="flex h-16 min-w-0 flex-col items-center justify-center gap-1 px-0 py-0 disabled:opacity-100" disabled={!target.can_view&&!own} onClick={()=>setFollowList('followers')}><span className="block w-full text-center text-lg font-bold leading-6 tabular-nums">{target.followers}</span><span className="block w-full text-center text-xs font-normal leading-4">{label('followers','متابعون')}</span></Button>
+          <Button variant="ghost" className="flex h-16 min-w-0 flex-col items-center justify-center gap-1 px-0 py-0 disabled:opacity-100" disabled={!target.can_view&&!own} onClick={()=>setFollowList('following')}><span className="block w-full text-center text-lg font-bold leading-6 tabular-nums">{target.following}</span><span className="block w-full text-center text-xs font-normal leading-4">{label('following','يتابع')}</span></Button>
         </div>
       </div>
       <div className="mt-4"><div className="flex items-start gap-2"><h2 className="min-w-0 break-words text-base font-bold [overflow-wrap:anywhere]">{target.display_name??target.username}</h2><VoiceBadge badge={target.badge}/></div>{target.bio&&<p className="mt-1 whitespace-pre-wrap break-words text-sm">{target.bio}</p>}</div>

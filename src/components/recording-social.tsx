@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Heart, MessageCircle, Repeat2, Send, Copy, Share2, Trash2 } from 'lucide-react';
+import { Heart, MessageCircle, Repeat2, Send, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/use-auth';
@@ -9,7 +9,8 @@ import { useSignInAction } from '@/lib/sign-in-action';
 import { recordingShareUrl } from '@/lib/social';
 import { SocialScreen } from './social-screen';
 import { Button } from './ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import { SocialShare } from './social-share';
+import { SocialReport } from './social-report';
 import { useI18n } from '@/lib/i18n';
 
 export function RecordingSocial({ recordingId, hostId, title }: { recordingId: string; hostId: string; title: string }) {
@@ -40,6 +41,7 @@ export function RecordingSocial({ recordingId, hostId, title }: { recordingId: s
       <Button variant="ghost" aria-label={label('Comments','التعليقات')} onClick={() => setCommentsOpen(true)}><MessageCircle/>{rows.filter(r => r.kind==='comment').length || ''}</Button>
       <Button variant="ghost" aria-label={label('Repost','إعادة نشر')} aria-pressed={rows.some(r => r.kind==='repost' && r.user_id===user?.id)} disabled={busy} className={rows.some(r => r.kind==='repost' && r.user_id===user?.id) ? 'text-primary' : ''} onClick={() => void toggle('repost')}><Repeat2/>{rows.filter(r => r.kind==='repost').length || ''}</Button>
       <Button variant="ghost" size="icon" className="ml-auto" aria-label={label('Share','مشاركة')} onClick={() => setShareOpen(true)}><Send/></Button>
+      {user?.id!==hostId&&<SocialReport targetUserId={hostId} recordingId={recordingId}/>}
     </div>
     <SocialScreen open={commentsOpen} title={label('Comments','التعليقات')} onClose={() => setCommentsOpen(false)}>
       <h2 className="mb-5 text-sm font-semibold">{title}</h2>
@@ -54,13 +56,6 @@ export function RecordingSocial({ recordingId, hostId, title }: { recordingId: s
         if(error) toast.error(label('Could not post comment','تعذر نشر التعليق')); else { setBody(''); await invalidate(); } setBusy(false);
       }}><textarea aria-label={label('Comment','تعليق')} maxLength={1000} rows={2} value={body} onChange={e=>setBody(e.target.value)} placeholder={label('Add a comment…','أضف تعليقًا…')} className="min-w-0 flex-1 resize-none rounded-md border border-border bg-background p-3 text-base"/><Button type="submit" disabled={busy || !body.trim()} size="icon" aria-label={label('Post comment','نشر التعليق')}><Send/></Button></form> : <Button onClick={signIn}>{label('Sign in to comment','سجل الدخول للتعليق')}</Button>}
     </SocialScreen>
-    <Dialog open={shareOpen} onOpenChange={setShareOpen}><DialogContent><DialogHeader><DialogTitle>{label('Share recording','مشاركة التسجيل')}</DialogTitle></DialogHeader>
-      <div className="grid grid-cols-2 gap-3">
-        <Button variant="outline" asChild><a target="_blank" rel="noopener noreferrer" href={`https://wa.me/?text=${encodeURIComponent(title+' '+url)}`}>WhatsApp</a></Button>
-        <Button variant="outline" asChild><a target="_blank" rel="noopener noreferrer" href={`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`}>Telegram</a></Button>
-        <Button variant="outline" onClick={async () => { if(navigator.share) { try { await navigator.share({title,url}); } catch(e) { if (!(e instanceof Error && e.name==='AbortError')) toast.error('Could not share'); } } else { await navigator.clipboard.writeText(url); toast.success(label('Link copied','تم نسخ الرابط')); } }}><Share2/>{label('Other apps','تطبيقات أخرى')}</Button>
-        <Button variant="outline" onClick={async () => { try { await navigator.clipboard.writeText(url); toast.success(label('Link copied','تم نسخ الرابط')); } catch { toast.error('Could not copy link'); } }}><Copy/>{label('Copy link','نسخ الرابط')}</Button>
-      </div>
-    </DialogContent></Dialog>
+    <SocialShare open={shareOpen} onOpenChange={setShareOpen} title={title} url={url} onRepost={()=>void toggle('repost')}/>
   </>;
 }
