@@ -91,7 +91,7 @@ export function VoiceReplays({ hostId, matchId, mine = false, limit = 12, public
             setBusy(true);
             try {
               let cover = editing.cover_url;
-              if (photo) { cover = await uploadMedia("news-covers", photo, user.id); if (!cover) throw new Error("Upload failed"); }
+              if (photo) { cover = await uploadMedia("avatars", photo, user.id); if (!cover) throw new Error("Upload failed"); }
               const { error } = await supabase.from("voice_recordings").update({ title: title.trim(), cover_url: cover }).eq("id", editing.id).eq("host_id", user.id);
               if (error) throw error;
               await qc.invalidateQueries({ queryKey: ["voice-replays"] });
