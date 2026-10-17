@@ -154,7 +154,7 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
       await pc.setLocalDescription(offer);
       await channel.send({ type: "broadcast", event: "signal", payload: { from: current.userId, to: otherId, sid: sidRef.current, toSid: remoteSidRef.current.get(otherId), kind: "offer", data: pc.localDescription ?? offer } satisfies SignalPayload });
     } catch (error) {
-      if (pc.signalingState !== "closed") console.warn("Voice offer failed", error);
+      console.warn("Voice offer failed", error);
     } finally {
       makingOfferRef.current.delete(otherId);
     }

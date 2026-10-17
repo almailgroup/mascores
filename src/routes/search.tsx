@@ -37,7 +37,7 @@ function readHistory(): Visited[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = JSON.parse(window.localStorage.getItem(HISTORY_KEY) ?? "[]");
-    return Array.isArray(raw) ? (raw as Visited[]).filter((v) => v && typeof v.key === "string" && typeof v.to === "string" && v.kind !== "people").slice(0, 12) : [];
+    return Array.isArray(raw) ? (raw as Visited[]).filter((v) => v && typeof v.key === "string" && typeof v.to === "string" && FILTERS.some((f) => f.key === v.kind)).slice(0, 12) : [];
   } catch { return []; }
 }
 
