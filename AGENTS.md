@@ -11,12 +11,12 @@
 
 - Reporter ID photos stay private/user-scoped with short-lived owner-authorized links; never public URLs.
 - One dialog generates/saves images; cancel rendering and revoke previews to avoid duplicates/leaks.
-- Save images on iOS through the add-only PhotoLibrary bridge registered by the scene controller; web uses file sharing with an explicit download alternative so camera-roll actions never silently download.
+- iOS saves through the scene-registered add-only PhotoLibrary bridge; web uses sharing plus explicit download, never silent camera-roll downloads.
 - Record and escalate bans with database triggers and per-user transaction locks, retaining history after restrictions are lifted; every write path must follow the same strike rules.
 - AppShell owns gestures: resolve targets at touch start; club/competition pulls begin below sticky identity/tabs; other pages pull whole; bottom tabs stay fixed.
 - Keep account/settings public via the Home profile icon; explicit sign-in CTAs preserve signed-out access to local preferences.
 - Resolve optimized portraits centrally; fall back to unchanged originals.
-- Scope reporter news uploads to their user-ID folder and active reporter storage policies; admin upload access stays separate.
+- Reporter uploads use user-ID folders and active-reporter policies; admin access stays separate.
 - Setup stays device-local and hydration-safe; merge guest favourites idempotently on sign-in; no welcome repeats/flashes.
 - Use one text-free loading overlay for both languages; keep pages mounted to preserve state.
 - Touch fields are at least 16px; document touch-action: manipulation blocks focus/double-tap zoom but preserves pinch zoom.
