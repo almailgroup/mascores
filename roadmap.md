@@ -1,6 +1,6 @@
 # Roadmap
-- [ ] Show the full news photo in shared images without cutting off faces
-- [ ] Load lineup coaches with players and reveal squad portraits together; verify real photos
+- [x] Show full news photo in shared images; verified Abdullah Fares share keeps his entire original photo
+- [x] Load lineup coaches with players and reveal club/national squad portraits together; verified real coach and player photos
 - [x] Fix profile photo cropping; verified drag, zoom, save and profile photo reload
 - [x] Move profile verification beside the top username only, above recording/follower/following counters; checked phone/desktop
 - [x] Add verification decision replies to the applicant inbox and a secure custom owner-only badge; checked approval/decline reply delivery and blocked owner assignment
