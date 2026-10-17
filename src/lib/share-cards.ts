@@ -504,7 +504,7 @@ export async function drawMatchLineupsCard(input: {
       });
     });
   });
-  if (mark) { ctx.save(); ctx.globalAlpha = 0.6; crest(ctx, mark, "", 978, 1516, 48); ctx.restore(); }
+  if (mark) { ctx.save(); ctx.globalAlpha = 0.7; ctx.filter = "brightness(0) invert(1)"; crest(ctx, mark, "", 978, 1516, 48); ctx.restore(); }
   ctx.textAlign = "left"; ctx.font = `600 22px ${FONT}`;
   ctx.fillStyle = "rgba(255,255,255,0.45)"; ctx.fillText("MA Scores · Match lineups", 60, 1720);
   return toBlob(canvas);
