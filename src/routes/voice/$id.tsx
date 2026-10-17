@@ -138,9 +138,10 @@ function VoiceRoomPage() {
 
   const { latest: reactions, react } = useVoiceReactions(id, user?.id);
   const hostSpeaking = roster.some((peer) => peer.self && peer.speaking);
+  const lastActivitySent = useRef(0);
   useEffect(() => {
     if (!isHost || !joined || !live || !hostSpeaking) return;
-    const activity = () => { void supabase.rpc("voice_host_activity", { _room_id: id }); };
+    const activity = () => { if (Date.now() - lastActivitySent.current < 15000) return; lastActivitySent.current = Date.now(); void supabase.rpc("voice_host_activity", { _room_id: id }); };
     activity();
     const timer = window.setInterval(activity, 15000);
     return () => window.clearInterval(timer);
