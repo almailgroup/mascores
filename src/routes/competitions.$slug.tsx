@@ -1,6 +1,7 @@
 import { TeamCrest } from "@/components/team-crest";
 import { useAuth } from "@/hooks/use-auth";
 import { useSignInAction } from "@/lib/sign-in-action";
+import { useCompetitionAlerts } from "@/lib/competition-alerts";
 import { requestAlertPermission } from "@/lib/notification-permission";
 import { PlayerAvatar } from "@/components/player-avatar";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
@@ -325,23 +326,14 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
   const [bump, setBump] = useState(0);
   const followerCount = Math.max(0, (followers.data ?? 0) + bump);
 
-  const [alerts, setAlerts] = useState<string[]>([]);
-  useEffect(() => {
-    if (!user) { setAlerts([]); return; }
-    void supabase.from("profiles").select("notification_preferences").eq("id", user.id).maybeSingle().then(({ data }) => {
-      const prefs = data?.notification_preferences as { competition_alert_overrides?: Record<string, boolean> } | undefined;
-      setAlerts(Object.entries(prefs?.competition_alert_overrides ?? {}).filter(([, on]) => on).map(([id]) => id));
-    });
-  }, [user?.id]);
-  const alerted = alerts.includes(c.id);
+  const { overrides: compAlerts, setCompetitionAlert } = useCompetitionAlerts();
+  const alerted = compAlerts[c.id] === true;
   const toggleAlert = async () => {
     if (!user) { signIn(); return; }
-    if (!(await requestAlertPermission())) return;
-    const next = alerted ? alerts.filter((id) => id !== c.id) : [...alerts, c.id];
-    setAlerts(next);
-    const { error } = await supabase.rpc("set_competition_notification", { _competition_id: c.id, _enabled: !alerted });
-    if (error) setAlerts(alerts);
-    else window.dispatchEvent(new CustomEvent("mas:competition-alert", { detail: { id: c.id, enabled: !alerted } }));
+    const enabled = !alerted;
+    // Flip on the first tap; the permission prompt and save follow behind it.
+    const save = setCompetitionAlert(c.id, enabled).catch(() => { toast.error(tx("Could not save notifications")); });
+    if (enabled && !(await requestAlertPermission())) { await save; void setCompetitionAlert(c.id, false).catch(() => {}); }
   };
 
   const router = useRouter();
@@ -361,7 +353,7 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <Button variant="ghost" size="icon"
+        <Button variant="ghost" size="icon" data-no-gesture
           onClick={toggleAlert}
           aria-label={tx("Notifications")}
            className={`sports-header-control h-10 w-10 text-match-foreground hover:text-match-foreground ${alerted ? "opacity-100" : "opacity-70"}`}

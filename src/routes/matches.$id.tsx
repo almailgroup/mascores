@@ -225,7 +225,7 @@ function MatchPage() {
           <BackButton iconOnly className="text-match-foreground" />
           <div className="flex items-center gap-1 [&_button]:h-8 [&_button]:w-8 [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-match-foreground [&_svg]:h-4 [&_svg]:w-4">
             <MatchShare data={shareData} mode="result" />
-            <MatchNotificationButton matchId={match.id} teamIds={[match.home_team_id, match.away_team_id]} withSettings />
+            <MatchNotificationButton matchId={match.id} competitionId={match.competition_id} teamIds={[match.home_team_id, match.away_team_id]} withSettings />
             <FavoriteButton kind="match" id={match.id} />
           </div>
         </div>
