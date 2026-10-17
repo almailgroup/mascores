@@ -3,6 +3,8 @@ import { Link } from "@tanstack/react-router";
 import { Flag, Trash2, Check } from "lucide-react";
 import { supabase } from "@/lib/db";
 import { btnGhost } from "./ui";
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 type Report = {
   id: string;
@@ -24,9 +26,20 @@ export function ChatReportsPanel() {
   });
 
   const refresh = () => qc.invalidateQueries({ queryKey: key });
+  const social = useQuery({queryKey:['admin','social-reports'],queryFn:async()=>{const {data,error}=await supabase.from('social_reports').select('*').order('created_at',{ascending:false}).limit(200);if(error)throw error;return data??[];}});
 
   return (
     <div>
+      <section className="mb-8">
+        <h2 className="mb-4 flex items-center gap-2 font-bold"><Flag className="h-4 w-4 text-primary"/>Reported profiles and recordings</h2>
+        {social.isError&&<Button variant="outline" onClick={()=>void social.refetch()}>Retry reports</Button>}
+        <div className="grid gap-3">{social.data?.map(r=><div key={r.id} className="rounded-lg border border-border bg-card p-3 text-sm">
+          <div className="flex flex-wrap items-center gap-3"><span className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</span><span className="font-semibold">{r.status}</span><Link to="/u/$username" params={{username:r.target_user_id}} search={{recording:r.recording_id??undefined}} className="text-primary">{r.recording_id?'Open recording':'Open profile'}</Link></div>
+          <p className="mt-2 font-medium">{r.reason}</p>{r.details&&<p className="mt-1 whitespace-pre-wrap break-words">{r.details}</p>}
+          {r.status==='open'&&<div className="mt-3 flex gap-2">{(['reviewed','dismissed'] as const).map(status=><Button key={status} variant="outline" size="sm" onClick={async()=>{const {error}=await supabase.from('social_reports').update({status}).eq('id',r.id);if(error)toast.error('Could not update report');else await qc.invalidateQueries({queryKey:['admin','social-reports']});}}>{status==='reviewed'?<Check/>:<Trash2/>}{status==='reviewed'?'Mark reviewed':'Dismiss'}</Button>)}</div>}
+        </div>)}</div>
+        {social.data?.length===0&&<p className="py-4 text-sm text-muted-foreground">No social reports yet.</p>}
+      </section>
       <div className="mb-4 flex items-center gap-2"><Flag className="h-4 w-4 text-primary" /><h2 className="font-bold">Reported chat messages</h2></div>
       <div className="grid gap-2">
         {(q.data ?? []).map((r) => (
