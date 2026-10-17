@@ -456,7 +456,7 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
 
   const roster = useMemo(() => {
     const liveById = new Map(peers.map((peer) => [peer.userId, peer]));
-    const merged = storedPeers.map((stored) => ({ ...stored, ...(liveById.get(stored.userId) ?? {}) }));
+    const merged = storedPeers.map((stored) => ({ ...stored, ...(liveById.get(stored.userId) ?? {}), name: stored.name, avatar: stored.avatar }));
     peers.forEach((peer) => { if (!merged.some((item) => item.userId === peer.userId)) merged.push(peer); });
     return merged.map((peer) => ({
     ...peer,

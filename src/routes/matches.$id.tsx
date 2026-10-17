@@ -147,7 +147,7 @@ function MatchPage() {
     queryFn: async () => {
       const pick = async (coachId: string | null | undefined, teamId: string | null | undefined) => {
         if (coachId) return (await supabase.from("coaches").select("name").eq("id", coachId).maybeSingle()).data?.name ?? null;
-        if (teamId) return (await supabase.from("coaches").select("name").eq("team_id", teamId).limit(1).maybeSingle()).data?.name ?? null;
+        if (teamId && m.data?.status === "scheduled") return (await supabase.from("coaches").select("name").eq("team_id", teamId).limit(1).maybeSingle()).data?.name ?? null;
         return null;
       };
       return {

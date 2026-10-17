@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import { useCompact, useTx } from "@/lib/auto-translate";
-import { generatedCover, liveFor, roomCover, type VoiceHost, type VoiceRoom } from "@/lib/voice";
+import { generatedCover, voiceProfiles, liveFor, roomCover, type VoiceHost, type VoiceRoom } from "@/lib/voice";
 import { suspensionMessage, useMySuspension } from "@/lib/suspension";
 
 export const Route = createFileRoute("/voice/")({
@@ -62,8 +62,9 @@ function VoicePage() {
         supabase.rpc("voice_host_profiles", { _ids: list.map((r) => r.host_id) }),
         supabase.from("voice_room_participants").select("room_id").in("room_id", list.map((r) => r.id)).is("left_at", null),
       ]);
+      const names = new Map((await voiceProfiles(list.map((r) => r.host_id))).map((p) => [p.id, p]));
       const hosts: Record<string, VoiceHost> = {};
-      ((hostRows ?? []) as VoiceHost[]).forEach((host) => { hosts[host.id] = { ...host, followers: Number(host.followers ?? 0) }; });
+      ((hostRows ?? []) as VoiceHost[]).forEach((host) => { hosts[host.id] = { ...host, ...names.get(host.id), followers: Number(host.followers ?? 0) }; });
       const tally: Record<string, number> = {};
       ((counts ?? []) as { room_id: string }[]).forEach((row) => { tally[row.room_id] = (tally[row.room_id] ?? 0) + 1; });
       const withCounts: RoomWithCount[] = list.map((room) => ({ ...room, listeners: tally[room.id] ?? 0 }));

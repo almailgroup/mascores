@@ -97,10 +97,10 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
             <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg bg-primary/10">
               {c.logo_url ? <img src={c.logo_url} className="h-full w-full object-contain" alt="" /> : <span className="text-xs">🏆</span>}
             </div>
-            <div className="min-w-0 flex-1 basis-[60%]">
+            <button type="button" onClick={() => { setForm(c); setOpen(true); }} className="min-w-0 flex-1 basis-[60%] text-start">
               <div className="truncate font-semibold">{c.name}</div>
               <div className="truncate text-xs text-muted-foreground">{[c.scope && c.scope !== "national" ? c.region ?? c.scope : c.country, c.season, c.format].filter(Boolean).join(" · ")}</div>
-            </div>
+            </button>
             <button className={btnGhost} onClick={() => onOpen(c)}>Manage <ChevronRight className="h-3.5 w-3.5" /></button>
             <button className={btnGhost} onClick={() => { setForm(c); setOpen(true); }}><Pencil className="h-3.5 w-3.5" /></button>
             {isOwner && <button className={btnDanger} onClick={() => setDeleteComp(c)}><Trash2 className="h-3.5 w-3.5" /></button>}
@@ -120,7 +120,7 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
         onConfirm={() => remove(deleteComp!.id)}
       />
 
-      <Modal open={open} onClose={() => setOpen(false)} title={form.id ? "Edit competition" : "New competition"} wide>
+      <Modal open={open} onClose={() => setOpen(false)} title={form.id ? "Edit competition" : "New competition"} onSave={save} wide>
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Name"><input className={inputCls} value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value, slug: form.slug || slugify(e.target.value) })} /></Field>
           <Field label="Arabic name"><input dir="rtl" className={inputCls} placeholder="الاسم بالعربية" value={form.name_ar ?? ""} onChange={(e) => setForm({ ...form, name_ar: e.target.value || null })} /></Field>
