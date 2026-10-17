@@ -15,13 +15,13 @@
 - Record and escalate bans with database triggers and per-user transaction locks, retaining history after restrictions are lifted; every write path must follow the same strike rules.
 - AppShell owns gestures: resolve targets at touch start; club/competition pulls begin below sticky identity/tabs; other pages pull whole; bottom tabs stay fixed.
 - Keep account/settings public via the Home profile icon; explicit sign-in CTAs preserve signed-out access to local preferences.
-- Resolve optimized portraits centrally with original-URL fallbacks to reduce transfers without changing originals.
+- Resolve optimized portraits centrally; fall back to unchanged originals.
 - Scope reporter news uploads to their user-ID folder and active reporter storage policies; admin upload access stays separate.
 - Setup stays device-local and hydration-safe; merge guest favourites idempotently on sign-in; no welcome repeats/flashes.
 - Use one text-free loading overlay for both languages; keep pages mounted to preserve state.
 - Keep touch fields at least 16px and document touch-action: manipulation to prevent focus/double-tap zoom while preserving pinch zoom.
 - Shared collapsing headers keep sports identity and tabs sticky.
-- Calculate round teams from terminal match completion timestamps and position ratings through the public read-only function, with a one-hour availability deadline; avoid background polling.
+- Round teams use terminal completion times and public read-only position ratings; available within one hour, without polling.
 - Round-team formation maximizes position-average rating surplus, raw sum tie-break; show published history plus earliest started unreleased round.
 - Keep season winners in owner-writable title history separate from cumulative title counts so editing a year never changes trophy totals.
 - Alerts save instantly without replacing other preferences; club overrides remain separate from favourites. One stored-row sender records deliveries and per-alert sounds; club follows inherit into matches with per-match mute. One per-minute deduped server job sends reminders, never phone-local scheduling.
@@ -32,7 +32,7 @@
 - Enforce submission ownership and approval-state editing through database policies; deleting a submission removes the review record, not a published article.
 - Use fixture row identifiers for club match scroll targets so Today and initial focus resolve the same next fixture in a descending list.
 - Device-local language is authoritative on navigation; settings language changes sync immediately without reloading a stale profile language.
-- Resolve club president portraits from existing team staff by chairman name or president role; never invent identity images.
+- President portraits use existing staff matched by chairman name/role; never invent identities.
 - Club follower totals use a public aggregate-only function over private favourites; admin overrides affect display only, never real membership.
 - Use TeamCrest for missing club artwork and localized free-agent labels for unattached players so national call-ups never imply club membership.
 - Favourites/club alerts use ordered optimistic writes; ignore stale hydration; exclude buttons from gestures to prevent tap locks.
