@@ -5,6 +5,8 @@ import { useAuth } from "@/hooks/use-auth";
 export const CLUB_ALERT_KEY = "mas.club_alert_overrides";
 let alertRevision = 0;
 let alertSaveQueue: Promise<unknown> = Promise.resolve();
+/** Load the account copy once per sign-in, not once per bell on the page. */
+let clubLoad: { userId: string; promise: Promise<unknown> } | null = null;
 export function readClubAlerts(): Record<string, boolean> {
   try { const value = JSON.parse(localStorage.getItem(CLUB_ALERT_KEY) ?? "{}"); return value && typeof value === "object" && !Array.isArray(value) ? value : {}; } catch { return {}; }
 }
@@ -18,7 +20,16 @@ export function useClubAlerts() {
     const sync = () => setOverrides(readClubAlerts());
     sync(); window.addEventListener("mas:alerts-changed", sync);
     let cancelled = false;
-    if (user) void supabase.from("profiles").select("notification_preferences").eq("id", user.id).maybeSingle().then(({ data }) => {
+    if (user && clubLoad?.userId !== user.id) clubLoad = { userId: user.id, promise: Promise.resolve(supabase.from("profiles").select("notification_preferences").eq("id", user.id).maybeSingle()).then(({ data }) => {
+      const prefs = data?.notification_preferences;
+      if (loadRevision !== alertRevision || !prefs || typeof prefs !== "object" || Array.isArray(prefs)) return;
+      const saved = prefs.club_alert_overrides;
+      if (saved && typeof saved === "object" && !Array.isArray(saved)) {
+        try { localStorage.setItem(CLUB_ALERT_KEY, JSON.stringify(saved)); } catch { /* optional persistence */ }
+        window.dispatchEvent(new Event("mas:alerts-changed"));
+      }
+    }) };
+    if (false) void supabase.from("profiles").select("notification_preferences").eq("id", "").maybeSingle().then(({ data }) => {
       const prefs = data?.notification_preferences;
       if (cancelled || loadRevision !== alertRevision || !prefs || typeof prefs !== "object" || Array.isArray(prefs)) return;
       const saved = prefs.club_alert_overrides;
