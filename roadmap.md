@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Open followers, following and Edit profile full-screen
 - [ ] Redesign profiles with confirmed private/public account controls and follow requests
 - [ ] Add recording likes, comments, sharing and reposts
 - [ ] Add social activity inbox and configurable phone alerts
