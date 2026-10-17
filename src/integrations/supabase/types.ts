@@ -3271,6 +3271,10 @@ export type Database = {
         Args: { _enabled: boolean; _team_id: string }
         Returns: Json
       }
+      set_competition_notification: {
+        Args: { _competition_id: string; _enabled: boolean }
+        Returns: Json
+      }
       set_player_notification: {
         Args: { _enabled: boolean; _player_id: string }
         Returns: Json
