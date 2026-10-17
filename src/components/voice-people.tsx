@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { Search, X, Check } from "lucide-react";
@@ -24,6 +24,14 @@ export function VoicePeople({ admin = false }: { admin?: boolean }) {
   const [term, setTerm] = useState("");
   const [history, setHistory] = useState<string[]>([]);
   const qc = useQueryClient();
+  const boxRef = useRef<HTMLElement>(null);
+  // Close only on a tap outside; closing on blur unmounted the list before a profile tap could open it.
+  useEffect(() => {
+    if (!active || admin) return;
+    const outside = (e: PointerEvent) => { if (boxRef.current && !boxRef.current.contains(e.target as Node)) setActive(false); };
+    document.addEventListener("pointerdown", outside);
+    return () => document.removeEventListener("pointerdown", outside);
+  }, [active, admin]);
   useEffect(() => { try { const saved = JSON.parse(localStorage.getItem("mas.voice.search") ?? "[]"); if (Array.isArray(saved)) setHistory(saved.filter((v) => typeof v === "string").slice(0, 8)); } catch { /* optional */ } }, []);
   useEffect(() => { const timer = setTimeout(() => setTerm(q.trim()), 250); return () => clearTimeout(timer); }, [q]);
   const people = useQuery({ queryKey: ["voice-people", term, admin], enabled: admin || active, queryFn: async () => { const { data, error } = await supabase.rpc("voice_people", { _q: term, _admin: admin }); if (error) throw error; return data ?? []; } });
@@ -43,7 +51,7 @@ export function VoicePeople({ admin = false }: { admin?: boolean }) {
   const rank = (badge: string | null) => badge === "golden" ? 2 : badge === "verified" ? 1 : 0;
   const sorted = [...(people.data ?? [])].sort((a, b) => rank(b.badge) - rank(a.badge) || Number(b.followers) - Number(a.followers));
   const visible = !term && !admin ? sorted.slice(0, 5) : sorted;
-  return <section onFocus={() => setActive(true)} onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setActive(false); }} className="mb-6 space-y-3">
+  return <section ref={boxRef} onFocus={() => setActive(true)} onClick={() => setActive(true)} className="mb-6 space-y-3">
     <div className="flex items-center gap-2 border-b border-border pb-3"><Search className="h-5 w-5 text-muted-foreground" /><input aria-label={label("Search for people", "ابحث عن أشخاص")} placeholder={label("Search for people", "ابحث عن أشخاص")} value={q} onChange={(e) => setQ(e.target.value)} className="min-w-0 flex-1 bg-transparent text-base outline-none" />{q && <Button variant="ghost" size="icon" aria-label="Clear search" onClick={() => setQ("")}><X /></Button>}</div>
     {(active || admin) && <>
     {!q && history.length > 0 && <div className="flex flex-wrap items-center gap-2"><span className="text-xs text-muted-foreground">{label("Recent searches", "عمليات البحث الأخيرة")}</span>{history.map((item) => <Button key={item} variant="ghost" size="sm" onClick={() => setQ(item)}>{item}</Button>)}<Button variant="ghost" size="icon" aria-label="Clear search history" onClick={() => { setHistory([]); localStorage.removeItem("mas.voice.search"); }}><X className="h-4 w-4" /></Button></div>}

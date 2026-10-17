@@ -1,12 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Mic, MicOff, Loader2, Lock, Globe2, Hand, LogOut, Copy, Check, UserPlus, UserCheck, PhoneOff, Radio, EyeOff, Trash2, UserMinus, Volume2, Circle } from "lucide-react";
+import { Mic, MicOff, Loader2, Lock, Globe2, Hand, LogOut, Copy, Check, UserPlus, UserCheck, PhoneOff, Radio, EyeOff, Trash2, UserMinus } from "lucide-react";
 import { AppShell, BackButton } from "@/components/app-shell";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
-import { useCompact, useTx } from "@/lib/auto-translate";
+import { useTx } from "@/lib/auto-translate";
 import { voiceProfiles, liveFor, roomCover, type VoiceHost, type VoiceRoom } from "@/lib/voice";
 import { useVoiceRoom, type VoiceRole } from "@/lib/use-voice-room";
 import { suspensionMessage, useMySuspension } from "@/lib/suspension";
@@ -35,7 +35,7 @@ function VoiceRoomPage() {
   const { user } = useAuth();
   const { lang } = useI18n();
   const tx = useTx();
-  const compact = useCompact();
+
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
@@ -45,7 +45,8 @@ function VoiceRoomPage() {
   const [joining, setJoining] = useState(false);
   const [saving, setSaving] = useState(false);
   const [ending, setEnding] = useState(false);
-  const [audioUnlocked, setAudioUnlocked] = useState(false);
+  const [showCode, setShowCode] = useState(false);
+  const [confirmChoice, setConfirmChoice] = useState<null | "save" | "delete">(null);
 
   const room = useQuery({
     queryKey: ["voice-room", id],
@@ -189,14 +190,19 @@ function VoiceRoomPage() {
         if (error) throw error;
         if (!count) throw new Error(lang === "ar" ? "سجل الغرفة أولاً لحفظها في ملفك الشخصي." : "Record the room first to save it to your profile.");
       }
-      if (recording) await saveRecording(keep);
-      const query = supabase.from("voice_recordings");
-      const result = keep
-        ? await query.update({ is_public: true }).eq("room_id", id).eq("host_id", user.id)
-        : await query.delete().eq("room_id", id).eq("host_id", user.id);
-      if (result.error) throw result.error;
-      const { error } = await supabase.rpc("voice_end_room", { _room_id: id });
-      if (error) throw error;
+      if (keep) {
+        if (recording) await saveRecording(true);
+        const result = await supabase.from("voice_recordings").update({ is_public: true }).eq("room_id", id).eq("host_id", user.id);
+        if (result.error) throw result.error;
+        const { error } = await supabase.rpc("voice_end_room", { _room_id: id });
+        if (error) throw error;
+      } else {
+        if (recording) await stopRecording().catch(() => null);
+        await supabase.from("voice_recordings").delete().eq("room_id", id).eq("host_id", user.id);
+        const { error } = await supabase.rpc("voice_delete_room", { _room_id: id });
+        if (error) throw error;
+        void qc.invalidateQueries({ queryKey: ["voice-rooms"] });
+      }
       await qc.invalidateQueries({ queryKey: ["voice-replays"] });
       setJoined(false);
       void navigate({ to: "/voice" });
@@ -206,24 +212,11 @@ function VoiceRoomPage() {
   };
 
   const deleteRoom = async () => {
-    if (!window.confirm(tx("Delete this voice room permanently?"))) return;
     const { error } = await supabase.rpc("voice_delete_room", { _room_id: id });
     if (error) { setActionError(error.message); return; }
     setJoined(false);
     void qc.invalidateQueries({ queryKey: ["voice-rooms"] });
     void navigate({ to: "/voice" });
-  };
-
-  const toggleRecording = async () => {
-    if (!recording) {
-      const ok = await startRecording();
-      if (!ok) setActionError(tx("This browser cannot record voice rooms."));
-      return;
-    }
-    setSaving(true);
-    try { await saveRecording(false); }
-    catch { setActionError(tx("The replay could not be saved.")); }
-    finally { setSaving(false); }
   };
 
   const saveRecording = async (isPublic: boolean) => {
@@ -246,16 +239,26 @@ function VoiceRoomPage() {
     await qc.invalidateQueries({ queryKey: ["voice-participants", id] });
   };
 
-  const unlockAudio = async () => {
-    const AudioCtx = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-    if (AudioCtx) {
-      const context = new AudioCtx();
-      await context.resume().catch(() => undefined);
-      await context.close().catch(() => undefined);
-    }
-    window.dispatchEvent(new Event("voice-audio-unlock"));
-    setAudioUnlocked(true);
-  };
+  // Room audio is always on: unlock playback on the first touch anywhere in the room.
+  useEffect(() => {
+    if (!joined) return;
+    const unlock = () => {
+      const AudioCtx = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (AudioCtx) { const context = new AudioCtx(); void context.resume().catch(() => undefined).finally(() => void context.close().catch(() => undefined)); }
+      window.dispatchEvent(new Event("voice-audio-unlock"));
+    };
+    unlock();
+    document.addEventListener("pointerdown", unlock, { once: true });
+    return () => document.removeEventListener("pointerdown", unlock);
+  }, [joined]);
+
+  // Hosts record automatically; the end dialog decides whether the replay is kept.
+  const autoRecordStarted = useRef(false);
+  useEffect(() => {
+    if (!isHost || !joined || !live || recording || autoRecordStarted.current) return;
+    autoRecordStarted.current = true;
+    void startRecording();
+  }, [isHost, joined, live, recording, startRecording]);
 
   const toggleFollow = async () => {
     if (!user || !room.data) { void navigate({ to: "/auth" }); return; }
@@ -303,14 +306,25 @@ function VoiceRoomPage() {
 
   return (
     <AppShell>
-      <Dialog open={ending} onOpenChange={(open) => { if (!saving) setEnding(open); }}>
-        <DialogContent><DialogHeader><DialogTitle>{lang === "ar" ? "إنهاء الغرفة" : "End room"}</DialogTitle><DialogDescription>{lang === "ar" ? "احفظ التسجيل في ملفك الشخصي أو احذفه قبل إنهاء الغرفة. يتطلب الحفظ تسجيل الغرفة أولاً." : "Save the replay to your profile or delete it before ending. Saving requires a recorded room."}</DialogDescription></DialogHeader>
+      <Dialog open={ending} onOpenChange={(open) => { if (!saving) { setEnding(open); setConfirmChoice(null); } }}>
+        <DialogContent><DialogHeader><DialogTitle>{confirmChoice ? (lang === "ar" ? "هل أنت متأكد؟" : "Are you sure?") : (lang === "ar" ? "إنهاء الغرفة" : "End room")}</DialogTitle><DialogDescription>{confirmChoice === "save" ? (lang === "ar" ? "سيتم إنهاء الغرفة وحفظ التسجيل في ملفك الشخصي." : "The room will end and the replay will be saved to your profile.") : confirmChoice === "delete" ? (lang === "ar" ? "سيتم إنهاء الغرفة وحذفها مع التسجيل نهائياً." : "The room and its recording will be ended and deleted permanently.") : (lang === "ar" ? "الغرفة تُسجَّل تلقائياً. احفظها في ملفك الشخصي أو احذفها." : "The room is recorded automatically. Save it to your profile or delete it.")}</DialogDescription></DialogHeader>
           {actionError && <p role="alert" className="text-sm text-destructive">{actionError}</p>}
-          <button disabled={saving} onClick={() => void finishRoom(true)} className="rounded-xl bg-primary p-3 font-bold text-primary-foreground disabled:opacity-50">{lang === "ar" ? "حفظ في الملف الشخصي" : "Save to profile"}</button>
-          <button disabled={saving} onClick={() => void finishRoom(false)} className="rounded-xl bg-destructive p-3 font-bold text-destructive-foreground disabled:opacity-50">{lang === "ar" ? "حذف" : "Delete"}</button>
+          {confirmChoice ? (<>
+            <button disabled={saving} onClick={() => void finishRoom(confirmChoice === "save")} className={`inline-flex items-center justify-center gap-2 rounded-xl p-3 font-bold disabled:opacity-50 ${confirmChoice === "save" ? "bg-primary text-primary-foreground" : "bg-destructive text-destructive-foreground"}`}>{saving && <Loader2 className="h-4 w-4 animate-spin" />}{lang === "ar" ? "نعم، تأكيد" : "Yes, confirm"}</button>
+            <button disabled={saving} onClick={() => setConfirmChoice(null)} className="rounded-xl border border-border p-3 font-bold disabled:opacity-50">{lang === "ar" ? "رجوع" : "Back"}</button>
+          </>) : (<>
+            <button onClick={() => setConfirmChoice("save")} className="rounded-xl bg-primary p-3 font-bold text-primary-foreground">{lang === "ar" ? "حفظ في الملف الشخصي" : "Save to profile"}</button>
+            <button onClick={() => setConfirmChoice("delete")} className="rounded-xl bg-destructive p-3 font-bold text-destructive-foreground">{lang === "ar" ? "حذف" : "Delete"}</button>
+          </>)}
         </DialogContent>
       </Dialog>
-      <BackButton />
+      {isHost && live ? (
+        <div className="mb-3 flex justify-start">
+          <button onClick={endRoom} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-destructive px-4 text-xs font-bold text-destructive-foreground">
+            <PhoneOff className="h-3.5 w-3.5" /> {tx("End room")}
+          </button>
+        </div>
+      ) : <BackButton />}
       {remote.map((entry) => <RemoteAudio key={entry.userId} stream={entry.stream} />)}
 
       <div className="overflow-hidden rounded-3xl border border-border bg-card">
@@ -336,7 +350,6 @@ function VoiceRoomPage() {
               : <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-bold">{(host.data?.display_name ?? "?").slice(0, 1).toUpperCase()}</span>}
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1 text-sm font-bold leading-snug"><span className="break-words">{host.data?.display_name ?? tx("Host")}</span><VoiceUserBadge userId={room.data.host_id} /></div>
-              <div className="text-[0.7rem] text-muted-foreground">{tx("Followers")}: {compact(host.data?.followers ?? 0)}</div>
             </div>
             {!isHost && (
               <button onClick={toggleFollow} className={`inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3 text-xs font-bold ${following.data ? "border border-border bg-card text-muted-foreground" : "bg-primary text-primary-foreground"}`}>
@@ -347,23 +360,26 @@ function VoiceRoomPage() {
           </div>
           {isHost && (live || room.data.invite_code) && (
             <div className="mt-3 flex flex-wrap items-center gap-2">
-              {live && (
-                <button onClick={endRoom} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-destructive px-3 text-xs font-bold text-destructive-foreground">
-                  <PhoneOff className="h-3.5 w-3.5" /> {tx("End room")}
-                </button>
-              )}
               {!live && (
                 <button onClick={deleteRoom} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-destructive px-3 text-xs font-bold text-destructive-foreground">
                   <Trash2 className="h-3.5 w-3.5" /> {tx("Delete room")}
                 </button>
               )}
-              {room.data.invite_code && (
+              {room.data.invite_code && !showCode && (
+                <button onClick={() => setShowCode(true)} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-xs font-bold">
+                  {lang === "ar" ? "إظهار رمز الدعوة" : "Show invite code"}
+                </button>
+              )}
+              {room.data.invite_code && showCode && (<>
                 <button
                   onClick={async () => { await navigator.clipboard.writeText(room.data!.invite_code!); setCopied(true); window.setTimeout(() => setCopied(false), 1500); }}
                   className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-xs font-bold">
                   {copied ? <Check className="h-3.5 w-3.5 text-primary" /> : <Copy className="h-3.5 w-3.5" />} {lang === "ar" ? "رمز الدعوة" : "Invite code"}: {room.data.invite_code}
                 </button>
-              )}
+                <button onClick={() => setShowCode(false)} className="inline-flex h-9 items-center rounded-full border border-border bg-card px-3 text-xs font-semibold text-muted-foreground">
+                  {lang === "ar" ? "إخفاء الرمز" : "Hide code"}
+                </button>
+              </>)}
             </div>
           )}
         </div>
@@ -391,11 +407,6 @@ function VoiceRoomPage() {
                 <span>· {speakerCount} {tx("speaking")}</span>
                 <span>· {listenerCount} {tx("listening")}</span>
               </div>
-              {!audioUnlocked && (
-                <button onClick={unlockAudio} className="mb-3 flex w-full items-center justify-center gap-2 rounded-xl border border-primary/40 bg-primary/10 px-4 py-3 text-sm font-bold text-primary">
-                  <Volume2 className="h-4 w-4" /> {tx("Tap to enable room audio")}
-                </button>
-              )}
               {micError && (
                 <div className="mb-3 rounded-xl bg-destructive/10 p-3 text-xs font-semibold text-destructive">
                   {tx(micError)}
@@ -458,18 +469,7 @@ function VoiceRoomPage() {
               </button>
             )}
 
-            {isHost ? (
-              <>
-                <button onClick={() => void toggleRecording()} disabled={saving}
-                  className={`inline-flex h-11 items-center gap-2 rounded-full px-4 text-sm font-bold disabled:opacity-60 ${recording ? "bg-destructive/15 text-destructive" : "border border-border bg-card"}`}>
-                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Circle className={`h-4 w-4 ${recording ? "fill-destructive" : ""}`} />}
-                  {recording ? tx("Save replay") : tx("Record")}
-                </button>
-                <button onClick={endRoom} className="inline-flex h-11 items-center gap-2 rounded-full bg-destructive px-4 text-sm font-bold text-destructive-foreground">
-                  <PhoneOff className="h-4 w-4" /> {tx("End")}
-                </button>
-              </>
-            ) : (
+            {!isHost && (
               <button onClick={leave} className="inline-flex h-11 items-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-bold">
                 <LogOut className="h-4 w-4" /> {tx("Leave")}
               </button>

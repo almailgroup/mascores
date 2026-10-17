@@ -1870,6 +1870,7 @@ export type Database = {
           created_at: string
           currency: string
           display_name: string | null
+          display_name_changed_at: string | null
           favorite_competition_ids: string[]
           favorite_match_ids: string[]
           favorite_player_ids: string[]
@@ -1883,6 +1884,7 @@ export type Database = {
           theme: string
           updated_at: string
           username: string | null
+          username_changed_at: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -1890,6 +1892,7 @@ export type Database = {
           created_at?: string
           currency?: string
           display_name?: string | null
+          display_name_changed_at?: string | null
           favorite_competition_ids?: string[]
           favorite_match_ids?: string[]
           favorite_player_ids?: string[]
@@ -1903,6 +1906,7 @@ export type Database = {
           theme?: string
           updated_at?: string
           username?: string | null
+          username_changed_at?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -1910,6 +1914,7 @@ export type Database = {
           created_at?: string
           currency?: string
           display_name?: string | null
+          display_name_changed_at?: string | null
           favorite_competition_ids?: string[]
           favorite_match_ids?: string[]
           favorite_player_ids?: string[]
@@ -1923,6 +1928,7 @@ export type Database = {
           theme?: string
           updated_at?: string
           username?: string | null
+          username_changed_at?: string | null
         }
         Relationships: []
       }
