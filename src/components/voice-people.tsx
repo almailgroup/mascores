@@ -25,7 +25,14 @@ export function VoicePeople({ admin = false }: { admin?: boolean }) {
   useEffect(() => { try { const saved = JSON.parse(localStorage.getItem("mas.voice.search") ?? "[]"); if (Array.isArray(saved)) setHistory(saved.filter((v) => typeof v === "string").slice(0, 8)); } catch { /* optional */ } }, []);
   useEffect(() => { const timer = setTimeout(() => setTerm(q.trim()), 250); return () => clearTimeout(timer); }, [q]);
   const people = useQuery({ queryKey: ["voice-people", term, admin], queryFn: async () => { const { data, error } = await supabase.rpc("voice_people", { _q: term, _admin: admin }); if (error) throw error; return data ?? []; } });
-  const remember = () => { if (!term) return; const next = [term, ...history.filter((v) => v !== term)].slice(0, 8); setHistory(next); localStorage.setItem("mas.voice.search", JSON.stringify(next)); };
+  useEffect(() => {
+    if (admin || !term || people.isLoading || !people.data?.length) return;
+    const timer = setTimeout(() => {
+      setHistory((old) => { const next = [term, ...old.filter((v) => v !== term)].slice(0, 8); try { localStorage.setItem("mas.voice.search", JSON.stringify(next)); } catch { /* optional */ } return next; });
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [admin, term, people.isLoading, people.data]);
+  const remember = () => { if (!term) return; const next = [term, ...history.filter((v) => v !== term)].slice(0, 8); setHistory(next); try { localStorage.setItem("mas.voice.search", JSON.stringify(next)); } catch { /* optional */ } };
   const setBadge = async (id: string, badge: string) => {
     const result = badge ? await supabase.from("voice_user_badges").upsert({ user_id: id, badge }) : await supabase.from("voice_user_badges").delete().eq("user_id", id);
     if (result.error) { toast.error(label("Could not save verification", "تعذر حفظ التوثيق")); return; }
