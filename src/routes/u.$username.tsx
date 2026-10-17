@@ -36,7 +36,8 @@ function FollowList({userId,kind,onClose}:{userId:string;kind:'followers'|'follo
   </SocialScreen>;
 }
 function Avatar({person,large=false}:{person:Person;large?:boolean}) {
-  return <div className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-muted ${large?'h-20 w-20 sm:h-28 sm:w-28':'h-11 w-11'}`}>{person.avatar_url?<img alt="" src={person.avatar_url} className="h-full w-full object-cover"/>:<UserRound className={large?'h-9 w-9 text-muted-foreground':'h-5 w-5 text-muted-foreground'}/>}</div>;
+  const [failed,setFailed]=useState(false);
+  return <div className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-muted ${large?'h-20 w-20 sm:h-28 sm:w-28':'h-11 w-11'}`}>{person.avatar_url&&!failed?<img alt="" src={person.avatar_url} onError={()=>setFailed(true)} className="h-full w-full object-cover"/>:<UserRound className={large?'h-9 w-9 text-muted-foreground':'h-5 w-5 text-muted-foreground'}/>}</div>;
 }
 function ProfilePage() {
   const {username}=Route.useParams(); const {recording}=Route.useSearch(); const {user}=useAuth();const qc=useQueryClient(); const signIn=useSignInAction();const {lang}=useI18n();const label=(en:string,ar:string)=>lang==='ar'?ar:en;
