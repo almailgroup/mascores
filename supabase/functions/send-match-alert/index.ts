@@ -13,6 +13,7 @@
  * optional APNS_HOST (defaults to production; sandbox is tried automatically).
  */
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
+import { socialAlertEnabled } from "../../../src/lib/social.ts";
 
 const encoder = new TextEncoder();
 
@@ -213,8 +214,12 @@ async function dispatchBroadcast(admin: any, id: string) {
   if (!b) return Response.json({ skipped: true });
   let userIds: string[];
   if (b.audience_type === "user" && b.audience_user_id) {
-    // A reminder the person set for themselves on a match page.
-    userIds = [b.audience_user_id];
+    // Recheck social preferences at delivery, including broadcasts queued before a switch changed.
+    const { data: profile } = b.social_kind
+      ? await admin.from("profiles").select("notification_preferences").eq("id", b.audience_user_id).maybeSingle()
+      : { data: null };
+    userIds = b.social_kind && (!profile || !socialAlertEnabled(profile.notification_preferences ?? {}, b.social_kind))
+      ? [] : [b.audience_user_id];
   } else if (b.audience_type === "followers" && b.audience_user_id) {
     // Voice room went live: everyone following the host, minus anyone who turned voice alerts off.
     const { data: f } = await admin.from("profile_follows").select("follower_id").eq("following_id", b.audience_user_id);
