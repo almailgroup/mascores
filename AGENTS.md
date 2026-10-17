@@ -9,8 +9,8 @@
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
 
-- Store reporter identity photos in private user-scoped storage and issue short-lived owner-authorized links; identity documents must never have public URLs.
-- Generate/save shared images in one dialog; cancel rendering and revoke preview URLs to prevent duplicate work and leaks.
+- Reporter ID photos stay private/user-scoped with short-lived owner-authorized links; never public URLs.
+- One dialog generates/saves images; cancel rendering and revoke previews to avoid duplicates/leaks.
 - Save images on iOS through the add-only PhotoLibrary bridge registered by the scene controller; web uses file sharing with an explicit download alternative so camera-roll actions never silently download.
 - Record and escalate bans with database triggers and per-user transaction locks, retaining history after restrictions are lifted; every write path must follow the same strike rules.
 - AppShell owns gestures: resolve targets at touch start; club/competition pulls begin below sticky identity/tabs; other pages pull whole; bottom tabs stay fixed.

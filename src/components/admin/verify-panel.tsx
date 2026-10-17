@@ -2,7 +2,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { BadgeCheck, Check, X } from "lucide-react";
 import { supabase } from "@/lib/db";
-import { btnDanger, btnGhost } from "./ui";
 import { toast } from "sonner";
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
