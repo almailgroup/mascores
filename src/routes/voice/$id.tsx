@@ -184,6 +184,11 @@ function VoiceRoomPage() {
     setSaving(true);
     setActionError(null);
     try {
+      if (keep && !recording) {
+        const { count, error } = await supabase.from("voice_recordings").select("id", { count: "exact", head: true }).eq("room_id", id).eq("host_id", user.id);
+        if (error) throw error;
+        if (!count) throw new Error(lang === "ar" ? "سجل الغرفة أولاً لحفظها في ملفك الشخصي." : "Record the room first to save it to your profile.");
+      }
       if (recording) await saveRecording(keep);
       const query = supabase.from("voice_recordings");
       const result = keep
@@ -281,13 +286,7 @@ function VoiceRoomPage() {
   if (!room.data) {
     return (
       <AppShell>
-      <Dialog open={ending} onOpenChange={(open) => { if (!saving) setEnding(open); }}>
-        <DialogContent><DialogHeader><DialogTitle>{lang === "ar" ? "إنهاء الغرفة" : "End room"}</DialogTitle><DialogDescription>{lang === "ar" ? "احفظ التسجيل في ملفك الشخصي أو احذفه قبل إنهاء الغرفة. يتطلب الحفظ تسجيل الغرفة أولاً." : "Save the replay to your profile or delete it before ending. Saving requires a recorded room."}</DialogDescription></DialogHeader>
-          {actionError && <p role="alert" className="text-sm text-destructive">{actionError}</p>}
-          <button disabled={saving} onClick={() => void finishRoom(true)} className="rounded-xl bg-primary p-3 font-bold text-primary-foreground disabled:opacity-50">{lang === "ar" ? "حفظ في الملف الشخصي" : "Save to profile"}</button>
-          <button disabled={saving} onClick={() => void finishRoom(false)} className="rounded-xl bg-destructive p-3 font-bold text-destructive-foreground disabled:opacity-50">{lang === "ar" ? "حذف" : "Delete"}</button>
-        </DialogContent>
-      </Dialog>
+
         <BackButton />
         <div className="rounded-2xl border border-dashed border-border p-8 text-center">
           <div className="text-sm font-bold">{tx("This room is not available")}</div>
@@ -304,6 +303,13 @@ function VoiceRoomPage() {
 
   return (
     <AppShell>
+      <Dialog open={ending} onOpenChange={(open) => { if (!saving) setEnding(open); }}>
+        <DialogContent><DialogHeader><DialogTitle>{lang === "ar" ? "إنهاء الغرفة" : "End room"}</DialogTitle><DialogDescription>{lang === "ar" ? "احفظ التسجيل في ملفك الشخصي أو احذفه قبل إنهاء الغرفة. يتطلب الحفظ تسجيل الغرفة أولاً." : "Save the replay to your profile or delete it before ending. Saving requires a recorded room."}</DialogDescription></DialogHeader>
+          {actionError && <p role="alert" className="text-sm text-destructive">{actionError}</p>}
+          <button disabled={saving} onClick={() => void finishRoom(true)} className="rounded-xl bg-primary p-3 font-bold text-primary-foreground disabled:opacity-50">{lang === "ar" ? "حفظ في الملف الشخصي" : "Save to profile"}</button>
+          <button disabled={saving} onClick={() => void finishRoom(false)} className="rounded-xl bg-destructive p-3 font-bold text-destructive-foreground disabled:opacity-50">{lang === "ar" ? "حذف" : "Delete"}</button>
+        </DialogContent>
+      </Dialog>
       <BackButton />
       {remote.map((entry) => <RemoteAudio key={entry.userId} stream={entry.stream} />)}
 

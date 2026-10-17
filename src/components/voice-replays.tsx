@@ -91,7 +91,7 @@ export function VoiceReplays({ hostId, matchId, mine = false, limit = 12, public
             setBusy(true);
             try {
               let cover = editing.cover_url;
-              if (photo) { cover = await uploadMedia("voice-photos", photo, user.id); if (!cover) throw new Error("Upload failed"); }
+              if (photo) { cover = await uploadMedia("news-covers", photo, user.id); if (!cover) throw new Error("Upload failed"); }
               const { error } = await supabase.from("voice_recordings").update({ title: title.trim(), cover_url: cover }).eq("id", editing.id).eq("host_id", user.id);
               if (error) throw error;
               await qc.invalidateQueries({ queryKey: ["voice-replays"] });
@@ -120,7 +120,8 @@ export function VoiceReplays({ hostId, matchId, mine = false, limit = 12, public
             {replay.host_id === user?.id && (
               <button
                 onClick={async () => {
-                  await supabase.from("voice_recordings").update({ is_public: !replay.is_public }).eq("id", replay.id);
+                  const { error } = await supabase.from("voice_recordings").update({ is_public: !replay.is_public }).eq("id", replay.id);
+                  if (error) { toast.error(label("Could not update replay", "تعذر تحديث التسجيل")); return; }
                   await qc.invalidateQueries({ queryKey: ["voice-replays"] });
                 }}
                 className={`shrink-0 rounded-full px-3 py-1 text-[0.6rem] font-bold ${replay.is_public ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}
