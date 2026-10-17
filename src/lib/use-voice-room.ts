@@ -23,7 +23,15 @@ const newSid = () => Math.random().toString(36).slice(2) + Date.now().toString(3
 
 type Me = { userId: string; name: string; avatar: string | null; role: VoiceRole };
 
-const ICE = [{ urls: ["stun:stun.l.google.com:19302", "stun:global.stun.twilio.com:3478"] }];
+let ICE: RTCIceServer[] = [{ urls: ["stun:stun.l.google.com:19302", "stun:global.stun.twilio.com:3478"] }];
+let iceLoaded: Promise<void> | null = null;
+function loadIce() {
+  iceLoaded ??= import("./voice-ice.functions").then(({ getVoiceIceServers }) => getVoiceIceServers()).then((r) => { if (r?.servers?.length) ICE = r.servers; }).catch(() => undefined);
+  return iceLoaded;
+}
+
+export type SpeakerMoment = { t: number; ids: string[] };
+export type SpeakerPerson = { id: string; name: string; avatar: string | null };
 
 function publishes(role: VoiceRole) {
   return role === "host" || role === "speaker";
