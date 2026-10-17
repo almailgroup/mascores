@@ -36,7 +36,7 @@ import { AdminAbilityProvider } from "@/lib/admin-ability";
 import { SeasonMenu } from "@/components/season-menu";
 import { RecycleBinPanel } from "@/components/admin/recycle-bin-panel";
 import { MergePanel } from "@/components/admin/merge-panel";
-import { GitMerge, BellRing } from "lucide-react";
+import { GitMerge, BellRing, BadgeCheck } from "lucide-react";
 import { Modal } from "@/components/admin/ui";
 import { NotificationsPanel } from "@/components/admin/notifications-panel";
 import { VerifyPanel } from "@/components/admin/verify-panel";
