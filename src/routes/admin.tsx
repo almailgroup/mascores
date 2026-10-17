@@ -37,6 +37,7 @@ import { SeasonMenu } from "@/components/season-menu";
 import { RecycleBinPanel } from "@/components/admin/recycle-bin-panel";
 import { MergePanel } from "@/components/admin/merge-panel";
 import { GitMerge, BellRing } from "lucide-react";
+import { Modal } from "@/components/admin/ui";
 import { NotificationsPanel } from "@/components/admin/notifications-panel";
 
 export const Route = createFileRoute("/admin")({
@@ -53,7 +54,24 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [tab, setTab] = useState<"competitions" | "teams" | "countries" | "players" | "news" | "ai" | "venues" | "channels" | "transfers" | "reports" | "tickets" | "users" | "voice" | "voice users" | "rabta" | "approvals" | "appeals" | "manage" | "requests" | "bin" | "merge" | "notifications">("competitions");
+  const [tab, setTab] = useState<"competitions" | "teams" | "countries" | "players" | "news" | "ai" | "venues" | "channels" | "transfers" | "reports" | "tickets" | "users" | "voice" | "voice users" | "rabta" | "approvals" | "appeals" | "manage" | "requests" | "bin" | "merge" | "notifications" | null>(null);
+  useEffect(() => {
+    const sync = () => {
+      const requested = new URLSearchParams(window.location.search).get("tab");
+      const sections = ["competitions", "teams", "countries", "players", "news", "ai", "venues", "channels", "transfers", "reports", "tickets", "users", "voice", "voice users", "rabta", "approvals", "appeals", "manage", "requests", "bin", "merge", "notifications"] as const;
+      setTab(sections.find((section) => section === requested) ?? null);
+    };
+    sync();
+    window.addEventListener("popstate", sync);
+    return () => window.removeEventListener("popstate", sync);
+  }, []);
+  const closeSection = () => {
+    setTab(null);
+    setOpenComp(null);
+    const url = new URL(window.location.href);
+    url.searchParams.delete("tab");
+    window.history.replaceState(window.history.state, "", url);
+  };
   const [openComp, setOpenComp] = useState<Competition | null>(null);
   const [adminSeason, setAdminSeason] = useState<string | null>(null);
   const [compTab, setCompTab] = useState<"overview" | "teams" | "matches" | "standings" | "knockout" | "awards" | "media">("overview");
@@ -152,44 +170,8 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
 
   return (
     <AdminAbilityProvider value={{ isOwner, needsApproval: ticketsNeedApproval, competitionIds: isOwner ? [] : (access.data?.competitionIds ?? []) }}>
-    <AppShell bare={!!openComp}>
-      {openComp ? (
-        <div>
-          {/* Back arrow and title keep their own row so the season button can
-              never sit on top of them on narrow screens. */}
-          <div className="mb-3">
-            <div className="flex min-w-0 items-center gap-2">
-              <button onClick={() => setOpenComp(null)} className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full hover:bg-accent" aria-label="All competitions">
-                <ArrowLeft className="h-4 w-4" />
-              </button>
-              {openComp.logo_url && <img src={openComp.logo_url} alt="" className="h-8 w-8 shrink-0 object-contain" />}
-              <span className="min-w-0 flex-1 truncate text-sm font-bold">{openComp.name}</span>
-            </div>
-            <div className="mt-2 flex justify-start ps-10">
-              <SeasonPicker competition={openComp} onChange={setOpenComp} season={adminSeason} onSeason={setAdminSeason} />
-            </div>
-          </div>
-
-          <div className="flex max-w-full gap-1 overflow-x-auto border-b border-border pb-2 text-xs">
-            {(openComp.format === "friendly"
-              ? (["overview", "teams", "matches", "media"] as const)
-              : ([...(["overview", "teams", "matches", "standings"] as const), ...(openComp.has_knockout ? (["knockout"] as const) : []), ...(["awards", "media"] as const)] as const)
-            ).map((k) => (
-              <button key={k} onClick={() => setCompTab(k)} className={`rounded-full px-4 py-1.5 font-semibold capitalize ${compTab === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>{k}</button>
-            ))}
-          </div>
-          <div className="mt-6">
-            {compTab === "overview" && <CompetitionOverview competition={openComp} />}
-            {compTab === "teams" && <TeamsPanel competitionId={openComp.id} season={adminSeason ?? openComp.season ?? null} competition={openComp} />}
-            {compTab === "matches" && <MatchesPanel competitionId={openComp.id} season={adminSeason ?? openComp.season ?? null} friendly={openComp.format === "friendly"} />}
-            {compTab === "standings" && openComp.format !== "friendly" && <StandingsPanel competitionId={openComp.id} season={adminSeason ?? openComp.season ?? null} />}
-            {compTab === "knockout" && <KnockoutPanel competitionId={openComp.id} season={adminSeason ?? openComp.season ?? null} />}
-            {compTab === "awards" && openComp.format !== "friendly" && <CompetitionAwardsManager competitionId={openComp.id} />}
-            {compTab === "media" && <MediaManager ownerType="competition" ownerId={openComp.id} />}
-          </div>
-        </div>
-      ) : (
-        <div>
+    <AppShell>
+        <div className="min-w-0">
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 sm:flex sm:flex-wrap sm:justify-between">
             <div className="min-w-0">
               <h1 className="text-xl font-bold tracking-tight sm:text-3xl">{owner ? "Owner control centre" : "Admin control centre"}</h1>
@@ -215,7 +197,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
           {!everything && !canRabta && !access.isLoading && (access.data?.grants ?? []).length === 0 && (
             <p className="mt-6 rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">You do not have access to any sections yet. The site owner decides what you can manage.</p>
           )}
-          <div className="mt-6">
+          <Modal open={!!tab && allowed(tab)} fullPage title={tab === "ai" ? "Almail AI" : tab === "bin" ? "Recycle bin" : (tab ?? "").replace(/^./, (letter) => letter.toUpperCase())} onClose={closeSection}>
             {tab === "competitions" && allowed("competitions") && <CompetitionsPanel onOpen={setOpenComp} />}
 
             {tab === "teams" && allowed("teams") && (
@@ -258,8 +240,45 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
             {tab === "merge" && isOwner && <MergePanel />}
             {isOwner && tab === "notifications" && isOwner && <NotificationsPanel />}
 
+          </Modal>
+        </div>
+      {openComp && (
+        <Modal open fullPage title={openComp.name} onClose={() => setOpenComp(null)}>
+        <div>
+          {/* Back arrow and title keep their own row so the season button can
+              never sit on top of them on narrow screens. */}
+          <div className="mb-3">
+            <div className="flex min-w-0 items-center gap-2">
+              <button onClick={() => setOpenComp(null)} className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full hover:bg-accent" aria-label="All competitions">
+                <ArrowLeft className="h-4 w-4" />
+              </button>
+              {openComp.logo_url && <img src={openComp.logo_url} alt="" className="h-8 w-8 shrink-0 object-contain" />}
+              <span className="min-w-0 flex-1 truncate text-sm font-bold">{openComp.name}</span>
+            </div>
+            <div className="mt-2 flex justify-start ps-10">
+              <SeasonPicker competition={openComp} onChange={setOpenComp} season={adminSeason} onSeason={setAdminSeason} />
+            </div>
+          </div>
+
+          <div className="flex max-w-full gap-1 overflow-x-auto border-b border-border pb-2 text-xs">
+            {(openComp.format === "friendly"
+              ? (["overview", "teams", "matches", "media"] as const)
+              : ([...(["overview", "teams", "matches", "standings"] as const), ...(openComp.has_knockout ? (["knockout"] as const) : []), ...(["awards", "media"] as const)] as const)
+            ).map((k) => (
+              <button key={k} onClick={() => setCompTab(k)} className={`rounded-full px-4 py-1.5 font-semibold capitalize ${compTab === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>{k}</button>
+            ))}
+          </div>
+          <div className="mt-6">
+            {compTab === "overview" && <CompetitionOverview competition={openComp} />}
+            {compTab === "teams" && <TeamsPanel competitionId={openComp.id} season={adminSeason ?? openComp.season ?? null} competition={openComp} />}
+            {compTab === "matches" && <MatchesPanel competitionId={openComp.id} season={adminSeason ?? openComp.season ?? null} friendly={openComp.format === "friendly"} />}
+            {compTab === "standings" && openComp.format !== "friendly" && <StandingsPanel competitionId={openComp.id} season={adminSeason ?? openComp.season ?? null} />}
+            {compTab === "knockout" && <KnockoutPanel competitionId={openComp.id} season={adminSeason ?? openComp.season ?? null} />}
+            {compTab === "awards" && openComp.format !== "friendly" && <CompetitionAwardsManager competitionId={openComp.id} />}
+            {compTab === "media" && <MediaManager ownerType="competition" ownerId={openComp.id} />}
           </div>
         </div>
+        </Modal>
       )}
     </AppShell>
     </AdminAbilityProvider>

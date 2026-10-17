@@ -162,7 +162,7 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
         <div className="flex flex-wrap gap-2">{competitionId && <button className={btnGhost} onClick={() => setLibraryOpen(true)}><Library className="h-3.5 w-3.5" /> Add existing</button>}{(competitionId || !restricted) && <button className={btnPrimary} onClick={() => { setForm(competition ? { country: competition.country ?? null, country_code: competition.country_code ?? null, is_national: !!competition.is_national } : lockKind ? { is_national: lockKind === "national" } : {}); setOpen(true); }}><Plus className="h-3.5 w-3.5" /> New team</button>}</div>
       </div>
       {restricted && !competitionId && <p className="mb-3 rounded-xl border border-border bg-card p-3 text-xs text-muted-foreground">You only see clubs that play in the competitions the site owner chose for you.</p>}
-      <div className="grid gap-2">
+      <div className="grid min-w-0 grid-cols-1 gap-2">
         <div className="mb-1 flex flex-wrap items-center gap-2">
           {!competitionId && (
             <>
@@ -429,7 +429,7 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
           return (
             <section key={position}>
               <h4 className="mb-2 text-xs font-bold uppercase text-muted-foreground">{position}</h4>
-              <div className="grid gap-2">
+              <div className="grid min-w-0 grid-cols-1 gap-2">
                 {players.map((p) => (
                   <div key={p.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-background p-2">
                     <PlayerAvatar src={p.photo_url} name={p.name} />
@@ -484,10 +484,13 @@ function CoachesModal({ team, onClose }: { team: Team; onClose: () => void }) {
     if (form.id) { setForm({}); setEditing(false); }
   };
 
+  // Removing only releases the coach from this club; his profile and past matches stay.
   const remove = async (id: string) => {
-    if (!confirm("Remove coach?")) return;
-    await supabase.from("coaches").delete().eq("id", id);
+    if (!confirm("Release this coach from the club? He stays in the app as a free agent.")) return;
+    const { error } = await supabase.from("coaches").update({ team_id: null }).eq("id", id);
+    if (error) { alert("Could not release coach"); return; }
     qc.invalidateQueries({ queryKey: key });
+    qc.invalidateQueries({ queryKey: ["coaches"] });
   };
 
   return (

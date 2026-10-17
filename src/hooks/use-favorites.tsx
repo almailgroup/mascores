@@ -7,6 +7,7 @@ import { useClubAlerts } from "@/hooks/use-club-alerts";
 import { Button } from "@/components/ui/button";
 import { useSignInAction } from "@/lib/sign-in-action";
 import { requestAlertPermission } from "@/lib/notification-permission";
+import { useCompetitionAlerts, competitionOfMatch } from "@/lib/competition-alerts";
 
 export type FavoriteKind = "team" | "player" | "competition" | "match";
 
@@ -229,6 +230,7 @@ const PREF_ROWS: { key: keyof AlertPrefs; label: string }[] = [
 let alertShared: { userId: string | null; alerts: string[]; prefs: AlertPrefs } | null = null;
 let alertLoading: Promise<void> | null = null;
 let alertLoadingFor: string | null | undefined;
+let alertSaveQueue: Promise<unknown> = Promise.resolve();
 const alertListeners = new Set<() => void>();
 function loadAlerts(userId: string | null): Promise<void> {
   if (alertShared && alertShared.userId === userId) return Promise.resolve();
@@ -253,7 +255,7 @@ function loadAlerts(userId: string | null): Promise<void> {
  * Match bell. Pressing it switches the match alerts on or off; the small
  * sliders button next to it chooses which moments are announced.
  */
-export function MatchNotificationButton({ matchId, teamIds = [], withSettings = false }: { matchId: string; teamIds?: (string | null | undefined)[]; withSettings?: boolean }) {
+export function MatchNotificationButton({ matchId, competitionId, teamIds = [], withSettings = false }: { matchId: string; competitionId?: string | null; teamIds?: (string | null | undefined)[]; withSettings?: boolean }) {
   const signIn = useSignInAction();
   const { overrides } = useClubAlerts();
   const { user, loading: authLoading } = useAuth();
@@ -263,22 +265,16 @@ export function MatchNotificationButton({ matchId, teamIds = [], withSettings = 
   const [prefs, setPrefs] = useState<AlertPrefs>({});
   const [openPrefs, setOpenPrefs] = useState(false);
   const box = useRef<HTMLDivElement>(null);
-  const [competitionAlert, setCompetitionAlert] = useState(false);
-  const [competitionId, setCompetitionId] = useState<string | null>(null);
+  const { overrides: compOverrides } = useCompetitionAlerts();
+  const [resolvedCompetition, setResolvedCompetition] = useState<string | null>(competitionId ?? null);
   useEffect(() => {
-    const on = (e: Event) => { const d = (e as CustomEvent<{ id: string; enabled: boolean }>).detail; if (d.id === competitionId) setCompetitionAlert(d.enabled); };
-    window.addEventListener("mas:competition-alert", on);
-    return () => window.removeEventListener("mas:competition-alert", on);
-  }, [competitionId]);
+    if (competitionId) { setResolvedCompetition(competitionId); return; }
+    let live = true;
+    void competitionOfMatch(matchId).then((id) => { if (live) setResolvedCompetition(id); });
+    return () => { live = false; };
+  }, [matchId, competitionId]);
+  const competitionAlert = !!resolvedCompetition && compOverrides[resolvedCompetition] === true;
   const inherited = competitionAlert || teamIds.some((id) => Boolean(id && (overrides[id] ?? favorites.team.includes(id))));
-  useEffect(() => {
-    if (!user) { setCompetitionAlert(false); return; }
-    void Promise.all([supabase.from("matches").select("competition_id").eq("id", matchId).maybeSingle(), supabase.from("profiles").select("notification_preferences").eq("id", user.id).maybeSingle()]).then(([match, profile]) => {
-      const prefs = profile.data?.notification_preferences as { competition_alert_overrides?: Record<string, boolean> } | undefined;
-      setCompetitionId(match.data?.competition_id ?? null);
-      setCompetitionAlert(!!match.data && prefs?.competition_alert_overrides?.[match.data.competition_id] === true);
-    });
-  }, [user?.id, matchId]);
 
   const alertUserId = user?.id ?? null;
   useEffect(() => {
@@ -321,23 +317,32 @@ export function MatchNotificationButton({ matchId, teamIds = [], withSettings = 
         aria-label={active ? "Disable match notifications" : "Enable match notifications"}
         title={inherited && active ? "Following this club's matches" : active ? "Disable match notifications" : "Enable match notifications"}
         disabled={!loaded}
+        data-no-gesture
         onClick={async (event) => {
           event.preventDefault(); event.stopPropagation();
           if (!user) { signIn(); return; }
-          if (!(await requestAlertPermission())) return;
-          const next = explicit ? alerts.filter((id) => id !== matchId) : [...alerts, matchId];
-          const turningOn = inherited ? explicit : !explicit;
-          setAlerts(next);
-          if (alertShared) { alertShared = { ...alertShared, alerts: next }; for (const l of alertListeners) l(); }
-          try { localStorage.setItem(ALERT_KEY, JSON.stringify(next)); } catch { /* optional */ }
-          if (user) await supabase.from("profiles").update({ match_notification_ids: next }).eq("id", user.id);
-          // Tell the live alert listener to pick the new selection up straight away.
-          window.dispatchEvent(new Event("mas:alerts-changed"));
-          if (turningOn) {
-            toast.success("Match alerts on", { description: "Goals, cards and full time will be announced." });
-          } else {
-            toast("Match alerts off");
-          }
+          const current = alertShared?.alerts ?? alerts;
+          const has = current.includes(matchId);
+          const next = has ? current.filter((id) => id !== matchId) : [...current, matchId];
+          const turningOn = inherited ? has : !has;
+          const write = (list: string[]) => {
+            setAlerts(list);
+            if (alertShared) { alertShared = { ...alertShared, alerts: list }; for (const l of alertListeners) l(); }
+            try { localStorage.setItem(ALERT_KEY, JSON.stringify(list)); } catch { /* optional */ }
+            window.dispatchEvent(new Event("mas:alerts-changed"));
+          };
+          // Flip the bell on the first tap; permission and saving follow behind it.
+          write(next);
+          // The choice is saved either way; the phone permission is asked alongside it.
+          if (turningOn) void requestAlertPermission();
+          const save = alertSaveQueue.catch(() => {}).then(async () => {
+            const { error } = await supabase.from("profiles").update({ match_notification_ids: alertShared?.alerts ?? next }).eq("id", user.id);
+            if (error) throw error;
+          });
+          alertSaveQueue = save;
+          try { await save; } catch { write(current); toast.error("Could not save match alerts"); return; }
+          if (turningOn) toast.success("Match alerts on", { description: "Goals, cards and full time will be announced." });
+          else toast("Match alerts off");
         }}
         className={`inline-flex h-8 w-8 items-center justify-center rounded-full border transition ${active ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground hover:text-primary"}`}
       >

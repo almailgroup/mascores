@@ -27,7 +27,7 @@ export function PlayerNotificationButton({ playerId }: { playerId: string }) {
   return <Button data-no-gesture variant="ghost" size="icon" title={label ?? undefined} aria-label={label ?? undefined} aria-pressed={active} className="sports-header-control bg-transparent text-current hover:bg-transparent" onClick={async (event) => {
     event.preventDefault(); event.stopPropagation();
     if (!user) { signIn(); return; }
-    if (!(await requestAlertPermission())) return;
+    if (!active) void requestAlertPermission();
     const previous = read();
     write({ ...previous, [playerId]: !active });
     try {

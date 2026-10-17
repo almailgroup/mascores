@@ -225,7 +225,7 @@ function MatchPage() {
           <BackButton iconOnly className="text-match-foreground" />
           <div className="flex items-center gap-1 [&_button]:h-8 [&_button]:w-8 [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-match-foreground [&_svg]:h-4 [&_svg]:w-4">
             <MatchShare data={shareData} mode="result" />
-            <MatchNotificationButton matchId={match.id} teamIds={[match.home_team_id, match.away_team_id]} withSettings />
+            <MatchNotificationButton matchId={match.id} competitionId={match.competition_id} teamIds={[match.home_team_id, match.away_team_id]} withSettings />
             <FavoriteButton kind="match" id={match.id} />
           </div>
         </div>
@@ -445,7 +445,7 @@ function MatchPage() {
               // Turf and markings live on a clipped layer so player cards (and the
               // goalkeeper's rating on the bottom row) are never cut off.
               <div className="relative mx-auto mb-4 aspect-[3/4] w-full max-w-md rounded-2xl px-3 pb-9 pt-6">
-                <img src={lineupLogo.url} alt="" aria-hidden="true" className="pointer-events-none absolute bottom-3 right-3 z-10 h-7 w-7 object-contain opacity-30" />
+                <img src={lineupLogo.url} alt="" aria-hidden="true" className="pointer-events-none absolute bottom-3 right-3 z-10 h-7 w-7 object-contain opacity-60 [filter:brightness(0)_invert(1)]" />
                 <span className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl" style={{ background: "repeating-linear-gradient(180deg,#1b7a3f 0 28px,#17703a 28px 56px)" }} />
                 <span className="pointer-events-none absolute inset-2 rounded-lg border-2 border-white/35" />
                 <span className="pointer-events-none absolute left-2 right-2 top-1/2 border-t-2 border-white/35" />

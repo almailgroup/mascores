@@ -145,7 +145,7 @@ export function MatchRow({ m, highlightTeamId }: { m: MatchWithTeams; highlightT
         {line(m.away, m.away_score)}
       </div>
        <div className="flex shrink-0 items-center gap-1">
-         {finished && outcome ? <span className={`grid h-6 w-6 place-items-center rounded-full text-[0.6rem] font-black ${outcome === "W" ? "bg-emerald-500/15 text-emerald-500" : outcome === "L" ? "bg-destructive/15 text-destructive" : "bg-muted text-muted-foreground"}`}>{outcome}</span> : <MatchNotificationButton matchId={m.id} teamIds={[m.home_team_id, m.away_team_id]} />}
+         {finished && outcome ? <span className={`grid h-6 w-6 place-items-center rounded-full text-[0.6rem] font-black ${outcome === "W" ? "bg-emerald-500/15 text-emerald-500" : outcome === "L" ? "bg-destructive/15 text-destructive" : "bg-muted text-muted-foreground"}`}>{outcome}</span> : <MatchNotificationButton matchId={m.id} competitionId={m.competition_id} teamIds={[m.home_team_id, m.away_team_id]} />}
        </div>
 
     </Link>

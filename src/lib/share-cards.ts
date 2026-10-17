@@ -420,9 +420,12 @@ export async function drawNewsCard(input: { title: string; summary?: string | nu
 /** Both starting elevens on one branded match pitch, using the shared card surface. */
 export async function drawMatchLineupsCard(input: {
   competition: string; kickoff: string; accent: string;
-  teams: { teamName: string; logo?: string | null; formation: string; rows: { name: string; number: string; photo?: string | null }[][] }[];
+  teams: { teamName: string; logo?: string | null; formation: string; coach?: string | null; rows: { name: string; number: string; photo?: string | null }[][]; bench?: { name: string; number: string; photo?: string | null }[] }[];
 }): Promise<Blob | null> {
-  const W = 1080, H = 1760;
+  // Substitutes sit in two columns under the pitch; the card grows to fit them.
+  const benchRows = Math.min(14, Math.max(0, ...input.teams.slice(0, 2).map((team) => team.bench?.length ?? 0)));
+  const benchH = benchRows ? 110 + benchRows * 46 : 0;
+  const W = 1080, H = 1760 + benchH;
   const made = surface(W, H, input.accent);
   if (!made) return null;
   const { canvas, ctx } = made;
@@ -504,8 +507,27 @@ export async function drawMatchLineupsCard(input: {
       });
     });
   });
-  if (mark) { ctx.save(); ctx.globalAlpha = 0.6; crest(ctx, mark, "", 978, 1516, 48); ctx.restore(); }
+  if (benchRows) {
+    const top = 1700;
+    ctx.fillStyle = "rgba(255,255,255,0.06)";
+    roundRect(ctx, 60, top, 960, benchH - 30, 24); ctx.fill();
+    ctx.textAlign = "left"; ctx.fillStyle = "rgba(255,255,255,0.6)"; ctx.font = `800 24px ${FONT}`;
+    ctx.fillText("SUBSTITUTES", 92, top + 50);
+    teams.forEach((team, ti) => {
+      const x = ti === 0 ? 92 : 570;
+      (team.bench ?? []).slice(0, benchRows).forEach((player, i) => {
+        const y = top + 100 + i * 46;
+        ctx.fillStyle = ti === 0 ? "#60a5fa" : "#4ade80";
+        roundRect(ctx, x, y - 26, 48, 34, 8); ctx.fill();
+        ctx.fillStyle = "#0b1020"; ctx.font = `800 20px ${FONT}`; ctx.textAlign = "center";
+        ctx.fillText(player.number || "-", x + 24, y - 2);
+        ctx.textAlign = "left"; ctx.fillStyle = "#ffffff"; ctx.font = `600 24px ${FONT}`;
+        ctx.fillText(player.name, x + 62, y - 1, 380);
+      });
+    });
+  }
+  if (mark) { ctx.save(); ctx.globalAlpha = 0.7; ctx.filter = "brightness(0) invert(1)"; crest(ctx, mark, "", 978, 1516, 48); ctx.restore(); }
   ctx.textAlign = "left"; ctx.font = `600 22px ${FONT}`;
-  ctx.fillStyle = "rgba(255,255,255,0.45)"; ctx.fillText("MA Scores · Match lineups", 60, 1720);
+  ctx.fillStyle = "rgba(255,255,255,0.45)"; ctx.fillText("MA Scores · Match lineups", 60, H - 40);
   return toBlob(canvas);
 }
