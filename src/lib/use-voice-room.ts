@@ -424,6 +424,7 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
     const AudioCtx = (window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext);
     if (!AudioCtx) return;
     const ctx = new AudioCtx();
+    void ctx.resume().catch(() => {});
     const nodes: { id: string; analyser: AnalyserNode }[] = [];
     const add = (id: string, stream: MediaStream) => {
       try {
