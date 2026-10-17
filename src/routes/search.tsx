@@ -18,7 +18,7 @@ export const Route = createFileRoute("/search")({
   component: SearchPage,
 });
 
-type Filter = "all" | "clubs" | "competitions" | "players" | "coaches" | "venues" | "people";
+type Filter = "all" | "clubs" | "competitions" | "players" | "coaches" | "venues";
 const FILTERS: { key: Filter; label: string }[] = [
   { key: "all", label: "All" },
   { key: "clubs", label: "Teams" },
@@ -26,7 +26,6 @@ const FILTERS: { key: Filter; label: string }[] = [
   { key: "players", label: "Players" },
   { key: "coaches", label: "Coaches" },
   { key: "venues", label: "Stadiums" },
-  { key: "people", label: "People" },
 ];
 
 const HISTORY_KEY = "mas.search.visited";
@@ -38,7 +37,7 @@ function readHistory(): Visited[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = JSON.parse(window.localStorage.getItem(HISTORY_KEY) ?? "[]");
-    return Array.isArray(raw) ? (raw as Visited[]).filter((v) => v && typeof v.key === "string" && typeof v.to === "string").slice(0, 12) : [];
+    return Array.isArray(raw) ? (raw as Visited[]).filter((v) => v && typeof v.key === "string" && typeof v.to === "string" && v.kind !== "people").slice(0, 12) : [];
   } catch { return []; }
 }
 
@@ -48,7 +47,7 @@ function SearchPage() {
   const router = useRouter();
   const reverse = useReverseTranslate();
   const [q, setQ] = useState("");
-  const [filter, setFilter] = useState<Filter>("clubs");
+  const [filter, setFilter] = useState<Filter>("all");
   const [history, setHistory] = useState<Visited[]>([]);
   useEffect(() => { setHistory(readHistory()); }, []);
   const writeHistory = (next: Visited[]) => {
@@ -105,21 +104,19 @@ function SearchPage() {
         fuzzyIn(idsOf("coach"), (ids) => supabase.from("coaches").select(coachCols).in("id", ids)),
         fuzzyIn(idsOf("venue"), (ids) => supabase.from("venues").select(venueCols).in("id", ids)),
       ]);
-      const people = await supabase.rpc("search_profiles", { _q: q.trim(), _limit: 12 });
       return {
         teams: merge(teams.data, fTeams.data as typeof teams.data),
         players: merge(players.data, fPlayers.data as typeof players.data) as unknown as { id: string; name: string; position: string | null; photo_url: string | null; nationality: string | null; nationality_code: string | null; team: { id: string; name: string; logo_url: string | null } | null }[],
         comps: merge(comps.data, fComps.data as typeof comps.data),
         coaches: merge(coaches.data, fCoaches.data as typeof coaches.data) as unknown as { id: string; name: string; nationality: string | null; nationality_code: string | null; photo_url: string | null; team: { id: string; name: string; logo_url: string | null } | null }[],
         venues: merge(venues.data, fVenues.data as typeof venues.data),
-        people: (people.data ?? []) as { id: string; username: string | null; display_name: string | null; avatar_url: string | null; followers: number }[],
       };
     },
   });
 
   const show = (k: Filter) => filter === "all" || filter === k;
   const total = res.data
-    ? res.data.teams.length + res.data.players.length + res.data.comps.length + res.data.coaches.length + res.data.venues.length + res.data.people.length
+    ? res.data.teams.length + res.data.players.length + res.data.comps.length + res.data.coaches.length + res.data.venues.length
     : 0;
 
   return (
@@ -181,7 +178,7 @@ function SearchPage() {
         </div>
       )}
 
-      {q.length < 2 ? <EmptyState title={tx("Type to search")} /> : !res.data ? null : total === 0 ? <EmptyState title={tx("No results")} /> : (
+      {q.length < 2 ? null : !res.data ? null : total === 0 ? <EmptyState title={tx("No results")} /> : (
         <div className="space-y-6">
           {show("competitions") && (
             <Group title={tx("Competitions")}>{res.data.comps.map((c) => (
@@ -232,14 +229,7 @@ function SearchPage() {
                 title={tx(v.name)} country={v.country} sub={[tx(v.city), tx(v.country)].filter(Boolean).join(", ")} />
             ))}</Group>
           )}
-          {show("people") && res.data.people.length > 0 && (
-            <Group title={tx("People")}>{res.data.people.map((person) => (
-              <ResultRow key={person.id} to="/u/$username" params={{ username: person.username ?? "" }} round
-                logo={person.avatar_url} fallback={<User className="h-4 w-4 text-muted-foreground" />}
-                title={person.display_name ?? person.username ?? ""}
-                sub={`@${person.username ?? ""} · ${compact(person.followers)} ${tx("followers") ?? "followers"}`} />
-            ))}</Group>
-          )}
+
         </div>
       )}
     </AppShell>
