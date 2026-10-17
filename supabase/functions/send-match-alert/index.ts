@@ -84,17 +84,28 @@ type AlertRequest = { userIds: string[]; title: string; body: string; path?: str
 type SendResult = { token: string; ok: boolean; status: number; reason: string | null };
 type Msg = { title_en: string; body_en: string; title_ar: string; body_ar: string };
 
-/** Sound files bundled in the iOS app (ios/App/App/Sounds). */
-function soundFor(category: string, title: string): string {
-  if (title.includes("Penalty missed") || title.includes("ضائعة")) return "miss.caf";
-  if (category === "goals") return "goal.caf";
-  if (category === "cards") {
-    // Red (incl. second yellow) gets the harsher card sound; yellow gets a whistle.
-    if (title.includes("Red") || title.includes("Second yellow") || title.includes("حمراء") || title.includes("ثانية")) return "card.caf";
-    return "whistle.caf";
-  }
-  if (category === "kickoff" || category === "final") return "whistle.caf";
-  return "default";
+/** Every match alert title (English) and the sound bundled for it in ios/App/App/Sounds. */
+const TITLE_SOUNDS: Record<string, string> = {
+  "Goal": "goal", "Goal scorer": "scorer", "Penalty scored": "penalty_goal", "Own goal": "own_goal",
+  "Penalty missed": "miss", "Yellow card": "yellow", "Second yellow card": "second_yellow", "Red card": "card",
+  "Substitution": "sub", "Injury substitution": "injury",
+  "VAR check": "var", "Goal VAR": "var_goal", "Penalty VAR": "var_penalty", "Red card VAR": "var_red", "Match update": "note",
+  "Kick-off": "kickoff", "Half time": "halftime", "Second half": "second_half", "Waiting for extra time": "et_wait",
+  "Extra time started": "et_start", "Extra time break": "et_break", "Extra time second half": "et_second",
+  "Penalty shootout": "shootout", "Full time": "fulltime", "Full time after extra time": "fulltime_et",
+  "Full time after penalties": "fulltime_pens", "Match resumed": "resumed", "Highlights available": "highlights",
+};
+const CATEGORY_SOUNDS: Record<string, string> = {
+  goals: "goal", scorer: "scorer", cards: "yellow", kickoff: "kickoff", final: "fulltime", reminder: "reminder", other: "note",
+};
+const KIND_SOUNDS: Record<string, string> = {
+  reminder: "my_reminder", transfer: "transfer", news: "news", custom: "custom", voice: "voice", highlights: "highlights",
+};
+
+/** Sound for a queued match alert: matched by its English title, then its category. */
+function soundFor(category: string, titleEn: string): string {
+  const exact = TITLE_SOUNDS[titleEn.split(" · ")[0].trim()];
+  return `${exact ?? CATEGORY_SOUNDS[category] ?? "note"}.caf`;
 }
 
 async function pushOne(host: string, jwt: string, topic: string, token: string, payload: string) {
@@ -142,7 +153,7 @@ async function deliver(admin: any, userIds: string[], msg: Msg, path: string | u
 }
 
 /** The Settings switch that controls each alert type. */
-const prefKey = (category: string) => (category === "reminder" ? "kickoff" : category);
+const prefKey = (category: string) => (category === "reminder" ? "kickoff" : category === "scorer" ? "goals" : category);
 
 /** Sofascore-style automatic alert for everyone following the match, club or player. */
 // deno-lint-ignore no-explicit-any
@@ -183,7 +194,8 @@ async function dispatchQueued(admin: any, queueId: string) {
     const plOv = prefs.player_alert_overrides ?? {};
     return !!q.player_id && (p.favorite_player_ids ?? []).includes(q.player_id) && plOv[q.player_id] !== false;
   }).map((p: { id: string }) => p.id);
-  const result = await deliver(admin, userIds, q as unknown as Msg, `/matches/${q.match_id}`, q.match_id, soundFor(q.category, q.title_en), soundFor(q.category, q.title_ar));
+  const sound = soundFor(q.category, q.title_en);
+  const result = await deliver(admin, userIds, q as unknown as Msg, `/matches/${q.match_id}`, q.match_id, sound, sound);
   await admin.from("push_queue").update({ result }).eq("id", queueId);
   return Response.json(result);
 }
