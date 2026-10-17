@@ -44,3 +44,4 @@
 - Social identity uses safe RPCs; recipient-only follow approval and shared database predicates secure private recordings. Triggered activity uses the stored-row sender and preferences; playback uses short-lived authorized links.
 - Social dialogs are portalled for phone fit; share/report controls are reused; reports use RLS and safe identity RPCs.
 - Verification review/replies use owner-authorized RPCs; owner badges derive from protected owner identity, never editable badge rows.
+- Avatar uploads use user-ID folders; crop dialogs portal outside page gestures to keep touch editing stable.
