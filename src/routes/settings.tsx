@@ -16,6 +16,8 @@ import { ConfirmDelete } from "@/components/confirm-delete";
 import type { AlertSoundMap } from "@/lib/alert-sounds";
 import { Button } from '@/components/ui/button';
 import { useQuery } from "@tanstack/react-query";
+import { AccountPrivacy } from "@/components/account-privacy";
+import { SocialActivityButton } from "@/components/social-activity";
 
 
 export const Route = createFileRoute("/settings")({
@@ -47,7 +49,7 @@ function SettingsPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
-  const [alertPrefs, setAlertPrefs] = useState<{ goals: boolean; cards: boolean; kickoff: boolean; final: boolean; voice: boolean; sound: string; sounds: AlertSoundMap }>({ goals: true, cards: true, kickoff: true, final: true, voice: true, sound: "stadium", sounds: {} });
+  const [alertPrefs, setAlertPrefs] = useState<{ goals: boolean; cards: boolean; kickoff: boolean; final: boolean; voice: boolean; social: boolean; social_follow: boolean; social_request: boolean; social_like: boolean; social_comment: boolean; social_repost: boolean; sound: string; sounds: AlertSoundMap }>({ goals: true, cards: true, kickoff: true, final: true, voice: true, social: true, social_follow: true, social_request: true, social_like: true, social_comment: true, social_repost: true, sound: "stadium", sounds: {} });
 
   useEffect(() => {
     if (authLoading) return;
@@ -68,7 +70,7 @@ function SettingsPage() {
     setSaving(true);
     const clean = username.trim().replace(/[^a-zA-Z0-9_.]/g, "").slice(0, 20);
     const { error } = await supabase.from("profiles").update({
-      display_name: displayName, avatar_url: avatarUrl, username: clean || null, is_public: isPublic,
+      display_name: displayName, avatar_url: avatarUrl, username: clean || null,
     }).eq("id", user.id);
     setSaving(false);
     if (error) {
@@ -113,7 +115,7 @@ function SettingsPage() {
   return (
     <AppShell>
       <BackButton iconOnly className="mb-3" />
-      <h1 className="text-3xl font-bold tracking-tight">{t("settings.title")}</h1>
+      <div className="flex items-center justify-between"><h1 className="text-3xl font-bold">{t("settings.title")}</h1>{user && <SocialActivityButton />}</div>
       {owner.data && <Link to="/admin" className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-primary">{lang === "ar" ? "إدارة المسابقات وسجل الأبطال" : "Competition settings & title history"}</Link>}
       {user && <p className="mt-1 text-sm text-muted-foreground">{user.email}</p>}
 
@@ -142,10 +144,7 @@ function SettingsPage() {
                   className="mt-1 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
                 <p className="mt-1 text-[0.65rem] text-muted-foreground">People can find you by this name. Letters, numbers, dots and underscores.</p>
               </div>
-              <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} />
-                Public profile — others can find and follow me
-              </label>
+              <AccountPrivacy userId={user.id} isPublic={isPublic} onChange={setIsPublic} />
               <p className="text-[0.65rem] text-muted-foreground">{lang === "ar" ? "يمكن تغيير اسم المستخدم مرة كل 10 أيام والاسم الظاهر مرة كل يومين." : "Username can change once every 10 days, display name once every 2 days."}</p>
               {notice && <div className="rounded-md border border-primary/40 bg-primary/10 px-3 py-2 text-sm text-primary">{notice}</div>}
               <div className="flex flex-wrap items-center gap-4 pt-1">
@@ -174,6 +173,9 @@ function SettingsPage() {
         <div className="flex items-center gap-2 text-sm font-semibold"><BellRing className="h-4 w-4 text-primary" /> {t("settings.notifications")}</div>
         <div className="mt-4 grid gap-2 sm:grid-cols-2">
           {([['goals','Goals and penalties','الأهداف وركلات الجزاء'],['cards','Cards','البطاقات'],['kickoff','Kick-off and reminders','انطلاق المباراة والتذكيرات'],['final','Full-time results','نتائج نهاية المباراة'],['voice','Voice rooms — someone you follow goes live','غرف صوتية — شخص تتابعه يبدأ بثًا']] as const).map(([key,label,labelAr]) => <label key={key} className="flex items-center justify-between gap-3 rounded-xl border border-border bg-background px-3 py-2 text-sm"><span>{lang === "ar" ? labelAr : label}</span><input type="checkbox" checked={alertPrefs[key]} onChange={(event) => void saveAlertPrefs({ ...alertPrefs, [key]: event.target.checked })} /></label>)}
+        </div>
+        <div className="mt-5 border-t border-border pt-4"><h3 className="mb-3 text-sm font-semibold">{lang === 'ar' ? 'تنبيهات النشاط' : 'Activity alerts'}</h3>
+          {([['social','All social phone alerts','جميع تنبيهات النشاط'],['social_follow','New followers','متابعون جدد'],['social_request','Follow requests','طلبات المتابعة'],['social_like','Recording likes','إعجابات التسجيلات'],['social_comment','Comments','التعليقات'],['social_repost','Reposts','إعادة النشر']] as const).map(([key,en,ar]) => <label key={key} className="flex items-center justify-between gap-3 border-b border-border py-3 text-sm"><span>{lang === 'ar' ? ar : en}</span><input type="checkbox" role="switch" checked={alertPrefs[key]} onChange={e => void saveAlertPrefs({...alertPrefs,[key]:e.target.checked})} /></label>)}
         </div>
         <p className="mt-2 text-[0.7rem] text-muted-foreground">{lang === "ar" ? "تصل تنبيهات الهاتف حتى لو كان التطبيق مغلقًا، أما التنبيهات داخل التطبيق فتظهر أثناء فتحه." : "Phone alerts arrive even when the app is closed. In-app alerts appear while the app is open."}</p>
       </section>}

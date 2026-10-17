@@ -24,7 +24,7 @@
 - Calculate round teams from terminal match completion timestamps and position ratings through the public read-only function, with a one-hour availability deadline; avoid background polling.
 - Choose the legal round-team formation by how far selected players beat their position's round average (raw rating sum tie-break), so position rating bias never fixes one shape; expose published history plus only the earliest started unreleased round.
 - Keep season winners in owner-writable title history separate from cumulative title counts so editing a year never changes trophy totals.
-- Notification switches save instantly, keeping other stored keys; club alert overrides stay separate from favourites; pushes come only from stored rows through one sender that records each delivery and picks a bundled per-alert sound; a followed club covers its matches, the bell mutes per match; automatic and personal kick-off reminders are server-pushed by one per-minute pg_cron job with dedupe (no phone-local scheduling, to avoid duplicates).
+- Alerts save instantly without replacing other preferences; club overrides remain separate from favourites. One stored-row sender records deliveries and per-alert sounds; club follows inherit into matches with per-match mute. One per-minute deduped server job sends reminders, never phone-local scheduling.
 - SportsHeaderBackground uses semantic surfaces and sampled logo colours, preserving artwork.
 - Public standings share StandingsTable with position-label/qualification fallbacks.
 - Use the shared portalled SeasonMenu for season, round and club-standings competition selection, with display formatting separate from stored values, so sticky headers cannot clip keyboard-accessible in-app menus.
@@ -38,5 +38,8 @@
 - Update favourites and club alerts optimistically with ordered writes and ignore stale profile hydration; exclude buttons from page gestures so one tap never locks navigation.
 - Resolve retired country codes centrally and serve flag artwork from the local flag-icons package, so flags never use invalid external URLs.
 - Content deletes archive per transaction to deleted_records; only owners restore via restore_deleted_batch.
-- Voice uses per-peer perfect negotiation and serialized signals; roles preserve channels. Speaking RPCs and message/reaction triggers track host activity; the reminder job ends inactive rooms. Aggregate-only people discovery and owner-writable badges protect profiles.
+- Voice uses perfect negotiation with serialized signals and preserved channels; all host activity resets inactivity. Safe discovery RPCs and owner-writable badges protect profiles.
 - Stars/bells share sign-in-return and permission helpers; stored competition bell overrides inherit into match alerts.
+
+- Social identity uses safe RPCs; recipient-only follow approval and shared database predicates secure private recordings. Triggered activity uses the stored-row sender and preferences; playback uses short-lived authorized links.
+- Social full-screen views share a portalled, focus-managed dialog to prevent mobile clipping.
