@@ -208,7 +208,10 @@ async function dispatchBroadcast(admin: any, id: string) {
   const b = rows?.[0];
   if (!b) return Response.json({ skipped: true });
   let userIds: string[];
-  if (b.audience_type === "followers" && b.audience_user_id) {
+  if (b.audience_type === "user" && b.audience_user_id) {
+    // A reminder the person set for themselves on a match page.
+    userIds = [b.audience_user_id];
+  } else if (b.audience_type === "followers" && b.audience_user_id) {
     // Voice room went live: everyone following the host, minus anyone who turned voice alerts off.
     const { data: f } = await admin.from("profile_follows").select("follower_id").eq("following_id", b.audience_user_id);
     const ids = [...new Set((f ?? []).map((r: { follower_id: string }) => r.follower_id))] as string[];
@@ -235,7 +238,8 @@ async function dispatchBroadcast(admin: any, id: string) {
     const { data } = await admin.from("device_tokens").select("user_id");
     userIds = [...new Set((data ?? []).map((d: { user_id: string }) => d.user_id))] as string[];
   }
-  const result = await deliver(admin, userIds, b, b.path ?? undefined, b.kind, "default");
+  const sound = `${KIND_SOUNDS[b.kind] ?? "custom"}.caf`;
+  const result = await deliver(admin, userIds, b, b.path ?? undefined, b.kind, sound);
   await admin.from("push_broadcasts").update({ result }).eq("id", id);
   return Response.json(result);
 }
