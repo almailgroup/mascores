@@ -309,6 +309,13 @@
       "when": 1792262209676,
       "tag": "0043_voice_short_codes_name_cooldowns",
       "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1792263134263,
+      "tag": "0044_verification_requests",
+      "breakpoints": true
     }
   ]
 }
