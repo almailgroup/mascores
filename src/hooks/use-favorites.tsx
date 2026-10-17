@@ -5,6 +5,8 @@ import { Bell, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { useClubAlerts } from "@/hooks/use-club-alerts";
 import { Button } from "@/components/ui/button";
+import { useSignInAction } from "@/lib/sign-in-action";
+import { requestAlertPermission } from "@/lib/notification-permission";
 
 export type FavoriteKind = "team" | "player" | "competition" | "match";
 
@@ -75,6 +77,7 @@ function loadShared(userId: string | null): Promise<void> {
 
 export function useFavorites() {
   const { user, loading: authLoading } = useAuth();
+  const signIn = useSignInAction();
   const [favorites, setFavorites] = useState<FavoritesState>(() => shared ?? { team: [], player: [], competition: [], match: [] });
   const [ready, setReady] = useState(false);
 
@@ -101,6 +104,7 @@ export function useFavorites() {
 
   const toggle = useCallback(
     async (kind: FavoriteKind, id: string | number) => {
+      if (!user) { signIn(); return; }
       const strId = String(id);
       const current = shared ?? favorites;
       const has = current[kind].includes(strId);
@@ -141,7 +145,7 @@ export function useFavorites() {
         throw error;
       }
     },
-    [favorites, user],
+    [favorites, user, signIn],
   );
 
   /** Adds a favourite without removing it if it is already saved. */
@@ -178,9 +182,10 @@ function safeReadLocal(key: string): string[] {
 
 export function FavoriteButton({ kind, id, size = "sm", onFollow, onFavoriteChange, onFavoriteSaved }: { kind: FavoriteKind; id: string | number; size?: "sm" | "md"; onFollow?: () => void; onFavoriteChange?: (active: boolean) => void; onFavoriteSaved?: (active: boolean) => void }) {
   const { user } = useAuth();
+  const signIn = useSignInAction();
   const { isFavorite, toggle } = useFavorites();
   const active = isFavorite(kind, id);
-  const disabled = kind !== "match" && kind !== "team" && !user;
+  const disabled = false;
   const dim = size === "md" ? "h-10 w-10" : "h-8 w-8";
   return (
     <Button variant="ghost" data-no-gesture
@@ -191,7 +196,7 @@ export function FavoriteButton({ kind, id, size = "sm", onFollow, onFavoriteChan
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (disabled) return;
+        if (!user) { signIn(); return; }
         const nextActive = !active;
         const save = toggle(kind, id);
         onFavoriteChange?.(nextActive);
@@ -249,6 +254,7 @@ function loadAlerts(userId: string | null): Promise<void> {
  * sliders button next to it chooses which moments are announced.
  */
 export function MatchNotificationButton({ matchId, teamIds = [], withSettings = false }: { matchId: string; teamIds?: (string | null | undefined)[]; withSettings?: boolean }) {
+  const signIn = useSignInAction();
   const { overrides } = useClubAlerts();
   const { user, loading: authLoading } = useAuth();
   const { favorites } = useFavorites();
@@ -302,6 +308,8 @@ export function MatchNotificationButton({ matchId, teamIds = [], withSettings = 
         disabled={!loaded}
         onClick={async (event) => {
           event.preventDefault(); event.stopPropagation();
+          if (!user) { signIn(); return; }
+          if (!(await requestAlertPermission())) return;
           const next = explicit ? alerts.filter((id) => id !== matchId) : [...alerts, matchId];
           const turningOn = inherited ? explicit : !explicit;
           setAlerts(next);
@@ -311,9 +319,6 @@ export function MatchNotificationButton({ matchId, teamIds = [], withSettings = 
           // Tell the live alert listener to pick the new selection up straight away.
           window.dispatchEvent(new Event("mas:alerts-changed"));
           if (turningOn) {
-            if ("Notification" in window && Notification.permission === "default") {
-              try { await Notification.requestPermission(); } catch { /* declined */ }
-            }
             toast.success("Match alerts on", { description: "Goals, cards and full time will be announced." });
           } else {
             toast("Match alerts off");

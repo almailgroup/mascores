@@ -1,4 +1,7 @@
 import { TeamCrest } from "@/components/team-crest";
+import { useAuth } from "@/hooks/use-auth";
+import { useSignInAction } from "@/lib/sign-in-action";
+import { requestAlertPermission } from "@/lib/notification-permission";
 import { PlayerAvatar } from "@/components/player-avatar";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -305,6 +308,8 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
   const num = useNum();
   const compact = useCompact();
   const headerRef = useCollapsingHeader(c.id);
+  const { user } = useAuth();
+  const signIn = useSignInAction();
   const { t, lang } = useI18n();
   const accent = useLogoAccent(hero ? null : logo);
 
@@ -328,7 +333,9 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
     } catch { /* ignore */ }
   }, []);
   const alerted = alerts.includes(c.id);
-  const toggleAlert = () => {
+  const toggleAlert = async () => {
+    if (!user) { signIn(); return; }
+    if (!(await requestAlertPermission())) return;
     const next = alerted ? alerts.filter((id) => id !== c.id) : [...alerts, c.id];
     setAlerts(next);
     try { window.localStorage.setItem(COMP_ALERT_KEY, JSON.stringify(next)); } catch { /* ignore */ }
@@ -359,7 +366,7 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
           <Bell className="h-5 w-5" fill={alerted ? "currentColor" : "none"} />
         </Button>
         <Button variant="ghost" size="icon"
-          onClick={() => { onToggleFav(); setBump((v) => (faved ? v - 1 : v + 1)); }}
+          onClick={() => { if (!user) { signIn(); return; } onToggleFav(); setBump((v) => (faved ? v - 1 : v + 1)); }}
           aria-label={tx("Follow")}
            className={`sports-header-control -me-2 h-10 w-10 hover:text-match-foreground ${faved ? "text-warning" : "text-match-foreground opacity-70"}`}
         >

@@ -13,6 +13,7 @@ export const Route = createFileRoute("/auth")({
       { title: "Sign in — MA Scores" },
       { name: "description", content: "Sign in or create your MA Scores account to follow live football scores, favorites, and personalized coverage." }, { property: "og:title", content: "Sign in — MA Scores" }, { property: "og:description", content: "Sign in or create your MA Scores account to follow live football scores, favorites, and personalized coverage." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }],
   }),
+  validateSearch: (search: Record<string, unknown>) => ({ redirect: typeof search.redirect === "string" && search.redirect.startsWith("/") && !search.redirect.startsWith("//") ? search.redirect : undefined }),
   component: AuthPage,
 });
 
@@ -20,6 +21,13 @@ type Mode = "signin" | "signup" | "forgot";
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { redirect } = Route.useSearch();
+  const finishSignIn = () => {
+    const saved = sessionStorage.getItem("mas.auth.return");
+    const target = redirect ?? saved ?? "/";
+    sessionStorage.removeItem("mas.auth.return");
+    void navigate({ to: target.startsWith("/") && !target.startsWith("//") ? target : "/" });
+  };
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -38,7 +46,7 @@ function AuthPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/" });
+      if (data.session) finishSignIn();
     });
   }, [navigate]);
 
@@ -71,7 +79,7 @@ function AuthPage() {
             /* ignore */
           }
         }
-        navigate({ to: "/" });
+        finishSignIn();
       } else {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: window.location.origin + "/reset-password",
@@ -97,7 +105,7 @@ function AuthPage() {
         // Closing the sheet with Cancel just returns to this page quietly.
         if (native.error === "Sign in was cancelled") return;
         if (native.error) throw new Error(native.error);
-        navigate({ to: "/" });
+        finishSignIn();
         return;
       }
       const result = await lovable.auth.signInWithOAuth(provider, {
@@ -106,7 +114,7 @@ function AuthPage() {
       });
       if (result.error) throw result.error;
       if (result.redirected) return;
-      navigate({ to: "/" });
+      finishSignIn();
     } catch (err) {
       setError(err instanceof Error ? err.message : "OAuth sign-in failed");
     } finally {
