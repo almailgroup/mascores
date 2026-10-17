@@ -42,4 +42,4 @@
 - Stars/bells share sign-in-return and permission helpers; stored competition bell overrides inherit into match alerts.
 
 - Social identity uses safe RPCs; recipient-only follow approval and shared database predicates secure private recordings. Triggered activity uses the stored-row sender and preferences; playback uses short-lived authorized links.
-- Social full-screen views share a portalled, focus-managed dialog to prevent mobile clipping.
+- Social dialogs are portalled for phone fit; share/report controls are reused; reports use RLS and safe identity RPCs.

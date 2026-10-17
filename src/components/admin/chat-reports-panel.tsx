@@ -26,7 +26,15 @@ export function ChatReportsPanel() {
   });
 
   const refresh = () => qc.invalidateQueries({ queryKey: key });
-  const social = useQuery({queryKey:['admin','social-reports'],queryFn:async()=>{const {data,error}=await supabase.from('social_reports').select('*').order('created_at',{ascending:false}).limit(200);if(error)throw error;return data??[];}});
+  const social = useQuery({queryKey:['admin','social-reports'],queryFn:async()=>{
+    const {data,error}=await supabase.from('social_reports').select('*').order('created_at',{ascending:false}).limit(200);if(error)throw error;
+    const rows=data??[];if(!rows.length)return [];
+    const ids=[...new Set(rows.flatMap(r=>[r.reporter_id,r.target_user_id]))];
+    const recordingIds=rows.flatMap(r=>r.recording_id?[r.recording_id]:[]);
+    const [identities,recordings]=await Promise.all([supabase.rpc('social_identity',{_ids:ids}),recordingIds.length?supabase.from('voice_recordings').select('id,title').in('id',recordingIds):Promise.resolve({data:[],error:null})]);
+    if(identities.error)throw identities.error;if(recordings.error)throw recordings.error;
+    return rows.map(r=>({...r,reporter:identities.data?.find(p=>p.id===r.reporter_id),target:identities.data?.find(p=>p.id===r.target_user_id),recordingTitle:recordings.data?.find(v=>v.id===r.recording_id)?.title}));
+  }});
 
   return (
     <div>
@@ -34,7 +42,8 @@ export function ChatReportsPanel() {
         <h2 className="mb-4 flex items-center gap-2 font-bold"><Flag className="h-4 w-4 text-primary"/>Reported profiles and recordings</h2>
         {social.isError&&<Button variant="outline" onClick={()=>void social.refetch()}>Retry reports</Button>}
         <div className="grid gap-3">{social.data?.map(r=><div key={r.id} className="rounded-lg border border-border bg-card p-3 text-sm">
-          <div className="flex flex-wrap items-center gap-3"><span className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</span><span className="font-semibold">{r.status}</span><Link to="/u/$username" params={{username:r.target_user_id}} search={{recording:r.recording_id??undefined}} className="text-primary">{r.recording_id?'Open recording':'Open profile'}</Link></div>
+          <div className="flex flex-wrap items-center gap-3"><span className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</span><span className="font-semibold">{r.status}</span><Link to="/u/$username" params={{username:r.target?.username??r.target_user_id}} search={{recording:r.recording_id??undefined}} className="break-words text-primary">{r.recording_id?(r.recordingTitle??'Open recording'):(r.target?.display_name??r.target?.username??'Open profile')}</Link></div>
+          <p className="mt-2 text-xs text-muted-foreground">Reported by {r.reporter?.display_name??r.reporter?.username??'Unavailable account'}</p>
           <p className="mt-2 font-medium">{r.reason}</p>{r.details&&<p className="mt-1 whitespace-pre-wrap break-words">{r.details}</p>}
           {r.status==='open'&&<div className="mt-3 flex gap-2">{(['reviewed','dismissed'] as const).map(status=><Button key={status} variant="outline" size="sm" onClick={async()=>{const {error}=await supabase.from('social_reports').update({status}).eq('id',r.id);if(error)toast.error('Could not update report');else await qc.invalidateQueries({queryKey:['admin','social-reports']});}}>{status==='reviewed'?<Check/>:<Trash2/>}{status==='reviewed'?'Mark reviewed':'Dismiss'}</Button>)}</div>}
         </div>)}</div>
@@ -54,7 +63,8 @@ export function ChatReportsPanel() {
             <div className="mt-2 flex flex-wrap gap-2">
               {r.message_id && (
                 <button className={btnGhost} onClick={async () => {
-                  await supabase.from("match_chat_messages").delete().eq("id", r.message_id!);
+                  if (!r.message_id) return;
+                  await supabase.from("match_chat_messages").delete().eq("id", r.message_id);
                   await supabase.from("match_chat_reports").update({ status: "removed" }).eq("id", r.id);
                   refresh();
                 }}><Trash2 className="h-3.5 w-3.5" /> Delete message</button>
