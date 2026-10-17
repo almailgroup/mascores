@@ -344,6 +344,13 @@
       "when": 1792264826355,
       "tag": "0048_social_delivery_preferences",
       "breakpoints": true
+    },
+    {
+      "idx": 49,
+      "version": "7",
+      "when": 1792264919359,
+      "tag": "0049_anonymous_recording_visibility",
+      "breakpoints": true
     }
   ]
 }
