@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import { useTheme } from "@/components/theme-provider";
-import { VoiceReplays } from "@/components/voice-replays";
 import { AppShell, BackButton } from "@/components/app-shell";
 import { uploadMedia } from "@/components/admin/upload";
 import { CURRENCIES, useCurrency } from "@/lib/currency";
