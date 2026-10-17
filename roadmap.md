@@ -83,3 +83,4 @@
 - [x] Competition bell marks its matches; league followers get transfer alerts; hide temporary players from players list; keep historical coaches per match
 - [ ] One-tap bells/stars and league bell lighting its match bells; show bench in lineup share picture
 - [ ] Merge: "Not the same" pairs must never come back
+- [ ] Removing a coach from a club releases him (no delete)
