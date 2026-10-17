@@ -2162,6 +2162,47 @@ export type Database = {
           },
         ]
       }
+      social_reports: {
+        Row: {
+          created_at: string
+          details: string | null
+          id: string
+          reason: string
+          recording_id: string | null
+          reporter_id: string
+          status: string
+          target_user_id: string
+        }
+        Insert: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason: string
+          recording_id?: string | null
+          reporter_id: string
+          status?: string
+          target_user_id: string
+        }
+        Update: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason?: string
+          recording_id?: string | null
+          reporter_id?: string
+          status?: string
+          target_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_reports_recording_id_fkey"
+            columns: ["recording_id"]
+            isOneToOne: false
+            referencedRelation: "voice_recordings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       standing_labels: {
         Row: {
           color: string
