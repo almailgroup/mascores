@@ -483,7 +483,7 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
   // still swap in a previous coach afterwards.
   useEffect(() => {
     const all = coachesQ.data ?? [];
-    if (all.length === 0) return;
+    if (all.length === 0 || match.status !== "scheduled") return;
     const patch: Record<string, string> = {};
     if (!match.home_coach_id && match.home_team_id) {
       const c = all.find((x) => x.team_id === match.home_team_id);
@@ -495,7 +495,7 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
     }
     if (Object.keys(patch).length === 0) return;
     supabase.from("matches").update(patch as never).eq("id", match.id).then(onSaved);
-  }, [coachesQ.data, match.id, match.home_coach_id, match.away_coach_id, match.home_team_id, match.away_team_id]);
+  }, [coachesQ.data, match.id, match.home_coach_id, match.away_coach_id, match.home_team_id, match.away_team_id, match.status]);
 
   const setFormation = async (side: "home" | "away", v: string) => {
     await supabase.from("matches").update(side === "home" ? { home_formation: v } : { away_formation: v }).eq("id", match.id);

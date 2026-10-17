@@ -500,7 +500,7 @@ function MatchPage() {
               return (
                 <>
                   {startersList.length > 0 && <div>{startersList.map(row)}</div>}
-                  <TeamCoach teamId={team?.id} coachId={side === "home" ? match.home_coach_id : match.away_coach_id} />
+                  <TeamCoach teamId={team?.id} coachId={side === "home" ? match.home_coach_id : match.away_coach_id} played={match.status !== "scheduled"} />
                   {benchList.length > 0 && (
                     <div className="mt-3">
                       <h4 className="mb-1 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Bench")}</h4>
@@ -534,14 +534,15 @@ function PreviousMatches(props: { home: Team | null; away: Team | null; currentI
  * Coach block under each lineup. A coach chosen for this specific match wins;
  * otherwise the club's current coach is shown as a fallback.
  */
-function TeamCoach({ teamId, coachId }: { teamId: string | undefined; coachId?: string | null }) {
+function TeamCoach({ teamId, coachId, played }: { teamId: string | undefined; coachId?: string | null; played?: boolean }) {
   const tx = useTx();
   const q = useQuery({
-    queryKey: ["lineup-coach", teamId, coachId ?? null],
+    queryKey: ["lineup-coach", teamId, coachId ?? null, !!played],
     enabled: !!teamId || !!coachId,
     queryFn: async () => {
       if (coachId) return (await supabase.from("coaches").select("id,name,photo_url,nationality").eq("id", coachId).maybeSingle()).data;
-      if (!teamId) return null;
+      // Played matches never borrow today's coach; only a stored match coach shows.
+      if (!teamId || played) return null;
       return (await supabase.from("coaches").select("id,name,photo_url,nationality").eq("team_id", teamId).limit(1).maybeSingle()).data;
     },
   });
