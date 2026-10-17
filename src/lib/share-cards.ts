@@ -382,10 +382,22 @@ export async function drawNewsCard(input: { title: string; summary?: string | nu
   const img = await loadImage(input.cover);
   const coverH = 640;
   if (img) {
-    ctx.save();
-    // Contain the original without clipping corners or fading any part of the photo.
+    // Keep the full original photo visible, inside a rounded card with a soft edge.
     const s = Math.min((W - 100) / img.width, coverH / img.height);
-    ctx.drawImage(img, W / 2 - (img.width * s) / 2, 50 + coverH / 2 - (img.height * s) / 2, img.width * s, img.height * s);
+    const dw = img.width * s, dh = img.height * s;
+    const dx = W / 2 - dw / 2, dy = 50 + coverH / 2 - dh / 2;
+    ctx.save();
+    ctx.beginPath();
+    roundRect(ctx, dx, dy, dw, dh, 36);
+    ctx.clip();
+    ctx.drawImage(img, dx, dy, dw, dh);
+    ctx.restore();
+    ctx.save();
+    ctx.beginPath();
+    roundRect(ctx, dx, dy, dw, dh, 36);
+    ctx.strokeStyle = "rgba(255,255,255,0.22)";
+    ctx.lineWidth = 3;
+    ctx.stroke();
     ctx.restore();
   }
   let y = img ? coverH + 140 : 220;
