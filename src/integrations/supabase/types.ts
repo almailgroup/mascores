@@ -2130,27 +2130,39 @@ export type Database = {
           created_at: string
           id: string
           kind: string
+          message: string | null
           read_at: string | null
           recipient_id: string
           recording_id: string | null
+          verification_badge: string | null
+          verification_request_id: string | null
+          verification_status: string | null
         }
         Insert: {
           actor_id: string
           created_at?: string
           id?: string
           kind: string
+          message?: string | null
           read_at?: string | null
           recipient_id: string
           recording_id?: string | null
+          verification_badge?: string | null
+          verification_request_id?: string | null
+          verification_status?: string | null
         }
         Update: {
           actor_id?: string
           created_at?: string
           id?: string
           kind?: string
+          message?: string | null
           read_at?: string | null
           recipient_id?: string
           recording_id?: string | null
+          verification_badge?: string | null
+          verification_request_id?: string | null
+          verification_status?: string | null
         }
         Relationships: [
           {
@@ -2158,6 +2170,13 @@ export type Database = {
             columns: ["recording_id"]
             isOneToOne: false
             referencedRelation: "voice_recordings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "social_notifications_verification_request_id_fkey"
+            columns: ["verification_request_id"]
+            isOneToOne: false
+            referencedRelation: "verification_requests"
             referencedColumns: ["id"]
           },
         ]
@@ -3379,6 +3398,7 @@ export type Database = {
         Args: { _competition_id: string; _season?: string }
         Returns: Json
       }
+      display_voice_badge: { Args: { _user: string }; Returns: string }
       end_inactive_voice_rooms: { Args: never; Returns: undefined }
       enqueue_match_push: {
         Args: {
@@ -3451,11 +3471,19 @@ export type Database = {
         Args: { _succeeded: boolean; _uid: string }
         Returns: undefined
       }
+      reply_verification: {
+        Args: { _message: string; _request: string }
+        Returns: string
+      }
       respond_follow_request: {
         Args: { _accept: boolean; _request: string }
         Returns: undefined
       }
       restore_deleted_batch: { Args: { _batch_id: number }; Returns: number }
+      review_verification: {
+        Args: { _badge: string; _request: string }
+        Returns: undefined
+      }
       revoke_admin: { Args: { _uid: string }; Returns: undefined }
       search_profiles: {
         Args: { _limit?: number; _q: string }
