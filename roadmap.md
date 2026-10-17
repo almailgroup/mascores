@@ -1,4 +1,8 @@
 # Roadmap
+- [ ] Redesign profiles with confirmed private/public account controls and follow requests
+- [ ] Add recording likes, comments, sharing and reposts
+- [ ] Add social activity inbox and configurable phone alerts
+- [ ] Verify private access and social interactions end to end
 - [x] Retry permission on bells and redirect signed-out favourite/alert actions to sign-in
 - [x] Check notification preview privacy and sender content (payload has real title/body; device setting remains unverified)
 - [x] Repair voice negotiation collisions and end rooms after ten minutes of host inactivity
