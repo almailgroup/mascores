@@ -149,14 +149,16 @@ function SettingsPage() {
               </label>
               <p className="text-[0.65rem] text-muted-foreground">{lang === "ar" ? "يمكن تغيير اسم المستخدم مرة كل 10 أيام والاسم الظاهر مرة كل يومين." : "Username can change once every 10 days, display name once every 2 days."}</p>
               {notice && <div className="rounded-md border border-primary/40 bg-primary/10 px-3 py-2 text-sm text-primary">{notice}</div>}
-              <button onClick={save} disabled={saving} className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground shadow disabled:opacity-60">
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} {t("settings.save")}
-              </button>
-              {username && (
-                <Link to="/u/$username" params={{ username }} className="inline-block text-xs font-semibold text-primary">
-                  View my profile
-                </Link>
-              )}
+              <div className="flex flex-wrap items-center gap-4 pt-1">
+                <button onClick={save} disabled={saving} className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground shadow disabled:opacity-60">
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} {t("settings.save")}
+                </button>
+                {username && (
+                  <Link to="/u/$username" params={{ username }} className="inline-block text-xs font-semibold text-primary">
+                    View my profile
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
         ) : (
@@ -233,14 +235,6 @@ function SettingsPage() {
           ))}
         </div>
       </section>
-
-      {user && (
-        <section className="mt-10">
-          <h2 className="text-sm font-bold">My voice replays</h2>
-          <p className="mb-3 text-xs text-muted-foreground">Voice chats you recorded. Play them again or delete them.</p>
-          <VoiceReplays mine />
-        </section>
-      )}
 
       <FeedbackBox />
 
