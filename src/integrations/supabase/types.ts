@@ -1121,6 +1121,7 @@ export type Database = {
           id: string
           match_id: string
           minutes_before: number
+          sent_for: string | null
           user_id: string
         }
         Insert: {
@@ -1128,6 +1129,7 @@ export type Database = {
           id?: string
           match_id: string
           minutes_before?: number
+          sent_for?: string | null
           user_id: string
         }
         Update: {
@@ -1135,6 +1137,7 @@ export type Database = {
           id?: string
           match_id?: string
           minutes_before?: number
+          sent_for?: string | null
           user_id?: string
         }
         Relationships: [
