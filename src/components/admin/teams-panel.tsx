@@ -371,8 +371,8 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
     enabled: addExisting,
     queryKey: ["admin", "player-pool", team.id],
     queryFn: async () => {
-      const { data } = await supabase.from("players").select("*, team:team_id(id,name)").neq("team_id", team.id).order("name").limit(500);
-      const free = await supabase.from("players").select("*, team:team_id(id,name)").is("team_id", null).order("name");
+      const { data } = await supabase.from("players").select("*, team:team_id(id,name)").eq("is_temporary", false).neq("team_id", team.id).order("name").limit(500);
+      const free = await supabase.from("players").select("*, team:team_id(id,name)").eq("is_temporary", false).is("team_id", null).order("name");
       const rows = [...(free.data ?? []), ...(data ?? [])] as unknown as (Player & { team: { id: string; name: string } | null })[];
       return rows.filter((row, index, all) => all.findIndex((r) => r.id === row.id) === index);
     },

@@ -50,8 +50,7 @@ export function NotificationsPanel() {
       await sendPush({ kind: "custom", titleEn, bodyEn, titleAr, bodyAr, path: link || null, audience: audience === "team" && teamId ? { type: "team", teamId } : { type: "all" } });
       toast.success("Notification sent");
       setTitleEn(""); setBodyEn(""); setTitleAr(""); setBodyAr(""); setPath("");
-      setTimeout(() => qc.invalidateQueries({ enabled: isOwner,
-    queryKey: ["admin", "push-recent"] }), 1500);
+      setTimeout(() => qc.invalidateQueries({ queryKey: ["admin", "push-recent"] }), 1500);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not send");
     } finally { setBusy(false); }

@@ -67,7 +67,7 @@ export function PlayersPanel() {
   const q = useQuery({
     queryKey: ["admin", "all-players", term, scope, position, teamIdsForFilter?.join(",") ?? "none"],
     queryFn: async () => {
-      let query = supabase.from("players").select("*, team:team_id(id,name)").order("name").limit(300);
+      let query = supabase.from("players").select("*, team:team_id(id,name)").eq("is_temporary", false).order("name").limit(300);
       if (term.trim().length > 1) query = query.ilike("name", `%${term.trim()}%`);
       if (scope === "free") query = query.is("team_id", null);
       if (position) query = query.eq("position", position);
