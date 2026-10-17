@@ -264,11 +264,18 @@ export function MatchNotificationButton({ matchId, teamIds = [], withSettings = 
   const [openPrefs, setOpenPrefs] = useState(false);
   const box = useRef<HTMLDivElement>(null);
   const [competitionAlert, setCompetitionAlert] = useState(false);
+  const [competitionId, setCompetitionId] = useState<string | null>(null);
+  useEffect(() => {
+    const on = (e: Event) => { const d = (e as CustomEvent<{ id: string; enabled: boolean }>).detail; if (d.id === competitionId) setCompetitionAlert(d.enabled); };
+    window.addEventListener("mas:competition-alert", on);
+    return () => window.removeEventListener("mas:competition-alert", on);
+  }, [competitionId]);
   const inherited = competitionAlert || teamIds.some((id) => Boolean(id && (overrides[id] ?? favorites.team.includes(id))));
   useEffect(() => {
     if (!user) { setCompetitionAlert(false); return; }
     void Promise.all([supabase.from("matches").select("competition_id").eq("id", matchId).maybeSingle(), supabase.from("profiles").select("notification_preferences").eq("id", user.id).maybeSingle()]).then(([match, profile]) => {
       const prefs = profile.data?.notification_preferences as { competition_alert_overrides?: Record<string, boolean> } | undefined;
+      setCompetitionId(match.data?.competition_id ?? null);
       setCompetitionAlert(!!match.data && prefs?.competition_alert_overrides?.[match.data.competition_id] === true);
     });
   }, [user?.id, matchId]);
