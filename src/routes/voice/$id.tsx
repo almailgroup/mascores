@@ -1,12 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Mic, MicOff, Loader2, Lock, Globe2, Hand, LogOut, Copy, Check, UserPlus, UserCheck, PhoneOff, Radio, EyeOff, Trash2, UserMinus, Volume2, Circle } from "lucide-react";
+import { Mic, MicOff, Loader2, Lock, Globe2, Hand, LogOut, Copy, Check, UserPlus, UserCheck, PhoneOff, Radio, EyeOff, Trash2, UserMinus } from "lucide-react";
 import { AppShell, BackButton } from "@/components/app-shell";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
-import { useCompact, useTx } from "@/lib/auto-translate";
+import { useTx } from "@/lib/auto-translate";
 import { voiceProfiles, liveFor, roomCover, type VoiceHost, type VoiceRoom } from "@/lib/voice";
 import { useVoiceRoom, type VoiceRole } from "@/lib/use-voice-room";
 import { suspensionMessage, useMySuspension } from "@/lib/suspension";
@@ -35,7 +35,7 @@ function VoiceRoomPage() {
   const { user } = useAuth();
   const { lang } = useI18n();
   const tx = useTx();
-  const compact = useCompact();
+
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
