@@ -88,7 +88,7 @@ function ProfilePage() {
           {target.avatar_url ? <img src={target.avatar_url} alt="" className="h-full w-full object-cover" /> : (target.display_name ?? target.username ?? "?").slice(0, 1).toUpperCase()}
         </div>
         <div className="min-w-0 flex-1">
-          <h1 className="flex items-center gap-2 text-xl font-bold"><span className="truncate">{target.display_name ?? target.username}</span><VoiceBadge badge={badge.data} /></h1>
+          <h1 className="flex items-center gap-2 text-xl font-bold"><span className="min-w-0 whitespace-normal break-words [overflow-wrap:anywhere]">{target.display_name ?? target.username}</span><VoiceBadge badge={badge.data} /></h1>
           <div className="text-sm text-muted-foreground">@{target.username}</div>
           <div className="mt-1 flex gap-4 text-xs">
             <span><b>{compactNum(target.followers)}</b> followers</span>
@@ -112,7 +112,7 @@ function ProfilePage() {
         <section className="mt-8">
           <h2 className="text-sm font-bold">Voice rooms</h2>
           <p className="mb-3 text-xs text-muted-foreground">Recordings this person chose to publish.</p>
-          <VoiceReplays hostId={target.id} publicOnly />
+          <VoiceReplays hostId={target.id} publicOnly={target.id !== user?.id} />
         </section>
       )}
     </AppShell>

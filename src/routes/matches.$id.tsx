@@ -1,4 +1,5 @@
-import { PlayerAvatar } from "@/components/player-avatar";
+import lineupLogo from "@/assets/logo-mark-v2.png.asset.json";
+import { LineupPortraits, PlayerAvatar } from "@/components/player-avatar";
 import { TeamCrest } from "@/components/team-crest";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -376,7 +377,7 @@ function MatchPage() {
         </div>
       </div>}
 
-      {tab === "lineups" && lineupsVisible && <div className="space-y-4">
+      {tab === "lineups" && lineupsVisible && <LineupPortraits sources={(lineups.data ?? []).map((item) => item.player?.photo_url)}><div className="space-y-4">
       <div dir="ltr" className="relative grid grid-cols-2 gap-1 rounded-full border border-border bg-muted/60 p-1">
         <span
           className="absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-full bg-primary shadow-sm transition-transform duration-300 ease-out"
@@ -411,10 +412,19 @@ function MatchPage() {
         const shortOf = (lu: (typeof rows)[number]) => ({
           number: String(lu.shirt_number ?? lu.player?.shirt_number ?? ""),
           name: tx(displayShortName(lu.player?.short_name, lu.player?.name)) ?? "",
+          photo: lu.player?.photo_url,
         });
         // The shareable card mirrors what is on screen: formation, pitch, coach and bench.
         const lineupShare = {
           ...shareData,
+          lineups: (["home", "away"] as const).map((clubSide) => {
+            const club = clubSide === "home" ? match.home : match.away;
+            const shape = (clubSide === "home" ? match.home_formation : match.away_formation) ?? "4-3-3";
+            const squad = (lineups.data ?? []).filter((item) => item.team_id === club?.id);
+            return { teamName: tx(club?.name) ?? "TBD", logo: club?.logo_url, formation: shape,
+              rows: formationRows(shape).map((row) => row.map((slot) => squad.find((p) => p.is_starting && p.position_code === slot)).filter((p): p is (typeof squad)[number] => Boolean(p)).map(shortOf)),
+              bench: squad.filter((p) => !p.is_starting).map(shortOf) };
+          }),
           lineup: {
             teamName: tx(team?.name) ?? "TBD",
             logo: team?.logo_url ?? null,
@@ -435,6 +445,7 @@ function MatchPage() {
               // Turf and markings live on a clipped layer so player cards (and the
               // goalkeeper's rating on the bottom row) are never cut off.
               <div className="relative mx-auto mb-4 aspect-[3/4] w-full max-w-md rounded-2xl px-3 pb-9 pt-6">
+                <img src={lineupLogo.url} alt="" aria-hidden="true" className="pointer-events-none absolute bottom-3 right-3 z-10 h-7 w-7 object-contain opacity-30" />
                 <span className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl" style={{ background: "repeating-linear-gradient(180deg,#1b7a3f 0 28px,#17703a 28px 56px)" }} />
                 <span className="pointer-events-none absolute inset-2 rounded-lg border-2 border-white/35" />
                 <span className="pointer-events-none absolute left-2 right-2 top-1/2 border-t-2 border-white/35" />
@@ -505,7 +516,7 @@ function MatchPage() {
       })}
       </div>
       <MatchMomentum matchId={id} home={match.home} away={match.away} minutes={match.momentum_minutes ?? 90} events={(events.data ?? []).map((e) => ({ minute: e.minute, type: e.type, team_id: e.team_id }))} />
-      </div>}
+      </div></LineupPortraits>}
       {tab === "stats" && <MatchStatsPanel rows={stats.data ?? []} home={match.home} away={match.away} />}
       {tab === "previous" && <PreviousMatches home={match.home} away={match.away} currentId={match.id} />}
       {tab === "standings" && <MatchStandings competitionId={match.competition_id} season={match.season} liveTeamIds={isLive ? [match.home_team_id, match.away_team_id].filter(Boolean) as string[] : []} highlightIds={[match.home_team_id, match.away_team_id].filter(Boolean) as string[]} />}
