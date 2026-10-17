@@ -50,9 +50,11 @@ export function VoiceReplays({ hostId, matchId, mine = false, limit = 12, public
   });
 
   const owner = mine ? user?.id : hostId;
+  const own = !!user && owner === user.id;
+  const [visibility, setVisibility] = useState<"all" | "public" | "private">("all");
 
   const replays = useQuery({
-    queryKey: ["voice-replays", owner ?? null, matchId ?? null, limit, publicOnly],
+    queryKey: ["voice-replays", owner ?? null, matchId ?? null, limit, publicOnly, own ? visibility : "all"],
     enabled: !mine || !!user,
     queryFn: async () => {
       let query = supabase
@@ -63,6 +65,7 @@ export function VoiceReplays({ hostId, matchId, mine = false, limit = 12, public
       if (owner) query = query.eq("host_id", owner);
       if (matchId) query = query.eq("match_id", matchId);
       if (publicOnly) query = query.eq("is_public", true);
+      else if (own && visibility !== "all") query = query.eq("is_public", visibility === "public");
       const { data, error } = await query;
       if (error) throw error;
       return (data ?? []) as Replay[];
