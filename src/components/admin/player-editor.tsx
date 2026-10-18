@@ -18,7 +18,6 @@ import { releasePlayerToFreeAgent, transferPlayerToClub, deletePlayerForever } f
 import { ConfirmDelete } from "@/components/confirm-delete";
 import { MediaUrls } from "./media-urls";
 import { TeamSelect } from "@/components/team-select";
-import { toast } from "sonner";
 import { ArrowLeft, ImagePlus, Loader2, Plus, Save, Sparkles, Trash2, UserMinus, X } from "lucide-react";
 
 /** Full-page player editor: details, Almail AI assist, transfer history and squad moves. */
@@ -149,31 +148,7 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
             <CountrySelect value={form.nationality} onChange={(name, c) => setForm({ ...form, nationality: name, nationality_code: c?.code ?? null })} />
           </Field>
           <div className="sm:col-span-2 lg:col-span-3"><Field label="Photo">
-            <ImageInput value={form.photo_url ?? null} onChange={(v) => setForm((cur) => ({ ...cur, photo_url: v }))} onFile={async (f) => {
-              // Saved players upload in the background and save themselves, so the admin can move on.
-              if (form.id && !needsApproval) {
-                const id = form.id; const name = form.name ?? "Player";
-                const preview = URL.createObjectURL(f);
-                setForm((cur) => ({ ...cur, photo_url: preview }));
-                const t = toast.loading(`Uploading ${name}'s photo…`);
-                void (async () => {
-                  try {
-                    const url = await uploadMedia("player-photos", f);
-                    if (!url) throw new Error("no url");
-                    const { error } = await supabase.from("players").update({ photo_url: url }).eq("id", id);
-                    if (error) throw error;
-                    setForm((cur) => (cur.id === id ? { ...cur, photo_url: url } : cur));
-                    invalidate();
-                    toast.success(`${name}'s photo saved`, { id: t });
-                  } catch {
-                    toast.error(`${name}'s photo failed to upload`, { id: t });
-                  }
-                })();
-                return;
-              }
-              const url = await uploadMedia("player-photos", f);
-              if (url) setForm((cur) => ({ ...cur, photo_url: url }));
-            }} />
+            <ImageInput value={form.photo_url ?? null} onChange={(v) => setForm((cur) => ({ ...cur, photo_url: v }))} onFile={async (f) => { const url = await uploadMedia("player-photos", f); if (url) setForm((cur) => ({ ...cur, photo_url: url })); }} />
           </Field></div>
           <div className="sm:col-span-2 lg:col-span-3"><Field label="Media gallery">
             <MediaUrls urls={form.media_urls ?? []} onChange={(v) => setForm({ ...form, media_urls: v })} bucket="player-photos" />
