@@ -54,7 +54,9 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
   const save = async () => {
     if (!form.name?.trim()) return;
     setBusy(true);
-    const payload = { ...form, team_id: form.team_id ?? teamId ?? null };
+    const payload: Partial<Player> = { ...form, team_id: form.team_id ?? teamId ?? null };
+    // A photo still uploading in the background saves itself; never store its local preview.
+    if (payload.photo_url?.startsWith("blob:")) delete payload.photo_url;
     // A limited admin may fix existing players, but a brand new one is looked at first.
     if (!form.id && needsApproval) {
       await requestReview({ entity: "player", action: "create", label: `Add player ${form.name}`, payload: payload as Record<string, unknown> });
