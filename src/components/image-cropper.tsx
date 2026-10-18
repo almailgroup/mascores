@@ -127,7 +127,7 @@ export function ImageCropper({
 
   if(!mounted)return null;
   return createPortal(
-    <div data-no-gesture className="fixed inset-0 z-[80] flex items-center justify-center overscroll-contain bg-foreground/70 p-3 backdrop-blur-sm" onClick={()=>{if(!busy)onCancel();}}>
+    <div data-no-gesture className="fixed inset-0 z-[200] flex items-center justify-center overscroll-contain bg-foreground/70 p-3 backdrop-blur-sm" onClick={()=>{if(!busy)onCancel();}}>
       <div role="dialog" aria-modal="true" aria-label="Crop image" className="max-h-[94dvh] w-full max-w-md overflow-y-auto rounded-lg border border-border bg-card p-4" onClick={(e) => e.stopPropagation()}>
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-bold">Crop image</h3>
