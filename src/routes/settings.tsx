@@ -19,6 +19,7 @@ import { useQuery } from "@tanstack/react-query";
 import { AccountPrivacy } from "@/components/account-privacy";
 import { SocialActivityButton } from "@/components/social-activity";
 import { NotificationSoundPreview } from "@/components/notification-sound-preview";
+import { canPreviewNotificationSounds } from "@/lib/sound-preview-access";
 
 
 export const Route = createFileRoute("/settings")({
@@ -192,7 +193,7 @@ function SettingsPage() {
         </div>
         <p className="mt-2 text-[0.7rem] text-muted-foreground">{lang === "ar" ? "تصل تنبيهات الهاتف حتى لو كان التطبيق مغلقًا، أما التنبيهات داخل التطبيق فتظهر أثناء فتحه." : "Phone alerts arrive even when the app is closed. In-app alerts appear while the app is open."}</p>
       </section>}
-      <NotificationSoundPreview />
+      {canPreviewNotificationSounds(user?.email, owner.data === true) && <NotificationSoundPreview />}
       {avatarFile && <ImageCropper file={avatarFile} aspect={1} onCancel={() => setAvatarFile(null)} onDone={async (file) => { await pickAvatar(file); setAvatarFile(null); }} />}
 
       <section className="mt-4 grid gap-4 sm:grid-cols-2">
