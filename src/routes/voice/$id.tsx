@@ -223,6 +223,7 @@ function VoiceRoomPage() {
   const saveRecording = async () => {
     const result = await stopRecording();
     if (!result || !user || !room.data) throw new Error(tx("No recording is available."));
+    if (result.blob.size < 1000) throw new Error(tx("No sound was recorded, so the replay was not saved."));
     const ext = result.blob.type.includes("mp4") ? "m4a" : "webm";
     const file = new File([result.blob], `${crypto.randomUUID()}.${ext}`, { type: result.blob.type });
     const url = await uploadMedia("voice-recordings", file, user.id);
