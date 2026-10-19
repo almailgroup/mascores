@@ -17,7 +17,7 @@
 - Keep account/settings public via the Home profile icon; explicit sign-in CTAs preserve signed-out access to local preferences.
 - Resolve portraits centrally with original fallbacks; one decoded batch reveals lineup players/coaches and club/national squads together.
 - Reporter uploads use user-ID folders and active-reporter policies; admin access stays separate.
-- Setup stays device-local and hydration-safe; merge guest favourites idempotently on sign-in; no welcome repeats/flashes.
+- Setup is device-local/hydration-safe; merge guest favourites idempotently on sign-in; no welcome repeats. Suggestions use current-season league joins; search spans all teams.
 - Use one text-free loading overlay for both languages; keep pages mounted to preserve state.
 - Touch fields are at least 16px; document touch-action: manipulation blocks focus/double-tap zoom but preserves pinch zoom.
 - Collapsing headers keep identity and tabs sticky.
