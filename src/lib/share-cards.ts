@@ -540,3 +540,135 @@ export async function drawMatchLineupsCard(input: {
   ctx.fillStyle = "rgba(255,255,255,0.45)"; ctx.fillText("MA Scores · Match lineups", 60, H - 40);
   return toBlob(canvas);
 }
+
+type CardPlayer = { name: string; number: string; photo?: string | null };
+
+/** One club's starting eleven on a full pitch, with coach and substitutes. */
+export async function drawTeamLineupCard(input: {
+  competition: string; kickoff: string; accent: string;
+  team: { teamName: string; logo?: string | null; formation: string; coach?: string | null; rows: CardPlayer[][]; bench?: CardPlayer[] };
+}): Promise<Blob | null> {
+  const { team } = input;
+  const bench = (team.bench ?? []).slice(0, 14);
+  const benchLines = Math.ceil(bench.length / 2);
+  const benchH = bench.length ? 120 + benchLines * 50 : 0;
+  const W = 1080, py = 300, ph = 1240, H = py + ph + 60 + benchH + 80;
+  const made = surface(W, H, input.accent);
+  if (!made) return null;
+  const { canvas, ctx } = made;
+  const players = team.rows.flat();
+  const [logo, mark, ...photos] = await Promise.all([
+    loadImage(team.logo), loadImage(logoMark.url),
+    ...players.map(async (p) => { const src = portraitSource(p.photo); return (await loadImage(src)) ?? (src !== p.photo ? await loadImage(p.photo) : null); }),
+  ]);
+  crest(ctx, logo, team.teamName, 120, 130, 120);
+  ctx.textAlign = "left"; ctx.fillStyle = "#ffffff"; ctx.font = `800 52px ${FONT}`;
+  ctx.fillText(team.teamName, 210, 120, 640);
+  ctx.font = `500 28px ${FONT}`; ctx.fillStyle = "rgba(255,255,255,0.72)";
+  ctx.fillText(input.competition.slice(0, 48), 210, 165, 640);
+  ctx.font = `500 24px ${FONT}`; ctx.fillText(input.kickoff, 210, 202, 640);
+  ctx.textAlign = "right"; ctx.fillStyle = "#ffffff"; ctx.font = `800 40px ${FONT}`;
+  ctx.fillText(team.formation, 1020, 120);
+  if (team.coach) { ctx.font = `600 24px ${FONT}`; ctx.fillStyle = "rgba(255,255,255,0.72)"; ctx.fillText(`Coach · ${team.coach}`, 1020, 165, 360); }
+
+  const px = 60, pw = 960;
+  ctx.save(); roundRect(ctx, px, py, pw, ph, 32); ctx.clip();
+  for (let i = 0; i < 14; i++) { ctx.fillStyle = i % 2 ? "#14532d" : "#166534"; ctx.fillRect(px, py + i * ph / 14, pw, ph / 14); }
+  ctx.strokeStyle = "rgba(255,255,255,0.3)"; ctx.lineWidth = 4;
+  ctx.strokeRect(px + 24, py + 24, pw - 48, ph - 48);
+  ctx.beginPath(); ctx.moveTo(px + 24, py + 24); ctx.arc(W / 2, py + 24, 110, 0, Math.PI); ctx.stroke();
+  ctx.strokeRect(W / 2 - 200, py + ph - 224, 400, 200);
+  ctx.strokeRect(W / 2 - 90, py + ph - 94, 180, 70);
+  ctx.restore();
+
+  const rows = team.rows.filter((r) => r.length);
+  let k = 0;
+  rows.forEach((row, ri) => {
+    // Rows run attack to goalkeeper: attackers at the top, keeper by its own goal.
+    const cy = py + 130 + (ri / Math.max(1, rows.length - 1)) * (ph - 300);
+    row.forEach((player, pi) => {
+      const cx = px + pw * (pi + 0.5) / row.length;
+      const photo = photos[k++];
+      ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, 52, 0, Math.PI * 2); ctx.clip();
+      ctx.fillStyle = "#0f172a"; ctx.fillRect(cx - 52, cy - 52, 104, 104);
+      if (photo) { const sc = Math.max(104 / photo.width, 104 / photo.height); ctx.drawImage(photo, cx - photo.width * sc / 2, cy - photo.height * sc / 2, photo.width * sc, photo.height * sc); }
+      else { ctx.textAlign = "center"; ctx.fillStyle = "#ffffff"; ctx.font = `800 34px ${FONT}`; ctx.textBaseline = "middle"; ctx.fillText(player.number || player.name.slice(0, 1), cx, cy); ctx.textBaseline = "alphabetic"; }
+      ctx.restore();
+      ctx.beginPath(); ctx.arc(cx, cy, 53, 0, Math.PI * 2); ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 4; ctx.stroke();
+      if (player.number) {
+        ctx.fillStyle = input.accent; ctx.beginPath(); ctx.arc(cx + 40, cy - 40, 20, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#ffffff"; ctx.font = `800 20px ${FONT}`; ctx.textAlign = "center"; ctx.fillText(player.number, cx + 40, cy - 33);
+      }
+      ctx.font = `700 24px ${FONT}`; ctx.textAlign = "center";
+      const w = Math.min(pw / row.length - 12, ctx.measureText(player.name).width + 24);
+      ctx.fillStyle = "rgba(11,16,32,0.9)"; roundRect(ctx, cx - w / 2, cy + 62, w, 38, 10); ctx.fill();
+      ctx.fillStyle = "#ffffff"; ctx.fillText(player.name, cx, cy + 89, w - 14);
+    });
+  });
+
+  if (bench.length) {
+    const top = py + ph + 40;
+    ctx.fillStyle = "rgba(255,255,255,0.07)"; roundRect(ctx, 60, top, 960, benchH, 28); ctx.fill();
+    ctx.textAlign = "left"; ctx.fillStyle = "rgba(255,255,255,0.6)"; ctx.font = `800 24px ${FONT}`;
+    ctx.fillText("SUBSTITUTES", 96, top + 56);
+    bench.forEach((p, i) => {
+      const x = i % 2 ? 560 : 96, y = top + 110 + Math.floor(i / 2) * 50;
+      ctx.fillStyle = input.accent; roundRect(ctx, x, y - 28, 52, 36, 9); ctx.fill();
+      ctx.fillStyle = "#ffffff"; ctx.font = `800 20px ${FONT}`; ctx.textAlign = "center"; ctx.fillText(p.number || "-", x + 26, y - 3);
+      ctx.textAlign = "left"; ctx.font = `600 26px ${FONT}`; ctx.fillText(p.name, x + 68, y - 1, 380);
+    });
+  }
+  if (mark) { ctx.save(); ctx.globalAlpha = 0.75; ctx.filter = "brightness(0) invert(1)"; crest(ctx, mark, "", 990, H - 48, 44); ctx.restore(); }
+  ctx.textAlign = "left"; ctx.font = `600 22px ${FONT}`; ctx.fillStyle = "rgba(255,255,255,0.5)";
+  ctx.fillText("MA Scores · Lineup", 60, H - 40);
+  return toBlob(canvas);
+}
+
+/** Full-time (or live) result card: crests, big score, scorers and branding. */
+export async function drawResultCard(input: {
+  competition: string; kickoff: string; status: string; accent: string; accentAway: string;
+  home: { name: string; logo?: string | null }; away: { name: string; logo?: string | null };
+  homeScore: string; awayScore: string;
+  homeScorers: { name: string; minute: string }[]; awayScorers: { name: string; minute: string }[];
+}): Promise<Blob | null> {
+  const W = 1080, H = 1350;
+  const made = surface(W, H, input.accent);
+  if (!made) return null;
+  const { canvas, ctx } = made;
+  const glow = ctx.createRadialGradient(W, 0, 40, W, 0, 900);
+  glow.addColorStop(0, input.accentAway); glow.addColorStop(1, "rgba(11,16,32,0)");
+  ctx.fillStyle = glow; ctx.globalAlpha = 0.6; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1;
+  const [hl, al, mark] = await Promise.all([loadImage(input.home.logo), loadImage(input.away.logo), loadImage(logoMark.url)]);
+
+  ctx.textAlign = "center"; ctx.fillStyle = "rgba(255,255,255,0.85)"; ctx.font = `700 32px ${FONT}`;
+  ctx.fillText(input.competition.slice(0, 48).toUpperCase(), W / 2, 110);
+  ctx.font = `500 26px ${FONT}`; ctx.fillStyle = "rgba(255,255,255,0.6)"; ctx.fillText(input.kickoff, W / 2, 152);
+
+  ctx.fillStyle = "rgba(255,255,255,0.08)"; roundRect(ctx, 60, 210, 960, 560, 40); ctx.fill();
+  ctx.strokeStyle = "rgba(255,255,255,0.14)"; ctx.lineWidth = 2; ctx.stroke();
+  const plate = (img: HTMLImageElement | null, name: string, cx: number) => {
+    ctx.fillStyle = "rgba(255,255,255,0.95)"; ctx.beginPath(); ctx.arc(cx, 400, 112, 0, Math.PI * 2); ctx.fill();
+    crest(ctx, img, name, cx, 400, 150);
+    ctx.fillStyle = "#ffffff"; ctx.font = `800 36px ${FONT}`; ctx.textAlign = "center";
+    ctx.fillText(name.slice(0, 20), cx, 570, 340);
+  };
+  plate(hl, input.home.name, 250); plate(al, input.away.name, W - 250);
+  ctx.fillStyle = "#ffffff"; ctx.font = `900 132px ${FONT}`; ctx.textAlign = "center";
+  ctx.fillText(input.homeScore === "" ? "VS" : `${input.homeScore}-${input.awayScore}`, W / 2, 445);
+  ctx.font = `800 26px ${FONT}`; const sw = ctx.measureText(input.status.toUpperCase()).width + 48;
+  ctx.fillStyle = input.accent; roundRect(ctx, W / 2 - sw / 2, 640, sw, 52, 26); ctx.fill();
+  ctx.fillStyle = "#ffffff"; ctx.fillText(input.status.toUpperCase(), W / 2, 675);
+
+  const list = (items: { name: string; minute: string }[], x: number, align: CanvasTextAlign) => {
+    ctx.textAlign = align; ctx.font = `600 30px ${FONT}`;
+    items.slice(0, 9).forEach((s, i) => { ctx.fillStyle = "#ffffff"; ctx.fillText(`${s.name}  ${s.minute}`, x, 870 + i * 52, 430); });
+  };
+  if (input.homeScorers.length || input.awayScorers.length) {
+    ctx.textAlign = "center"; ctx.fillStyle = "rgba(255,255,255,0.55)"; ctx.font = `800 22px ${FONT}`; ctx.fillText("⚽  GOALS", W / 2, 820);
+    ctx.fillStyle = "rgba(255,255,255,0.15)"; ctx.fillRect(W / 2 - 1, 845, 2, 460);
+    list(input.homeScorers, W / 2 - 40, "right"); list(input.awayScorers, W / 2 + 40, "left");
+  }
+  if (mark) { ctx.save(); ctx.globalAlpha = 0.8; ctx.filter = "brightness(0) invert(1)"; crest(ctx, mark, "", W - 90, H - 52, 48); ctx.restore(); }
+  ctx.textAlign = "left"; ctx.font = `600 22px ${FONT}`; ctx.fillStyle = "rgba(255,255,255,0.5)"; ctx.fillText("MA Scores · mascores.live", 60, H - 44);
+  return toBlob(canvas);
+}

@@ -1,4 +1,4 @@
-import { drawMatchLineupsCard } from "@/lib/share-cards";
+import { drawMatchLineupsCard, drawResultCard, drawTeamLineupCard } from "@/lib/share-cards";
 import { ShareCardButton } from "@/components/share-image";
 import { useI18n } from "@/lib/i18n";
 
@@ -65,6 +65,8 @@ function safeColor(value: string | undefined, fallback: string) {
 
 /** Draws the branded share card: match result, or one club's line-up on a pitch. */
 async function drawCard(data: MatchShareData, mode: "result" | "lineups"): Promise<Blob | null> {
+  if (mode === "lineups" && data.lineup) return drawTeamLineupCard({ competition: data.competition, kickoff: data.kickoff, team: data.lineup, accent: safeColor(data.accent, "#1d4ed8") });
+  if (mode === "result") return drawResultCard({ competition: data.competition, kickoff: data.kickoff, status: data.status, accent: safeColor(data.accent, "#16224a"), accentAway: safeColor(data.accentAway, safeColor(data.accent, "#16224a")), home: { name: data.home.name ?? "TBD", logo: data.home.logo_url }, away: { name: data.away.name ?? "TBD", logo: data.away.logo_url }, homeScore: String(data.homeScore), awayScore: String(data.awayScore), homeScorers: data.homeScorers, awayScorers: data.awayScorers });
   if (mode === "lineups") return drawMatchLineupsCard({ competition: data.competition, kickoff: data.kickoff, teams: data.lineups ?? (data.lineup ? [data.lineup] : []), accent: safeColor(data.accent, "#1d4ed8") });
   const W = 1080;
   const H = 1080;
