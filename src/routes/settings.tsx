@@ -43,6 +43,7 @@ function SettingsPage() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [username, setUsername] = useState("");
   const [isPublic, setIsPublic] = useState(true);
+  const [hideFollows, setHideFollows] = useState(false);
   const { heightUnit, setHeightUnit } = useHeightUnit();
   const [uploading, setUploading] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -55,11 +56,12 @@ function SettingsPage() {
     if (authLoading) return;
     if (!user) return;
     (async () => {
-      const { data: prof } = await supabase.from("profiles").select("display_name,language,avatar_url,height_unit,username,is_public,notification_preferences").eq("id", user.id).maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("display_name,language,avatar_url,height_unit,username,is_public,hide_follows,notification_preferences").eq("id", user.id).maybeSingle();
       setDisplayName(prof?.display_name ?? "");
       setAvatarUrl(prof?.avatar_url ?? null);
       setUsername(prof?.username ?? "");
       setIsPublic(prof?.is_public ?? true);
+      setHideFollows(!!prof?.hide_follows);
       if (prof?.notification_preferences && typeof prof.notification_preferences === "object" && !Array.isArray(prof.notification_preferences)) setAlertPrefs((prev) => ({ ...prev, ...(prof.notification_preferences as typeof prev) }));
       if (prof?.height_unit === "ft" || prof?.height_unit === "cm") setHeightUnit(prof.height_unit);
     })();
@@ -147,6 +149,14 @@ function SettingsPage() {
                 <p className="mt-1 text-[0.65rem] text-muted-foreground">People can find you by this name. Letters, numbers, dots and underscores.</p>
               </div>
               <AccountPrivacy userId={user.id} isPublic={isPublic} onChange={setIsPublic} />
+              <label className="flex items-center justify-between gap-3 py-2 text-sm">
+                <span>{lang === "ar" ? "إخفاء المتابعين والمتابَعين" : "Hide followers and following"}</span>
+                <input type="checkbox" className="h-5 w-5 accent-primary" checked={hideFollows} onChange={async (e) => {
+                  const next = e.target.checked; setHideFollows(next);
+                  const { error } = await supabase.from("profiles").update({ hide_follows: next }).eq("id", user.id);
+                  if (error) setHideFollows(!next);
+                }} />
+              </label>
               <p className="text-[0.65rem] text-muted-foreground">{lang === "ar" ? "يمكن تغيير اسم المستخدم مرة كل 10 أيام والاسم الظاهر مرة كل يومين." : "Username can change once every 10 days, display name once every 2 days."}</p>
               {notice && <div className="rounded-md border border-primary/40 bg-primary/10 px-3 py-2 text-sm text-primary">{notice}</div>}
               <div className="flex flex-wrap items-center gap-4 pt-1">
