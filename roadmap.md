@@ -1,6 +1,6 @@
 # Roadmap
 - [x] Show Zain Premier League teams and Kuwait national team by default in Choose your teams; verified other-team search, selection saving and no repeated setup
-- [x] Remove drum-like layer from VAR goal/penalty/red-card sounds and gently raise quiet alerts; refresh owner previews and verify playback
+- [x] Use the whistle sound for full time notifications (fulltime*.caf replaced with the whistle recording; previews refreshed)
 - [x] Fix stadium edit popup above admin overlays; verified save/reopen on phone
 - [x] Confirm bans, strikes, activation, rejection, verification, approvals and lifting restrictions; verified cancelling news-request actions makes no writes
 - [x] Add recording comment replies, likes and targeted reports; verified saved interactions and report snapshots
