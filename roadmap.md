@@ -1,5 +1,5 @@
 # Roadmap
-- [ ] Remove drum-like layer from VAR goal/penalty/red-card sounds and gently raise quiet alerts; refresh owner previews and verify playback
+- [x] Remove drum-like layer from VAR goal/penalty/red-card sounds and gently raise quiet alerts; refresh owner previews and verify playback
 - [x] Fix stadium edit popup above admin overlays; verified save/reopen on phone
 - [x] Confirm bans, strikes, activation, rejection, verification, approvals and lifting restrictions; verified cancelling news-request actions makes no writes
 - [x] Add recording comment replies, likes and targeted reports; verified saved interactions and report snapshots

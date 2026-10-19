@@ -50,7 +50,7 @@ export function NotificationSoundPreview() {
   const preview = (id: string) => {
     audioRef.current?.pause();
     if (playing === id) { setPlaying(null); return; }
-    const audio = new Audio(`/sounds/${id}.mp3`);
+    const audio = new Audio(`/sounds/${id}.mp3?v=20261019-clear`);
     audioRef.current = audio;
     setError(false);
     setPlaying(id);
