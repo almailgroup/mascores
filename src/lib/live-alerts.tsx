@@ -3,9 +3,10 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useFavorites } from "@/hooks/use-favorites";
-import { isNativeApp, nativeNotify, ensureNativePermission } from "@/lib/native-notify";
+import { isNativeApp, ensureNativePermission } from "@/lib/native-notify";
 import { playAlertSound, soundFor, type AlertEventKey, type AlertSoundMap } from "@/lib/alert-sounds";
 import { readClubAlerts } from "@/hooks/use-club-alerts";
+import { matchAlertPhase, type AlertMatchPhase } from '@/lib/match-alert-phase';
 
 
 const ALERT_KEY = "mas.match_notification_ids";
@@ -54,20 +55,6 @@ const EVENT_TEXT: Record<string, { label: string }> = {
   save: { label: "Save" },
 };
 
-const STATUS_TEXT: Record<string, { label: string }> = {
-  live: { label: "Kick-off" },
-  "1h": { label: "Kick-off" },
-  ht: { label: "Half time" },
-  "2h": { label: "Second half" },
-  ft: { label: "Full time" },
-  etwait: { label: "Waiting for extra time" },
-  et: { label: "Extra time started" },
-  aet: { label: "After extra time" },
-  pen: { label: "Penalty shoot-out" },
-  postponed: { label: "Postponed" },
-  cancelled: { label: "Cancelled" },
-};
-
 /** Every match moment has its own sound. */
 const EVENT_SOUND: Record<string, AlertEventKey> = {
   goal: "goal", own_goal: "ownGoal", penalty_goal: "penalty", penalty: "penalty",
@@ -76,16 +63,12 @@ const EVENT_SOUND: Record<string, AlertEventKey> = {
   substitution: "sub", sub: "sub", injury_sub: "injury", injury: "injury",
   var: "var", note: "note", assist: "scorer", save: "note",
 };
-const STATUS_SOUND: Record<string, AlertEventKey> = {
-  live: "kickoff", "1h": "kickoff", ht: "halftime", "2h": "secondHalf", etwait: "etWait", et: "etStart",
-  ft: "final", aet: "finalEt", pen: "finalPens", postponed: "postponed", cancelled: "postponed",
-};
-
 type AlertPreferences = { goals?: boolean; cards?: boolean; kickoff?: boolean; final?: boolean; sound?: string; sounds?: AlertSoundMap };
 
 async function announce(title: string, body: string, sound?: string, path?: string) {
+  // Phone pushes already come from the stored-row sender; do not double their sound.
+  if (isNativeApp()) return;
   playAlertSound(sound);
-  if (isNativeApp() && (await nativeNotify(title, body, title + body, path))) return;
 
   try {
     if ("Notification" in window && Notification.permission === "granted") {
@@ -93,7 +76,7 @@ async function announce(title: string, body: string, sound?: string, path?: stri
       return;
     }
   } catch { /* falls back to the in-app message */ }
-  toast(title, { description: body, duration: 7000 });
+  toast(title, { description: body, duration: 3500 });
 }
 
 /**
@@ -199,19 +182,19 @@ export function useLiveEventAlerts() {
       return loadMatch(matchId);
     };
 
-    const onMatch = async (row: { id: string; status: string; home_score: number | null; away_score: number | null }) => {
-      const meta = STATUS_TEXT[row.status];
+    const onMatch = async (row: AlertMatchPhase & { id: string; home_score: number | null; away_score: number | null }, old: Partial<AlertMatchPhase>) => {
+      const meta = matchAlertPhase(row);
       if (!meta) return;
-      const category: "final" | "kickoff" | null = ["ft", "aet", "pen"].includes(row.status) ? "final" : ["live", "1h", "2h", "etwait"].includes(row.status) ? "kickoff" : null;
-      if (category && preferences[category] === false) return;
-      const key = `${row.id}:${row.status}`;
+      if (old.status && matchAlertPhase({ ...old, status: old.status })?.key === meta.key) return;
+      if (preferences[meta.category] === false) return;
+      const key = `${row.id}:${meta.key}`;
       if (seen.current.has(key)) return;
       const m = await loadMatch(row.id);
       if (cancelled || !wanted(m, row.id)) return;
       seen.current.add(key);
       info.set(row.id, { ...(m as Info), homeScore: row.home_score, awayScore: row.away_score });
       const score = row.home_score != null && row.away_score != null ? `${row.home_score} - ${row.away_score}` : "vs";
-      void announce(meta.label, `${m?.home ?? "Home"} ${score} ${m?.away ?? "Away"}`, soundFor(preferences.sounds, STATUS_SOUND[row.status] ?? "kickoff"), `/matches/${row.id}`);
+      void announce(meta.title, `${m?.home ?? "Home"} ${score} ${m?.away ?? "Away"}`, soundFor(preferences.sounds, meta.key), `/matches/${row.id}`);
     };
 
     loadAlerts();
@@ -229,7 +212,7 @@ export function useLiveEventAlerts() {
     channel.on("postgres_changes" as never, { event: "INSERT", schema: "public", table: "match_events" },
       (payload: { new: EventRow }) => { void onEvent(payload.new); });
     channel.on("postgres_changes" as never, { event: "UPDATE", schema: "public", table: "matches" },
-      (payload: { new: { id: string; status: string; home_score: number | null; away_score: number | null } }) => { void onMatch(payload.new); });
+      (payload: { new: AlertMatchPhase & { id: string; home_score: number | null; away_score: number | null }; old: Partial<AlertMatchPhase> }) => { void onMatch(payload.new, payload.old); });
     channel.subscribe();
 
     return () => {

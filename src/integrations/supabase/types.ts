@@ -2119,12 +2119,39 @@ export type Database = {
           },
         ]
       }
+      recording_comment_likes: {
+        Row: {
+          comment_id: string
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recording_comment_likes_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "recording_interactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recording_interactions: {
         Row: {
           body: string | null
           created_at: string
           id: string
           kind: string
+          parent_comment_id: string | null
           recording_id: string
           user_id: string
         }
@@ -2133,6 +2160,7 @@ export type Database = {
           created_at?: string
           id?: string
           kind: string
+          parent_comment_id?: string | null
           recording_id: string
           user_id: string
         }
@@ -2141,10 +2169,18 @@ export type Database = {
           created_at?: string
           id?: string
           kind?: string
+          parent_comment_id?: string | null
           recording_id?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "recording_interactions_parent_comment_id_fkey"
+            columns: ["parent_comment_id"]
+            isOneToOne: false
+            referencedRelation: "recording_interactions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "recording_interactions_recording_id_fkey"
             columns: ["recording_id"]
@@ -2213,6 +2249,8 @@ export type Database = {
       }
       social_reports: {
         Row: {
+          comment_body: string | null
+          comment_id: string | null
           created_at: string
           details: string | null
           id: string
@@ -2223,6 +2261,8 @@ export type Database = {
           target_user_id: string
         }
         Insert: {
+          comment_body?: string | null
+          comment_id?: string | null
           created_at?: string
           details?: string | null
           id?: string
@@ -2233,6 +2273,8 @@ export type Database = {
           target_user_id: string
         }
         Update: {
+          comment_body?: string | null
+          comment_id?: string | null
           created_at?: string
           details?: string | null
           id?: string
@@ -2243,6 +2285,13 @@ export type Database = {
           target_user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "social_reports_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "recording_interactions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "social_reports_recording_id_fkey"
             columns: ["recording_id"]
