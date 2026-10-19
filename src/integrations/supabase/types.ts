@@ -1870,18 +1870,21 @@ export type Database = {
         Row: {
           email: string | null
           phone: string | null
+          show_public: boolean
           updated_at: string
           user_id: string
         }
         Insert: {
           email?: string | null
           phone?: string | null
+          show_public?: boolean
           updated_at?: string
           user_id: string
         }
         Update: {
           email?: string | null
           phone?: string | null
+          show_public?: boolean
           updated_at?: string
           user_id?: string
         }
@@ -3488,6 +3491,13 @@ export type Database = {
       }
       norm_search: { Args: { _t: string }; Returns: string }
       player_follower_count: { Args: { _player_id: string }; Returns: number }
+      public_contacts: {
+        Args: { _user: string }
+        Returns: {
+          email: string
+          phone: string
+        }[]
+      }
       public_profile: {
         Args: { _id: string }
         Returns: {
