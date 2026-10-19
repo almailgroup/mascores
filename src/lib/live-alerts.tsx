@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useFavorites } from "@/hooks/use-favorites";
-import { isNativeApp, nativeNotify, ensureNativePermission } from "@/lib/native-notify";
+import { isNativeApp, ensureNativePermission } from "@/lib/native-notify";
 import { playAlertSound, soundFor, type AlertEventKey, type AlertSoundMap } from "@/lib/alert-sounds";
 import { readClubAlerts } from "@/hooks/use-club-alerts";
 import { matchAlertPhase, type AlertMatchPhase } from '@/lib/match-alert-phase';
@@ -55,20 +55,6 @@ const EVENT_TEXT: Record<string, { label: string }> = {
   save: { label: "Save" },
 };
 
-const STATUS_TEXT: Record<string, { label: string }> = {
-  live: { label: "Kick-off" },
-  "1h": { label: "Kick-off" },
-  ht: { label: "Half time" },
-  "2h": { label: "Second half" },
-  ft: { label: "Full time" },
-  etwait: { label: "Waiting for extra time" },
-  et: { label: "Extra time started" },
-  aet: { label: "After extra time" },
-  pen: { label: "Penalty shoot-out" },
-  postponed: { label: "Postponed" },
-  cancelled: { label: "Cancelled" },
-};
-
 /** Every match moment has its own sound. */
 const EVENT_SOUND: Record<string, AlertEventKey> = {
   goal: "goal", own_goal: "ownGoal", penalty_goal: "penalty", penalty: "penalty",
@@ -77,11 +63,6 @@ const EVENT_SOUND: Record<string, AlertEventKey> = {
   substitution: "sub", sub: "sub", injury_sub: "injury", injury: "injury",
   var: "var", note: "note", assist: "scorer", save: "note",
 };
-const STATUS_SOUND: Record<string, AlertEventKey> = {
-  live: "kickoff", "1h": "kickoff", ht: "halftime", "2h": "secondHalf", etwait: "etWait", et: "etStart",
-  ft: "final", aet: "finalEt", pen: "finalPens", postponed: "postponed", cancelled: "postponed",
-};
-
 type AlertPreferences = { goals?: boolean; cards?: boolean; kickoff?: boolean; final?: boolean; sound?: string; sounds?: AlertSoundMap };
 
 async function announce(title: string, body: string, sound?: string, path?: string) {
