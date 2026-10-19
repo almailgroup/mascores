@@ -41,6 +41,7 @@ function ContributePage() {
   const [phone, setPhone] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [identityFile, setIdentityFile] = useState<File | null>(null);
+  const [selfieFile, setSelfieFile] = useState<File | null>(null);
   const [entityType, setEntityType] = useState<"individual" | "company">("individual");
   const [companyName, setCompanyName] = useState("");
   const [socials, setSocials] = useState<Record<string, string>>({});
@@ -89,7 +90,7 @@ function ContributePage() {
     },
   });
 
-  const canApply = !!handle.trim() && !!fullName.trim() && phone.trim().length >= 6 && /^\S+@\S+\.\S+$/.test(contactEmail.trim()) && !!identityFile && (entityType === "individual" || !!companyName.trim());
+  const canApply = !!handle.trim() && !!fullName.trim() && phone.trim().length >= 6 && /^\S+@\S+\.\S+$/.test(contactEmail.trim()) && !!identityFile && !!selfieFile && (entityType === "individual" || !!companyName.trim());
   const apply = async () => {
     if (!canApply || !user) return;
     const social_links = Object.fromEntries(Object.entries(socials).map(([k, v]) => [k, v.trim().replace(/^@/, "")]).filter(([, v]) => v));
@@ -100,9 +101,13 @@ function ContributePage() {
       const path = `${user.id}/${crypto.randomUUID()}.${extension}`;
       const { error: uploadError } = await supabase.storage.from('reporter-identity').upload(path, identityFile, { contentType: identityFile.type });
       if (uploadError) throw uploadError;
+      if (!selfieFile || !['image/jpeg', 'image/png', 'image/webp', 'image/heic'].includes(selfieFile.type) || selfieFile.size > 8 * 1024 * 1024) throw new Error('Take a verification selfie (JPG, PNG or WebP under 8 MB).');
+      const selfiePath = `${user.id}/selfie-${crypto.randomUUID()}.${selfieFile.type === 'image/png' ? 'png' : selfieFile.type === 'image/webp' ? 'webp' : 'jpg'}`;
+      const { error: selfieError } = await supabase.storage.from('reporter-identity').upload(selfiePath, selfieFile, { contentType: selfieFile.type });
+      if (selfieError) throw selfieError;
       await sendApplication({ data: {
         platform: platform as typeof PLATFORMS[number], handle: handle.replace(/^@/, ''), full_name: fullName.trim(),
-        phone: phone.trim(), email: contactEmail.trim(), civil_id_photo_path: path,
+        phone: phone.trim(), email: contactEmail.trim(), civil_id_photo_path: path, selfie_photo_path: selfiePath,
         entity_type: entityType, company_name: entityType === 'company' ? companyName.trim() : null, social_links,
       } });
       await qc.invalidateQueries({ queryKey: ['reporter', user.id] });
@@ -181,8 +186,7 @@ function ContributePage() {
           <section className="rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/15 via-card to-card p-6">
             <div className="flex items-center gap-2 text-sm font-bold"><Mail className="h-4 w-4 text-primary" /> How to get access</div>
             <p className="mt-2 text-sm text-muted-foreground">
-              Contact <a href="mailto:mansouralmailscores@gmail.com" className="font-semibold text-primary">mansouralmailscores@gmail.com</a> to be given access to the news desk. The
-              <strong className="text-foreground"> 3 KWD / month subscription is included</strong> with your reporter access.
+              Publishing news is <strong className="text-foreground">free</strong>. To confirm your identity, send your civil ID photo and a verification selfie. Questions? Contact <a href="mailto:mansouralmailscores@gmail.com" className="font-semibold text-primary">mansouralmailscores@gmail.com</a>.
             </p>
             <ul className="mt-4 grid gap-2 text-sm">
               {[
@@ -224,6 +228,11 @@ function ContributePage() {
                 <input id="civil-id-photo" type="file" accept="image/jpeg,image/png,image/webp" className={`${inputCls} mt-1`} onChange={(e) => { setIdentityFile(e.target.files?.[0] ?? null); setApplyError(null); }} />
                 <p className="mt-1 text-xs text-muted-foreground">Private · visible only to you and the main admin. JPG, PNG or WebP, up to 5 MB.</p>
               </div>
+              <div>
+                <label htmlFor="selfie-photo" className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Verification selfie</label>
+                <input id="selfie-photo" type="file" accept="image/*" capture="user" className={`${inputCls} mt-1`} onChange={(e) => { setSelfieFile(e.target.files?.[0] ?? null); setApplyError(null); }} />
+                <p className="mt-1 text-xs text-muted-foreground">Take a clear photo of your face holding your civil ID. Private · only the main admin sees it.</p>
+              </div>
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
                   <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Phone</label>
@@ -260,7 +269,7 @@ function ContributePage() {
               <Button disabled={applying || !canApply} onClick={apply}>
                 {applying ? <Loader2 className="h-4 w-4 animate-spin" /> : <BadgeCheck className="h-4 w-4" />} Send my details
               </Button>
-              <p className="text-[0.7rem] text-muted-foreground">Name, civil ID photo, phone and email are required for verification.</p>
+              <p className="text-[0.7rem] text-muted-foreground">Name, civil ID photo, selfie, phone and email are required for verification.</p>
               <p className="text-xs text-muted-foreground">False information, impersonation or deliberate misuse of the news service will result in an account ban. Repeated violations lead to longer bans and ultimately a permanent ban.</p>
               {applyError && <p className="text-xs text-destructive">{applyError}</p>}
             </div>
@@ -272,7 +281,7 @@ function ContributePage() {
           <p className="mt-1 text-muted-foreground">{reporter.data.full_name ? `${reporter.data.full_name} · ` : ""}@{reporter.data.handle} on {reporter.data.platform}.</p>
           <p className="mt-2 text-xs text-muted-foreground">
             Email <a href="mailto:mansouralmailscores@gmail.com" className="font-semibold text-primary">mansouralmailscores@gmail.com</a> if you have not heard back. Once the admin sends your
-            access code, enter it below to open the news desk. Subscription $2.99 / month is included.
+            access code, enter it below to open the news desk.
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <span className="inline-flex h-10 items-center gap-2 rounded-full border border-border px-3 text-xs font-semibold"><KeyRound className="h-3.5 w-3.5 text-primary" /> Access code</span>

@@ -164,6 +164,7 @@ export function NewsSubmissionsPanel() {
               <BanHistory userId={r.user_id} />
             </div>
             {r.civil_id_photo_path && <Button variant="outline" size="sm" onClick={async () => { setReporterError(null); try { const result = await viewIdentity({ data: { id: r.id } }); setIdentityUrl(result.url); } catch (error) { setReporterError(error instanceof Error ? error.message : 'Could not open photo.'); } }}>Civil ID photo</Button>}
+            {r.selfie_photo_path && <Button variant="outline" size="sm" onClick={async () => { setReporterError(null); try { const result = await viewIdentity({ data: { id: r.id, kind: 'selfie' } }); setIdentityUrl(result.url); } catch (error) { setReporterError(error instanceof Error ? error.message : 'Could not open photo.'); } }}>Selfie</Button>}
             <span className="shrink-0 text-xs font-semibold uppercase text-muted-foreground">{r.status}</span>
             <button className={btnGhost} onClick={() => generateCode(r.id)}><KeyRound className="h-3.5 w-3.5" /> Generate code</button>
             <button className={btnGhost} onClick={() => setReporter(r.id, "active")}><Check className="h-3.5 w-3.5" /> Activate</button>
