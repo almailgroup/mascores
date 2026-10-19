@@ -1,7 +1,7 @@
 import { Capacitor } from "@capacitor/core";
 
 
-export type SaveResult = "saved" | "shared" | "cancelled" | "update-app" | "unsupported";
+export type SaveResult = "downloaded" | "saved" | "shared" | "cancelled" | "update-app" | "unsupported";
 
 function toBase64(blob: Blob) {
   return new Promise<string>((resolve, reject) => {
@@ -57,7 +57,16 @@ export async function savePhoto(blob: Blob, fileName: string, title: string): Pr
     }
   }
   const file = new File([blob], fileName, { type: "image/png" });
-  if (!navigator.share || !navigator.canShare?.({ files: [file] })) return "unsupported";
+  // Computers (and any browser without file sharing) get a normal download.
+  const touch = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
+  if (!touch || !navigator.share || !navigator.canShare?.({ files: [file] })) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = fileName.endsWith(".png") ? fileName : `${fileName}.png`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 30_000);
+    return "downloaded";
+  }
   try {
     await navigator.share({ files: [file], title });
     return "shared";

@@ -61,7 +61,7 @@ export function ShareCardButton({ render, title, label: buttonLabel, iconOnly = 
     setNotice(null);
     try {
       const result = await savePhoto(blob, fileName, title);
-      setSaved(result === "saved");
+      setSaved(result === "saved" || result === "downloaded");
       if (result === "update-app") {
         setHoldToSave(true);
         // Show the installed build so it's clear whether the new one is on the phone.
