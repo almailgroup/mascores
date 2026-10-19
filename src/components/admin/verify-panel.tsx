@@ -38,6 +38,7 @@ export function VerifyPanel() {
 
   const decide = async (req: Request, badge: string|null) => {
     if(busy || !assignableVerificationBadge(badge))return;
+    if(!confirm(badge ? `Approve ${badge} verification for ${req.profiles?.display_name ?? req.profiles?.username ?? 'this account'}?` : 'Decline this verification request?'))return;
     setBusy(req.id);
     const {error}=await supabase.rpc('review_verification',{_request:req.id,_badge:badge as string});
     setBusy(null);

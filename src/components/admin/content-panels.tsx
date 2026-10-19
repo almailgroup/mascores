@@ -1,6 +1,5 @@
 import { useAdminAbility } from "@/lib/admin-ability";
 import { useState } from "react";
-import { createPortal } from "react-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Bot, ImagePlus, Landmark, Plus, Radio, Repeat2, Sparkles, Trash2, X } from "lucide-react";
@@ -12,6 +11,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { createVenueDraftWithAlmail } from "@/lib/almail-ai.functions";
 import { ArabicNameField } from "./arabic-name-field";
 import { readAiImages, type AiImageInput } from "@/lib/image-files";
+import { toast } from 'sonner';
 
 type Channel = Database["public"]["Tables"]["broadcast_channels"]["Row"];
 
@@ -27,7 +27,8 @@ export function VenuesPanel() {
   const q = useQuery({ queryKey: ["admin", "venues"], queryFn: async () => (await supabase.from("venues").select("*").order("name")).data as Venue[] ?? [] });
   const save = async () => {
     if (!form.name?.trim()) return;
-    if (form.id) await supabase.from("venues").update(form).eq("id", form.id); else await supabase.from("venues").insert(form as never);
+    const {error}=form.id ? await supabase.from("venues").update(form).eq("id", form.id) : await supabase.from("venues").insert(form as never);
+    if(error){toast.error('Could not save stadium. Please try again.');return;}
     setForm({}); qc.invalidateQueries({ queryKey: ["admin", "venues"] });
   };
   const generate = async () => {
@@ -65,17 +66,7 @@ export function VenuesPanel() {
         </div>
       );
       if (form.id) {
-        return createPortal(
-          <div className="fixed inset-0 z-50 overflow-y-auto bg-background" data-no-gesture>
-            <div className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-border bg-background px-4 pb-3" style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 12px)" }}>
-              <button type="button" aria-label="Close" className="flex h-10 w-10 items-center justify-center rounded-full border border-border" onClick={() => setForm({})}><X className="h-5 w-5" /></button>
-              <div className="min-w-0 flex-1 truncate text-center text-sm font-bold">{form.name || "Edit venue"}</div>
-              <button type="button" className={btnPrimary} onClick={save}>Save</button>
-            </div>
-            <div className="mx-auto max-w-2xl p-4 pb-10">{venueForm}</div>
-          </div>,
-          document.body,
-        );
+        return <Modal open fullPage title={`Edit stadium · ${form.name || 'Venue'}`} onClose={()=>setForm({})} onSave={()=>void save()}><div className="mx-auto max-w-2xl pb-10">{venueForm}</div></Modal>;
       }
       return (
         <div className="mt-4 border-t border-border pt-4">
