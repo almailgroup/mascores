@@ -92,7 +92,7 @@ export function playAlertSound(sound: AlertSoundId | string | undefined | null) 
       osc.frequency.setValueAtTime(tone.freq, start);
       if (tone.to) osc.frequency.exponentialRampToValueAtTime(Math.max(40, tone.to), start + tone.length);
       gain.gain.setValueAtTime(0.0001, start);
-      gain.gain.exponentialRampToValueAtTime(tone.gain ?? 0.1, start + 0.03);
+      gain.gain.exponentialRampToValueAtTime((tone.gain ?? 0.1) * (sound === "var" ? 1 : 2.5), start + 0.03);
       gain.gain.exponentialRampToValueAtTime(0.0001, start + tone.length);
       osc.connect(gain).connect(context.destination);
       osc.start(start);
