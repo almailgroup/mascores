@@ -311,11 +311,27 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [], onModerati
     return true;
   }, [addToMix, remote]);
 
+  // Voices that arrive after recording starts (including the host's own mic) join the mix too,
+  // and any tap wakes the mixer, since phones pause audio started without a tap.
+  useEffect(() => {
+    if (!recording) return;
+    if (localRef.current) addToMix("self", localRef.current);
+    remote.forEach((entry) => addToMix(entry.userId, entry.stream));
+  }, [recording, remote, muted, audioReady, addToMix]);
+  useEffect(() => {
+    if (!recording) return;
+    const wake = () => { void mixRef.current?.ctx.resume().catch(() => undefined); };
+    wake();
+    document.addEventListener("pointerdown", wake);
+    return () => document.removeEventListener("pointerdown", wake);
+  }, [recording]);
+
   const stopRecording = useCallback(async () => {
     const recorder = recorderRef.current;
     if (!recorder) return null;
     const blob = await new Promise<Blob>((resolve) => {
       recorder.onstop = () => resolve(new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" }));
+      try { recorder.requestData(); } catch { /* already flushing */ }
       recorder.stop();
     });
     recorderRef.current = null;
