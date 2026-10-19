@@ -38,7 +38,7 @@
 - Favourites/club alerts use ordered optimistic writes; ignore stale hydration; exclude buttons from gestures to prevent tap locks.
 - Resolve retired country codes centrally and serve flag artwork from the local flag-icons package, so flags never use invalid external URLs.
 - Content deletes archive per transaction to deleted_records; only owners restore via restore_deleted_batch.
-- Voice uses perfect negotiation with serialized signals and preserved channels; all host activity resets inactivity. Safe discovery RPCs and owner-writable badges protect profiles.
+- Voice uses perfect negotiation with serialized signals, per-link ids, batched ICE and a self-healing watchdog; presence changes never renegotiate existing links, and the room channel fully removes same-topic leftovers before rejoining (the realtime client reuses closing channels). All host activity resets inactivity. Safe discovery RPCs and owner-writable badges protect profiles.
 - Stars/bells share sign-in-return and permission helpers; stored competition bell overrides inherit into match alerts.
 
 - Social identity uses safe RPCs; recipient-only follow approval and shared database predicates secure private recordings. Triggered activity uses the stored-row sender and preferences; playback uses short-lived authorized links.

@@ -18,7 +18,8 @@ export type VoicePeer = {
 };
 
 /** `sid`/`toSid` identify each side's current session, so a reload or role change never talks to a stale connection. */
-type SignalPayload = { from: string; to: string; sid: string; toSid?: string; kind: "offer" | "answer" | "ice"; data: unknown };
+/** `pid`/`toPid` identify each audio link, so messages for a replaced link are ignored. */
+type SignalPayload = { from: string; to: string; sid: string; toSid?: string; pid?: string; toPid?: string; kind: "offer" | "answer" | "ice"; data: unknown };
 
 const newSid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
 
@@ -65,6 +66,12 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [], onModerati
 
   const channelRef = useRef<RealtimeChannel | null>(null);
   const pcsRef = useRef<Map<string, RTCPeerConnection>>(new Map());
+  /** Our own id for each audio link, and the other side's, so stale messages from a replaced link are dropped. */
+  const pcIdRef = useRef<Map<string, string>>(new Map());
+  const remotePidRef = useRef<Map<string, string>>(new Map());
+  const pcBornRef = useRef<Map<string, number>>(new Map());
+  const remoteTracksRef = useRef<Map<string, MediaStreamTrack[]>>(new Map());
+  const iceOutRef = useRef<Map<string, { list: RTCIceCandidateInit[]; timer: number; pid: string }>>(new Map());
   const localRef = useRef<MediaStream | null>(null);
   const pendingIceRef = useRef<Map<string, RTCIceCandidateInit[]>>(new Map());
   const makingOfferRef = useRef<Set<string>>(new Set());
@@ -81,11 +88,20 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [], onModerati
   const recordStartRef = useRef(0);
   const sidRef = useRef(newSid());
   const remoteSidRef = useRef<Map<string, string>>(new Map());
+  const [channelNonce, setChannelNonce] = useState(0);
 
   meRef.current = me;
   mutedRef.current = muted;
   handRef.current = hand;
   peersRef.current = peers;
+
+  const roleOf = (userId: string) => (peersRef.current.find((p) => p.userId === userId)?.role ?? "speaker") as VoiceRole;
+
+  const sendSignal = useCallback((payload: SignalPayload) => {
+    const channel = channelRef.current;
+    if (!channel) return;
+    void channel.send({ type: "broadcast", event: "signal", payload }).catch(() => undefined);
+  }, []);
 
   const track = useCallback((userId: string, stream: MediaStream) => {
     setRemote((prev) => (prev.some((entry) => entry.userId === userId) ? prev.map((e) => (e.userId === userId ? { userId, stream } : e)) : [...prev, { userId, stream }]));
@@ -103,76 +119,132 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [], onModerati
       sid: sidRef.current,
       muted: mutedRef.current,
       hand: handRef.current,
-    });
+    }).catch(() => undefined);
   }, []);
 
-  const closePeer = useCallback((userId: string) => {
+  const closePeer = useCallback((userId: string, keepSid = false) => {
     pcsRef.current.get(userId)?.close();
     pcsRef.current.delete(userId);
+    pcIdRef.current.delete(userId);
+    remotePidRef.current.delete(userId);
+    pcBornRef.current.delete(userId);
+    remoteTracksRef.current.delete(userId);
+    const out = iceOutRef.current.get(userId);
+    if (out) window.clearTimeout(out.timer);
+    iceOutRef.current.delete(userId);
     makingOfferRef.current.delete(userId);
     ignoredOffersRef.current.delete(userId);
     settingAnswerRef.current.delete(userId);
     pendingIceRef.current.delete(userId);
-    remoteSidRef.current.delete(userId);
+    if (!keepSid) remoteSidRef.current.delete(userId);
     setRemote((prev) => prev.filter((entry) => entry.userId !== userId));
   }, []);
 
-  const ensurePeer = useCallback((otherId: string, otherRole: VoiceRole) => {
+  /** The audio slot actually agreed with the other side (falls back to any audio slot). */
+  const audioTransceiver = (pc: RTCPeerConnection) => {
+    const list = pc.getTransceivers().filter((t) => t.currentDirection !== "stopped" && t.receiver.track?.kind === "audio");
+    return list.find((t) => t.mid !== null) ?? list[0];
+  };
+
+  /** Put our mic (or nothing, for listeners) on the link. Returns true when renegotiation is needed. */
+  const syncSender = useCallback(async (pc: RTCPeerConnection) => {
     const current = meRef.current;
-    const channel = channelRef.current;
-    if (!current || !channel) return null;
+    if (!current) return false;
+    const tr = audioTransceiver(pc);
+    if (!tr) return false;
+    const pub = publishes(current.role);
+    const mic = pub ? localRef.current?.getAudioTracks()[0] ?? null : null;
+    if (tr.sender.track !== mic) await tr.sender.replaceTrack(mic).catch(() => undefined);
+    if (mic && localRef.current) { try { tr.sender.setStreams?.(localRef.current); } catch { /* optional */ } }
+    const direction: RTCRtpTransceiverDirection = pub ? "sendrecv" : "recvonly";
+    if (tr.direction !== direction) { tr.direction = direction; return true; }
+    return false;
+  }, []);
+
+  const queueIce = useCallback((otherId: string, pid: string, candidate: RTCIceCandidateInit) => {
+    const current = meRef.current;
+    if (!current) return;
+    let out = iceOutRef.current.get(otherId);
+    if (!out || out.pid !== pid) {
+      if (out) window.clearTimeout(out.timer);
+      out = { list: [], timer: 0, pid };
+      iceOutRef.current.set(otherId, out);
+    }
+    out.list.push(candidate);
+    if (out.timer) return;
+    // Send candidates in small batches instead of one message each, so busy rooms are not throttled.
+    out.timer = window.setTimeout(() => {
+      const batch = iceOutRef.current.get(otherId);
+      if (!batch || batch.pid !== pid) return;
+      iceOutRef.current.delete(otherId);
+      if (pcIdRef.current.get(otherId) !== pid) return;
+      sendSignal({ from: current.userId, to: otherId, sid: sidRef.current, toSid: remoteSidRef.current.get(otherId), pid, toPid: remotePidRef.current.get(otherId), kind: "ice", data: batch.list });
+    }, 150);
+  }, [sendSignal]);
+
+  const ensurePeer = useCallback((otherId: string, otherRole: VoiceRole, answering = false) => {
+    const current = meRef.current;
+    if (!current || !channelRef.current) return null;
     // Only connect when at least one side can publish audio.
     if (!publishes(current.role) && !publishes(otherRole)) return null;
     const existing = pcsRef.current.get(otherId);
-    if (existing) return existing;
+    if (existing && existing.connectionState !== "closed") return existing;
+    if (existing) closePeer(otherId, true);
 
     const pc = new RTCPeerConnection({ iceServers: ICE });
+    const pid = newSid();
     pcsRef.current.set(otherId, pc);
-    const localStream = localRef.current;
-    if (localStream) localStream.getTracks().forEach((t) => pc.addTrack(t, localStream));
-    else if (publishes(current.role)) pc.addTransceiver("audio", { direction: "sendrecv" });
-    else pc.addTransceiver("audio", { direction: "recvonly" });
+    pcIdRef.current.set(otherId, pid);
+    pcBornRef.current.set(otherId, Date.now());
+    if (!answering) {
+      // The answering side lets the offer create the audio slot, so each link has exactly one.
+      const pub = publishes(current.role);
+      const mic = pub ? localRef.current?.getAudioTracks()[0] : undefined;
+      pc.addTransceiver(mic ?? "audio", { direction: pub ? "sendrecv" : "recvonly", streams: mic && localRef.current ? [localRef.current] : [] });
+    }
 
     pc.onicecandidate = (event) => {
-      if (!event.candidate) return;
-      void channel.send({ type: "broadcast", event: "signal", payload: { from: current.userId, to: otherId, sid: sidRef.current, toSid: remoteSidRef.current.get(otherId), kind: "ice", data: event.candidate.toJSON() } satisfies SignalPayload });
+      if (!event.candidate || pcsRef.current.get(otherId) !== pc) return;
+      queueIce(otherId, pid, event.candidate.toJSON());
     };
     pc.ontrack = (event) => {
-      const stream = event.streams[0] ?? new MediaStream([event.track]);
-      track(otherId, stream);
+      if (pcsRef.current.get(otherId) !== pc) return;
+      const prev = remoteTracksRef.current.get(otherId) ?? [];
+      const next = [...prev.filter((t) => t.readyState === "live" && t.id !== event.track.id), event.track];
+      remoteTracksRef.current.set(otherId, next);
+      track(otherId, new MediaStream(next));
     };
-    pc.onnegotiationneeded = () => { void negotiateRef.current(otherId, otherRole, true); };
+    pc.onnegotiationneeded = () => { if (pcsRef.current.get(otherId) === pc) void negotiateRef.current(otherId, roleOf(otherId), true); };
     pc.onconnectionstatechange = () => {
       if (pcsRef.current.get(otherId) !== pc) return;
-      if (pc.connectionState === "failed") {
-        pc.restartIce();
-        void negotiateRef.current(otherId, otherRole, true);
-      }
+      if (pc.connectionState === "connected") pcBornRef.current.set(otherId, Date.now());
+      if (pc.connectionState === "failed") void negotiateRef.current(otherId, roleOf(otherId), true, true);
       if (pc.connectionState === "disconnected") window.setTimeout(() => {
-        if (pcsRef.current.get(otherId) === pc && pc.connectionState === "disconnected") void negotiateRef.current(otherId, otherRole, true);
-      }, 5000);
+        if (pcsRef.current.get(otherId) === pc && pc.connectionState === "disconnected") void negotiateRef.current(otherId, roleOf(otherId), true, true);
+      }, 4000);
     };
     return pc;
-  }, [closePeer, track]);
+  }, [closePeer, queueIce, track]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const negotiate = useCallback(async (otherId: string, otherRole: VoiceRole, force = false) => {
+  const negotiate = useCallback(async (otherId: string, otherRole: VoiceRole, force = false, restart = false) => {
     const current = meRef.current;
-    const channel = channelRef.current;
-    if (!current || !channel) return;
+    if (!current || !channelRef.current) return;
     if (!force && current.userId >= otherId) return; // lower id initiates initially, avoiding glare
+    if (!force && pcsRef.current.has(otherId)) return; // already linked; presence updates never restart audio
     const pc = ensurePeer(otherId, otherRole);
     if (!pc || pc.signalingState !== "stable" || makingOfferRef.current.has(otherId)) return;
     makingOfferRef.current.add(otherId);
     try {
-      const offer = await pc.createOffer({ iceRestart: force });
+      const offer = await pc.createOffer(restart ? { iceRestart: true } : undefined);
+      if (pc.signalingState !== "stable") return;
       await pc.setLocalDescription(offer);
-      await channel.send({ type: "broadcast", event: "signal", payload: { from: current.userId, to: otherId, sid: sidRef.current, toSid: remoteSidRef.current.get(otherId), kind: "offer", data: pc.localDescription ?? offer } satisfies SignalPayload });
+      sendSignal({ from: current.userId, to: otherId, sid: sidRef.current, toSid: remoteSidRef.current.get(otherId), pid: pcIdRef.current.get(otherId), toPid: remotePidRef.current.get(otherId), kind: "offer", data: pc.localDescription ?? offer });
     } catch (error) {
       console.warn("Voice offer failed", error);
     } finally {
       makingOfferRef.current.delete(otherId);
     }
-  }, [ensurePeer]);
+  }, [ensurePeer, sendSignal]);
   const negotiateRef = useRef(negotiate);
   negotiateRef.current = negotiate;
 
@@ -186,27 +258,19 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [], onModerati
     }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, video: false });
-      stream.getAudioTracks().forEach((track) => { track.enabled = false; });
+      stream.getAudioTracks().forEach((t) => { t.enabled = false; });
       localRef.current = stream;
       setAudioReady(true);
       setMicError(null);
-      const micTrack = stream.getAudioTracks()[0];
-      if (!micTrack) return false;
-      // Plug the mic into every open connection without dropping anyone's audio.
+      if (!stream.getAudioTracks()[0]) return false;
+      // Plug the mic into every open link without dropping anyone's audio.
       for (const [otherId, pc] of pcsRef.current) {
-        const transceiver = pc.getTransceivers().find((t) => t.receiver.track?.kind === "audio");
-        const role = (peersRef.current.find((p) => p.userId === otherId)?.role ?? "listener") as VoiceRole;
-        if (!transceiver) {
-          pc.addTrack(micTrack, stream);
-          void negotiateRef.current(otherId, role, true);
-          continue;
+        if (!audioTransceiver(pc)) {
+          const mic = stream.getAudioTracks()[0];
+          if (mic) pc.addTrack(mic, stream);
+          continue; // negotiationneeded fires
         }
-        await transceiver.sender.replaceTrack(micTrack).catch(() => undefined);
-        try { transceiver.sender.setStreams?.(stream); } catch { /* optional */ }
-        if (transceiver.direction !== "sendrecv") {
-          transceiver.direction = "sendrecv";
-          void negotiateRef.current(otherId, role, true);
-        }
+        if (await syncSender(pc)) void negotiateRef.current(otherId, roleOf(otherId), true);
       }
       await sendPresence();
       peersRef.current.forEach((peer) => {
@@ -221,13 +285,13 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [], onModerati
       else setMicError("The microphone could not be started. Tap Retry microphone to try again.");
       return false;
     }
-  }, [sendPresence]);
+  }, [sendPresence, syncSender]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Stop the microphone when leaving or becoming a listener. Capture starts from
   // the user's Unmute gesture, which is required by Safari and embedded browsers.
   useEffect(() => {
     if (enabled && me && publishes(me.role)) return;
-    localRef.current?.getTracks().forEach((track) => track.stop());
+    localRef.current?.getTracks().forEach((t) => t.stop());
     localRef.current = null;
     setAudioReady(false);
     setMuted(true);
@@ -244,104 +308,20 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [], onModerati
     if (micNonce > 0 && enabled && me && publishes(me.role)) void startMicrophone();
   }, [micNonce, enabled, me?.role, me?.userId, startMicrophone]);
 
-  // Presence + signalling channel.
+  // Audio links live for the whole visit; a reconnecting room channel never drops them.
   useEffect(() => {
     if (!enabled || !me) return;
     sidRef.current = newSid();
-    const channel = supabase.channel(`voice:${roomId}`, { config: { presence: { key: me.userId } } });
-    channelRef.current = channel;
-
-    channel.on("presence", { event: "sync" }, () => {
-      const state = channel.presenceState<VoicePeer>();
-      const list: VoicePeer[] = [];
-      Object.values(state).forEach((entries) => {
-        const entry = entries[entries.length - 1] as unknown as VoicePeer | undefined;
-        if (entry?.userId) list.push(entry);
-      });
-      setPeers(list);
-      // Someone reloaded or rejoined: drop the old connection so a fresh one is made.
-      list.forEach((peer) => {
-        const sid = (peer as VoicePeer & { sid?: string }).sid;
-        const known = remoteSidRef.current.get(peer.userId);
-        if (sid && known && known !== sid) closePeer(peer.userId);
-        if (sid) remoteSidRef.current.set(peer.userId, sid);
-      });
-      const ids = new Set(list.map((p) => p.userId));
-      pcsRef.current.forEach((_, id) => { if (!ids.has(id)) closePeer(id); });
-      list.forEach((peer) => { if (peer.userId !== me.userId) void negotiate(peer.userId, peer.role); });
-    });
-
-    channel.on("broadcast", { event: "moderate" }, ({ payload }) => {
-      const p = payload as { to: string; action: string };
-      if (p.to !== me.userId) return;
-      if (p.action === "mute") { localRef.current?.getAudioTracks().forEach((t) => { t.enabled = false; }); setMuted(true); }
-      onModerationRef.current?.(p.action);
-    });
-
-    channel.on("broadcast", { event: "signal" }, async ({ payload }) => {
-      const signal = payload as SignalPayload;
-      if (signal.to !== me.userId) return;
-      if (signal.toSid && signal.toSid !== sidRef.current) return; // meant for an old session of mine
-      const processSignal = async () => {
-      const knownSid = remoteSidRef.current.get(signal.from);
-      if (signal.sid && knownSid && knownSid !== signal.sid) {
-        if (signal.kind !== "offer") return; // stale answer/ice from their old session
-        closePeer(signal.from);
-      }
-      if (signal.sid) remoteSidRef.current.set(signal.from, signal.sid);
-      const otherRole = (peersRef.current.find((p) => p.userId === signal.from)?.role ?? "speaker") as VoiceRole;
-      const pc = ensurePeer(signal.from, otherRole);
-      if (!pc) return;
-      try {
-        if (signal.kind === "offer") {
-          const ignore = ignoreCollidingOffer(me.userId, signal.from, makingOfferRef.current.has(signal.from), pc.signalingState, settingAnswerRef.current.has(signal.from));
-          if (ignore) { ignoredOffersRef.current.add(signal.from); return; }
-          ignoredOffersRef.current.delete(signal.from);
-          if (pc.signalingState === "have-local-offer") await pc.setLocalDescription({ type: "rollback" });
-          await pc.setRemoteDescription(new RTCSessionDescription(signal.data as RTCSessionDescriptionInit));
-          const answer = await pc.createAnswer();
-          await pc.setLocalDescription(answer);
-          await channel.send({ type: "broadcast", event: "signal", payload: { from: me.userId, to: signal.from, sid: sidRef.current, toSid: signal.sid, kind: "answer", data: pc.localDescription ?? answer } satisfies SignalPayload });
-          const waiting = pendingIceRef.current.get(signal.from) ?? [];
-          for (const candidate of waiting) await pc.addIceCandidate(new RTCIceCandidate(candidate));
-          pendingIceRef.current.delete(signal.from);
-        } else if (signal.kind === "answer") {
-          if (pc.signalingState === "have-local-offer") {
-            settingAnswerRef.current.add(signal.from);
-            await pc.setRemoteDescription(new RTCSessionDescription(signal.data as RTCSessionDescriptionInit));
-            settingAnswerRef.current.delete(signal.from);
-            ignoredOffersRef.current.delete(signal.from);
-            const waiting = pendingIceRef.current.get(signal.from) ?? [];
-            for (const candidate of waiting) await pc.addIceCandidate(new RTCIceCandidate(candidate));
-            pendingIceRef.current.delete(signal.from);
-          }
-        } else {
-          if (ignoredOffersRef.current.has(signal.from)) return;
-          const candidate = signal.data as RTCIceCandidateInit;
-          if (pc.remoteDescription) await pc.addIceCandidate(new RTCIceCandidate(candidate));
-          else pendingIceRef.current.set(signal.from, [...(pendingIceRef.current.get(signal.from) ?? []), candidate]);
-        }
-      } catch (error) {
-        settingAnswerRef.current.delete(signal.from);
-        console.warn("Voice negotiation retry", error);
-        window.setTimeout(() => void negotiateRef.current(signal.from, otherRole, true), 700);
-      }
-      };
-      const queued = (signalQueuesRef.current.get(signal.from) ?? Promise.resolve()).catch(() => {}).then(processSignal);
-      signalQueuesRef.current.set(signal.from, queued);
-      await queued;
-    });
-
-    void loadIce();
-    channel.subscribe((status) => {
-      if (status === "SUBSCRIBED") { setConnected(true); void sendPresence(); }
-      if (status === "CLOSED" || status === "CHANNEL_ERROR") setConnected(false);
-    });
-
+    const pcs = pcsRef.current;
     return () => {
-      setConnected(false);
-      pcsRef.current.forEach((pc) => pc.close());
-      pcsRef.current.clear();
+      pcs.forEach((pc) => pc.close());
+      pcs.clear();
+      pcIdRef.current.clear();
+      remotePidRef.current.clear();
+      pcBornRef.current.clear();
+      remoteTracksRef.current.clear();
+      iceOutRef.current.forEach((o) => window.clearTimeout(o.timer));
+      iceOutRef.current.clear();
       pendingIceRef.current.clear();
       makingOfferRef.current.clear();
       ignoredOffersRef.current.clear();
@@ -349,28 +329,213 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [], onModerati
       signalQueuesRef.current.clear();
       remoteSidRef.current.clear();
       setRemote([]);
-      channelRef.current = null;
-      void supabase.removeChannel(channel);
     };
   }, [enabled, roomId, me?.userId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Presence + signalling channel, rebuilt automatically whenever it drops or never joins.
+  useEffect(() => {
+    if (!enabled || !me) return;
+    let cancelled = false;
+    let channel: RealtimeChannel | null = null;
+    let rebuildTimer = 0;
+    const rebuild = (delay: number) => {
+      if (cancelled || rebuildTimer) return;
+      rebuildTimer = window.setTimeout(() => { if (!cancelled) setChannelNonce((n) => n + 1); }, delay);
+    };
+    const topic = `voice:${roomId}`;
+
+    const setup = async () => {
+      // The client reuses a channel with the same name, even one that is still closing.
+      // Fully remove any leftover first, or this device stays on "Connecting…".
+      const realtime = supabase.realtime as unknown as { channels: RealtimeChannel[] };
+      const stale = supabase.getChannels().filter((c) => c.topic === `realtime:${topic}`);
+      await Promise.all(stale.map(async (c) => {
+        await Promise.race([supabase.removeChannel(c), new Promise((r) => window.setTimeout(r, 1500))]).catch(() => undefined);
+        try { c.teardown(); } catch { /* already gone */ }
+      }));
+      realtime.channels = realtime.channels.filter((c) => c.topic !== `realtime:${topic}`);
+      if (cancelled) return;
+
+      channel = supabase.channel(topic, { config: { presence: { key: me.userId }, broadcast: { self: false, ack: false } } });
+      channelRef.current = channel;
+      const ch = channel;
+
+      ch.on("presence", { event: "sync" }, () => {
+        const state = ch.presenceState<VoicePeer>();
+        const list: VoicePeer[] = [];
+        Object.values(state).forEach((entries) => {
+          const entry = entries[entries.length - 1] as unknown as VoicePeer | undefined;
+          if (entry?.userId) list.push(entry);
+        });
+        setPeers(list);
+        peersRef.current = list;
+        // Someone reloaded or rejoined: drop the old link so a fresh one is made.
+        list.forEach((peer) => {
+          const sid = (peer as VoicePeer & { sid?: string }).sid;
+          const known = remoteSidRef.current.get(peer.userId);
+          if (sid && known && known !== sid) closePeer(peer.userId);
+          if (sid) remoteSidRef.current.set(peer.userId, sid);
+        });
+        const ids = new Set(list.map((p) => p.userId));
+        pcsRef.current.forEach((_, id) => { if (!ids.has(id)) closePeer(id); });
+        list.forEach((peer) => { if (peer.userId !== me.userId) void negotiateRef.current(peer.userId, peer.role); });
+      });
+
+      ch.on("broadcast", { event: "moderate" }, ({ payload }) => {
+        const p = payload as { to: string; action: string };
+        if (p.to !== me.userId) return;
+        if (p.action === "mute") { localRef.current?.getAudioTracks().forEach((t) => { t.enabled = false; }); setMuted(true); }
+        onModerationRef.current?.(p.action);
+      });
+
+      ch.on("broadcast", { event: "signal" }, async ({ payload }) => {
+        const signal = payload as SignalPayload;
+        if (signal.to !== me.userId) return;
+        if (signal.toSid && signal.toSid !== sidRef.current) return; // meant for an old session of mine
+        const processSignal = async () => {
+          const knownSid = remoteSidRef.current.get(signal.from);
+          if (signal.sid && knownSid && knownSid !== signal.sid) {
+            if (signal.kind !== "offer") return; // stale answer/ice from their old session
+            closePeer(signal.from);
+          }
+          if (signal.sid) remoteSidRef.current.set(signal.from, signal.sid);
+          const otherRole = roleOf(signal.from);
+          if (signal.kind === "offer") {
+            // The other side replaced its link: start over with a fresh one instead of mixing the two.
+            const knownPid = remotePidRef.current.get(signal.from);
+            if (signal.pid && knownPid && knownPid !== signal.pid) closePeer(signal.from, true);
+          } else if (signal.toPid && pcIdRef.current.get(signal.from) && signal.toPid !== pcIdRef.current.get(signal.from)) {
+            return; // answer/ice for a link we already replaced
+          }
+          if (signal.kind === "ice" && signal.pid && remotePidRef.current.get(signal.from) && signal.pid !== remotePidRef.current.get(signal.from)) return;
+          const pc = signal.kind === "offer" ? ensurePeer(signal.from, otherRole, true) : pcsRef.current.get(signal.from);
+          if (!pc) return;
+          try {
+            if (signal.kind === "offer") {
+              const ignore = ignoreCollidingOffer(me.userId, signal.from, makingOfferRef.current.has(signal.from), pc.signalingState, settingAnswerRef.current.has(signal.from));
+              if (ignore) { ignoredOffersRef.current.add(signal.from); return; }
+              ignoredOffersRef.current.delete(signal.from);
+              if (signal.pid) remotePidRef.current.set(signal.from, signal.pid);
+              if (pc.signalingState === "have-local-offer") await pc.setLocalDescription({ type: "rollback" });
+              await pc.setRemoteDescription(new RTCSessionDescription(signal.data as RTCSessionDescriptionInit));
+              // Keep one audio slot per link: drop any unpaired extra, then attach our mic to the agreed one.
+              const agreed = pc.getTransceivers().find((t) => t.mid !== null && t.receiver.track?.kind === "audio");
+              if (agreed) pc.getTransceivers().forEach((t) => { if (t.mid === null) { try { t.stop(); } catch { /* ignore */ } } });
+              await syncSender(pc);
+              const answer = await pc.createAnswer();
+              await pc.setLocalDescription(answer);
+              sendSignal({ from: me.userId, to: signal.from, sid: sidRef.current, toSid: signal.sid, pid: pcIdRef.current.get(signal.from), toPid: signal.pid, kind: "answer", data: pc.localDescription ?? answer });
+              const waiting = pendingIceRef.current.get(signal.from) ?? [];
+              pendingIceRef.current.delete(signal.from);
+              for (const candidate of waiting) await pc.addIceCandidate(new RTCIceCandidate(candidate)).catch(() => undefined);
+            } else if (signal.kind === "answer") {
+              if (pc.signalingState === "have-local-offer") {
+                if (signal.pid) remotePidRef.current.set(signal.from, signal.pid);
+                settingAnswerRef.current.add(signal.from);
+                await pc.setRemoteDescription(new RTCSessionDescription(signal.data as RTCSessionDescriptionInit));
+                settingAnswerRef.current.delete(signal.from);
+                ignoredOffersRef.current.delete(signal.from);
+                const waiting = pendingIceRef.current.get(signal.from) ?? [];
+                pendingIceRef.current.delete(signal.from);
+                for (const candidate of waiting) await pc.addIceCandidate(new RTCIceCandidate(candidate)).catch(() => undefined);
+              }
+            } else {
+              if (ignoredOffersRef.current.has(signal.from)) return;
+              const list = (Array.isArray(signal.data) ? signal.data : [signal.data]) as RTCIceCandidateInit[];
+              for (const candidate of list) {
+                if (pc.remoteDescription) await pc.addIceCandidate(new RTCIceCandidate(candidate)).catch(() => undefined);
+                else pendingIceRef.current.set(signal.from, [...(pendingIceRef.current.get(signal.from) ?? []), candidate]);
+              }
+            }
+          } catch (error) {
+            settingAnswerRef.current.delete(signal.from);
+            console.warn("Voice negotiation retry", error);
+            window.setTimeout(() => void negotiateRef.current(signal.from, otherRole, true), 700);
+          }
+        };
+        const queued = (signalQueuesRef.current.get(signal.from) ?? Promise.resolve()).catch(() => {}).then(processSignal);
+        signalQueuesRef.current.set(signal.from, queued);
+        await queued;
+      });
+
+      await loadIce();
+      if (cancelled) return;
+      // Never sit on "Connecting…": if joining takes too long, start a fresh channel.
+      const joinTimer = window.setTimeout(() => { if (ch.state !== "joined") rebuild(0); }, 10000);
+      ch.subscribe((status) => {
+        if (cancelled) return;
+        if (status === "SUBSCRIBED") {
+          window.clearTimeout(joinTimer);
+          setConnected(true);
+          void sendPresence();
+        }
+        if (status === "CLOSED" || status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          setConnected(false);
+          rebuild(1500);
+        }
+      });
+    };
+    void setup();
+
+    const wake = () => {
+      if (document.visibilityState === "visible" && channelRef.current?.state !== "joined") rebuild(0);
+    };
+    document.addEventListener("visibilitychange", wake);
+    window.addEventListener("online", wake);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(rebuildTimer);
+      document.removeEventListener("visibilitychange", wake);
+      window.removeEventListener("online", wake);
+      setConnected(false);
+      if (channelRef.current === channel) channelRef.current = null;
+      if (channel) void supabase.removeChannel(channel);
+    };
+  }, [enabled, roomId, me?.userId, channelNonce]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Heal audio links that never connect (a lost message, a network switch).
+  useEffect(() => {
+    if (!enabled || !me) return;
+    const timer = window.setInterval(() => {
+      const current = meRef.current;
+      if (!current || !channelRef.current || channelRef.current.state !== "joined") return;
+      const now = Date.now();
+      for (const [otherId, pc] of [...pcsRef.current]) {
+        if (pc.connectionState === "connected") continue;
+        const age = now - (pcBornRef.current.get(otherId) ?? now);
+        // The side that starts links retries first; the other side steps in if that never happens.
+        const limit = current.userId < otherId ? 12000 : 25000;
+        if (age < limit) continue;
+        closePeer(otherId, true);
+        void negotiateRef.current(otherId, roleOf(otherId), true);
+      }
+      // Anyone we should hear (or who should hear us) but have no link with yet.
+      peersRef.current.forEach((peer) => {
+        if (peer.userId === current.userId || pcsRef.current.has(peer.userId)) return;
+        if (!publishes(current.role) && !publishes(peer.role)) return;
+        void negotiateRef.current(peer.userId, peer.role, true);
+      });
+    }, 5000);
+    return () => window.clearInterval(timer);
+  }, [enabled, me?.userId, closePeer]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { void sendPresence(); }, [muted, hand, me?.role, sendPresence]);
   useEffect(() => {
     const current = meRef.current;
     if (!enabled || !current) return;
-    for (const [otherId, pc] of pcsRef.current) {
-      const transceiver = pc.getTransceivers().find((t) => t.receiver.track?.kind === "audio");
-      if (!transceiver) continue;
-      const track = publishes(current.role) ? localRef.current?.getAudioTracks()[0] ?? null : null;
-      void transceiver.sender.replaceTrack(track).catch(() => {});
-      const direction = publishes(current.role) ? "sendrecv" : "recvonly";
-      if (transceiver.direction !== direction) { transceiver.direction = direction; void negotiateRef.current(otherId, peersRef.current.find((p) => p.userId === otherId)?.role ?? "listener", true); }
-    }
-    // A new speaker must also reach listeners it had no connection with yet.
-    if (publishes(current.role)) peersRef.current.forEach((peer) => {
-      if (peer.userId !== current.userId && !pcsRef.current.has(peer.userId)) void negotiateRef.current(peer.userId, peer.role, true);
-    });
-    void sendPresence();
+    void (async () => {
+      for (const [otherId, pc] of [...pcsRef.current]) {
+        // A listener-to-listener link is no longer needed.
+        if (!publishes(current.role) && !publishes(roleOf(otherId))) { closePeer(otherId, true); continue; }
+        if (await syncSender(pc)) void negotiateRef.current(otherId, roleOf(otherId), true);
+      }
+      // A new speaker must also reach listeners it had no link with yet.
+      if (publishes(current.role)) peersRef.current.forEach((peer) => {
+        if (peer.userId !== current.userId && !pcsRef.current.has(peer.userId)) void negotiateRef.current(peer.userId, peer.role, true);
+      });
+      void sendPresence();
+    })();
   }, [enabled, me?.role]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /** Host moderation reaches the person instantly instead of waiting for a refresh. */
