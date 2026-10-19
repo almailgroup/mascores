@@ -1,4 +1,6 @@
 # Roadmap
+- [x] Fix stadium edit popup above admin overlays; verified save/reopen on phone
+- [x] Confirm bans, strikes, activation, rejection, verification, approvals and lifting restrictions; verified cancelling news-request actions makes no writes
 - [x] Add recording comment replies, likes and targeted reports; verified saved interactions and report snapshots
 - [x] Improve recording description display and editor; verified save/reload and phone fit
 - [x] Restore calm match sounds, prevent duplicate foreground phone sounds, and correct period announcements; confirmed kickoff/halftime/reminder delivery records

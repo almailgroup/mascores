@@ -59,7 +59,7 @@ export function UsersPanel() {
               <BanHistory userId={user.id} />
             </div>
             {(user.banned || user.suspendedUntil) ? (
-              <button className={btnGhost} onClick={async () => { await clear({ data: { userId: user.id } }); refresh(); }}>
+              <button className={btnGhost} onClick={async () => { if(!confirm(`Lift the restriction on ${user.displayName ?? user.email ?? 'this account'}? Previous strikes will remain.`))return; await clear({ data: { userId: user.id } }); refresh(); }}>
                 <ShieldCheck className="h-3.5 w-3.5" /> Lift
               </button>
             ) : null}
@@ -87,6 +87,7 @@ function RestrictModal({ user, onClose, onDone, save }: {
   const [error, setError] = useState<string | null>(null);
 
   const submit = async () => {
+    if(!confirm(mode==='ban' ? `Permanently ban ${user.displayName ?? user.email ?? 'this account'}?` : `Suspend ${user.displayName ?? user.email ?? 'this account'} for ${Math.max(1,Number(days)||1)} day(s)? Previous strikes may increase the restriction.`))return;
     setBusy(true); setError(null);
     try {
       await save({ data: { userId: user.id, banned: mode === "ban", days: mode === "ban" ? 0 : Math.max(1, Number(days) || 1), reason } });
