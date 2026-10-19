@@ -42,6 +42,6 @@
 - Stars/bells share sign-in-return and permission helpers; stored competition bell overrides inherit into match alerts.
 
 - Social identity uses safe RPCs; recipient-only follow approval and shared database predicates secure private recordings. Triggered activity uses the stored-row sender and preferences; playback uses short-lived authorized links.
-- Social dialogs are portalled for phone fit; share/report controls are reused; reports use RLS and safe identity RPCs.
+- Social dialogs portal for phone fit; reports use RLS and safe identity RPCs. Recording replies use one-level threads, likes use unique user/comment pairs, and reports keep database-stamped text snapshots for moderation after deletion.
 - Verification review/replies use owner-authorized RPCs; owner badges derive from protected owner identity, never editable badge rows.
 - Avatar uploads use user-ID folders; crop dialogs portal outside page gestures to keep touch editing stable.
