@@ -1,4 +1,7 @@
 # Roadmap
+- [ ] Add recording comment replies, likes and targeted reports; verify saved interactions
+- [ ] Improve recording description display and editor
+- [ ] Restore calm match notification sounds and complete kickoff/halftime/reminder alerts
 - [x] Show full news photo in shared images; verified Abdullah Fares share keeps his entire original photo
 - [x] Load lineup coaches with players and reveal club/national squad portraits together; verified real coach and player photos
 - [x] Fix profile photo cropping; verified drag, zoom, save and profile photo reload
