@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { ignoreCollidingOffer } from "./voice-negotiation";
+import { getVoiceIceServers } from "./voice-ice.functions";
 
 export type VoiceRole = "host" | "speaker" | "listener";
 
@@ -22,7 +24,15 @@ const newSid = () => Math.random().toString(36).slice(2) + Date.now().toString(3
 
 type Me = { userId: string; name: string; avatar: string | null; role: VoiceRole };
 
-const ICE = [{ urls: ["stun:stun.l.google.com:19302", "stun:global.stun.twilio.com:3478"] }];
+let ICE: RTCIceServer[] = [{ urls: ["stun:stun.l.google.com:19302", "stun:global.stun.twilio.com:3478"] }];
+let iceLoaded: Promise<void> | null = null;
+function loadIce() {
+  iceLoaded ??= getVoiceIceServers().then((r) => { if (r?.servers?.length) ICE = r.servers; }).catch(() => undefined);
+  return iceLoaded;
+}
+
+export type SpeakerMoment = { t: number; ids: string[] };
+export type SpeakerPerson = { id: string; name: string; avatar: string | null };
 
 function publishes(role: VoiceRole) {
   return role === "host" || role === "speaker";
@@ -33,7 +43,12 @@ function publishes(role: VoiceRole) {
  * room, broadcast carries WebRTC offers/answers/ICE, and speakers publish a mic
  * track that every other member receives.
  */
-export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId: string; me: Me | null; enabled: boolean; storedPeers?: VoicePeer[] }) {
+export function useVoiceRoom({ roomId, me, enabled, storedPeers = [], onModeration }: { roomId: string; me: Me | null; enabled: boolean; storedPeers?: VoicePeer[]; onModeration?: (action: string) => void }) {
+  const onModerationRef = useRef(onModeration);
+  onModerationRef.current = onModeration;
+  const timelineRef = useRef<SpeakerMoment[]>([]);
+  const lastSpeakKeyRef = useRef("");
+  const rosterRef = useRef<VoicePeer[]>([]);
   const [peers, setPeers] = useState<VoicePeer[]>([]);
   const [remote, setRemote] = useState<{ userId: string; stream: MediaStream }[]>([]);
   const [muted, setMuted] = useState(true);
@@ -53,6 +68,9 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
   const localRef = useRef<MediaStream | null>(null);
   const pendingIceRef = useRef<Map<string, RTCIceCandidateInit[]>>(new Map());
   const makingOfferRef = useRef<Set<string>>(new Set());
+  const ignoredOffersRef = useRef<Set<string>>(new Set());
+  const settingAnswerRef = useRef<Set<string>>(new Set());
+  const signalQueuesRef = useRef<Map<string, Promise<void>>>(new Map());
   const meRef = useRef<Me | null>(me);
   const mutedRef = useRef(true);
   const handRef = useRef(false);
@@ -91,6 +109,9 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
   const closePeer = useCallback((userId: string) => {
     pcsRef.current.get(userId)?.close();
     pcsRef.current.delete(userId);
+    makingOfferRef.current.delete(userId);
+    ignoredOffersRef.current.delete(userId);
+    settingAnswerRef.current.delete(userId);
     pendingIceRef.current.delete(userId);
     remoteSidRef.current.delete(userId);
     setRemote((prev) => prev.filter((entry) => entry.userId !== userId));
@@ -120,12 +141,16 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
       const stream = event.streams[0] ?? new MediaStream([event.track]);
       track(otherId, stream);
     };
+    pc.onnegotiationneeded = () => { void negotiateRef.current(otherId, otherRole, true); };
     pc.onconnectionstatechange = () => {
+      if (pcsRef.current.get(otherId) !== pc) return;
       if (pc.connectionState === "failed") {
         pc.restartIce();
         void negotiateRef.current(otherId, otherRole, true);
       }
-      if (pc.connectionState === "closed") closePeer(otherId);
+      if (pc.connectionState === "disconnected") window.setTimeout(() => {
+        if (pcsRef.current.get(otherId) === pc && pc.connectionState === "disconnected") void negotiateRef.current(otherId, otherRole, true);
+      }, 5000);
     };
     return pc;
   }, [closePeer, track]);
@@ -142,6 +167,8 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
       const offer = await pc.createOffer({ iceRestart: force });
       await pc.setLocalDescription(offer);
       await channel.send({ type: "broadcast", event: "signal", payload: { from: current.userId, to: otherId, sid: sidRef.current, toSid: remoteSidRef.current.get(otherId), kind: "offer", data: pc.localDescription ?? offer } satisfies SignalPayload });
+    } catch (error) {
+      console.warn("Voice offer failed", error);
     } finally {
       makingOfferRef.current.delete(otherId);
     }
@@ -163,7 +190,8 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
       localRef.current = stream;
       setAudioReady(true);
       setMicError(null);
-      const micTrack = stream.getAudioTracks()[0]!;
+      const micTrack = stream.getAudioTracks()[0];
+      if (!micTrack) return false;
       // Plug the mic into every open connection without dropping anyone's audio.
       for (const [otherId, pc] of pcsRef.current) {
         const transceiver = pc.getTransceivers().find((t) => t.receiver.track?.kind === "audio");
@@ -243,10 +271,18 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
       list.forEach((peer) => { if (peer.userId !== me.userId) void negotiate(peer.userId, peer.role); });
     });
 
+    channel.on("broadcast", { event: "moderate" }, ({ payload }) => {
+      const p = payload as { to: string; action: string };
+      if (p.to !== me.userId) return;
+      if (p.action === "mute") { localRef.current?.getAudioTracks().forEach((t) => { t.enabled = false; }); setMuted(true); }
+      onModerationRef.current?.(p.action);
+    });
+
     channel.on("broadcast", { event: "signal" }, async ({ payload }) => {
       const signal = payload as SignalPayload;
       if (signal.to !== me.userId) return;
       if (signal.toSid && signal.toSid !== sidRef.current) return; // meant for an old session of mine
+      const processSignal = async () => {
       const knownSid = remoteSidRef.current.get(signal.from);
       if (signal.sid && knownSid && knownSid !== signal.sid) {
         if (signal.kind !== "offer") return; // stale answer/ice from their old session
@@ -258,7 +294,10 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
       if (!pc) return;
       try {
         if (signal.kind === "offer") {
-          if (pc.signalingState !== "stable") await pc.setLocalDescription({ type: "rollback" });
+          const ignore = ignoreCollidingOffer(me.userId, signal.from, makingOfferRef.current.has(signal.from), pc.signalingState, settingAnswerRef.current.has(signal.from));
+          if (ignore) { ignoredOffersRef.current.add(signal.from); return; }
+          ignoredOffersRef.current.delete(signal.from);
+          if (pc.signalingState === "have-local-offer") await pc.setLocalDescription({ type: "rollback" });
           await pc.setRemoteDescription(new RTCSessionDescription(signal.data as RTCSessionDescriptionInit));
           const answer = await pc.createAnswer();
           await pc.setLocalDescription(answer);
@@ -268,22 +307,32 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
           pendingIceRef.current.delete(signal.from);
         } else if (signal.kind === "answer") {
           if (pc.signalingState === "have-local-offer") {
+            settingAnswerRef.current.add(signal.from);
             await pc.setRemoteDescription(new RTCSessionDescription(signal.data as RTCSessionDescriptionInit));
+            settingAnswerRef.current.delete(signal.from);
+            ignoredOffersRef.current.delete(signal.from);
             const waiting = pendingIceRef.current.get(signal.from) ?? [];
             for (const candidate of waiting) await pc.addIceCandidate(new RTCIceCandidate(candidate));
             pendingIceRef.current.delete(signal.from);
           }
         } else {
+          if (ignoredOffersRef.current.has(signal.from)) return;
           const candidate = signal.data as RTCIceCandidateInit;
           if (pc.remoteDescription) await pc.addIceCandidate(new RTCIceCandidate(candidate));
           else pendingIceRef.current.set(signal.from, [...(pendingIceRef.current.get(signal.from) ?? []), candidate]);
         }
       } catch (error) {
+        settingAnswerRef.current.delete(signal.from);
         console.warn("Voice negotiation retry", error);
         window.setTimeout(() => void negotiateRef.current(signal.from, otherRole, true), 700);
       }
+      };
+      const queued = (signalQueuesRef.current.get(signal.from) ?? Promise.resolve()).catch(() => {}).then(processSignal);
+      signalQueuesRef.current.set(signal.from, queued);
+      await queued;
     });
 
+    void loadIce();
     channel.subscribe((status) => {
       if (status === "SUBSCRIBED") { setConnected(true); void sendPresence(); }
       if (status === "CLOSED" || status === "CHANNEL_ERROR") setConnected(false);
@@ -293,13 +342,41 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
       setConnected(false);
       pcsRef.current.forEach((pc) => pc.close());
       pcsRef.current.clear();
+      pendingIceRef.current.clear();
+      makingOfferRef.current.clear();
+      ignoredOffersRef.current.clear();
+      settingAnswerRef.current.clear();
+      signalQueuesRef.current.clear();
+      remoteSidRef.current.clear();
       setRemote([]);
       channelRef.current = null;
       void supabase.removeChannel(channel);
     };
-  }, [enabled, roomId, me?.userId, me?.role]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [enabled, roomId, me?.userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { void sendPresence(); }, [muted, hand, me?.role, sendPresence]);
+  useEffect(() => {
+    const current = meRef.current;
+    if (!enabled || !current) return;
+    for (const [otherId, pc] of pcsRef.current) {
+      const transceiver = pc.getTransceivers().find((t) => t.receiver.track?.kind === "audio");
+      if (!transceiver) continue;
+      const track = publishes(current.role) ? localRef.current?.getAudioTracks()[0] ?? null : null;
+      void transceiver.sender.replaceTrack(track).catch(() => {});
+      const direction = publishes(current.role) ? "sendrecv" : "recvonly";
+      if (transceiver.direction !== direction) { transceiver.direction = direction; void negotiateRef.current(otherId, peersRef.current.find((p) => p.userId === otherId)?.role ?? "listener", true); }
+    }
+    // A new speaker must also reach listeners it had no connection with yet.
+    if (publishes(current.role)) peersRef.current.forEach((peer) => {
+      if (peer.userId !== current.userId && !pcsRef.current.has(peer.userId)) void negotiateRef.current(peer.userId, peer.role, true);
+    });
+    void sendPresence();
+  }, [enabled, me?.role]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /** Host moderation reaches the person instantly instead of waiting for a refresh. */
+  const sendModeration = useCallback((to: string, action: string) => {
+    void channelRef.current?.send({ type: "broadcast", event: "moderate", payload: { to, action } });
+  }, []);
 
   const toggleMute = useCallback(async () => {
     if (!mutedRef.current) {
@@ -338,13 +415,15 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
     mixRef.current = { ctx, dest: ctx.createMediaStreamDestination(), added: new Set() };
     if (localRef.current) addToMix("self", localRef.current);
     remote.forEach((entry) => addToMix(entry.userId, entry.stream));
-    const mime = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"].find((type) => MediaRecorder.isTypeSupported(type));
+    const mime = ["audio/mp4;codecs=mp4a.40.2", "audio/mp4", "audio/webm;codecs=opus", "audio/webm"].find((type) => MediaRecorder.isTypeSupported(type));
     const recorder = new MediaRecorder(mixRef.current.dest.stream, mime ? { mimeType: mime } : undefined);
     chunksRef.current = [];
     recorder.ondataavailable = (event) => { if (event.data.size > 0) chunksRef.current.push(event.data); };
     recorder.start(2000);
     recorderRef.current = recorder;
     recordStartRef.current = Date.now();
+    timelineRef.current = [];
+    lastSpeakKeyRef.current = "";
     setRecording(true);
     return true;
   }, [addToMix, remote]);
@@ -362,7 +441,11 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
     await mixRef.current?.ctx.close().catch(() => undefined);
     mixRef.current = null;
     chunksRef.current = [];
-    return { blob, seconds };
+    const timeline = timelineRef.current.slice(0, 4000);
+    const ids = new Set(timeline.flatMap((m) => m.ids));
+    const people: SpeakerPerson[] = rosterRef.current.filter((p) => ids.has(p.userId)).map((p) => ({ id: p.userId, name: p.name, avatar: p.avatar }));
+    timelineRef.current = [];
+    return { blob, seconds, timeline, people };
   }, []);
 
   // Keep late joiners in the recording.
@@ -379,6 +462,7 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
     const AudioCtx = (window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext);
     if (!AudioCtx) return;
     const ctx = new AudioCtx();
+    void ctx.resume().catch(() => {});
     const nodes: { id: string; analyser: AnalyserNode }[] = [];
     const add = (id: string, stream: MediaStream) => {
       try {
@@ -393,15 +477,17 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
     remote.forEach((entry) => add(entry.userId, entry.stream));
     const buffer = new Uint8Array(256);
     let raf = 0;
+    let lastMeterKey = "";
     const tick = () => {
       const next: Record<string, boolean> = {};
       nodes.forEach(({ id, analyser }) => {
         analyser.getByteFrequencyData(buffer);
         let sum = 0;
-        for (let i = 0; i < buffer.length; i += 1) sum += buffer[i]!;
+        for (let i = 0; i < buffer.length; i += 1) sum += buffer[i] ?? 0;
         next[id] = sum / buffer.length > 12;
       });
-      setSpeaking(next);
+      const key = Object.keys(next).filter((k) => next[k]).sort().join(",");
+      if (key !== lastMeterKey) { lastMeterKey = key; setSpeaking(next); }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
@@ -410,7 +496,7 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
 
   const roster = useMemo(() => {
     const liveById = new Map(peers.map((peer) => [peer.userId, peer]));
-    const merged = storedPeers.map((stored) => ({ ...stored, ...(liveById.get(stored.userId) ?? {}) }));
+    const merged = storedPeers.map((stored) => ({ ...stored, ...(liveById.get(stored.userId) ?? {}), name: stored.name, avatar: stored.avatar, role: stored.role }));
     peers.forEach((peer) => { if (!merged.some((item) => item.userId === peer.userId)) merged.push(peer); });
     return merged.map((peer) => ({
     ...peer,
@@ -422,7 +508,19 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [] }: { roomId
   });
   }, [peers, storedPeers, speaking, me?.userId]);
 
+  rosterRef.current = roster;
+
+  // Remember who talked when, so replays can show the speaker's picture.
+  useEffect(() => {
+    if (!recording) return;
+    const ids = roster.filter((p) => p.speaking && p.role !== "listener").map((p) => p.userId).sort();
+    const key = ids.join(",");
+    if (key === lastSpeakKeyRef.current) return;
+    lastSpeakKeyRef.current = key;
+    timelineRef.current.push({ t: Math.round((Date.now() - recordStartRef.current) / 100) / 10, ids });
+  }, [roster, recording]);
+
   const speakerCount = roster.filter((p) => p.role !== "listener").length;
   const listenerCount = roster.length - speakerCount;
-  return { roster, remote, muted, toggleMute, forceMute, hand, setHand, micError, retryMic, connected, audioReady, speakerCount, listenerCount, recording, startRecording, stopRecording };
+  return { roster, remote, muted, toggleMute, forceMute, hand, setHand, micError, retryMic, connected, audioReady, speakerCount, listenerCount, recording, startRecording, stopRecording, sendModeration };
 }

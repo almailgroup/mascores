@@ -218,6 +218,167 @@
       "when": 1792147223383,
       "tag": "0030_var_note_push",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1792147808560,
+      "tag": "0031_sub_in_out_and_var_kind_push",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1792148147731,
+      "tag": "0032_voice_room_live_push",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1792149294993,
+      "tag": "0033_period_push_and_highlights",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1792149416668,
+      "tag": "0034_match_mute_and_transfer_push",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1792149754545,
+      "tag": "0035_resume_after_ft_push",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1792150257475,
+      "tag": "0036_keep_clubs_on_competition_delete",
+      "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1792162479286,
+      "tag": "0037_etwait_status_and_reminder_fix",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1792257980330,
+      "tag": "0038_server_side_personal_reminders",
+      "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1792258982909,
+      "tag": "0039_voice_discovery_verification_and_host_activity",
+      "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1792259119267,
+      "tag": "0040_competition_bell_preferences",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1792261003370,
+      "tag": "0041_keep_historical_match_coaches",
+      "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1792261501799,
+      "tag": "0042_merge_dismissals",
+      "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1792262209676,
+      "tag": "0043_voice_short_codes_name_cooldowns",
+      "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1792263134263,
+      "tag": "0044_verification_requests",
+      "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1792264134076,
+      "tag": "0045_social_profiles_and_activity",
+      "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "7",
+      "when": 1792264635626,
+      "tag": "0046_private_profile_discovery",
+      "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1792264713404,
+      "tag": "0047_recording_owner_read_after_save",
+      "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "7",
+      "when": 1792264826355,
+      "tag": "0048_social_delivery_preferences",
+      "breakpoints": true
+    },
+    {
+      "idx": 49,
+      "version": "7",
+      "when": 1792264919359,
+      "tag": "0049_anonymous_recording_visibility",
+      "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1792265501839,
+      "tag": "0050_social_content_reports",
+      "breakpoints": true
+    },
+    {
+      "idx": 51,
+      "version": "7",
+      "when": 1792265612690,
+      "tag": "0051_private_profile_reporting",
+      "breakpoints": true
+    },
+    {
+      "idx": 52,
+      "version": "7",
+      "when": 1792266352280,
+      "tag": "0052_verification_replies_and_owner_identity",
+      "breakpoints": true
+    },
+    {
+      "idx": 53,
+      "version": "7",
+      "when": 1792268697148,
+      "tag": "0053_migration",
+      "breakpoints": true
     }
   ]
 }

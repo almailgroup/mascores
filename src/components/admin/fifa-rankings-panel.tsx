@@ -72,19 +72,19 @@ export function FifaRankingsPanel() {
         </div>
       </div>
 
-      <div className="grid gap-2">
+      <div className="grid min-w-0 grid-cols-1 gap-2">
         {rows.map((r) => {
           const team = teamOf(r.team_id);
           const move = r.previous_rank == null ? 0 : r.previous_rank - r.rank;
           return (
-            <div key={r.id} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3">
-              <div className="w-8 text-center text-sm font-bold">{r.rank}</div>
+            <div key={r.id} className="flex min-w-0 flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-3">
+              <div className="w-8 shrink-0 text-center text-sm font-bold">{r.rank}</div>
               <FlagIcon value={team?.country_code ?? null} size="md" />
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1 basis-24">
                 <div className="truncate text-sm font-semibold">{team?.name ?? "Unknown team"}</div>
                 <div className="text-[0.65rem] text-muted-foreground">{r.points} pts{r.season ? ` · ${r.season}` : ""}{r.note ? ` · ${r.note}` : ""}</div>
               </div>
-              <div className={`flex items-center gap-1 text-xs font-semibold ${move > 0 ? "text-emerald-500" : move < 0 ? "text-destructive" : "text-muted-foreground"}`}>
+              <div className={`flex items-center gap-1 text-xs font-semibold ${move > 0 ? "text-primary" : move < 0 ? "text-destructive" : "text-muted-foreground"}`}>
                 {move > 0 ? <ArrowUp className="h-3.5 w-3.5" /> : move < 0 ? <ArrowDown className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
                 {move !== 0 && Math.abs(move)}
               </div>

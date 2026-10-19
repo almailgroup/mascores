@@ -1,3 +1,4 @@
+import { useAdminAbility } from "@/lib/admin-ability";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -5,7 +6,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Bot, ImagePlus, Landmark, Plus, Radio, Repeat2, Sparkles, Trash2, X } from "lucide-react";
 import { supabase, type Venue, type Transfer } from "@/lib/db";
 import { CountrySelect } from "@/components/country-select";
-import { Field, ImageInput, inputCls, btnPrimary, btnDanger } from "./ui";
+import { Field, Modal, ImageInput, inputCls, btnPrimary, btnDanger } from "./ui";
 import { uploadMedia } from "./upload";
 import type { Database } from "@/integrations/supabase/types";
 import { createVenueDraftWithAlmail } from "@/lib/almail-ai.functions";
@@ -15,6 +16,7 @@ import { readAiImages, type AiImageInput } from "@/lib/image-files";
 type Channel = Database["public"]["Tables"]["broadcast_channels"]["Row"];
 
 export function VenuesPanel() {
+  const { isOwner } = useAdminAbility();
   const qc = useQueryClient();
   const [form, setForm] = useState<Partial<Venue>>({});
   const [search, setSearch] = useState("");
@@ -35,7 +37,7 @@ export function VenuesPanel() {
     finally { setAiBusy(false); }
   };
   return <LibraryPanel icon={<Landmark className="h-5 w-5" />} title="Venue library" subtitle="Save stadiums once and reuse them in every match.">
-    <div className="mb-5 rounded-lg border border-primary/30 bg-primary/5 p-4">
+    {isOwner && <div className="mb-5 min-w-0 rounded-lg border border-primary/30 bg-primary/5 p-4">
       <div className="mb-2 flex items-center gap-2 text-sm font-bold"><Sparkles className="h-4 w-4 text-primary" /> Add a venue with Almail AI</div>
       <textarea className={inputCls} rows={4} placeholder="Paste the stadium name, city, country, capacity and any description…" value={aiText} onChange={(e) => setAiText(e.target.value)} />
       <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -46,9 +48,9 @@ export function VenuesPanel() {
         {aiImages.length > 0 && <span className="text-xs text-muted-foreground">{aiImages.length} photo(s) attached <button type="button" className="ml-1 font-semibold text-destructive" onClick={() => setAiImages([])}>clear</button></span>}
         <button className={btnPrimary} disabled={aiBusy || (!aiText.trim() && aiImages.length === 0)} onClick={generate}><Sparkles className="h-3.5 w-3.5" />{aiBusy ? "Reading venue…" : "Create editable venue draft"}</button>
       </div>
-    </div>
+    </div>}
     <SearchBar value={search} onChange={setSearch} placeholder="Search stadiums" />
-    <div className="grid gap-2 sm:grid-cols-2">{filterByText(q.data, search, (v) => [v.name, v.city, v.country]).map((v) => <Item key={v.id} title={v.name} subtitle={[v.city, v.country, v.capacity ? `${v.capacity.toLocaleString()} seats` : null].filter(Boolean).join(" · ")} onEdit={() => setForm(v)} onDelete={async () => { await supabase.from("venues").delete().eq("id", v.id); qc.invalidateQueries({ queryKey: ["admin", "venues"] }); }} />)}</div>
+    <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2">{filterByText(q.data, search, (v) => [v.name, v.city, v.country]).map((v) => <Item key={v.id} title={v.name} subtitle={[v.city, v.country, v.capacity ? `${v.capacity.toLocaleString()} seats` : null].filter(Boolean).join(" · ")} onEdit={() => setForm(v)} onDelete={async () => { await supabase.from("venues").delete().eq("id", v.id); qc.invalidateQueries({ queryKey: ["admin", "venues"] }); }} />)}</div>
     {(() => {
       const venueForm = (
         <div className="grid gap-3 sm:grid-cols-2">
@@ -93,8 +95,8 @@ export function ChannelsPanel() {
   const save = async () => { if (!form.name?.trim()) return; if (form.id) await supabase.from("broadcast_channels").update(form).eq("id", form.id); else await supabase.from("broadcast_channels").insert(form as never); setForm({}); qc.invalidateQueries({ queryKey: ["admin", "channels"] }); };
   return <LibraryPanel icon={<Radio className="h-5 w-5" />} title="Broadcast channels" subtitle="Create channel records and attach them to matches.">
     <SearchBar value={search} onChange={setSearch} placeholder="Search channels" />
-    <div className="grid gap-2 sm:grid-cols-2">{filterByText(q.data, search, (c) => [c.name, c.country_code]).map((c) => <Item key={c.id} title={c.name} subtitle={c.country_code ?? "Global"} image={c.logo_url} onEdit={() => setForm(c)} onDelete={async () => { await supabase.from("broadcast_channels").delete().eq("id", c.id); qc.invalidateQueries({ queryKey: ["admin", "channels"] }); }} />)}</div>
-    <div className="mt-4 grid gap-3 border-t border-border pt-4 sm:grid-cols-2"><Field label="Channel name"><input className={inputCls} value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field><Field label="Country"><CountrySelect value={form.country_code} onChange={(_, country) => setForm({ ...form, country_code: country?.code ?? null })} /></Field><Field label="Logo"><ImageInput value={form.logo_url ?? null} onChange={(logo_url) => setForm({ ...form, logo_url })} onFile={async (file) => { const logo_url = await uploadMedia("competition-logos", file); if (logo_url) setForm({ ...form, logo_url }); }} /></Field><div className="self-end"><button className={btnPrimary} onClick={save}><Plus className="h-3.5 w-3.5" /> {form.id ? "Save channel" : "Add channel"}</button></div></div>
+    <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2">{filterByText(q.data, search, (c) => [c.name, c.country_code]).map((c) => <Item key={c.id} title={c.name} subtitle={c.country_code ?? "Global"} image={c.logo_url} onEdit={() => setForm(c)} onDelete={async () => { await supabase.from("broadcast_channels").delete().eq("id", c.id); qc.invalidateQueries({ queryKey: ["admin", "channels"] }); }} />)}</div>
+    {form.id ? <Modal open onClose={() => setForm({})} title={form.name || "Edit channel"} onSave={save}>    <div className="mt-4 grid gap-3 border-t border-border pt-4 sm:grid-cols-2"><Field label="Channel name"><input className={inputCls} value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field><Field label="Country"><CountrySelect value={form.country_code} onChange={(_, country) => setForm({ ...form, country_code: country?.code ?? null })} /></Field><Field label="Logo"><ImageInput value={form.logo_url ?? null} onChange={(logo_url) => setForm({ ...form, logo_url })} onFile={async (file) => { const logo_url = await uploadMedia("competition-logos", file); if (logo_url) setForm({ ...form, logo_url }); }} /></Field><div className="self-end"><button className={btnPrimary} onClick={save}><Plus className="h-3.5 w-3.5" /> {form.id ? "Save channel" : "Add channel"}</button></div></div></Modal> : (    <div className="mt-4 grid gap-3 border-t border-border pt-4 sm:grid-cols-2"><Field label="Channel name"><input className={inputCls} value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field><Field label="Country"><CountrySelect value={form.country_code} onChange={(_, country) => setForm({ ...form, country_code: country?.code ?? null })} /></Field><Field label="Logo"><ImageInput value={form.logo_url ?? null} onChange={(logo_url) => setForm({ ...form, logo_url })} onFile={async (file) => { const logo_url = await uploadMedia("competition-logos", file); if (logo_url) setForm({ ...form, logo_url }); }} /></Field><div className="self-end"><button className={btnPrimary} onClick={save}><Plus className="h-3.5 w-3.5" /> {form.id ? "Save channel" : "Add channel"}</button></div></div>)}
   </LibraryPanel>;
 }
 
@@ -115,8 +117,8 @@ export function AlmailAiPanel({ onNews, onCompetitions, onVenues }: { onNews: ()
   return <LibraryPanel icon={<Bot className="h-5 w-5" />} title="Almail AI studio" subtitle="AI tools create editable drafts—nothing publishes without your review."><div className="grid gap-3 md:grid-cols-2"><button onClick={onCompetitions} className="flex items-start gap-3 rounded-lg border border-border bg-background p-4 text-left hover:border-primary"><Sparkles className="mt-0.5 h-5 w-5 text-primary" /><span><strong className="block">Players and fixtures</strong><span className="text-xs text-muted-foreground">Open a competition to read multiple player images or import a fixture list.</span></span></button><button onClick={onNews} className="flex items-start gap-3 rounded-lg border border-border bg-background p-4 text-left hover:border-primary"><Sparkles className="mt-0.5 h-5 w-5 text-primary" /><span><strong className="block">Bilingual news</strong><span className="text-xs text-muted-foreground">Generate complete English and Arabic editable articles from notes and photos.</span></span></button><button onClick={onVenues} className="flex items-start gap-3 rounded-lg border border-border bg-background p-4 text-left hover:border-primary"><Landmark className="mt-0.5 h-5 w-5 text-primary" /><span><strong className="block">Venue reader</strong><span className="text-xs text-muted-foreground">Paste stadium information and create an editable venue record.</span></span></button></div></LibraryPanel>;
 }
 
-function LibraryPanel({ icon, title, subtitle, children }: { icon: React.ReactNode; title: string; subtitle: string; children: React.ReactNode }) { return <div><div className="mb-5 flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">{icon}</div><div><h2 className="text-lg font-bold">{title}</h2><p className="text-xs text-muted-foreground">{subtitle}</p></div></div>{children}</div>; }
-function Item({ title, subtitle, image, onEdit, onDelete }: { title: string; subtitle?: string; image?: string | null; onEdit?: () => void; onDelete: () => void }) { return <div className="flex items-center gap-3 rounded-lg border border-border bg-card p-3">{image && <img src={image} alt="" className="h-9 w-9 object-contain" />}<button className="min-w-0 flex-1 text-left" onClick={onEdit}><div className="truncate text-sm font-semibold">{title}</div>{subtitle && <div className="truncate text-xs text-muted-foreground">{subtitle}</div>}</button><button className={btnDanger} onClick={onDelete}><Trash2 className="h-3.5 w-3.5" /></button></div>; }
+function LibraryPanel({ icon, title, subtitle, children }: { icon: React.ReactNode; title: string; subtitle: string; children: React.ReactNode }) { return <div className="min-w-0 max-w-full"><div className="mb-5 flex min-w-0 items-center gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">{icon}</div><div className="min-w-0 break-words"><h2 className="text-lg font-bold">{title}</h2><p className="text-xs text-muted-foreground">{subtitle}</p></div></div>{children}</div>; }
+function Item({ title, subtitle, image, onEdit, onDelete }: { title: string; subtitle?: string; image?: string | null; onEdit?: () => void; onDelete: () => void }) { return <div className="flex min-w-0 items-center gap-3 rounded-lg border border-border bg-card p-3">{image && <img src={image} alt="" className="h-9 w-9 shrink-0 object-contain" />}<button className="min-w-0 flex-1 text-left" onClick={onEdit}><div className="truncate text-sm font-semibold">{title}</div>{subtitle && <div className="truncate text-xs text-muted-foreground">{subtitle}</div>}</button><button className={btnDanger} onClick={onDelete}><Trash2 className="h-3.5 w-3.5" /></button></div>; }
 /** Shared admin search input — every long library list gets one. */
 export function SearchBar({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) {
   return (

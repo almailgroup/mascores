@@ -57,9 +57,14 @@ export function MergePanel() {
   const suggestions = useQuery({
     queryKey: ["merge-suggestions", kind],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("merge_suggestions", { _kind: kind, _limit: 20 });
+      const [{ data, error }, dismissed] = await Promise.all([
+        supabase.rpc("merge_suggestions", { _kind: kind, _limit: 80 }),
+        supabase.from("merge_dismissals").select("a_id,b_id").eq("kind", kind),
+      ]);
       if (error) throw error;
-      return data ?? [];
+      // Pairs marked "Not the same" never come back.
+      const skip = new Set((dismissed.data ?? []).map((d) => `${d.a_id}|${d.b_id}`));
+      return (data ?? []).filter((s) => !skip.has(pairKey(s.a_id, s.b_id))).slice(0, 20);
     },
   });
   const switchKind = (k: Kind) => { setKind(k); setKeep(null); setDrop(null); setMsg(null); };
@@ -108,6 +113,8 @@ export function MergePanel() {
     </div>
   );
 }
+
+const pairKey = (a: string, b: string) => (a < b ? `${a}|${b}` : `${b}|${a}`);
 
 type Sug = { a_id: string; a_name: string; b_id: string; b_name: string; score: number };
 function Profile({ kind, id, name }: { kind: Kind; id: string; name: string }) {
@@ -187,7 +194,13 @@ function SuggestionCard({ kind, s, onApprove }: { kind: Kind; s: Sug; onApprove:
       ) : (
         <div className="mt-2 flex flex-wrap gap-2">
           <button className={btnPrimary} onClick={() => setChoosing(true)}><GitMerge className="h-3.5 w-3.5" /> {label}</button>
-          <button className={btnGhost} onClick={() => setHidden(true)}>Not the same</button>
+          <button className={btnGhost} disabled={busy} onClick={async () => {
+            setHidden(true);
+            const [a_id, b_id] = s.a_id < s.b_id ? [s.a_id, s.b_id] : [s.b_id, s.a_id];
+            const { error } = await supabase.from("merge_dismissals").upsert({ kind, a_id, b_id }, { onConflict: "kind,a_id,b_id", ignoreDuplicates: true });
+            if (error) { setHidden(false); setErr("Could not save. Try again."); return; }
+            void qc.invalidateQueries({ queryKey: ["merge-suggestions", kind] });
+          }}>Not the same</button>
         </div>
       )}
       {err && <p className="mt-1 text-xs text-destructive">{err}</p>}

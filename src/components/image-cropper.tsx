@@ -1,4 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from 'react-dom';
+import { X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 /**
  * Lightweight crop dialog: drag to pan, slider to zoom, exports a PNG File.
@@ -29,6 +32,8 @@ export function ImageCropper({
   const [error, setError] = useState<string | null>(null);
   const drag = useRef<{ x: number; y: number } | null>(null);
   const boxRef = useRef<HTMLDivElement | null>(null);
+  const [mounted,setMounted]=useState(false);
+  useEffect(()=>{setMounted(true);},[]);
 
   useEffect(() => {
     if (file) {
@@ -86,7 +91,7 @@ export function ImageCropper({
 
   const commit = async () => {
     const box = boxRef.current;
-    if (!img || !box) return;
+    if (!img || !box || busy) return;
     setBusy(true);
     try {
       const boxW = box.clientWidth;
@@ -114,18 +119,19 @@ export function ImageCropper({
         : Object.assign(blob, { name, lastModified: Date.now() }) as File;
       await onDone(cropped);
     } catch {
-      setError("The crop could not be saved. Please try another image.");
+      setError("The photo could not be saved. Please try again.");
     } finally {
       setBusy(false);
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center overscroll-contain bg-black/70 p-3 backdrop-blur-sm" onClick={onCancel}>
-      <div className="w-full max-w-md rounded-3xl border border-border bg-card p-4" onClick={(e) => e.stopPropagation()}>
+  if(!mounted)return null;
+  return createPortal(
+    <div data-no-gesture className="fixed inset-0 z-[200] flex items-center justify-center overscroll-contain bg-foreground/70 p-3 backdrop-blur-sm" onClick={()=>{if(!busy)onCancel();}}>
+      <div role="dialog" aria-modal="true" aria-label="Crop image" className="max-h-[94dvh] w-full max-w-md overflow-y-auto rounded-lg border border-border bg-card p-4" onClick={(e) => e.stopPropagation()}>
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-bold">Crop image</h3>
-          <button onClick={onCancel} className="rounded-full px-2 text-sm text-muted-foreground hover:bg-accent">✕</button>
+          <Button variant="ghost" size="icon" disabled={busy} aria-label="Close crop" onClick={onCancel}><X/></Button>
         </div>
         {failed ? (
           <p className="text-xs text-muted-foreground">This picture could not be opened. Choose the file again to crop it.</p>
@@ -137,8 +143,9 @@ export function ImageCropper({
               style={{ aspectRatio: String(aspect) }}
                onPointerDown={(e) => { e.preventDefault(); drag.current = { x: e.clientX - offset.x, y: e.clientY - offset.y }; e.currentTarget.setPointerCapture(e.pointerId); }}
               onPointerMove={(e) => { if (drag.current) setOffset({ x: e.clientX - drag.current.x, y: e.clientY - drag.current.y }); }}
-               onPointerUp={(e) => { drag.current = null; e.currentTarget.releasePointerCapture(e.pointerId); }}
+               onPointerUp={(e) => { drag.current = null; if(e.currentTarget.hasPointerCapture(e.pointerId))e.currentTarget.releasePointerCapture(e.pointerId); }}
                onPointerCancel={() => { drag.current = null; }}
+               onLostPointerCapture={() => { drag.current=null; }}
             >
               {(display ?? url) && (
                 <img
@@ -162,10 +169,10 @@ export function ImageCropper({
         )}
         {error && <p className="mt-3 text-xs text-destructive">{error}</p>}
         <div className="mt-4 flex justify-end gap-2">
-          <button className="inline-flex h-9 items-center rounded-full border border-border px-3 text-xs font-medium" onClick={onCancel}>{cancelLabel}</button>
-          {!failed && <button disabled={busy || !img} className="inline-flex h-9 items-center rounded-full bg-primary px-4 text-xs font-semibold text-primary-foreground disabled:opacity-60" onClick={commit}>{busy ? "Saving…" : img ? "Use crop" : "Loading…"}</button>}
+          <Button variant="outline" disabled={busy} onClick={onCancel}>{cancelLabel}</Button>
+          {!failed && <Button disabled={busy || !img} onClick={commit}>{busy ? "Saving…" : img ? "Use crop" : "Loading…"}</Button>}
         </div>
       </div>
-    </div>
+    </div>, document.body
   );
 }

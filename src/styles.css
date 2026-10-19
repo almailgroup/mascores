@@ -77,6 +77,11 @@
  */
 
 @theme inline {
+  --color-share-whatsapp: var(--share-whatsapp);
+  --color-share-yellow: var(--share-yellow);
+  --color-share-link: var(--share-link);
+  --color-share-ink: var(--share-ink);
+  --color-share-white: var(--share-white);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -127,6 +132,11 @@
 }
 
 :root {
+  --share-whatsapp: oklch(0.73 0.21 149);
+  --share-yellow: oklch(0.94 0.2 103);
+  --share-link: oklch(0.59 0.23 260);
+  --share-ink: oklch(0.1 0 0);
+  --share-white: oklch(1 0 0);
   --glass-surface: color-mix(in oklab, var(--card) 72%, transparent);
   --glass-edge: color-mix(in oklab, var(--foreground) 12%, transparent);
   --glass-highlight: oklch(1 0 0 / 65%);
@@ -406,3 +416,8 @@ a:has([aria-label*="match notifications"]):active { filter: none; transform: non
 .round-team-pitch { position: relative; background: var(--card); }
 .round-team-pitch::before { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(180deg, transparent 0 96px, color-mix(in oklab, var(--border) 50%, transparent) 96px 97px); pointer-events: none; }
 .round-team-pitch::after { content: ""; position: absolute; width: 80px; height: 80px; border: 1px solid var(--border); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; }
+
+@keyframes voicebar {
+  0%, 100% { transform: scaleY(0.35); }
+  50% { transform: scaleY(1); }
+}

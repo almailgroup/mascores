@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Mic, Loader2, Lock, Globe2, Users, Plus, Radio, UserPlus, UserCheck, ImagePlus, Link2 } from "lucide-react";
 import { VoiceReplays } from "@/components/voice-replays";
+import { VoicePeople, VoiceUserBadge } from "@/components/voice-people";
 import { AppShell, BackButton, EmptyState, SectionHeader } from "@/components/app-shell";
 import { ImageCropper } from "@/components/image-cropper";
 import { uploadMedia } from "@/components/admin/upload";
@@ -10,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import { useCompact, useTx } from "@/lib/auto-translate";
-import { generatedCover, liveFor, roomCover, type VoiceHost, type VoiceRoom } from "@/lib/voice";
+import { generatedCover, voiceProfiles, liveFor, roomCover, type VoiceHost, type VoiceRoom } from "@/lib/voice";
 import { suspensionMessage, useMySuspension } from "@/lib/suspension";
 
 export const Route = createFileRoute("/voice/")({
@@ -61,8 +62,9 @@ function VoicePage() {
         supabase.rpc("voice_host_profiles", { _ids: list.map((r) => r.host_id) }),
         supabase.from("voice_room_participants").select("room_id").in("room_id", list.map((r) => r.id)).is("left_at", null),
       ]);
+      const names = new Map((await voiceProfiles(list.map((r) => r.host_id))).map((p) => [p.id, p]));
       const hosts: Record<string, VoiceHost> = {};
-      ((hostRows ?? []) as VoiceHost[]).forEach((host) => { hosts[host.id] = { ...host, followers: Number(host.followers ?? 0) }; });
+      ((hostRows ?? []) as VoiceHost[]).forEach((host) => { hosts[host.id] = { ...host, ...names.get(host.id), followers: Number(host.followers ?? 0) }; });
       const tally: Record<string, number> = {};
       ((counts ?? []) as { room_id: string }[]).forEach((row) => { tally[row.room_id] = (tally[row.room_id] ?? 0) + 1; });
       const withCounts: RoomWithCount[] = list.map((room) => ({ ...room, listeners: tally[room.id] ?? 0 }));
@@ -90,7 +92,7 @@ function VoicePage() {
 
   const openCode = async (value: string) => {
     const trimmed = value.trim();
-    if (trimmed.length < 8) { setCodeError(tx("That invite code looks too short.")); return; }
+    if (!trimmed) { setCodeError(tx("That invite code looks too short.")); return; }
     const { data } = await supabase.rpc("voice_room_by_code", { _code: trimmed });
     const room = ((data ?? []) as { id: string; status: string }[])[0];
     if (!room) { setCodeError(tx("No room matches that invite code.")); return; }
@@ -108,21 +110,22 @@ function VoicePage() {
   return (
     <AppShell>
       <BackButton />
+      <VoicePeople />
       <div className="overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/15 via-card to-card p-6 sm:p-8">
         <div className="inline-flex items-center gap-2 text-[0.7rem] font-bold uppercase tracking-widest text-primary">
           <Radio className="h-4 w-4" /> {tx("Voice rooms")}
         </div>
         <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">{tx("Live football talk")}</h1>
         <p className="mt-1 max-w-xl text-sm text-muted-foreground">{tx("Join a room to listen, raise your hand to speak, or start your own room. Follow hosts to know when they go live.")}</p>
-        <div className="mt-5 flex flex-wrap items-center gap-3">
+        <div className="mt-5 flex flex-col items-start gap-3">
           <button onClick={() => (user ? (suspension.data ? setCodeError(tx(suspensionMessage(suspension.data))) : setCreating(true)) : navigate({ to: "/auth" }))} className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-4 text-sm font-bold text-primary-foreground shadow">
             <Plus className="h-4 w-4" /> {tx("Start a room")}
           </button>
           <div className="flex items-center gap-2">
-            <input value={joinCode} onChange={(e) => setJoinCode(e.target.value)} placeholder={tx("Invite code")}
-              className="h-10 w-40 rounded-full border border-border bg-background px-4 text-sm outline-none focus:ring-2 focus:ring-primary/40" />
+            <input aria-label={lang === "ar" ? "رمز الدعوة" : "Invite code"} onKeyDown={(e) => { if (e.key === "Enter") void openCode(joinCode); }} value={joinCode} onChange={(e) => setJoinCode(e.target.value)} placeholder={tx("Invite code")}
+              className="h-10 w-40 rounded-full border border-border bg-background px-4 text-base outline-none focus:ring-2 focus:ring-primary/40" />
             <button onClick={() => openCode(joinCode)} className="inline-flex h-10 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-sm font-semibold">
-              <Link2 className="h-3.5 w-3.5" /> {tx("Open")}
+              <Link2 className="h-3.5 w-3.5" /> {lang === "ar" ? "دخول" : "Enter"}
             </button>
           </div>
         </div>
@@ -186,7 +189,7 @@ function RoomCard({ room, host, lang, following, onFollow, isSelf }: {
           <div className="line-clamp-2 text-sm font-bold">{room.title}</div>
           <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
             {host?.avatar_url ? <img src={host.avatar_url} alt="" className="h-6 w-6 rounded-full object-cover" /> : <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-muted text-[0.6rem] font-bold">{(host?.display_name ?? "?").slice(0, 1).toUpperCase()}</span>}
-            <span className="truncate">{host?.display_name ?? tx("Host")}</span>
+            <span className="truncate">{host?.display_name ?? tx("Host")}</span><VoiceUserBadge userId={room.host_id} />
             <span className="ms-auto inline-flex items-center gap-1"><Users className="h-3 w-3" /> {room.listeners}</span>
           </div>
         </div>
@@ -268,7 +271,7 @@ function CreateRoom({ onClose, onCreated, matchId = null }: { onClose: () => voi
           <img src={preview} alt="" className="h-20 w-20 shrink-0 rounded-2xl object-cover" />
           <div className="flex-1 space-y-2">
             <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={tx("Room title")}
-              className="h-10 w-full rounded-xl border border-border bg-card px-3 text-sm outline-none focus:ring-2 focus:ring-primary/40" />
+              className="h-10 w-full rounded-xl border border-border bg-card px-3 text-base outline-none focus:ring-2 focus:ring-primary/40" />
             <label className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-full border border-border bg-card px-3 text-xs font-semibold">
               <ImagePlus className="h-3.5 w-3.5" /> {photo ? tx("Change photo") : tx("Add photo (optional)")}
               <input type="file" accept="image/*" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) setCropFile(file); e.currentTarget.value = ""; }} />
@@ -277,12 +280,12 @@ function CreateRoom({ onClose, onCreated, matchId = null }: { onClose: () => voi
           </div>
         </div>
         <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} placeholder={tx("What is this room about? (optional)")}
-          className="mt-3 w-full rounded-xl border border-border bg-card p-3 text-sm outline-none focus:ring-2 focus:ring-primary/40" />
+          className="mt-3 w-full rounded-xl border border-border bg-card p-3 text-base outline-none focus:ring-2 focus:ring-primary/40" />
         {!matchId && (
           <label className="mt-3 block">
             <span className="text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Link to a match (optional)")}</span>
             <select value={linkedMatch} onChange={(e) => setLinkedMatch(e.target.value)}
-              className="mt-1 h-10 w-full rounded-xl border border-border bg-card px-3 text-sm outline-none focus:ring-2 focus:ring-primary/40">
+              className="mt-1 h-10 w-full rounded-xl border border-border bg-card px-3 text-base outline-none focus:ring-2 focus:ring-primary/40">
               <option value="">{tx("No match")}</option>
               {(matches.data ?? []).map((m) => (
                 <option key={m.id} value={m.id}>
@@ -293,7 +296,7 @@ function CreateRoom({ onClose, onCreated, matchId = null }: { onClose: () => voi
           </label>
         )}
         <div className="mt-3 grid grid-cols-2 gap-2">
-          {([["public", Globe2, tx("Public — anyone can join")], ["private", Lock, tx("Private — invite link only")]] as const).map(([value, Icon, label]) => (
+          {([["public", Globe2, tx("Public — anyone can join")], ["private", Lock, tx("Private — invite code only")]] as const).map(([value, Icon, label]) => (
             <button key={value} onClick={() => setVisibility(value)}
               className={`flex items-start gap-2 rounded-2xl border p-3 text-start text-xs font-semibold ${visibility === value ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground"}`}>
               <Icon className="mt-0.5 h-4 w-4 shrink-0" /> {label}

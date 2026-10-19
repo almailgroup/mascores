@@ -222,6 +222,7 @@ function MainTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
   const [form, setForm] = useState<Partial<Match>>(match);
   useEffect(() => setForm(match), [match.id]);
 
+  const [notifyHighlights, setNotifyHighlights] = useState(false);
   const save = async () => {
     await supabase.from("matches").update({
       home_team_id: form.home_team_id ?? null,
@@ -238,9 +239,12 @@ function MainTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
       timer_running: ["live", "ht"].includes(form.status ?? "") ? form.timer_running ?? false : false,
       timer_started_at: ["live", "ht"].includes(form.status ?? "") ? form.timer_started_at ?? null : null,
     }).eq("id", match.id);
+    if (notifyHighlights && form.highlight_url) {
+      await supabase.rpc("send_highlights_push", { _match_id: match.id });
+      setNotifyHighlights(false);
+    }
     onSaved();
   };
-
   const local = form.kickoff_at ? new Date(new Date(form.kickoff_at).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : "";
 
   return (
@@ -269,7 +273,8 @@ function MainTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
           <Field label="Venue"><VenueSelect venue={form.venue} city={form.city} onChange={(v, c) => setForm({ ...form, venue: v, city: c })} /></Field>
         </div>
         <Field label="Referee"><input className={inputCls} value={form.referee ?? ""} onChange={(e) => setForm({ ...form, referee: e.target.value })} /></Field>
-        <Field label="Highlights link"><input className={inputCls} placeholder="YouTube link" value={form.highlight_url ?? ""} onChange={(e) => setForm({ ...form, highlight_url: e.target.value })} /></Field>
+        <Field label="Highlights link"><input className={inputCls} placeholder="YouTube link" value={form.highlight_url ?? ""} onChange={(e) => setForm({ ...form, highlight_url: e.target.value })} />
+          <label className="mt-2 flex items-center gap-2 text-xs"><input type="checkbox" checked={notifyHighlights} onChange={(e) => setNotifyHighlights(e.target.checked)} /> Send "Highlights available" notification on save</label></Field>
         <div className="sm:col-span-2"><Field label="Notes"><textarea rows={2} className={inputCls} value={form.notes ?? ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></Field></div>
       </div>
       <div className="mt-4 flex justify-end"><button className={btnPrimary} onClick={save}>Save details</button></div>
@@ -478,7 +483,7 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
   // still swap in a previous coach afterwards.
   useEffect(() => {
     const all = coachesQ.data ?? [];
-    if (all.length === 0) return;
+    if (all.length === 0 || match.status !== "scheduled") return;
     const patch: Record<string, string> = {};
     if (!match.home_coach_id && match.home_team_id) {
       const c = all.find((x) => x.team_id === match.home_team_id);
@@ -490,7 +495,7 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
     }
     if (Object.keys(patch).length === 0) return;
     supabase.from("matches").update(patch as never).eq("id", match.id).then(onSaved);
-  }, [coachesQ.data, match.id, match.home_coach_id, match.away_coach_id, match.home_team_id, match.away_team_id]);
+  }, [coachesQ.data, match.id, match.home_coach_id, match.away_coach_id, match.home_team_id, match.away_team_id, match.status]);
 
   const setFormation = async (side: "home" | "away", v: string) => {
     await supabase.from("matches").update(side === "home" ? { home_formation: v } : { away_formation: v }).eq("id", match.id);
@@ -813,7 +818,19 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
   const playersQ = useQuery({
     enabled: teamIds.length > 0,
     queryKey: ["admin", "players-of-match", match.id, teamIds.join(",")],
-    queryFn: () => loadMatchPlayers(teamIds, teams),
+    queryFn: async () => {
+      const base = await loadMatchPlayers(teamIds, teams);
+      // Lineup players (temporary, borrowed, former) count for the side they were listed under in this match.
+      const { data: rows } = await supabase.from("match_lineups").select("team_id, player:players(*)").eq("match_id", match.id);
+      // Keyed per player AND side, so someone listed for both teams can be picked for either.
+      const byKey = new Map(base.map((p) => [`${p.id}:${p.team_id}`, p]));
+      for (const r of (rows ?? []) as unknown as { team_id: string; player: Player | null }[]) {
+        if (!r.player) continue;
+        const k = `${r.player.id}:${r.team_id}`;
+        if (!byKey.has(k)) byKey.set(k, { ...r.player, team_id: r.team_id });
+      }
+      return [...byKey.values()];
+    },
   });
   const players = playersQ.data ?? [];
   const teamName = (id: string | null | undefined) => teams.find((t) => t.id === id)?.name ?? "";
@@ -902,12 +919,7 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
             <input type="number" placeholder="Set minute" className="h-9 w-28 rounded-full border border-border bg-background px-3 text-xs"
               onKeyDown={(e) => { if (e.key === "Enter") setMinute(Number((e.target as HTMLInputElement).value || 0)); }} />
           </div>
-          <div className="mt-3 flex items-center justify-center gap-2">
-            <select className="rounded-lg border border-border bg-background px-2 py-1 text-xs" value={match.status} onChange={(e) => { const status = e.target.value; patchMatch({ status, ...(["ft", "aet", "pen", "awarded", "cancelled", "postponed", "interrupted"].includes(status) ? { timer_running: false, timer_started_at: null } : {}) }); }}>
-              {Object.entries(STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-            </select>
-            <span className="text-sm font-bold tabular-nums">{notStarted && match.home_score == null && match.away_score == null ? "– : –" : `${match.home_score ?? 0} – ${match.away_score ?? 0}`}</span>
-          </div>
+          <PeriodBoxes match={match} seconds={seconds} patchMatch={patchMatch} />
         </div>
 
         {/* Goals logged without the clock running: offer to close the match as full-time. */}
@@ -1178,6 +1190,20 @@ function EventForm({
         {isSub && (
           <PlayerPickField label="Player going off" players={pool} value={ev.sub_out_player_id} onChange={(id) => setEv({ ...ev, sub_out_player_id: id })} />
         )}
+        {ev.type === "var" && (
+          <div>
+            <div className="mb-1.5 text-xs font-semibold text-muted-foreground">VAR check for</div>
+            <div className="grid grid-cols-3 gap-2">
+              {["Goal VAR", "Penalty VAR", "Red card VAR"].map((k) => {
+                const on = ev.description === k;
+                return (
+                  <button key={k} type="button" onClick={() => setEv({ ...ev, description: k })}
+                    className={`flex min-h-16 items-center justify-center rounded-xl p-3 text-center text-xs font-semibold ${on ? "bg-primary text-primary-foreground" : "bg-muted"}`}>{k}</button>
+                );
+              })}
+            </div>
+          </div>
+        )}
         <Field label="Description (optional)"><input className={inputCls} placeholder="Description" value={ev.description ?? ""} onChange={(e) => setEv({ ...ev, description: e.target.value })} /></Field>
         <div className="flex justify-end gap-2">
           <button className={btnGhost} onClick={onCancel}>Cancel</button>
@@ -1205,4 +1231,101 @@ async function loadMatchPlayers(teamIds: string[], teams: { id: string; is_natio
     return player ? [{ ...applyCallUp(player, call), team_id: call.team_id }] : [];
   });
   return [...clubPlayers.filter((p) => !nationalIds.includes(p.team_id ?? "")), ...nationals] as Player[];
+}
+
+/** Sofascore-style period boxes: main periods, extra time, penalties, then the other statuses. Every change asks for confirmation. */
+function PeriodBoxes({ match, seconds, patchMatch }: { match: Match; seconds: number; patchMatch: (p: Partial<Match>) => Promise<void> | void }) {
+  const [pending, setPending] = useState<{ label: string; run: () => Promise<void> | void } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const now = () => new Date().toISOString();
+  const stop = { timer_running: false, timer_started_at: null } as Partial<Match>;
+  const live = match.status === "live";
+  const shootout = live && match.home_pen != null;
+  const base = match.timer_elapsed_seconds ?? 0;
+  const phase = shootout ? "pens"
+    : live ? (seconds >= 6300 ? "et2" : seconds >= 5400 ? "et1" : seconds >= 2700 ? "2h" : "1h")
+    : match.status === "ht" ? (base >= 5400 ? "etht" : "ht") : match.status;
+  const clock = formatClock(seconds);
+  const startAt = (from: number, extra: Partial<Match> = {}) => patchMatch({ status: "live", timer_running: true, timer_started_at: now(), timer_elapsed_seconds: from, home_pen: null, away_pen: null, ...extra });
+  const keep = (lo: number, hi: number) => (seconds >= lo && seconds < hi ? seconds : lo);
+  type B = { key: string; label: string; sub?: string; active: boolean; run: () => Promise<void> | void };
+  const main: B[] = [
+    { key: "1h", label: "1st half", sub: phase === "1h" ? clock : "-", active: phase === "1h", run: () => startAt(phase === "1h" || phase === "ht" ? keep(0, 2700) : 0) },
+    { key: "ht", label: "HT", active: phase === "ht", run: () => patchMatch({ status: "ht", ...stop, timer_elapsed_seconds: 2700, live_minute: 45 }) },
+    { key: "2h", label: "2nd half", sub: phase === "2h" ? clock : "-", active: phase === "2h", run: () => startAt(keep(2700, 5400)) },
+    { key: "ft", label: "Confirm FT", active: match.status === "ft", run: () => patchMatch({ status: "ft", ...stop, timer_elapsed_seconds: 5400, home_pen: null, away_pen: null }) },
+  ];
+  const et: B[] = [
+    { key: "etwait", label: "Waiting for extra time", active: match.status === "etwait", run: () => patchMatch({ status: "etwait", ...stop, timer_elapsed_seconds: 5400, live_minute: 90, home_pen: null, away_pen: null }) },
+    { key: "et1", label: "Extra time 1st half", sub: phase === "et1" ? clock : "-", active: phase === "et1", run: () => startAt(keep(5400, 6300)) },
+    { key: "etht", label: "Extra time break", active: phase === "etht", run: () => patchMatch({ status: "ht", ...stop, timer_elapsed_seconds: 6300, live_minute: 105 }) },
+    { key: "et2", label: "Extra time 2nd half", sub: phase === "et2" ? clock : "-", active: phase === "et2", run: () => startAt(keep(6300, 7200)) },
+    { key: "aet", label: "Confirm FT after ET", active: match.status === "aet", run: () => patchMatch({ status: "aet", ...stop, timer_elapsed_seconds: 7200, home_pen: null, away_pen: null }) },
+  ];
+  const pens: B[] = [
+    { key: "pens", label: "Penalties", sub: shootout ? `${match.home_pen}-${match.away_pen}` : "-", active: shootout,
+      run: () => patchMatch({ status: "live", ...stop, timer_elapsed_seconds: Math.max(base, 5400), home_pen: match.home_pen ?? 0, away_pen: match.away_pen ?? 0 }) },
+    { key: "pen", label: "Confirm FT after penalties", active: match.status === "pen", run: () => patchMatch({ status: "pen", ...stop, home_pen: match.home_pen ?? 0, away_pen: match.away_pen ?? 0 }) },
+  ];
+  const resetToScheduled = async () => {
+    await supabase.from("match_events").delete().eq("match_id", match.id).in("type", ["goal", "penalty_goal", "own_goal"]);
+    await patchMatch({ status: "scheduled", ...stop, timer_elapsed_seconds: 0, live_minute: null, home_score: null, away_score: null, home_pen: null, away_pen: null });
+  };
+  const extras = ["scheduled", "postponed", "cancelled", "awarded", "interrupted"];
+  const ask = (b: { label: string; run: () => Promise<void> | void }) => setPending(b);
+  const box = (active: boolean) => `relative flex min-h-[4.5rem] flex-col items-center justify-center rounded-lg p-2 text-center text-xs ${active ? "border-2 border-foreground bg-background" : "bg-muted hover:bg-accent"}`;
+  const row = (items: B[], cols: string) => (
+    <div className={`grid ${cols} gap-2`}>
+      {items.map((b) => (
+        <button key={b.key} type="button" onClick={() => ask(b)} className={box(b.active)}>
+          {b.active && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive" />}
+          <span className="font-semibold leading-tight">{b.label}</span>
+          {b.sub !== undefined && <><span className="my-1 h-px w-6 bg-muted-foreground/50" /><span className="tabular-nums">{b.sub}</span></>}
+        </button>
+      ))}
+    </div>
+  );
+  const penInput = (side: "home_pen" | "away_pen") => (
+    <div className="flex items-center gap-1">
+      <button type="button" className="h-9 w-9 rounded-md bg-muted text-lg" onClick={() => patchMatch({ [side]: Math.max(0, (match[side] ?? 0) - 1) } as Partial<Match>)}>-</button>
+      <span className="w-8 text-center text-lg font-bold tabular-nums">{match[side] ?? 0}</span>
+      <button type="button" className="h-9 w-9 rounded-md bg-muted text-lg" onClick={() => patchMatch({ [side]: (match[side] ?? 0) + 1 } as Partial<Match>)}>+</button>
+    </div>
+  );
+  return (
+    <div className="mt-4 text-left">
+      <label className="mb-3 flex items-center justify-center gap-2 text-xs"><input type="checkbox" checked={!!match.alerts_muted} onChange={(e) => patchMatch({ alerts_muted: e.target.checked })} /> Hide notifications for this match</label>
+      <div className="mb-2 text-center text-sm font-bold">Edit period</div>
+      {row(main, "grid-cols-4")}
+      <div className="mb-1 mt-3 text-[0.7rem] font-semibold uppercase text-muted-foreground">Extra time</div>
+      {row(et, "grid-cols-4")}
+      <div className="mb-1 mt-3 text-[0.7rem] font-semibold uppercase text-muted-foreground">Penalty shootout</div>
+      {row(pens, "grid-cols-2")}
+      {(shootout || match.status === "pen") && (
+        <div className="mt-2 flex items-center justify-between rounded-lg bg-muted/60 p-2 text-xs">
+          <span className="font-semibold">Home</span>{penInput("home_pen")}<span className="text-muted-foreground">pens</span>{penInput("away_pen")}<span className="font-semibold">Away</span>
+        </div>
+      )}
+      <div className="mt-3 grid grid-cols-5 gap-2">
+        {extras.map((k) => (
+          <button key={k} type="button"
+            onClick={() => ask({ label: k === "scheduled" ? "Scheduled (clears the score and goals)" : STATUS_LABELS[k], run: k === "scheduled" ? resetToScheduled : () => patchMatch({ status: k, ...stop }) })}
+            className={`${box(match.status === k)} min-h-[3rem] text-[0.65rem]`}>
+            {match.status === k && <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-destructive" />}
+            <span className="font-semibold leading-tight">{STATUS_LABELS[k]}</span>
+          </button>
+        ))}
+      </div>
+      {pending && (
+        <div className="mt-3 flex items-center justify-between gap-2 rounded-lg border-2 border-foreground bg-background p-3">
+          <span className="text-sm">Change to <b>{pending.label}</b>?</span>
+          <div className="flex gap-2">
+            <button type="button" className="rounded-md bg-muted px-3 py-2 text-sm" onClick={() => setPending(null)}>Cancel</button>
+            <button type="button" disabled={busy} className="rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground"
+              onClick={async () => { setBusy(true); try { await pending.run(); } finally { setBusy(false); setPending(null); } }}>Confirm</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }

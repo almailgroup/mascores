@@ -34,7 +34,7 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
   const [aiError, setAiError] = useState<string | null>(null);
   const [moveTo, setMoveTo] = useState("");
   const createAiDraft = useServerFn(createPlayerDraftWithAlmail);
-  const { needsApproval } = useAdminAbility();
+  const { needsApproval, isOwner } = useAdminAbility();
   const [sentForReview, setSentForReview] = useState(false);
 
   const teams = useQuery({ queryKey: ["admin", "team-names"], queryFn: async () => ((await supabase.from("teams").select("id,name,logo_url,country").order("name")).data ?? []) as Pick<Team, "id" | "name" | "logo_url" | "country">[] });
@@ -53,7 +53,9 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
   const save = async () => {
     if (!form.name?.trim()) return;
     setBusy(true);
-    const payload = { ...form, team_id: form.team_id ?? teamId ?? null };
+    const payload: Partial<Player> = { ...form, team_id: form.team_id ?? teamId ?? null };
+    // A photo still uploading in the background saves itself; never store its local preview.
+    if (payload.photo_url?.startsWith("blob:")) delete payload.photo_url;
     // A limited admin may fix existing players, but a brand new one is looked at first.
     if (!form.id && needsApproval) {
       await requestReview({ entity: "player", action: "create", label: `Add player ${form.name}`, payload: payload as Record<string, unknown> });
@@ -100,7 +102,7 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
         </div>
       </div>
       <div className="mx-auto max-w-6xl space-y-5 px-4 py-5 lg:px-8">
-        <div className="rounded-2xl border border-primary/30 bg-primary/5 p-4">
+        {isOwner && <div className="rounded-2xl border border-primary/30 bg-primary/5 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2 text-sm font-bold"><Sparkles className="h-4 w-4 text-primary" /> Almail AI player assistant</div>
             <button className={btnGhost} onClick={() => { setAiError(null); setAiOpen(!aiOpen); }}>{aiOpen ? <X className="h-3.5 w-3.5" /> : <Sparkles className="h-3.5 w-3.5" />} {aiOpen ? "Close" : "Edit with AI"}</button>
@@ -122,6 +124,7 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
             </div>
           )}
         </div>
+}
 
         <div className="grid gap-3 rounded-2xl border border-border bg-card p-4 sm:grid-cols-2 lg:grid-cols-3">
           <Field label="Name *"><input className={inputCls} value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
@@ -145,7 +148,7 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
             <CountrySelect value={form.nationality} onChange={(name, c) => setForm({ ...form, nationality: name, nationality_code: c?.code ?? null })} />
           </Field>
           <div className="sm:col-span-2 lg:col-span-3"><Field label="Photo">
-            <ImageInput value={form.photo_url ?? null} onChange={(v) => setForm({ ...form, photo_url: v })} onFile={async (f) => { const url = await uploadMedia("player-photos", f); if (url) setForm({ ...form, photo_url: url }); }} />
+            <ImageInput value={form.photo_url ?? null} onChange={(v) => setForm((cur) => ({ ...cur, photo_url: v }))} onFile={async (f) => { const url = await uploadMedia("player-photos", f); if (url) setForm((cur) => ({ ...cur, photo_url: url })); }} />
           </Field></div>
           <div className="sm:col-span-2 lg:col-span-3"><Field label="Media gallery">
             <MediaUrls urls={form.media_urls ?? []} onChange={(v) => setForm({ ...form, media_urls: v })} bucket="player-photos" />

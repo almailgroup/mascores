@@ -24,6 +24,7 @@ import { ChatManagerPanel } from "@/components/admin/chat-manager-panel";
 import { TicketsPanel } from "@/components/admin/tickets-panel";
 import { UsersPanel } from "@/components/admin/users-panel";
 import { VoicePanel } from "@/components/admin/voice-panel";
+import { VoicePeople } from "@/components/voice-people";
 import { ManagePanel } from "@/components/admin/manage-panel";
 import { myAccess, isOwnerEmail } from "@/lib/owner.functions";
 import { UltrasPanel } from "@/components/admin/ultras-panel";
@@ -35,8 +36,10 @@ import { AdminAbilityProvider } from "@/lib/admin-ability";
 import { SeasonMenu } from "@/components/season-menu";
 import { RecycleBinPanel } from "@/components/admin/recycle-bin-panel";
 import { MergePanel } from "@/components/admin/merge-panel";
-import { GitMerge, BellRing } from "lucide-react";
+import { GitMerge, BellRing, BadgeCheck } from "lucide-react";
+import { Modal } from "@/components/admin/ui";
 import { NotificationsPanel } from "@/components/admin/notifications-panel";
+import { VerifyPanel } from "@/components/admin/verify-panel";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — Mansour Almail Scores" }, { name: "robots", content: "noindex" }, { name: "description", content: "Manage football content and access in MA Scores." }, { property: "og:title", content: "Admin — Mansour Almail Scores" }, { property: "og:description", content: "Manage football content and access in MA Scores." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
@@ -52,7 +55,24 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [tab, setTab] = useState<"competitions" | "teams" | "countries" | "players" | "news" | "ai" | "venues" | "channels" | "transfers" | "reports" | "tickets" | "users" | "voice" | "rabta" | "approvals" | "appeals" | "manage" | "requests" | "bin" | "merge" | "notifications">("competitions");
+  const [tab, setTab] = useState<"competitions" | "teams" | "countries" | "players" | "news" | "ai" | "venues" | "channels" | "transfers" | "reports" | "tickets" | "users" | "voice" | "voice users" | "rabta" | "approvals" | "appeals" | "manage" | "requests" | "bin" | "merge" | "notifications" | "verify" | null>(null);
+  useEffect(() => {
+    const sync = () => {
+      const requested = new URLSearchParams(window.location.search).get("tab");
+      const sections = ["competitions", "teams", "countries", "players", "news", "ai", "venues", "channels", "transfers", "reports", "tickets", "users", "voice", "voice users", "rabta", "approvals", "appeals", "manage", "requests", "bin", "merge", "notifications", "verify"] as const;
+      setTab(sections.find((section) => section === requested) ?? null);
+    };
+    sync();
+    window.addEventListener("popstate", sync);
+    return () => window.removeEventListener("popstate", sync);
+  }, []);
+  const closeSection = () => {
+    setTab(null);
+    setOpenComp(null);
+    const url = new URL(window.location.href);
+    url.searchParams.delete("tab");
+    window.history.replaceState(window.history.state, "", url);
+  };
   const [openComp, setOpenComp] = useState<Competition | null>(null);
   const [adminSeason, setAdminSeason] = useState<string | null>(null);
   const [compTab, setCompTab] = useState<"overview" | "teams" | "matches" | "standings" | "knockout" | "awards" | "media">("overview");
@@ -74,7 +94,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
     // The owner keeps people, approvals, Manage and the reporter desk to himself,
     // even for someone given "everything".
     if (key === "requests") return !isOwner;
-    if (key === "bin" || key === "merge" || key === "notifications") return isOwner;
+    if (key === "ai" || key === "bin" || key === "merge" || key === "notifications" || key === "voice users" || key === "verify") return isOwner;
     if (key === "users" || key === "approvals" || key === "appeals" || key === "manage" || key === "rabta") return isOwner || (key === "rabta" && scopes.has("rabta"));
     if (everything) return true;
     switch (key) {
@@ -151,8 +171,81 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
 
   return (
     <AdminAbilityProvider value={{ isOwner, needsApproval: ticketsNeedApproval, competitionIds: isOwner ? [] : (access.data?.competitionIds ?? []) }}>
-    <AppShell bare={!!openComp}>
-      {openComp ? (
+    <AppShell>
+        <div className="min-w-0">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 sm:flex sm:flex-wrap sm:justify-between">
+            <div className="min-w-0">
+              <h1 className="text-xl font-bold tracking-tight sm:text-3xl">{owner ? "Owner control centre" : "Admin control centre"}</h1>
+              <p className="mt-1 text-xs text-muted-foreground sm:text-sm">Pick a section below. Everything is grouped, so nothing needs sideways scrolling.</p>
+            </div>
+            <button
+              onClick={async () => { await supabase.auth.signOut(); navigate({ to: "/" }); }}
+              className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-border bg-card px-3 text-xs font-semibold hover:bg-accent sm:px-4 sm:text-sm"
+            >
+              <LogOut className="h-4 w-4" /> <span className="hidden sm:inline">Sign out</span>
+            </button>
+          </div>
+          <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+            {isOwner && <button onClick={() => setTab("voice users")} className="flex min-h-20 flex-col items-start justify-between rounded-lg border border-border bg-card p-3 text-left font-semibold"><ShieldCheck className="h-4 w-4" />Voice users</button>}
+            {([
+              ["competitions", Trophy], ["teams", Shield], ["countries", Globe], ["players", Users], ["news", Newspaper], ["ai", Bot], ["venues", Landmark], ["channels", Radio], ["transfers", Repeat2], ["tickets", Ticket], ["reports", Flag], ["voice", Mic], ...(canRabta ? [["rabta", Megaphone] as const] : []), ...(isOwner ? [["users", UserCog] as const, ["approvals", CheckCheck] as const, ["appeals", LifeBuoy] as const] : []), ...(!isOwner ? [["requests", ClipboardList] as const] : []), ...(isOwner ? [["notifications", BellRing] as const, ["manage", KeyRound] as const, ["merge", GitMerge] as const, ["bin", Trash2] as const, ["verify", BadgeCheck] as const] : []),
+            ] as const)
+              .filter(([k]) => allowed(k))
+              .map(([k, Icon]) => (
+              <button key={k} onClick={() => setTab(k)} className={`flex min-h-20 flex-col items-start justify-between rounded-lg border p-3 text-left font-semibold capitalize ${tab === k ? "border-primary bg-primary/10 text-primary" : "border-border bg-card hover:border-primary/50"}`}><Icon className="h-4 w-4" />{k === "ai" ? "Almail AI" : k === "bin" ? "Recycle bin" : k}</button>
+            ))}
+          </div>
+          {!everything && !canRabta && !access.isLoading && (access.data?.grants ?? []).length === 0 && (
+            <p className="mt-6 rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">You do not have access to any sections yet. The site owner decides what you can manage.</p>
+          )}
+          <Modal open={!!tab && allowed(tab)} fullPage title={tab === "ai" ? "Almail AI" : tab === "bin" ? "Recycle bin" : (tab ?? "").replace(/^./, (letter) => letter.toUpperCase())} onClose={closeSection}>
+            {tab === "competitions" && allowed("competitions") && <CompetitionsPanel onOpen={setOpenComp} />}
+
+            {tab === "teams" && allowed("teams") && (
+              <div>
+                <p className="mb-4 text-sm text-muted-foreground">Every saved club in one place — create and edit clubs, squads and coaches without opening a competition.</p>
+                <TeamsPanel competitionId={null} lockKind="clubs" />
+              </div>
+            )}
+            {tab === "countries" && allowed("countries") && (
+              <div className="space-y-10">
+                <div>
+                  <p className="mb-4 text-sm text-muted-foreground">National teams live here, separate from clubs — squads are call-ups, so players keep their club.</p>
+                  <TeamsPanel competitionId={null} lockKind="national" />
+                </div>
+                <FifaRankingsPanel />
+              </div>
+            )}
+            {tab === "players" && allowed("players") && <PlayersPanel />}
+            {tab === "news" && allowed("news") && <NewsPanel />}
+             {isOwner && tab === "ai" && allowed("ai") && <AlmailAiPanel onNews={() => setTab("news")} onCompetitions={() => setTab("competitions")} onVenues={() => setTab("venues")} />}
+            {tab === "venues" && allowed("venues") && <VenuesPanel />}
+            {tab === "channels" && allowed("channels") && <ChannelsPanel />}
+            {tab === "transfers" && allowed("transfers") && <TransfersAdminPanel />}
+            {tab === "tickets" && allowed("tickets") && <TicketsPanel needsApproval={ticketsNeedApproval} />}
+            {tab === "reports" && allowed("reports") && (
+              <div className="space-y-8">
+                {isOwner && <ChatManagerPanel />}
+                <ChatReportsPanel />
+              </div>
+            )}
+            {tab === "users" && isOwner && <UsersPanel />}
+            {tab === "voice users" && isOwner && <VoicePeople admin />}
+           {tab === "voice" && allowed("voice") && <VoicePanel />}
+            {tab === "approvals" && isOwner && <ApprovalsPanel />}
+            {tab === "appeals" && isOwner && <AppealsPanel />}
+            {tab === "requests" && !isOwner && <MyRequestsPanel />}
+            {tab === "rabta" && canRabta && <UltrasPanel isOwner={isOwner} />}
+            {tab === "manage" && isOwner && <ManagePanel />}
+            {tab === "bin" && isOwner && <RecycleBinPanel />}
+            {tab === "merge" && isOwner && <MergePanel />}
+            {isOwner && tab === "notifications" && isOwner && <NotificationsPanel />}
+            {isOwner && tab === "verify" && <VerifyPanel />}
+
+          </Modal>
+        </div>
+      {openComp && (
+        <Modal open fullPage title={openComp.name} onClose={() => setOpenComp(null)}>
         <div>
           {/* Back arrow and title keep their own row so the season button can
               never sit on top of them on narrow screens. */}
@@ -187,76 +280,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
             {compTab === "media" && <MediaManager ownerType="competition" ownerId={openComp.id} />}
           </div>
         </div>
-      ) : (
-        <div>
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 sm:flex sm:flex-wrap sm:justify-between">
-            <div className="min-w-0">
-              <h1 className="text-xl font-bold tracking-tight sm:text-3xl">{owner ? "Owner control centre" : "Admin control centre"}</h1>
-              <p className="mt-1 text-xs text-muted-foreground sm:text-sm">Pick a section below. Everything is grouped, so nothing needs sideways scrolling.</p>
-            </div>
-            <button
-              onClick={async () => { await supabase.auth.signOut(); navigate({ to: "/" }); }}
-              className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-border bg-card px-3 text-xs font-semibold hover:bg-accent sm:px-4 sm:text-sm"
-            >
-              <LogOut className="h-4 w-4" /> <span className="hidden sm:inline">Sign out</span>
-            </button>
-          </div>
-          <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-            {([
-              ["competitions", Trophy], ["teams", Shield], ["countries", Globe], ["players", Users], ["news", Newspaper], ["ai", Bot], ["venues", Landmark], ["channels", Radio], ["transfers", Repeat2], ["tickets", Ticket], ["reports", Flag], ["voice", Mic], ...(canRabta ? [["rabta", Megaphone] as const] : []), ...(isOwner ? [["users", UserCog] as const, ["approvals", CheckCheck] as const, ["appeals", LifeBuoy] as const] : []), ...(!isOwner ? [["requests", ClipboardList] as const] : []), ...(isOwner ? [["notifications", BellRing] as const, ["manage", KeyRound] as const, ["merge", GitMerge] as const, ["bin", Trash2] as const] : []),
-            ] as const)
-              .filter(([k]) => allowed(k))
-              .map(([k, Icon]) => (
-              <button key={k} onClick={() => setTab(k)} className={`flex min-h-20 flex-col items-start justify-between rounded-lg border p-3 text-left font-semibold capitalize ${tab === k ? "border-primary bg-primary/10 text-primary" : "border-border bg-card hover:border-primary/50"}`}><Icon className="h-4 w-4" />{k === "ai" ? "Almail AI" : k === "bin" ? "Recycle bin" : k}</button>
-            ))}
-          </div>
-          {!everything && !canRabta && !access.isLoading && (access.data?.grants ?? []).length === 0 && (
-            <p className="mt-6 rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">You do not have access to any sections yet. The site owner decides what you can manage.</p>
-          )}
-          <div className="mt-6">
-            {tab === "competitions" && allowed("competitions") && <CompetitionsPanel onOpen={setOpenComp} />}
-
-            {tab === "teams" && allowed("teams") && (
-              <div>
-                <p className="mb-4 text-sm text-muted-foreground">Every saved club in one place — create and edit clubs, squads and coaches without opening a competition.</p>
-                <TeamsPanel competitionId={null} lockKind="clubs" />
-              </div>
-            )}
-            {tab === "countries" && allowed("countries") && (
-              <div className="space-y-10">
-                <div>
-                  <p className="mb-4 text-sm text-muted-foreground">National teams live here, separate from clubs — squads are call-ups, so players keep their club.</p>
-                  <TeamsPanel competitionId={null} lockKind="national" />
-                </div>
-                <FifaRankingsPanel />
-              </div>
-            )}
-            {tab === "players" && allowed("players") && <PlayersPanel />}
-            {tab === "news" && allowed("news") && <NewsPanel />}
-             {tab === "ai" && allowed("ai") && <AlmailAiPanel onNews={() => setTab("news")} onCompetitions={() => setTab("competitions")} onVenues={() => setTab("venues")} />}
-            {tab === "venues" && allowed("venues") && <VenuesPanel />}
-            {tab === "channels" && allowed("channels") && <ChannelsPanel />}
-            {tab === "transfers" && allowed("transfers") && <TransfersAdminPanel />}
-            {tab === "tickets" && allowed("tickets") && <TicketsPanel needsApproval={ticketsNeedApproval} />}
-            {tab === "reports" && allowed("reports") && (
-              <div className="space-y-8">
-                {isOwner && <ChatManagerPanel />}
-                <ChatReportsPanel />
-              </div>
-            )}
-            {tab === "users" && isOwner && <UsersPanel />}
-           {tab === "voice" && allowed("voice") && <VoicePanel />}
-            {tab === "approvals" && isOwner && <ApprovalsPanel />}
-            {tab === "appeals" && isOwner && <AppealsPanel />}
-            {tab === "requests" && !isOwner && <MyRequestsPanel />}
-            {tab === "rabta" && canRabta && <UltrasPanel isOwner={isOwner} />}
-            {tab === "manage" && isOwner && <ManagePanel />}
-            {tab === "bin" && isOwner && <RecycleBinPanel />}
-            {tab === "merge" && isOwner && <MergePanel />}
-            {tab === "notifications" && isOwner && <NotificationsPanel />}
-
-          </div>
-        </div>
+        </Modal>
       )}
     </AppShell>
     </AdminAbilityProvider>

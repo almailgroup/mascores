@@ -1,4 +1,5 @@
-import { PlayerAvatar } from "@/components/player-avatar";
+import lineupLogo from "@/assets/logo-mark-v2.png.asset.json";
+import { LineupPortraits, PlayerAvatar } from "@/components/player-avatar";
 import { TeamCrest } from "@/components/team-crest";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -139,20 +140,18 @@ function MatchPage() {
   const broadcasts = useQuery({ queryKey: ["match-broadcasts", id], queryFn: async () => (await supabase.from("match_broadcasts").select("channel:broadcast_channels(id,name,logo_url,country_code)").eq("match_id", id)).data ?? [] });
   const media = useQuery({ queryKey: ["match-media", id], queryFn: async () => (await supabase.from("media_items").select("*").eq("owner_type", "match").eq("owner_id", id).order("sort_order")).data ?? [] });
   const ratings = useQuery({ queryKey: ["match-ratings", id], queryFn: async () => (await supabase.from("player_ratings").select("player_id,rating").eq("match_id", id)).data ?? [] });
-  // Coach names for the shareable line-up card.
+  // One coach read supplies both lineup portraits and the shared card.
   const coachNames = useQuery({
-    queryKey: ["share-coaches", m.data?.home_team_id, m.data?.away_team_id, m.data?.home_coach_id, m.data?.away_coach_id],
+    queryKey: ["share-coaches", m.data?.home_team_id, m.data?.away_team_id, m.data?.home_coach_id, m.data?.away_coach_id, m.data?.status],
     enabled: !!m.data,
     queryFn: async () => {
       const pick = async (coachId: string | null | undefined, teamId: string | null | undefined) => {
-        if (coachId) return (await supabase.from("coaches").select("name").eq("id", coachId).maybeSingle()).data?.name ?? null;
-        if (teamId) return (await supabase.from("coaches").select("name").eq("team_id", teamId).limit(1).maybeSingle()).data?.name ?? null;
+        if (coachId) return (await supabase.from("coaches").select("id,name,photo_url,nationality").eq("id", coachId).maybeSingle()).data;
+        if (teamId && m.data?.status === "scheduled") return (await supabase.from("coaches").select("id,name,photo_url,nationality").eq("team_id", teamId).limit(1).maybeSingle()).data;
         return null;
       };
-      return {
-        home: await pick(m.data?.home_coach_id, m.data?.home_team_id),
-        away: await pick(m.data?.away_coach_id, m.data?.away_team_id),
-      };
+      const [home,away]=await Promise.all([pick(m.data?.home_coach_id,m.data?.home_team_id),pick(m.data?.away_coach_id,m.data?.away_team_id)]);
+      return {home,away};
     },
   });
   // The hero blends both badges: home colour on the left, away colour on the right.
@@ -224,7 +223,7 @@ function MatchPage() {
           <BackButton iconOnly className="text-match-foreground" />
           <div className="flex items-center gap-1 [&_button]:h-8 [&_button]:w-8 [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-match-foreground [&_svg]:h-4 [&_svg]:w-4">
             <MatchShare data={shareData} mode="result" />
-            <MatchNotificationButton matchId={match.id} teamIds={[match.home_team_id, match.away_team_id]} withSettings />
+            <MatchNotificationButton matchId={match.id} competitionId={match.competition_id} teamIds={[match.home_team_id, match.away_team_id]} withSettings />
             <FavoriteButton kind="match" id={match.id} />
           </div>
         </div>
@@ -240,7 +239,7 @@ function MatchPage() {
                 <div className={`match-score font-black tabular-nums leading-none ${isLive ? "text-match-live" : ""}`}>
                   {num(match.home_score ?? 0)} <span className={isLive ? "text-match-live/70" : "text-match-foreground/60"}>-</span> {num(match.away_score ?? 0)}
                 </div>
-                {match.status === "pen" && match.home_pen != null && match.away_pen != null && (
+                {(match.status === "pen" || match.status === "live") && match.home_pen != null && match.away_pen != null && (
                   <div className="text-xs text-match-foreground/70">({num(match.home_pen)}–{num(match.away_pen)} {tx("pens")})</div>
                 )}
                 <div className={`match-clock flex items-center justify-center gap-1.5 font-bold tabular-nums ${isLive ? "text-match-live" : "text-match-foreground/80"}`}>
@@ -305,14 +304,26 @@ function MatchPage() {
                   {tx(entry.label)}{entry.score ? <span className="tabular-nums">{num(entry.score)}</span> : null}
                 </li>
               ) : (
-                <li key={entry.event.id} className={`flex items-center gap-3 px-4 py-2.5 ${entry.side === "away" ? "flex-row-reverse text-end" : ""}`}>
+                <li key={entry.event.id} className={`relative flex items-center gap-3 px-4 py-2.5 ${entry.event.player ? "active:bg-muted/60 hover:bg-muted/40" : ""} ${entry.side === "away" ? "flex-row-reverse text-end" : ""}`}>
                   <span className="w-9 shrink-0 font-mono text-[0.7rem] text-muted-foreground">{entry.event.minute != null ? num(entry.event.minute) : "-"}{entry.event.extra ? `+${num(entry.event.extra)}` : ""}'</span>
                   <EventIcon type={entry.event.type} />
                   <span className="min-w-0 flex-1">
                     {entry.event.player ? (
-                      <Link to="/players/$id" params={{ id: entry.event.player.id }} className="block truncate text-sm font-semibold hover:text-primary">{tx(entry.event.player.name)}</Link>
-                    ) : <span className="block truncate text-sm font-semibold">{entry.event.description ?? tx(entry.event.type)}</span>}
-                    <span className="block truncate text-[0.65rem] text-muted-foreground">{tx(eventLabel(entry.event.type))}{entry.event.team ? ` · ${tx(entry.event.team.name)}` : ""}</span>
+                      <>
+                        <Link to="/players/$id" params={{ id: entry.event.player.id }} className="block truncate text-sm font-semibold after:absolute after:inset-0 after:content-['']">{tx(entry.event.player.name)}</Link>
+                        <span className="block truncate text-[0.65rem] text-muted-foreground">{tx(eventLabel(entry.event.type))}{entry.event.team ? ` · ${tx(entry.event.team.name)}` : ""}</span>
+                      </>
+                    ) : entry.event.description ? (
+                      <>
+                        <span className="block truncate text-sm font-semibold">{entry.event.description}</span>
+                        <span className="block truncate text-[0.65rem] text-muted-foreground">{tx(eventLabel(entry.event.type))}{entry.event.team ? ` · ${tx(entry.event.team.name)}` : ""}</span>
+                      </>
+                    ) : (
+                      <span className="block truncate text-sm font-semibold">
+                        {tx(eventLabel(entry.event.type))}
+                        {entry.event.team ? <span className="ml-1 text-[0.7rem] font-medium text-muted-foreground">· {tx(entry.event.team.name)}</span> : null}
+                      </span>
+                    )}
                   </span>
                 </li>
               ))}
@@ -364,7 +375,7 @@ function MatchPage() {
         </div>
       </div>}
 
-      {tab === "lineups" && lineupsVisible && <div className="space-y-4">
+      {tab === "lineups" && lineupsVisible && <LineupPortraits ready={!lineups.isPending && !coachNames.isPending} sources={[...(lineups.data ?? []).map((item) => item.player?.photo_url),coachNames.data?.home?.photo_url,coachNames.data?.away?.photo_url]}><div className="space-y-4">
       <div dir="ltr" className="relative grid grid-cols-2 gap-1 rounded-full border border-border bg-muted/60 p-1">
         <span
           className="absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-full bg-primary shadow-sm transition-transform duration-300 ease-out"
@@ -399,15 +410,24 @@ function MatchPage() {
         const shortOf = (lu: (typeof rows)[number]) => ({
           number: String(lu.shirt_number ?? lu.player?.shirt_number ?? ""),
           name: tx(displayShortName(lu.player?.short_name, lu.player?.name)) ?? "",
+          photo: lu.player?.photo_url,
         });
         // The shareable card mirrors what is on screen: formation, pitch, coach and bench.
         const lineupShare = {
           ...shareData,
+          lineups: (["home", "away"] as const).map((clubSide) => {
+            const club = clubSide === "home" ? match.home : match.away;
+            const shape = (clubSide === "home" ? match.home_formation : match.away_formation) ?? "4-3-3";
+            const squad = (lineups.data ?? []).filter((item) => item.team_id === club?.id);
+            return { teamName: tx(club?.name) ?? "TBD", logo: club?.logo_url, formation: shape,
+              rows: formationRows(shape).map((row) => row.map((slot) => squad.find((p) => p.is_starting && p.position_code === slot)).filter((p): p is (typeof squad)[number] => Boolean(p)).map(shortOf)),
+              bench: squad.filter((p) => !p.is_starting).map(shortOf) };
+          }),
           lineup: {
             teamName: tx(team?.name) ?? "TBD",
             logo: team?.logo_url ?? null,
             formation: activeFormation,
-            coach: (side === "home" ? coachNames.data?.home : coachNames.data?.away) ?? null,
+            coach: (side === "home" ? coachNames.data?.home?.name : coachNames.data?.away?.name) ?? null,
             rows: formationRows(activeFormation).map((row) =>
               row.map((slot) => starters.find((s) => s.position_code === slot)).filter((lu): lu is (typeof starters)[number] => lu !== undefined).map(shortOf)),
             bench: bench.map(shortOf),
@@ -423,6 +443,7 @@ function MatchPage() {
               // Turf and markings live on a clipped layer so player cards (and the
               // goalkeeper's rating on the bottom row) are never cut off.
               <div className="relative mx-auto mb-4 aspect-[3/4] w-full max-w-md rounded-2xl px-3 pb-9 pt-6">
+                <img src={lineupLogo.url} alt="" aria-hidden="true" className="pointer-events-none absolute bottom-3 right-3 z-10 h-7 w-7 object-contain opacity-60 [filter:brightness(0)_invert(1)]" />
                 <span className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl" style={{ background: "repeating-linear-gradient(180deg,#1b7a3f 0 28px,#17703a 28px 56px)" }} />
                 <span className="pointer-events-none absolute inset-2 rounded-lg border-2 border-white/35" />
                 <span className="pointer-events-none absolute left-2 right-2 top-1/2 border-t-2 border-white/35" />
@@ -477,7 +498,7 @@ function MatchPage() {
               return (
                 <>
                   {startersList.length > 0 && <div>{startersList.map(row)}</div>}
-                  <TeamCoach teamId={team?.id} coachId={side === "home" ? match.home_coach_id : match.away_coach_id} />
+                  <TeamCoach coach={side === "home" ? coachNames.data?.home : coachNames.data?.away} />
                   {benchList.length > 0 && (
                     <div className="mt-3">
                       <h4 className="mb-1 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Bench")}</h4>
@@ -493,7 +514,7 @@ function MatchPage() {
       })}
       </div>
       <MatchMomentum matchId={id} home={match.home} away={match.away} minutes={match.momentum_minutes ?? 90} events={(events.data ?? []).map((e) => ({ minute: e.minute, type: e.type, team_id: e.team_id }))} />
-      </div>}
+      </div></LineupPortraits>}
       {tab === "stats" && <MatchStatsPanel rows={stats.data ?? []} home={match.home} away={match.away} />}
       {tab === "previous" && <PreviousMatches home={match.home} away={match.away} currentId={match.id} />}
       {tab === "standings" && <MatchStandings competitionId={match.competition_id} season={match.season} liveTeamIds={isLive ? [match.home_team_id, match.away_team_id].filter(Boolean) as string[] : []} highlightIds={[match.home_team_id, match.away_team_id].filter(Boolean) as string[]} />}
@@ -511,25 +532,16 @@ function PreviousMatches(props: { home: Team | null; away: Team | null; currentI
  * Coach block under each lineup. A coach chosen for this specific match wins;
  * otherwise the club's current coach is shown as a fallback.
  */
-function TeamCoach({ teamId, coachId }: { teamId: string | undefined; coachId?: string | null }) {
+function TeamCoach({ coach }: { coach?: { id: string; name: string; photo_url: string | null; nationality: string | null } | null }) {
   const tx = useTx();
-  const q = useQuery({
-    queryKey: ["lineup-coach", teamId, coachId ?? null],
-    enabled: !!teamId || !!coachId,
-    queryFn: async () => {
-      if (coachId) return (await supabase.from("coaches").select("id,name,photo_url,nationality").eq("id", coachId).maybeSingle()).data;
-      if (!teamId) return null;
-      return (await supabase.from("coaches").select("id,name,photo_url,nationality").eq("team_id", teamId).limit(1).maybeSingle()).data;
-    },
-  });
-  if (!q.data) return null;
+  if (!coach) return null;
   return (
     <div className="mt-3">
       <h4 className="mb-1 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Coach")}</h4>
-      <Link to="/coaches/$id" params={{ id: q.data.id }} className="flex items-center gap-3 py-2 hover:text-primary">
-        <PlayerAvatar src={q.data.photo_url} name={q.data.name} className="h-9 w-9" />
-        <span className="min-w-0 flex-1 truncate font-semibold">{tx(q.data.name)}</span>
-        <span className="shrink-0 text-xs text-muted-foreground">{tx(q.data.nationality) ?? ""}</span>
+      <Link to="/coaches/$id" params={{ id: coach.id }} className="flex items-center gap-3 py-2 hover:text-primary">
+        <PlayerAvatar src={coach.photo_url} name={coach.name} className="h-9 w-9" />
+        <span className="min-w-0 flex-1 truncate font-semibold">{tx(coach.name)}</span>
+        <span className="shrink-0 text-xs text-muted-foreground">{tx(coach.nationality) ?? ""}</span>
       </Link>
     </div>
   );

@@ -1,106 +1,48 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, PlayCircle, Trash2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/use-auth";
-import { useTx } from "@/lib/auto-translate";
-import { generatedCover } from "@/lib/voice";
+import { useEffect, useRef, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Loader2, Trash2, Mic, Pencil } from 'lucide-react';
+import { RecordingPlayer } from '@/components/recording-player';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/use-auth';
+import { useI18n } from '@/lib/i18n';
+import { uploadMedia } from '@/components/admin/upload';
+import { Button } from '@/components/ui/button';
+import { SocialScreen } from '@/components/social-screen';
+import { RecordingSocial } from '@/components/recording-social';
 
-export type Replay = {
-  id: string;
-  host_id: string;
-  title: string;
-  cover_url: string | null;
-  audio_url: string;
-  duration_seconds: number;
-  created_at: string;
-  match_id: string | null;
-  is_public: boolean;
-};
-
-function length(seconds: number) {
-  const mins = Math.floor(seconds / 60);
-  const rest = seconds % 60;
-  return `${mins}:${String(rest).padStart(2, "0")}`;
+export type Replay={id:string;host_id:string;title:string;cover_url:string|null;audio_url:string;duration_seconds:number;created_at:string;match_id:string|null;is_public:boolean;speaker_timeline?:unknown};
+export function VoiceReplays({hostId,matchId,mine=false,limit=50,publicOnly=false,reposts=false,focusId}:{hostId?:string;matchId?:string;mine?:boolean;limit?:number;publicOnly?:boolean;reposts?:boolean;focusId?:string}) {
+  const {user}=useAuth();const {lang}=useI18n();const label=(en:string,ar:string)=>lang==='ar'?ar:en;const qc=useQueryClient();
+  const owner=mine?user?.id:hostId;const own=!!user&&owner===user.id;
+  const [visibility,setVisibility]=useState<'all'|'public'|'private'>('all');const [editing,setEditing]=useState<Replay|null>(null);const [title,setTitle]=useState('');const [photo,setPhoto]=useState<File|null>(null);const [busy,setBusy]=useState(false);
+  const replays=useQuery({queryKey:['voice-replays',owner,matchId,limit,publicOnly,visibility,reposts,user?.id],enabled:!mine||!!user,queryFn:async()=>{
+    let query=supabase.from('voice_recordings').select('id,host_id,title,cover_url,audio_url,duration_seconds,created_at,match_id,is_public,speaker_timeline').order('created_at',{ascending:false}).limit(limit);
+    if(owner&&!reposts)query=query.eq('host_id',owner);
+    if(reposts&&owner){const {data,error}=await supabase.from('recording_interactions').select('recording_id').eq('user_id',owner).eq('kind','repost');if(error)throw error;if(!data?.length)return [];query=query.in('id',data.map(r=>r.recording_id));}
+    if(matchId)query=query.eq('match_id',matchId);
+    if(publicOnly)query=query.eq('is_public',true);else if(own&&visibility!=='all')query=query.eq('is_public',visibility==='public');
+    const {data,error}=await query;if(error)throw error;return (data??[]) as Replay[];
+  }});
+  const refresh=async()=>{await qc.invalidateQueries({queryKey:['voice-replays']});await qc.invalidateQueries({queryKey:['profile']});};
+  return <div>
+    {own&&!publicOnly&&!reposts&&<div className="mb-3 flex gap-2">{(['all','public','private'] as const).map(v=><Button key={v} size="sm" variant={visibility===v?'secondary':'ghost'} onClick={()=>setVisibility(v)}>{v==='all'?label('All','الكل'):v==='public'?label('Public','عام'):label('Private','خاص')}</Button>)}</div>}
+    {replays.isLoading&&<Loader2 className="mx-auto my-8 animate-spin"/>}{replays.isError&&<Button onClick={()=>void replays.refetch()}>{label('Try again','حاول مجددًا')}</Button>}
+    {replays.data?.length===0&&<div className="py-14 text-center"><Mic className="mx-auto mb-3 h-8 w-8 text-muted-foreground"/><p className="text-sm text-muted-foreground">{reposts?label('No reposts yet','لا توجد إعادة نشر بعد'):label('No recordings yet','لا توجد تسجيلات بعد')}</p></div>}
+    {replays.data?.map(replay=><article key={replay.id} id={`recording-${replay.id}`} className="border-b border-border py-5">
+      <div className="mb-3 flex items-start gap-3"><div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted">{replay.cover_url?<img src={replay.cover_url} alt="" className="h-full w-full object-cover"/>:<Mic className="h-6 w-6 text-muted-foreground"/>}</div><div className="min-w-0 flex-1"><h3 className="break-words text-sm font-bold">{replay.title}</h3><p className="mt-1 text-xs text-muted-foreground">{Math.floor(replay.duration_seconds/60)}:{String(Math.floor(replay.duration_seconds%60)).padStart(2,'0')} · {new Date(replay.created_at).toLocaleDateString()}</p>{replay.host_id===user?.id&&<span className="text-xs text-muted-foreground">{replay.is_public?label('Published','منشور'):label('Private','خاص')}</span>}</div>{replay.host_id===user?.id&&<Button size="icon" variant="ghost" aria-label="Edit recording" onClick={()=>{setEditing(replay);setTitle(replay.title);setPhoto(null);}}><Pencil/></Button>}</div>
+      <ReplayAudio replay={replay} focus={focusId===replay.id}/>
+      <RecordingSocial recordingId={replay.id} hostId={replay.host_id} title={replay.title}/>
+      {replay.host_id===user?.id&&<div className="mt-2 flex gap-2"><Button size="sm" variant="outline" disabled={busy} onClick={async()=>{if(!confirm(replay.is_public?label('Make this recording private?','جعل هذا التسجيل خاصًا؟'):label('Publish this recording to your profile?','نشر التسجيل على ملفك؟')))return;setBusy(true);const {error}=await supabase.from('voice_recordings').update({is_public:!replay.is_public}).eq('id',replay.id);if(error)toast.error('Could not update recording');else await refresh();setBusy(false);}}>{replay.is_public?label('Make private','جعله خاصًا'):label('Publish','نشر')}</Button><Button variant="ghost" size="icon" aria-label="Delete replay" disabled={busy} className="ml-auto text-destructive" onClick={async()=>{if(!confirm(label('Delete this recording?','حذف هذا التسجيل؟')))return;setBusy(true);const {error}=await supabase.from('voice_recordings').delete().eq('id',replay.id);if(error)toast.error('Could not delete');else await refresh();setBusy(false);}}><Trash2/></Button></div>}
+    </article>)}
+    <SocialScreen open={!!editing} title={label('Edit recording','تعديل التسجيل')} onClose={()=>{if(!busy)setEditing(null);}}><form className="space-y-5" onSubmit={async e=>{e.preventDefault();if(!editing||!user||!title.trim()||busy)return;setBusy(true);try{let cover=editing.cover_url;if(photo)cover=await uploadMedia('avatars',photo,user.id);const {error}=await supabase.from('voice_recordings').update({title:title.trim(),cover_url:cover}).eq('id',editing.id).eq('host_id',user.id);if(error)throw error;await refresh();setEditing(null);}catch{toast.error('Could not save recording');}finally{setBusy(false);}}}><label className="block text-sm">{label('Title','العنوان')}<input required maxLength={200} value={title} onChange={e=>setTitle(e.target.value)} className="mt-2 w-full rounded-md border border-border bg-background p-3 text-base"/></label><label className="block text-sm">{label('Photo','الصورة')}<input type="file" accept="image/*" onChange={e=>setPhoto(e.target.files?.[0]??null)} className="mt-2 block w-full text-base"/></label><Button type="submit" disabled={busy||!title.trim()} className="w-full">{label('Save changes','حفظ التغييرات')}</Button></form></SocialScreen>
+  </div>;
 }
-
-/** Saved voice rooms anyone can play back again. */
-export function VoiceReplays({ hostId, matchId, mine = false, limit = 12, publicOnly = false }: { hostId?: string; matchId?: string; mine?: boolean; limit?: number; publicOnly?: boolean }) {
-  const tx = useTx();
-  const { user } = useAuth();
-  const qc = useQueryClient();
-
-  const admin = useQuery({
-    enabled: !!user,
-    queryKey: ["is-admin", user?.id],
-    queryFn: async () => {
-      const { data } = await supabase.rpc("is_admin", { _uid: user!.id });
-      return !!data;
-    },
-  });
-
-  const owner = mine ? user?.id : hostId;
-
-  const replays = useQuery({
-    queryKey: ["voice-replays", owner ?? null, matchId ?? null, limit, publicOnly],
-    enabled: !mine || !!user,
-    queryFn: async () => {
-      let query = supabase
-        .from("voice_recordings")
-        .select("id, host_id, title, cover_url, audio_url, duration_seconds, created_at, match_id, is_public")
-        .order("created_at", { ascending: false })
-        .limit(limit);
-      if (owner) query = query.eq("host_id", owner);
-      if (matchId) query = query.eq("match_id", matchId);
-      if (publicOnly) query = query.eq("is_public", true);
-      const { data } = await query;
-      return (data ?? []) as Replay[];
-    },
-  });
-
-  const remove = async (replay: Replay) => {
-    if (!window.confirm(tx("Delete this replay permanently?"))) return;
-    await supabase.from("voice_recordings").delete().eq("id", replay.id);
-    await qc.invalidateQueries({ queryKey: ["voice-replays"] });
-  };
-
-  if (replays.isLoading) return <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
-  if ((replays.data?.length ?? 0) === 0) {
-    return <p className="rounded-2xl border border-dashed border-border p-4 text-xs text-muted-foreground">{tx("No saved voice chats yet. Hosts can record a room and it appears here to replay.")}</p>;
-  }
-
-  return (
-    <div className="space-y-3">
-      {(replays.data ?? []).map((replay) => (
-        <div key={replay.id} className="rounded-2xl border border-border bg-card p-3">
-          <div className="flex items-center gap-3">
-            <img src={replay.cover_url ?? generatedCover(replay.title)} alt="" className="h-12 w-12 shrink-0 rounded-xl object-cover" />
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-sm font-bold">{replay.title}</div>
-              <div className="mt-0.5 flex items-center gap-2 text-[0.65rem] text-muted-foreground">
-                <PlayCircle className="h-3 w-3" /> {length(replay.duration_seconds)}
-                <span>· {new Date(replay.created_at).toLocaleDateString()}</span>
-              </div>
-            </div>
-            {replay.host_id === user?.id && (
-              <button
-                onClick={async () => {
-                  await supabase.from("voice_recordings").update({ is_public: !replay.is_public }).eq("id", replay.id);
-                  await qc.invalidateQueries({ queryKey: ["voice-replays"] });
-                }}
-                className={`shrink-0 rounded-full px-3 py-1 text-[0.6rem] font-bold ${replay.is_public ? "bg-emerald-500/15 text-emerald-600" : "bg-muted text-muted-foreground"}`}
-              >
-                {replay.is_public ? tx("On my profile") : tx("Private")}
-              </button>
-            )}
-            {(replay.host_id === user?.id || admin.data) && (
-              <button onClick={() => remove(replay)} aria-label={tx("Delete replay")} className="shrink-0 text-destructive">
-                <Trash2 className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-          <audio controls preload="none" src={replay.audio_url} className="mt-3 w-full" />
-        </div>
-      ))}
-    </div>
-  );
+function ReplayAudio({replay,focus}:{replay:Replay;focus:boolean}) {
+  const ref=useRef<HTMLDivElement>(null);const {user}=useAuth();
+  const audio=useQuery({queryKey:['recording-audio',replay.id,user?.id],staleTime:240000,queryFn:async()=>{
+    const marker='/voice-recordings/';const index=replay.audio_url.indexOf(marker);if(index<0)throw new Error('Recording unavailable');const path=decodeURIComponent(replay.audio_url.slice(index+marker.length).split('?')[0]??'');const {data,error}=await supabase.storage.from('voice-recordings').createSignedUrl(path,3600);if(error)throw error;return data.signedUrl;
+  }});
+  useEffect(()=>{if(focus)ref.current?.scrollIntoView({block:'center'});},[focus]);
+  return <div ref={ref}><RecordingPlayer src={audio.data} loading={audio.isLoading} failed={audio.isError} onRetry={()=>void audio.refetch()} duration={replay.duration_seconds} cover={replay.cover_url} timeline={replay.speaker_timeline}/></div>;
 }

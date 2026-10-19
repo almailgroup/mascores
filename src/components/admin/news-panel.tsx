@@ -112,12 +112,12 @@ export function NewsPanel() {
       <div className="mb-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:flex sm:justify-between">
         <h2 className="text-lg font-bold">News</h2>
         <div className="flex flex-wrap justify-end gap-2">
-          <button className={btnGhost} onClick={() => { setAiError(null); setAiOpen(true); }}><Sparkles className="h-3.5 w-3.5" /> Write with Almail AI</button>
+          {isOwner && <button className={btnGhost} onClick={() => { setAiError(null); setAiOpen(true); }}><Sparkles className="h-3.5 w-3.5" /> Write with Almail AI</button>}
           <button className={btnPrimary} onClick={() => { setForm({}); setNotify(false); setNotifyClub(false); setOpen(true); }}><Plus className="h-3.5 w-3.5" /> New post</button>
         </div>
       </div>
 
-      <Modal open={aiOpen} onClose={() => setAiOpen(false)} title="Almail AI news writer" wide>
+      <Modal open={isOwner && aiOpen} onClose={() => setAiOpen(false)} title="Almail AI news writer" wide>
         <p className="mb-3 text-sm text-muted-foreground">Attach a photo, paste your reporting notes, or use both. The result opens as an editable draft and is never published automatically.</p>
         <textarea className={inputCls} rows={7} maxLength={10000} placeholder="Add the facts, score, names, quotes, or context Almail AI should use…" value={aiNotes} onChange={(event) => setAiNotes(event.target.value)} />
         <label className={`${btnGhost} mt-3 cursor-pointer`}>

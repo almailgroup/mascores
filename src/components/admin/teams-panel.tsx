@@ -157,12 +157,12 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
   return (
     <div>
       {reviewNote && <div className="mb-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm font-semibold text-amber-700 dark:text-amber-300">{reviewNote}</div>}
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-base font-bold">Teams</h3>
         <div className="flex flex-wrap gap-2">{competitionId && <button className={btnGhost} onClick={() => setLibraryOpen(true)}><Library className="h-3.5 w-3.5" /> Add existing</button>}{(competitionId || !restricted) && <button className={btnPrimary} onClick={() => { setForm(competition ? { country: competition.country ?? null, country_code: competition.country_code ?? null, is_national: !!competition.is_national } : lockKind ? { is_national: lockKind === "national" } : {}); setOpen(true); }}><Plus className="h-3.5 w-3.5" /> New team</button>}</div>
       </div>
       {restricted && !competitionId && <p className="mb-3 rounded-xl border border-border bg-card p-3 text-xs text-muted-foreground">You only see clubs that play in the competitions the site owner chose for you.</p>}
-      <div className="grid gap-2">
+      <div className="grid min-w-0 grid-cols-1 gap-2">
         <div className="mb-1 flex flex-wrap items-center gap-2">
           {!competitionId && (
             <>
@@ -186,10 +186,10 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
           .map((t) => (
           <div key={t.id} className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-3 sm:gap-3">
             <TeamCrest name={t.name} logo={t.logo_url} />
-            <div className="min-w-0 flex-1 basis-40">
+            <button type="button" onClick={() => { setForm(t); setOpen(true); }} className="min-w-0 flex-1 basis-40 text-start">
               <div className="truncate font-semibold text-sm">{t.name}</div>
               <div className="truncate text-xs text-muted-foreground">{[t.is_national ? "National team" : null, t.is_temporary ? "Temporary club" : null, t.is_national ? null : t.country, t.venue_name, `${t.trophies ?? 0} trophies`].filter(Boolean).join(" · ")}</div>
-            </div>
+            </button>
             {competitionId && <label className="flex shrink-0 items-center gap-1 text-[0.65rem] font-semibold uppercase text-muted-foreground">
               Titles
               <input type="number" min={0} className="w-16 rounded-lg border border-border bg-background px-2 py-1.5 text-base sm:text-sm"
@@ -219,7 +219,7 @@ export function TeamsPanel({ competitionId, season = null, competition = null, l
 
 
 
-      <Modal open={open} onClose={() => setOpen(false)} title={form.id ? "Edit team" : "New team"} wide>
+      <Modal open={open} onClose={() => setOpen(false)} title={form.id ? "Edit team" : "New team"} onSave={save} wide>
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Name"><input className={inputCls} value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
           <ArabicNameField englishName={form.name} />
@@ -371,8 +371,8 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
     enabled: addExisting,
     queryKey: ["admin", "player-pool", team.id],
     queryFn: async () => {
-      const { data } = await supabase.from("players").select("*, team:team_id(id,name)").neq("team_id", team.id).order("name").limit(500);
-      const free = await supabase.from("players").select("*, team:team_id(id,name)").is("team_id", null).order("name");
+      const { data } = await supabase.from("players").select("*, team:team_id(id,name)").eq("is_temporary", false).neq("team_id", team.id).order("name").limit(500);
+      const free = await supabase.from("players").select("*, team:team_id(id,name)").eq("is_temporary", false).is("team_id", null).order("name");
       const rows = [...(free.data ?? []), ...(data ?? [])] as unknown as (Player & { team: { id: string; name: string } | null })[];
       return rows.filter((row, index, all) => all.findIndex((r) => r.id === row.id) === index);
     },
@@ -429,7 +429,7 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
           return (
             <section key={position}>
               <h4 className="mb-2 text-xs font-bold uppercase text-muted-foreground">{position}</h4>
-              <div className="grid gap-2">
+              <div className="grid min-w-0 grid-cols-1 gap-2">
                 {players.map((p) => (
                   <div key={p.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-background p-2">
                     <PlayerAvatar src={p.photo_url} name={p.name} />
@@ -484,10 +484,13 @@ function CoachesModal({ team, onClose }: { team: Team; onClose: () => void }) {
     if (form.id) { setForm({}); setEditing(false); }
   };
 
+  // Removing only releases the coach from this club; his profile and past matches stay.
   const remove = async (id: string) => {
-    if (!confirm("Remove coach?")) return;
-    await supabase.from("coaches").delete().eq("id", id);
+    if (!confirm("Release this coach from the club? He stays in the app as a free agent.")) return;
+    const { error } = await supabase.from("coaches").update({ team_id: null }).eq("id", id);
+    if (error) { alert("Could not release coach"); return; }
     qc.invalidateQueries({ queryKey: key });
+    qc.invalidateQueries({ queryKey: ["coaches"] });
   };
 
   return (
@@ -510,7 +513,7 @@ function CoachesModal({ team, onClose }: { team: Team; onClose: () => void }) {
       </div>
 
       {editing ? (
-        <div className="rounded-2xl border border-border bg-background/40 p-4">
+        <Modal open onClose={() => setEditing(false)} title={form.name || "Coach"} onSave={save} wide>
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Name *"><input className={inputCls} value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
             <ArabicNameField englishName={form.name} />
@@ -532,7 +535,7 @@ function CoachesModal({ team, onClose }: { team: Team; onClose: () => void }) {
             <button className={btnGhost} onClick={() => { setEditing(false); setForm({}); }}>Cancel</button>
             <button className={btnPrimary} onClick={save}>{form.id ? "Save coach" : "Create coach"}</button>
           </div>
-        </div>
+        </Modal>
       ) : (
         <button className={btnPrimary} onClick={() => { setForm({}); setEditing(true); }}><Plus className="h-3.5 w-3.5" /> Add coach</button>
       )}

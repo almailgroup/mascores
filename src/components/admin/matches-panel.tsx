@@ -20,7 +20,7 @@ export function MatchesPanel({ competitionId, season = null, friendly = false }:
   const [resultOf, setResultOf] = useState<Match | null>(null);
   const [aiOpen, setAiOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const { needsApproval } = useAdminAbility();
+  const { needsApproval, isOwner } = useAdminAbility();
   const [reviewNote, setReviewNote] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "scheduled" | "live" | "finished" | "needs_result">("all");
 
@@ -123,7 +123,7 @@ export function MatchesPanel({ competitionId, season = null, friendly = false }:
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-base font-bold">Matches <span className="text-xs font-medium text-muted-foreground">({allMatches.length})</span></h3>
           <div className="flex flex-wrap gap-2">
-            <button className={btnGhost} onClick={() => setAiOpen(true)}><Sparkles className="h-3.5 w-3.5" /> Almail AI</button>
+            {isOwner && <button className={btnGhost} onClick={() => setAiOpen(true)}><Sparkles className="h-3.5 w-3.5" /> Almail AI</button>}
             <button className={btnPrimary} onClick={() => { setForm({ status: "scheduled" }); setOpen(true); }}><Plus className="h-3.5 w-3.5" /> Add match</button>
           </div>
         </div>

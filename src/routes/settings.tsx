@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import { useTheme } from "@/components/theme-provider";
-import { VoiceReplays } from "@/components/voice-replays";
 import { AppShell, BackButton } from "@/components/app-shell";
 import { uploadMedia } from "@/components/admin/upload";
 import { CURRENCIES, useCurrency } from "@/lib/currency";
@@ -17,6 +16,8 @@ import { ConfirmDelete } from "@/components/confirm-delete";
 import type { AlertSoundMap } from "@/lib/alert-sounds";
 import { Button } from '@/components/ui/button';
 import { useQuery } from "@tanstack/react-query";
+import { AccountPrivacy } from "@/components/account-privacy";
+import { SocialActivityButton } from "@/components/social-activity";
 
 
 export const Route = createFileRoute("/settings")({
@@ -48,7 +49,7 @@ function SettingsPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
-  const [alertPrefs, setAlertPrefs] = useState<{ goals: boolean; cards: boolean; kickoff: boolean; final: boolean; voice: boolean; sound: string; sounds: AlertSoundMap }>({ goals: true, cards: true, kickoff: true, final: true, voice: true, sound: "stadium", sounds: {} });
+  const [alertPrefs, setAlertPrefs] = useState<{ goals: boolean; cards: boolean; kickoff: boolean; final: boolean; voice: boolean; social: boolean; social_follow: boolean; social_request: boolean; social_like: boolean; social_comment: boolean; social_repost: boolean; sound: string; sounds: AlertSoundMap }>({ goals: true, cards: true, kickoff: true, final: true, voice: true, social: true, social_follow: true, social_request: true, social_like: true, social_comment: true, social_repost: true, sound: "stadium", sounds: {} });
 
   useEffect(() => {
     if (authLoading) return;
@@ -67,28 +68,48 @@ function SettingsPage() {
   const save = async () => {
     if (!user) return;
     setSaving(true);
-    const { data: savedProfile } = await supabase.from("profiles").select("notification_preferences").eq("id", user.id).maybeSingle();
-    const savedNotifications = savedProfile?.notification_preferences;
     const clean = username.trim().replace(/[^a-zA-Z0-9_.]/g, "").slice(0, 20);
     const { error } = await supabase.from("profiles").update({
-      display_name: displayName, language: lang, theme, avatar_url: avatarUrl, height_unit: heightUnit,
-       username: clean || null, is_public: isPublic, notification_preferences: { ...(savedNotifications && typeof savedNotifications === "object" && !Array.isArray(savedNotifications) ? savedNotifications : {}), ...alertPrefs },
+      display_name: displayName, avatar_url: avatarUrl, username: clean || null,
     }).eq("id", user.id);
     setSaving(false);
-    if (error) { setNotice("That username is already taken."); setTimeout(() => setNotice(null), 2500); return; }
+    if (error) {
+      const until = error.message.split(":").slice(1).join(":");
+      const when = until ? new Date(until).toLocaleString(lang === "ar" ? "ar" : "en", { dateStyle: "medium", timeStyle: "short" }) : "";
+      const msg = error.message.startsWith("USERNAME_COOLDOWN")
+        ? (lang === "ar" ? `يمكنك تغيير اسم المستخدم مرة كل 10 أيام. التغيير التالي: ${when}` : `You can change your username once every 10 days. Next change: ${when}`)
+        : error.message.startsWith("DISPLAY_COOLDOWN")
+        ? (lang === "ar" ? `يمكنك تغيير الاسم الظاهر مرة كل يومين. التغيير التالي: ${when}` : `You can change your display name once every 2 days. Next change: ${when}`)
+        : (lang === "ar" ? "اسم المستخدم مستخدم بالفعل." : "That username is already taken.");
+      setNotice(msg); setTimeout(() => setNotice(null), 4000); return;
+    }
     setUsername(clean);
     setNotice(t("settings.saved"));
     setTimeout(() => setNotice(null), 1500);
   };
 
+  /** Notification switches save at once, so phone alerts follow them without pressing Save. */
+  const saveAlertPrefs = async (next: typeof alertPrefs) => {
+    setAlertPrefs(next);
+    if (!user) return;
+    const { data: prof } = await supabase.from("profiles").select("notification_preferences").eq("id", user.id).maybeSingle();
+    const saved = prof?.notification_preferences;
+    await supabase.from("profiles").update({
+      notification_preferences: { ...(saved && typeof saved === "object" && !Array.isArray(saved) ? saved : {}), ...next },
+    }).eq("id", user.id);
+    window.dispatchEvent(new Event("mas:alerts-changed"));
+  };
+
   const pickAvatar = async (file: File | undefined) => {
     if (!file || !user) return;
     setUploading(true);
-    const url = await uploadMedia("avatars", file);
-    setUploading(false);
-    if (!url) return;
-    setAvatarUrl(url);
-    await supabase.from("profiles").update({ avatar_url: url }).eq("id", user.id);
+    try {
+      const url = await uploadMedia("avatars", file, user.id);
+      if (!url) throw new Error('Photo upload failed');
+      const {error}=await supabase.from("profiles").update({ avatar_url: url }).eq("id", user.id);
+      if(error)throw error;
+      setAvatarUrl(url);
+    } finally { setUploading(false); }
   };
 
   if (authLoading) return <div className="flex min-h-screen items-center justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div>;
@@ -96,7 +117,7 @@ function SettingsPage() {
   return (
     <AppShell>
       <BackButton iconOnly className="mb-3" />
-      <h1 className="text-3xl font-bold tracking-tight">{t("settings.title")}</h1>
+      <div className="flex items-center justify-between"><h1 className="text-3xl font-bold">{t("settings.title")}</h1>{user && <SocialActivityButton />}</div>
       {owner.data && <Link to="/admin" className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-primary">{lang === "ar" ? "إدارة المسابقات وسجل الأبطال" : "Competition settings & title history"}</Link>}
       {user && <p className="mt-1 text-sm text-muted-foreground">{user.email}</p>}
 
@@ -125,15 +146,19 @@ function SettingsPage() {
                   className="mt-1 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
                 <p className="mt-1 text-[0.65rem] text-muted-foreground">People can find you by this name. Letters, numbers, dots and underscores.</p>
               </div>
-              <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} />
-                Public profile — others can find and follow me
-              </label>
-              {username && (
-                <Link to="/u/$username" params={{ username }} className="inline-block text-xs font-semibold text-primary">
-                  View my profile
-                </Link>
-              )}
+              <AccountPrivacy userId={user.id} isPublic={isPublic} onChange={setIsPublic} />
+              <p className="text-[0.65rem] text-muted-foreground">{lang === "ar" ? "يمكن تغيير اسم المستخدم مرة كل 10 أيام والاسم الظاهر مرة كل يومين." : "Username can change once every 10 days, display name once every 2 days."}</p>
+              {notice && <div className="rounded-md border border-primary/40 bg-primary/10 px-3 py-2 text-sm text-primary">{notice}</div>}
+              <div className="flex flex-wrap items-center gap-4 pt-1">
+                <button onClick={save} disabled={saving} className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground shadow disabled:opacity-60">
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} {t("settings.save")}
+                </button>
+                {username && (
+                  <Link to="/u/$username" params={{ username }} className="inline-block text-xs font-semibold text-primary">
+                    View my profile
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
         ) : (
@@ -149,9 +174,12 @@ function SettingsPage() {
       {user && <section className="mt-4 rounded-3xl border border-border bg-card p-6">
         <div className="flex items-center gap-2 text-sm font-semibold"><BellRing className="h-4 w-4 text-primary" /> {t("settings.notifications")}</div>
         <div className="mt-4 grid gap-2 sm:grid-cols-2">
-          {([['goals','Goals and penalties'],['cards','Cards'],['kickoff','Kick-off and reminders'],['final','Full-time results'],['voice','Followed voice hosts']] as const).map(([key,label]) => <label key={key} className="flex items-center justify-between rounded-xl border border-border bg-background px-3 py-2 text-sm"><span>{label}</span><input type="checkbox" checked={alertPrefs[key]} onChange={(event) => setAlertPrefs({ ...alertPrefs, [key]: event.target.checked })} /></label>)}
+          {([['goals','Goals and penalties','الأهداف وركلات الجزاء'],['cards','Cards','البطاقات'],['kickoff','Kick-off and reminders','انطلاق المباراة والتذكيرات'],['final','Full-time results','نتائج نهاية المباراة'],['voice','Voice rooms — someone you follow goes live','غرف صوتية — شخص تتابعه يبدأ بثًا']] as const).map(([key,label,labelAr]) => <label key={key} className="flex items-center justify-between gap-3 rounded-xl border border-border bg-background px-3 py-2 text-sm"><span>{lang === "ar" ? labelAr : label}</span><input type="checkbox" checked={alertPrefs[key]} onChange={(event) => void saveAlertPrefs({ ...alertPrefs, [key]: event.target.checked })} /></label>)}
         </div>
-        <p className="mt-2 text-[0.7rem] text-muted-foreground">Alerts work while the app is open. System delivery depends on your phone and browser permissions.</p>
+        <div className="mt-5 border-t border-border pt-4"><h3 className="mb-3 text-sm font-semibold">{lang === 'ar' ? 'تنبيهات النشاط' : 'Activity alerts'}</h3>
+          {([['social','All social phone alerts','جميع تنبيهات النشاط'],['social_follow','New followers','متابعون جدد'],['social_request','Follow requests','طلبات المتابعة'],['social_like','Recording likes','إعجابات التسجيلات'],['social_comment','Comments','التعليقات'],['social_repost','Reposts','إعادة النشر']] as const).map(([key,en,ar]) => <label key={key} className="flex items-center justify-between gap-3 border-b border-border py-3 text-sm"><span>{lang === 'ar' ? ar : en}</span><input type="checkbox" role="switch" checked={alertPrefs[key]} onChange={e => void saveAlertPrefs({...alertPrefs,[key]:e.target.checked})} /></label>)}
+        </div>
+        <p className="mt-2 text-[0.7rem] text-muted-foreground">{lang === "ar" ? "تصل تنبيهات الهاتف حتى لو كان التطبيق مغلقًا، أما التنبيهات داخل التطبيق فتظهر أثناء فتحه." : "Phone alerts arrive even when the app is closed. In-app alerts appear while the app is open."}</p>
       </section>}
       {avatarFile && <ImageCropper file={avatarFile} aspect={1} onCancel={() => setAvatarFile(null)} onDone={async (file) => { await pickAvatar(file); setAvatarFile(null); }} />}
 
@@ -177,7 +205,7 @@ function SettingsPage() {
           <div className="mb-3 text-sm font-semibold">{t("settings.theme")}</div>
           <div className="grid grid-cols-2 gap-2">
             {(["light", "dark"] as const).map((th) => (
-              <button key={th} type="button" onClick={() => setTheme(th)}
+              <button key={th} type="button" onClick={() => { setTheme(th); if (user) void supabase.from("profiles").update({ theme: th }).eq("id", user.id); }}
                 className={`rounded-xl border px-3 py-2 text-sm capitalize ${theme === th ? "border-primary bg-primary/10 text-primary" : "border-border bg-background hover:bg-accent"}`}>
                 {t(`settings.theme.${th}`)}
               </button>
@@ -190,7 +218,7 @@ function SettingsPage() {
         <div className="mb-3 text-sm font-semibold">{t("settings.heightUnit")}</div>
         <div className="grid max-w-xs grid-cols-2 gap-2">
           {(["cm", "ft"] as const).map((u) => (
-            <button key={u} type="button" onClick={() => setHeightUnit(u)}
+            <button key={u} type="button" onClick={() => { setHeightUnit(u); if (user) void supabase.from("profiles").update({ height_unit: u }).eq("id", user.id); }}
               className={`rounded-xl border px-3 py-2 text-sm ${heightUnit === u ? "border-primary bg-primary/10 text-primary" : "border-border bg-background hover:bg-accent"}`}>
               {u === "cm" ? "cm" : "ft / in"}
             </button>
@@ -211,30 +239,12 @@ function SettingsPage() {
         </div>
       </section>
 
-      {notice && <div className="mt-4 rounded-md border border-primary/40 bg-primary/10 px-3 py-2 text-sm text-primary">{notice}</div>}
-
-      {user && (
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          <button onClick={save} disabled={saving} className="inline-flex h-11 items-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground shadow disabled:opacity-60">
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} {t("settings.save")}
-          </button>
-          <button onClick={async () => { await supabase.auth.signOut(); navigate({ to: "/" }); }} className="inline-flex h-11 items-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-medium hover:bg-accent">
-            <LogOut className="h-4 w-4" /> {t("settings.signOut")}
-          </button>
-        </div>
-      )}
-
-      {user && (
-        <section className="mt-10">
-          <h2 className="text-sm font-bold">My voice replays</h2>
-          <p className="mb-3 text-xs text-muted-foreground">Voice chats you recorded. Play them again or delete them.</p>
-          <VoiceReplays mine />
-        </section>
-      )}
-
       <FeedbackBox />
 
-      {user && <section className="mt-5">
+      {user && <section className="mt-5 flex flex-wrap items-center gap-4">
+          <button onClick={async () => { await supabase.auth.signOut(); navigate({ to: "/" }); }} className="inline-flex h-9 items-center gap-2 rounded-full border border-border bg-card px-4 text-xs font-medium hover:bg-accent">
+            <LogOut className="h-3.5 w-3.5" /> {t("settings.signOut")}
+          </button>
           <Button variant="link" size="sm" disabled={deleting} onClick={() => setConfirmDelete(true)}
             className="px-0 text-xs text-destructive">
             {deleting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />} {t("settings.deleteAccount")}

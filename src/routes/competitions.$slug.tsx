@@ -1,4 +1,9 @@
 import { TeamCrest } from "@/components/team-crest";
+import { useAuth } from "@/hooks/use-auth";
+import { useSignInAction } from "@/lib/sign-in-action";
+import { toast } from "sonner";
+import { useCompetitionAlerts } from "@/lib/competition-alerts";
+import { requestAlertPermission } from "@/lib/notification-permission";
 import { PlayerAvatar } from "@/components/player-avatar";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -305,6 +310,8 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
   const num = useNum();
   const compact = useCompact();
   const headerRef = useCollapsingHeader(c.id);
+  const { user } = useAuth();
+  const signIn = useSignInAction();
   const { t, lang } = useI18n();
   const accent = useLogoAccent(hero ? null : logo);
 
@@ -320,18 +327,14 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
   const [bump, setBump] = useState(0);
   const followerCount = Math.max(0, (followers.data ?? 0) + bump);
 
-  const [alerts, setAlerts] = useState<string[]>([]);
-  useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(COMP_ALERT_KEY);
-      setAlerts(raw ? (JSON.parse(raw) as string[]) : []);
-    } catch { /* ignore */ }
-  }, []);
-  const alerted = alerts.includes(c.id);
-  const toggleAlert = () => {
-    const next = alerted ? alerts.filter((id) => id !== c.id) : [...alerts, c.id];
-    setAlerts(next);
-    try { window.localStorage.setItem(COMP_ALERT_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+  const { overrides: compAlerts, setCompetitionAlert } = useCompetitionAlerts();
+  const alerted = compAlerts[c.id] === true;
+  const toggleAlert = async () => {
+    if (!user) { signIn(); return; }
+    const enabled = !alerted;
+    // Flip on the first tap; the permission prompt and save follow behind it.
+    if (enabled) void requestAlertPermission();
+    await setCompetitionAlert(c.id, enabled).catch(() => { toast.error(tx("Could not save notifications")); });
   };
 
   const router = useRouter();
@@ -351,7 +354,7 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <Button variant="ghost" size="icon"
+        <Button variant="ghost" size="icon" data-no-gesture
           onClick={toggleAlert}
           aria-label={tx("Notifications")}
            className={`sports-header-control h-10 w-10 text-match-foreground hover:text-match-foreground ${alerted ? "opacity-100" : "opacity-70"}`}
@@ -359,7 +362,7 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
           <Bell className="h-5 w-5" fill={alerted ? "currentColor" : "none"} />
         </Button>
         <Button variant="ghost" size="icon"
-          onClick={() => { onToggleFav(); setBump((v) => (faved ? v - 1 : v + 1)); }}
+          onClick={() => { if (!user) { signIn(); return; } onToggleFav(); setBump((v) => (faved ? v - 1 : v + 1)); }}
           aria-label={tx("Follow")}
            className={`sports-header-control -me-2 h-10 w-10 hover:text-match-foreground ${faved ? "text-warning" : "text-match-foreground opacity-70"}`}
         >

@@ -5,6 +5,9 @@ import { Bell, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { useClubAlerts } from "@/hooks/use-club-alerts";
 import { Button } from "@/components/ui/button";
+import { useSignInAction } from "@/lib/sign-in-action";
+import { requestAlertPermission } from "@/lib/notification-permission";
+import { useCompetitionAlerts, competitionOfMatch } from "@/lib/competition-alerts";
 
 export type FavoriteKind = "team" | "player" | "competition" | "match";
 
@@ -75,6 +78,7 @@ function loadShared(userId: string | null): Promise<void> {
 
 export function useFavorites() {
   const { user, loading: authLoading } = useAuth();
+  const signIn = useSignInAction();
   const [favorites, setFavorites] = useState<FavoritesState>(() => shared ?? { team: [], player: [], competition: [], match: [] });
   const [ready, setReady] = useState(false);
 
@@ -101,6 +105,7 @@ export function useFavorites() {
 
   const toggle = useCallback(
     async (kind: FavoriteKind, id: string | number) => {
+      if (!user) { signIn(); return; }
       const strId = String(id);
       const current = shared ?? favorites;
       const has = current[kind].includes(strId);
@@ -141,7 +146,7 @@ export function useFavorites() {
         throw error;
       }
     },
-    [favorites, user],
+    [favorites, user, signIn],
   );
 
   /** Adds a favourite without removing it if it is already saved. */
@@ -178,9 +183,10 @@ function safeReadLocal(key: string): string[] {
 
 export function FavoriteButton({ kind, id, size = "sm", onFollow, onFavoriteChange, onFavoriteSaved }: { kind: FavoriteKind; id: string | number; size?: "sm" | "md"; onFollow?: () => void; onFavoriteChange?: (active: boolean) => void; onFavoriteSaved?: (active: boolean) => void }) {
   const { user } = useAuth();
+  const signIn = useSignInAction();
   const { isFavorite, toggle } = useFavorites();
   const active = isFavorite(kind, id);
-  const disabled = kind !== "match" && kind !== "team" && !user;
+  const disabled = false;
   const dim = size === "md" ? "h-10 w-10" : "h-8 w-8";
   return (
     <Button variant="ghost" data-no-gesture
@@ -191,7 +197,7 @@ export function FavoriteButton({ kind, id, size = "sm", onFollow, onFavoriteChan
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (disabled) return;
+        if (!user) { signIn(); return; }
         const nextActive = !active;
         const save = toggle(kind, id);
         onFavoriteChange?.(nextActive);
@@ -224,6 +230,7 @@ const PREF_ROWS: { key: keyof AlertPrefs; label: string }[] = [
 let alertShared: { userId: string | null; alerts: string[]; prefs: AlertPrefs } | null = null;
 let alertLoading: Promise<void> | null = null;
 let alertLoadingFor: string | null | undefined;
+let alertSaveQueue: Promise<unknown> = Promise.resolve();
 const alertListeners = new Set<() => void>();
 function loadAlerts(userId: string | null): Promise<void> {
   if (alertShared && alertShared.userId === userId) return Promise.resolve();
@@ -248,7 +255,8 @@ function loadAlerts(userId: string | null): Promise<void> {
  * Match bell. Pressing it switches the match alerts on or off; the small
  * sliders button next to it chooses which moments are announced.
  */
-export function MatchNotificationButton({ matchId, teamIds = [], withSettings = false }: { matchId: string; teamIds?: (string | null | undefined)[]; withSettings?: boolean }) {
+export function MatchNotificationButton({ matchId, competitionId, teamIds = [], withSettings = false }: { matchId: string; competitionId?: string | null; teamIds?: (string | null | undefined)[]; withSettings?: boolean }) {
+  const signIn = useSignInAction();
   const { overrides } = useClubAlerts();
   const { user, loading: authLoading } = useAuth();
   const { favorites } = useFavorites();
@@ -257,7 +265,16 @@ export function MatchNotificationButton({ matchId, teamIds = [], withSettings = 
   const [prefs, setPrefs] = useState<AlertPrefs>({});
   const [openPrefs, setOpenPrefs] = useState(false);
   const box = useRef<HTMLDivElement>(null);
-  const inherited = teamIds.some((id) => Boolean(id && (overrides[id] ?? favorites.team.includes(id))));
+  const { overrides: compOverrides } = useCompetitionAlerts();
+  const [resolvedCompetition, setResolvedCompetition] = useState<string | null>(competitionId ?? null);
+  useEffect(() => {
+    if (competitionId) { setResolvedCompetition(competitionId); return; }
+    let live = true;
+    void competitionOfMatch(matchId).then((id) => { if (live) setResolvedCompetition(id); });
+    return () => { live = false; };
+  }, [matchId, competitionId]);
+  const competitionAlert = !!resolvedCompetition && compOverrides[resolvedCompetition] === true;
+  const inherited = competitionAlert || teamIds.some((id) => Boolean(id && (overrides[id] ?? favorites.team.includes(id))));
 
   const alertUserId = user?.id ?? null;
   useEffect(() => {
@@ -300,24 +317,32 @@ export function MatchNotificationButton({ matchId, teamIds = [], withSettings = 
         aria-label={active ? "Disable match notifications" : "Enable match notifications"}
         title={inherited && active ? "Following this club's matches" : active ? "Disable match notifications" : "Enable match notifications"}
         disabled={!loaded}
+        data-no-gesture
         onClick={async (event) => {
           event.preventDefault(); event.stopPropagation();
-          const next = explicit ? alerts.filter((id) => id !== matchId) : [...alerts, matchId];
-          const turningOn = inherited ? explicit : !explicit;
-          setAlerts(next);
-          if (alertShared) { alertShared = { ...alertShared, alerts: next }; for (const l of alertListeners) l(); }
-          try { localStorage.setItem(ALERT_KEY, JSON.stringify(next)); } catch { /* optional */ }
-          if (user) await supabase.from("profiles").update({ match_notification_ids: next }).eq("id", user.id);
-          // Tell the live alert listener to pick the new selection up straight away.
-          window.dispatchEvent(new Event("mas:alerts-changed"));
-          if (turningOn) {
-            if ("Notification" in window && Notification.permission === "default") {
-              try { await Notification.requestPermission(); } catch { /* declined */ }
-            }
-            toast.success("Match alerts on", { description: "Goals, cards and full time will be announced." });
-          } else {
-            toast("Match alerts off");
-          }
+          if (!user) { signIn(); return; }
+          const current = alertShared?.alerts ?? alerts;
+          const has = current.includes(matchId);
+          const next = has ? current.filter((id) => id !== matchId) : [...current, matchId];
+          const turningOn = inherited ? has : !has;
+          const write = (list: string[]) => {
+            setAlerts(list);
+            if (alertShared) { alertShared = { ...alertShared, alerts: list }; for (const l of alertListeners) l(); }
+            try { localStorage.setItem(ALERT_KEY, JSON.stringify(list)); } catch { /* optional */ }
+            window.dispatchEvent(new Event("mas:alerts-changed"));
+          };
+          // Flip the bell on the first tap; permission and saving follow behind it.
+          write(next);
+          // The choice is saved either way; the phone permission is asked alongside it.
+          if (turningOn) void requestAlertPermission();
+          const save = alertSaveQueue.catch(() => {}).then(async () => {
+            const { error } = await supabase.from("profiles").update({ match_notification_ids: alertShared?.alerts ?? next }).eq("id", user.id);
+            if (error) throw error;
+          });
+          alertSaveQueue = save;
+          try { await save; } catch { write(current); toast.error("Could not save match alerts"); return; }
+          if (turningOn) toast.success("Match alerts on", { description: "Goals, cards and full time will be announced." });
+          else toast("Match alerts off");
         }}
         className={`inline-flex h-8 w-8 items-center justify-center rounded-full border transition ${active ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground hover:text-primary"}`}
       >

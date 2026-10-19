@@ -1,3 +1,6 @@
+import logoMark from "@/assets/logo-mark-v2.png.asset.json";
+import { portraitSource } from "@/lib/portrait-source";
+
 /**
  * Designed share pictures drawn on a canvas - never a screenshot of the page.
  * Everything is laid out for a 1080px wide square-ish card that looks right in
@@ -379,13 +382,22 @@ export async function drawNewsCard(input: { title: string; summary?: string | nu
   const img = await loadImage(input.cover);
   const coverH = 640;
   if (img) {
+    // Keep the full original photo visible, inside a rounded card with a soft edge.
+    const s = Math.min((W - 100) / img.width, coverH / img.height);
+    const dw = img.width * s, dh = img.height * s;
+    const dx = W / 2 - dw / 2, dy = 50 + coverH / 2 - dh / 2;
     ctx.save();
-    roundRect(ctx, 50, 50, W - 100, coverH, 32); ctx.clip();
-    const s = Math.max((W - 100) / img.width, coverH / img.height);
-    ctx.drawImage(img, W / 2 - (img.width * s) / 2, 50 + coverH / 2 - (img.height * s) / 2, img.width * s, img.height * s);
-    const fade = ctx.createLinearGradient(0, 50 + coverH - 200, 0, 50 + coverH);
-    fade.addColorStop(0, "rgba(11,16,32,0)"); fade.addColorStop(1, "rgba(11,16,32,0.85)");
-    ctx.fillStyle = fade; ctx.fillRect(50, 50, W - 100, coverH);
+    ctx.beginPath();
+    roundRect(ctx, dx, dy, dw, dh, 36);
+    ctx.clip();
+    ctx.drawImage(img, dx, dy, dw, dh);
+    ctx.restore();
+    ctx.save();
+    ctx.beginPath();
+    roundRect(ctx, dx, dy, dw, dh, 36);
+    ctx.strokeStyle = "rgba(255,255,255,0.22)";
+    ctx.lineWidth = 3;
+    ctx.stroke();
     ctx.restore();
   }
   let y = img ? coverH + 140 : 220;
@@ -410,5 +422,121 @@ export async function drawNewsCard(input: { title: string; summary?: string | nu
     ctx.fillText(input.date, x, H - 110);
   }
   ctx.direction = "ltr";
+  return toBlob(canvas);
+}
+
+
+/** Both starting elevens on one branded match pitch, using the shared card surface. */
+export async function drawMatchLineupsCard(input: {
+  competition: string; kickoff: string; accent: string;
+  teams: { teamName: string; logo?: string | null; formation: string; coach?: string | null; rows: { name: string; number: string; photo?: string | null }[][]; bench?: { name: string; number: string; photo?: string | null }[] }[];
+}): Promise<Blob | null> {
+  // Substitutes sit in two columns under the pitch; the card grows to fit them.
+  const benchRows = Math.min(14, Math.max(0, ...input.teams.slice(0, 2).map((team) => team.bench?.length ?? 0)));
+  const benchH = benchRows ? 110 + benchRows * 46 : 0;
+  const W = 1080, H = 1760 + benchH;
+  const made = surface(W, H, input.accent);
+  if (!made) return null;
+  const { canvas, ctx } = made;
+  const teams = input.teams.slice(0, 2);
+  const players = teams.flatMap((team) => team.rows.flat());
+  const [logos, photos, mark] = await Promise.all([
+    Promise.all(teams.map((team) => loadImage(team.logo))),
+    Promise.all(players.map(async (player) => {
+      const source = portraitSource(player.photo);
+      const photo = await loadImage(source);
+      return photo ?? (source !== player.photo ? await loadImage(player.photo) : null);
+    })),
+    loadImage(logoMark.url),
+  ]);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `800 60px ${FONT}`;
+  ctx.fillText("Starting lineups", 60, 116);
+  ctx.font = `500 30px ${FONT}`;
+  ctx.fillStyle = "rgba(255,255,255,0.7)";
+  ctx.fillText(input.competition.slice(0, 52), 60, 165);
+  ctx.font = `500 24px ${FONT}`;
+  ctx.fillText(input.kickoff, 60, 205);
+  const px = 60, py = 340, pw = 960, ph = 1220;
+  ctx.save();
+  roundRect(ctx, px, py, pw, ph, 28);
+  ctx.clip();
+  for (let i = 0; i < 16; i++) {
+    ctx.fillStyle = i % 2 ? "#122c30" : "#163438";
+    ctx.fillRect(px, py + i * ph / 16, pw, ph / 16);
+  }
+  ctx.strokeStyle = "rgba(255,255,255,0.22)";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(px + 22, py + 22, pw - 44, ph - 44);
+  ctx.beginPath(); ctx.moveTo(px + 22, py + ph / 2); ctx.lineTo(px + pw - 22, py + ph / 2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(W / 2, py + ph / 2, 95, 0, Math.PI * 2); ctx.stroke();
+  ctx.strokeRect(W / 2 - 160, py + 22, 320, 125);
+  ctx.strokeRect(W / 2 - 160, py + ph - 147, 320, 125);
+  ctx.restore();
+  let photoIndex = 0;
+  teams.forEach((team, ti) => {
+    const headerY = ti === 0 ? 280 : 1640;
+    crest(ctx, logos[ti], team.teamName, 96, headerY, 58);
+    ctx.textAlign = "left";
+    ctx.fillStyle = "#ffffff";
+    ctx.font = `800 34px ${FONT}`;
+    ctx.fillText(team.teamName, 146, headerY + 10, 660);
+    ctx.textAlign = "right";
+    ctx.font = `700 30px ${FONT}`;
+    ctx.fillStyle = "rgba(255,255,255,0.7)";
+    ctx.fillText(team.formation, 1010, headerY + 10);
+    const rows = team.rows.filter((row) => row.length);
+    rows.forEach((row, ri) => {
+      // The source rows run attack to goalkeeper; each goalkeeper faces its own goal.
+      const depth = (ri + 0.5) / rows.length;
+      const cy = ti === 0 ? py + ph / 2 - depth * (ph / 2 - 36) : py + ph / 2 + depth * (ph / 2 - 36);
+      row.forEach((player, pi) => {
+        const cx = px + pw * (pi + 0.5) / row.length;
+        const photo = photos[photoIndex++];
+        ctx.save();
+        ctx.beginPath(); ctx.arc(cx, cy - 10, 36, 0, Math.PI * 2); ctx.clip();
+        ctx.fillStyle = "#26364b"; ctx.fillRect(cx - 36, cy - 46, 72, 72);
+        if (photo) {
+          const scale = Math.max(72 / photo.width, 72 / photo.height);
+          ctx.drawImage(photo, cx - photo.width * scale / 2, cy - 10 - photo.height * scale / 2, photo.width * scale, photo.height * scale);
+        } else {
+          ctx.textAlign = "center"; ctx.fillStyle = "#ffffff"; ctx.font = `800 26px ${FONT}`;
+          ctx.fillText(player.name.split(/\s+/).map((part) => part[0]).slice(0, 2).join(""), cx, cy);
+        }
+        ctx.restore();
+        ctx.beginPath(); ctx.arc(cx, cy - 10, 37, 0, Math.PI * 2);
+        ctx.strokeStyle = ti === 0 ? "#60a5fa" : "#4ade80"; ctx.lineWidth = 3; ctx.stroke();
+        ctx.textAlign = "center";
+        ctx.font = `700 22px ${FONT}`;
+        const label = `${player.number}  ${player.name}`;
+        const width = Math.min(pw / row.length - 10, ctx.measureText(label).width + 20);
+        ctx.fillStyle = "rgba(11,16,32,0.88)";
+        roundRect(ctx, cx - width / 2, cy + 33, width, 32, 8); ctx.fill();
+        ctx.fillStyle = "#ffffff"; ctx.fillText(label, cx, cy + 56, width - 12);
+      });
+    });
+  });
+  if (benchRows) {
+    const top = 1700;
+    ctx.fillStyle = "rgba(255,255,255,0.06)";
+    roundRect(ctx, 60, top, 960, benchH - 30, 24); ctx.fill();
+    ctx.textAlign = "left"; ctx.fillStyle = "rgba(255,255,255,0.6)"; ctx.font = `800 24px ${FONT}`;
+    ctx.fillText("SUBSTITUTES", 92, top + 50);
+    teams.forEach((team, ti) => {
+      const x = ti === 0 ? 92 : 570;
+      (team.bench ?? []).slice(0, benchRows).forEach((player, i) => {
+        const y = top + 100 + i * 46;
+        ctx.fillStyle = ti === 0 ? "#60a5fa" : "#4ade80";
+        roundRect(ctx, x, y - 26, 48, 34, 8); ctx.fill();
+        ctx.fillStyle = "#0b1020"; ctx.font = `800 20px ${FONT}`; ctx.textAlign = "center";
+        ctx.fillText(player.number || "-", x + 24, y - 2);
+        ctx.textAlign = "left"; ctx.fillStyle = "#ffffff"; ctx.font = `600 24px ${FONT}`;
+        ctx.fillText(player.name, x + 62, y - 1, 380);
+      });
+    });
+  }
+  if (mark) { ctx.save(); ctx.globalAlpha = 0.7; ctx.filter = "brightness(0) invert(1)"; crest(ctx, mark, "", 978, 1516, 48); ctx.restore(); }
+  ctx.textAlign = "left"; ctx.font = `600 22px ${FONT}`;
+  ctx.fillStyle = "rgba(255,255,255,0.45)"; ctx.fillText("MA Scores · Match lineups", 60, H - 40);
   return toBlob(canvas);
 }

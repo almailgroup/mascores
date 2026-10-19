@@ -14,6 +14,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ContributeRouteImport } from './routes/contribute'
 import { Route as FavoritesRouteImport } from './routes/favorites'
+import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as PrivacypolicyRouteImport } from './routes/privacypolicy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ScannerRouteImport } from './routes/scanner'
@@ -23,6 +24,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as TicketsRouteImport } from './routes/tickets'
 import { Route as TransfersRouteImport } from './routes/transfers'
+import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as ApiRemoveBgRouteImport } from './routes/api/remove-bg'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as AuthNativeRouteImport } from './routes/auth.native'
@@ -63,6 +65,11 @@ const ContributeRoute = ContributeRouteImport.update({
 const FavoritesRoute = FavoritesRouteImport.update({
   id: '/favorites',
   path: '/favorites',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacypolicyRoute = PrivacypolicyRouteImport.update({
@@ -108,6 +115,11 @@ const TicketsRoute = TicketsRouteImport.update({
 const TransfersRoute = TransfersRouteImport.update({
   id: '/transfers',
   path: '/transfers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VerifyRoute = VerifyRouteImport.update({
+  id: '/verify',
+  path: '/verify',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiRemoveBgRoute = ApiRemoveBgRouteImport.update({
@@ -197,6 +209,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRouteWithChildren
   '/contribute': typeof ContributeRoute
   '/favorites': typeof FavoritesRoute
+  '/notifications': typeof NotificationsRoute
   '/privacypolicy': typeof PrivacypolicyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/scanner': typeof ScannerRoute
@@ -206,6 +219,7 @@ export interface FileRoutesByFullPath {
   '/support': typeof SupportRoute
   '/tickets': typeof TicketsRoute
   '/transfers': typeof TransfersRoute
+  '/verify': typeof VerifyRoute
   '/api/remove-bg': typeof ApiRemoveBgRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/native': typeof AuthNativeRoute
@@ -229,6 +243,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRouteWithChildren
   '/contribute': typeof ContributeRoute
   '/favorites': typeof FavoritesRoute
+  '/notifications': typeof NotificationsRoute
   '/privacypolicy': typeof PrivacypolicyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/scanner': typeof ScannerRoute
@@ -238,6 +253,7 @@ export interface FileRoutesByTo {
   '/support': typeof SupportRoute
   '/tickets': typeof TicketsRoute
   '/transfers': typeof TransfersRoute
+  '/verify': typeof VerifyRoute
   '/api/remove-bg': typeof ApiRemoveBgRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/native': typeof AuthNativeRoute
@@ -262,6 +278,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRouteWithChildren
   '/contribute': typeof ContributeRoute
   '/favorites': typeof FavoritesRoute
+  '/notifications': typeof NotificationsRoute
   '/privacypolicy': typeof PrivacypolicyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/scanner': typeof ScannerRoute
@@ -271,6 +288,7 @@ export interface FileRoutesById {
   '/support': typeof SupportRoute
   '/tickets': typeof TicketsRoute
   '/transfers': typeof TransfersRoute
+  '/verify': typeof VerifyRoute
   '/api/remove-bg': typeof ApiRemoveBgRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/native': typeof AuthNativeRoute
@@ -296,6 +314,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/contribute'
     | '/favorites'
+    | '/notifications'
     | '/privacypolicy'
     | '/reset-password'
     | '/scanner'
@@ -305,6 +324,7 @@ export interface FileRouteTypes {
     | '/support'
     | '/tickets'
     | '/transfers'
+    | '/verify'
     | '/api/remove-bg'
     | '/auth/callback'
     | '/auth/native'
@@ -328,6 +348,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/contribute'
     | '/favorites'
+    | '/notifications'
     | '/privacypolicy'
     | '/reset-password'
     | '/scanner'
@@ -337,6 +358,7 @@ export interface FileRouteTypes {
     | '/support'
     | '/tickets'
     | '/transfers'
+    | '/verify'
     | '/api/remove-bg'
     | '/auth/callback'
     | '/auth/native'
@@ -360,6 +382,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/contribute'
     | '/favorites'
+    | '/notifications'
     | '/privacypolicy'
     | '/reset-password'
     | '/scanner'
@@ -369,6 +392,7 @@ export interface FileRouteTypes {
     | '/support'
     | '/tickets'
     | '/transfers'
+    | '/verify'
     | '/api/remove-bg'
     | '/auth/callback'
     | '/auth/native'
@@ -393,6 +417,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRouteWithChildren
   ContributeRoute: typeof ContributeRoute
   FavoritesRoute: typeof FavoritesRoute
+  NotificationsRoute: typeof NotificationsRoute
   PrivacypolicyRoute: typeof PrivacypolicyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ScannerRoute: typeof ScannerRoute
@@ -402,6 +427,7 @@ export interface RootRouteChildren {
   SupportRoute: typeof SupportRoute
   TicketsRoute: typeof TicketsRoute
   TransfersRoute: typeof TransfersRoute
+  VerifyRoute: typeof VerifyRoute
   ApiRemoveBgRoute: typeof ApiRemoveBgRoute
   CoachesIdRoute: typeof CoachesIdRoute
   CompetitionsSlugRoute: typeof CompetitionsSlugRoute
@@ -453,6 +479,13 @@ declare module '@tanstack/react-router' {
       path: '/favorites'
       fullPath: '/favorites'
       preLoaderRoute: typeof FavoritesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacypolicy': {
@@ -516,6 +549,13 @@ declare module '@tanstack/react-router' {
       path: '/transfers'
       fullPath: '/transfers'
       preLoaderRoute: typeof TransfersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verify': {
+      id: '/verify'
+      path: '/verify'
+      fullPath: '/verify'
+      preLoaderRoute: typeof VerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/remove-bg': {
@@ -651,6 +691,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRouteWithChildren,
   ContributeRoute: ContributeRoute,
   FavoritesRoute: FavoritesRoute,
+  NotificationsRoute: NotificationsRoute,
   PrivacypolicyRoute: PrivacypolicyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ScannerRoute: ScannerRoute,
@@ -660,6 +701,7 @@ const rootRouteChildren: RootRouteChildren = {
   SupportRoute: SupportRoute,
   TicketsRoute: TicketsRoute,
   TransfersRoute: TransfersRoute,
+  VerifyRoute: VerifyRoute,
   ApiRemoveBgRoute: ApiRemoveBgRoute,
   CoachesIdRoute: CoachesIdRoute,
   CompetitionsSlugRoute: CompetitionsSlugRoute,

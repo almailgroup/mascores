@@ -6,7 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useFavorites } from "@/hooks/use-favorites";
 import { useTx } from "@/lib/auto-translate";
-import { ensureNativePermission, isNativeApp } from "@/lib/native-notify";
+import { requestAlertPermission } from "@/lib/notification-permission";
+import { useSignInAction } from "@/lib/sign-in-action";
 
 const KEY = "mas.player_alert_overrides";
 function read(): Record<string, boolean> {
@@ -14,6 +15,7 @@ function read(): Record<string, boolean> {
 }
 
 export function PlayerNotificationButton({ playerId }: { playerId: string }) {
+  const signIn = useSignInAction();
   const { user } = useAuth();
   const { favorites } = useFavorites();
   const tx = useTx();
@@ -24,10 +26,11 @@ export function PlayerNotificationButton({ playerId }: { playerId: string }) {
   const write = (v: Record<string, boolean>) => { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch { /* optional */ } setOverrides(v); };
   return <Button data-no-gesture variant="ghost" size="icon" title={label ?? undefined} aria-label={label ?? undefined} aria-pressed={active} className="sports-header-control bg-transparent text-current hover:bg-transparent" onClick={async (event) => {
     event.preventDefault(); event.stopPropagation();
+    if (!user) { signIn(); return; }
+    if (!active) void requestAlertPermission();
     const previous = read();
     write({ ...previous, [playerId]: !active });
     try {
-      if (!active && isNativeApp()) void ensureNativePermission().catch(() => {});
       if (user) { const { error } = await supabase.rpc("set_player_notification", { _player_id: playerId, _enabled: !active }); if (error) throw error; }
     } catch { write(previous); toast.error(tx("Unable to save notifications")); }
   }}><Bell className="h-4 w-4" fill={active ? "currentColor" : "none"} /></Button>;

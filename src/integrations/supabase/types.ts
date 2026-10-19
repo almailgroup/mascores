@@ -746,6 +746,27 @@ export type Database = {
           },
         ]
       }
+      follow_requests: {
+        Row: {
+          created_at: string
+          id: string
+          requester_id: string
+          target_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          requester_id: string
+          target_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          requester_id?: string
+          target_id?: string
+        }
+        Relationships: []
+      }
       import_staging: {
         Row: {
           created_at: string
@@ -1121,6 +1142,7 @@ export type Database = {
           id: string
           match_id: string
           minutes_before: number
+          sent_for: string | null
           user_id: string
         }
         Insert: {
@@ -1128,6 +1150,7 @@ export type Database = {
           id?: string
           match_id: string
           minutes_before?: number
+          sent_for?: string | null
           user_id: string
         }
         Update: {
@@ -1135,6 +1158,7 @@ export type Database = {
           id?: string
           match_id?: string
           minutes_before?: number
+          sent_for?: string | null
           user_id?: string
         }
         Relationships: [
@@ -1187,6 +1211,7 @@ export type Database = {
       }
       matches: {
         Row: {
+          alerts_muted: boolean
           away_coach_id: string | null
           away_formation: string | null
           away_pen: number | null
@@ -1223,6 +1248,7 @@ export type Database = {
           venue_id: string | null
         }
         Insert: {
+          alerts_muted?: boolean
           away_coach_id?: string | null
           away_formation?: string | null
           away_pen?: number | null
@@ -1259,6 +1285,7 @@ export type Database = {
           venue_id?: string | null
         }
         Update: {
+          alerts_muted?: boolean
           away_coach_id?: string | null
           away_formation?: string | null
           away_pen?: number | null
@@ -1369,6 +1396,30 @@ export type Database = {
           source?: string
           title?: string | null
           url?: string
+        }
+        Relationships: []
+      }
+      merge_dismissals: {
+        Row: {
+          a_id: string
+          b_id: string
+          created_at: string
+          created_by: string | null
+          kind: string
+        }
+        Insert: {
+          a_id: string
+          b_id: string
+          created_at?: string
+          created_by?: string | null
+          kind: string
+        }
+        Update: {
+          a_id?: string
+          b_id?: string
+          created_at?: string
+          created_by?: string | null
+          kind?: string
         }
         Relationships: []
       }
@@ -1840,6 +1891,7 @@ export type Database = {
           created_at: string
           currency: string
           display_name: string | null
+          display_name_changed_at: string | null
           favorite_competition_ids: string[]
           favorite_match_ids: string[]
           favorite_player_ids: string[]
@@ -1853,6 +1905,7 @@ export type Database = {
           theme: string
           updated_at: string
           username: string | null
+          username_changed_at: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -1860,6 +1913,7 @@ export type Database = {
           created_at?: string
           currency?: string
           display_name?: string | null
+          display_name_changed_at?: string | null
           favorite_competition_ids?: string[]
           favorite_match_ids?: string[]
           favorite_player_ids?: string[]
@@ -1873,6 +1927,7 @@ export type Database = {
           theme?: string
           updated_at?: string
           username?: string | null
+          username_changed_at?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -1880,6 +1935,7 @@ export type Database = {
           created_at?: string
           currency?: string
           display_name?: string | null
+          display_name_changed_at?: string | null
           favorite_competition_ids?: string[]
           favorite_match_ids?: string[]
           favorite_player_ids?: string[]
@@ -1893,6 +1949,7 @@ export type Database = {
           theme?: string
           updated_at?: string
           username?: string | null
+          username_changed_at?: string | null
         }
         Relationships: []
       }
@@ -1900,6 +1957,7 @@ export type Database = {
         Row: {
           audience_team_id: string | null
           audience_type: string
+          audience_user_id: string | null
           body_ar: string
           body_en: string
           created_at: string
@@ -1909,12 +1967,14 @@ export type Database = {
           path: string | null
           result: Json | null
           sent_at: string | null
+          social_kind: string | null
           title_ar: string
           title_en: string
         }
         Insert: {
           audience_team_id?: string | null
           audience_type?: string
+          audience_user_id?: string | null
           body_ar?: string
           body_en?: string
           created_at?: string
@@ -1924,12 +1984,14 @@ export type Database = {
           path?: string | null
           result?: Json | null
           sent_at?: string | null
+          social_kind?: string | null
           title_ar: string
           title_en: string
         }
         Update: {
           audience_team_id?: string | null
           audience_type?: string
+          audience_user_id?: string | null
           body_ar?: string
           body_en?: string
           created_at?: string
@@ -1939,6 +2001,7 @@ export type Database = {
           path?: string | null
           result?: Json | null
           sent_at?: string | null
+          social_kind?: string | null
           title_ar?: string
           title_en?: string
         }
@@ -2022,6 +2085,139 @@ export type Database = {
             columns: ["match_id"]
             isOneToOne: false
             referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recording_interactions: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          kind: string
+          recording_id: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          recording_id: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          recording_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recording_interactions_recording_id_fkey"
+            columns: ["recording_id"]
+            isOneToOne: false
+            referencedRelation: "voice_recordings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_notifications: {
+        Row: {
+          actor_id: string
+          created_at: string
+          id: string
+          kind: string
+          message: string | null
+          read_at: string | null
+          recipient_id: string
+          recording_id: string | null
+          verification_badge: string | null
+          verification_request_id: string | null
+          verification_status: string | null
+        }
+        Insert: {
+          actor_id: string
+          created_at?: string
+          id?: string
+          kind: string
+          message?: string | null
+          read_at?: string | null
+          recipient_id: string
+          recording_id?: string | null
+          verification_badge?: string | null
+          verification_request_id?: string | null
+          verification_status?: string | null
+        }
+        Update: {
+          actor_id?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          message?: string | null
+          read_at?: string | null
+          recipient_id?: string
+          recording_id?: string | null
+          verification_badge?: string | null
+          verification_request_id?: string | null
+          verification_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_notifications_recording_id_fkey"
+            columns: ["recording_id"]
+            isOneToOne: false
+            referencedRelation: "voice_recordings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "social_notifications_verification_request_id_fkey"
+            columns: ["verification_request_id"]
+            isOneToOne: false
+            referencedRelation: "verification_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_reports: {
+        Row: {
+          created_at: string
+          details: string | null
+          id: string
+          reason: string
+          recording_id: string | null
+          reporter_id: string
+          status: string
+          target_user_id: string
+        }
+        Insert: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason: string
+          recording_id?: string | null
+          reporter_id: string
+          status?: string
+          target_user_id: string
+        }
+        Update: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason?: string
+          recording_id?: string | null
+          reporter_id?: string
+          status?: string
+          target_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_reports_recording_id_fkey"
+            columns: ["recording_id"]
+            isOneToOne: false
+            referencedRelation: "voice_recordings"
             referencedColumns: ["id"]
           },
         ]
@@ -2856,6 +3052,41 @@ export type Database = {
         }
         Relationships: []
       }
+      verification_requests: {
+        Row: {
+          created_at: string
+          id: string
+          links: string | null
+          proof: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          links?: string | null
+          proof: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          links?: string | null
+          proof?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       voice_recordings: {
         Row: {
           audio_url: string
@@ -2867,6 +3098,7 @@ export type Database = {
           is_public: boolean
           match_id: string | null
           room_id: string | null
+          speaker_timeline: Json
           title: string
           updated_at: string
         }
@@ -2880,6 +3112,7 @@ export type Database = {
           is_public?: boolean
           match_id?: string | null
           room_id?: string | null
+          speaker_timeline?: Json
           title: string
           updated_at?: string
         }
@@ -2893,6 +3126,7 @@ export type Database = {
           is_public?: boolean
           match_id?: string | null
           room_id?: string | null
+          speaker_timeline?: Json
           title?: string
           updated_at?: string
         }
@@ -3035,6 +3269,7 @@ export type Database = {
           created_at: string
           description: string | null
           ended_at: string | null
+          host_active_at: string
           host_id: string
           id: string
           invite_code: string
@@ -3050,6 +3285,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           ended_at?: string | null
+          host_active_at?: string
           host_id: string
           id?: string
           invite_code?: string
@@ -3065,6 +3301,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           ended_at?: string | null
+          host_active_at?: string
           host_id?: string
           id?: string
           invite_code?: string
@@ -3082,6 +3319,32 @@ export type Database = {
             columns: ["match_id"]
             isOneToOne: false
             referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      voice_user_badges: {
+        Row: {
+          badge: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          badge: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          badge?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voice_user_badges_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -3119,6 +3382,8 @@ export type Database = {
       }
       admin_unlock_allowed: { Args: { _uid: string }; Returns: boolean }
       ar_skeleton: { Args: { _t: string }; Returns: string }
+      can_view_recording: { Args: { _id: string }; Returns: boolean }
+      can_view_social_profile: { Args: { _host: string }; Returns: boolean }
       chat_author_profiles: {
         Args: { _ids: string[] }
         Returns: {
@@ -3136,6 +3401,8 @@ export type Database = {
         Args: { _competition_id: string; _season?: string }
         Returns: Json
       }
+      display_voice_badge: { Args: { _user: string }; Returns: string }
+      end_inactive_voice_rooms: { Args: never; Returns: undefined }
       enqueue_match_push: {
         Args: {
           _ba: string
@@ -3207,7 +3474,19 @@ export type Database = {
         Args: { _succeeded: boolean; _uid: string }
         Returns: undefined
       }
+      reply_verification: {
+        Args: { _message: string; _request: string }
+        Returns: string
+      }
+      respond_follow_request: {
+        Args: { _accept: boolean; _request: string }
+        Returns: undefined
+      }
       restore_deleted_batch: { Args: { _batch_id: number }; Returns: number }
+      review_verification: {
+        Args: { _badge: string; _request: string }
+        Returns: undefined
+      }
       revoke_admin: { Args: { _uid: string }; Returns: undefined }
       search_profiles: {
         Args: { _limit?: number; _q: string }
@@ -3226,8 +3505,14 @@ export type Database = {
           score: number
         }[]
       }
+      send_highlights_push: { Args: { _match_id: string }; Returns: undefined }
+      send_transfer_push: { Args: { _transfer_id: string }; Returns: undefined }
       set_club_notification: {
         Args: { _enabled: boolean; _team_id: string }
+        Returns: Json
+      }
+      set_competition_notification: {
+        Args: { _competition_id: string; _enabled: boolean }
         Returns: Json
       }
       set_player_notification: {
@@ -3236,8 +3521,28 @@ export type Database = {
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      social_follow_list: {
+        Args: { _kind: string; _user: string }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          id: string
+          username: string
+        }[]
+      }
+      social_identity: {
+        Args: { _ids: string[] }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          id: string
+          username: string
+        }[]
+      }
+      social_profile: { Args: { _username: string }; Returns: Json }
       voice_delete_room: { Args: { _room_id: string }; Returns: undefined }
       voice_end_room: { Args: { _room_id: string }; Returns: undefined }
+      voice_host_activity: { Args: { _room_id: string }; Returns: undefined }
       voice_host_profiles: {
         Args: { _ids: string[] }
         Returns: {
@@ -3250,6 +3555,17 @@ export type Database = {
       voice_manage_participant: {
         Args: { _action: string; _room_id: string; _user_id: string }
         Returns: undefined
+      }
+      voice_people: {
+        Args: { _admin?: boolean; _q?: string }
+        Returns: {
+          avatar_url: string
+          badge: string
+          display_name: string
+          followers: number
+          id: string
+          username: string
+        }[]
       }
       voice_room_by_code: {
         Args: { _code: string }

@@ -1,4 +1,22 @@
 # Roadmap
+- [x] Show full news photo in shared images; verified Abdullah Fares share keeps his entire original photo
+- [x] Load lineup coaches with players and reveal club/national squad portraits together; verified real coach and player photos
+- [x] Fix profile photo cropping; verified drag, zoom, save and profile photo reload
+- [x] Move profile verification beside the top username only, above recording/follower/following counters; checked phone/desktop
+- [x] Add verification decision replies to the applicant inbox and a secure custom owner-only badge; checked approval/decline reply delivery and blocked owner assignment
+- [x] Add social reporting, reference-style share icons and uniform profile counters; verify submission, moderation, sharing and phone/desktop alignment in browser
+- [x] Open followers, following and Edit profile full-screen
+- [x] Redesign profiles with confirmed private/public account controls and follow requests
+- [x] Add recording likes, comments, sharing and reposts
+- [x] Add social activity inbox and configurable phone alerts
+- [x] Verify private/public audio access, recording interactions, full-screen views and saved preferences in browser
+- [ ] Verify follow-request acceptance and social phone delivery across two accounts — requires a second account and real phones
+- [x] Retry permission on bells and redirect signed-out favourite/alert actions to sign-in
+- [x] Check notification preview privacy and sender content (payload has real title/body; device setting remains unverified)
+- [x] Repair voice negotiation collisions and end rooms after ten minutes of host inactivity
+- [x] Default search to All; move people search, recommendations and history to Voice
+- [x] Add secure owner-admin voice-user verified/golden verification controls; save/reload verified
+- [ ] Validate simultaneous speaking and permission denial/re-enable on real iPhones — requires multiple devices
 - [x] Fix Mohammed Aman's Yemen flag and verify shared flags across countries
 - [x] Keep the club president crown black and white
 - [x] Update club followers immediately when starred and fix stuck star/notification controls
@@ -69,3 +87,15 @@
 - [x] Automatic 60/30/5-minute kick-off reminders for followed matches and clubs
 - [x] Owner news "send as notification" on publish/approve and custom notification sender
 - [ ] Re-enter the Apple push key (.p8) — waiting on the user
+- [x] Add a Settings switch for voice room live alerts
+- [x] Match highlights: 'send notification' option -> 'Highlights available' alert
+- [x] Voice: show usernames not codes; invite-code join with Enter; top-5 recommendations (golden, verified, followers) only on search focus; clearer badge; uncut profile names; save/delete on end room + edit saved title/photo
+- [x] Match: line-style momentum with only goal icons; lineup photos reveal together; logo watermark on lineups; new lineup share design with photos
+- [x] Admin phone layout: notifications panel/history, teams, venues, popups for list items and channels; notification history and Almail AI main-admin only
+- [x] Competition bell marks its matches; league followers get transfer alerts; hide temporary players from players list; keep historical coaches per match
+- [x] One-tap bells/stars and league bell lighting its match bells; show bench in lineup share picture
+- [x] Merge: "Not the same" pairs must never come back
+- [x] Removing a coach from a club releases him (no delete)
+- [x] Admin: nothing preselected on entry; each section opens as a popup; Countries fits the phone
+- [x] Lineup logo watermark light white
+- [x] Profile: followers/following popups with search, recordings count, edit-profile popup with public/private, verification request page, owner Verify section, replay public/private filter, removed My voice replays from settings
