@@ -45,6 +45,7 @@ function VoiceRoomPage() {
   const [joining, setJoining] = useState(false);
   const [saving, setSaving] = useState(false);
   const [ending, setEnding] = useState(false);
+  const [recDescription, setRecDescription] = useState("");
   const [showCode, setShowCode] = useState(false);
   const [confirmChoice, setConfirmChoice] = useState<null | "save" | "delete">(null);
 
@@ -226,7 +227,14 @@ function VoiceRoomPage() {
     const file = new File([result.blob], `${crypto.randomUUID()}.${ext}`, { type: result.blob.type });
     const url = await uploadMedia("voice-recordings", file, user.id);
     if (!url) throw new Error(tx("The replay could not be saved."));
-    const { error } = await supabase.from("voice_recordings").insert({ room_id: id, host_id: user.id, match_id: room.data.match_id ?? null, title: room.data.title, cover_url: room.data.photo_url, audio_url: url, duration_seconds: result.seconds, is_public: false, speaker_timeline: { moments: result.timeline, people: result.people } });
+    // Room chat is replayed alongside the audio at the moment each message was sent.
+    const startedAt = Date.now() - result.seconds * 1000;
+    const { data: msgs } = await supabase.from("voice_room_messages").select("user_id,body,created_at").eq("room_id", id).order("created_at").limit(1000);
+    const authorIds = [...new Set((msgs ?? []).map((m) => m.user_id))];
+    const { data: authors } = authorIds.length ? await supabase.rpc("social_identity", { _ids: authorIds }) : { data: [] };
+    const byId = new Map(((authors ?? []) as { id: string; display_name: string | null; username: string | null; avatar_url: string | null }[]).map((a) => [a.id, a]));
+    const chat_log = (msgs ?? []).map((m) => { const a = byId.get(m.user_id); return { t: Math.max(0, (new Date(m.created_at).getTime() - startedAt) / 1000), name: a?.display_name ?? a?.username ?? "Fan", avatar: a?.avatar_url ?? null, body: m.body }; });
+    const { error } = await supabase.from("voice_recordings").insert({ room_id: id, host_id: user.id, match_id: room.data.match_id ?? null, title: room.data.title, description: recDescription.trim() || null, chat_log, cover_url: room.data.photo_url, audio_url: url, duration_seconds: result.seconds, is_public: false, speaker_timeline: { moments: result.timeline, people: result.people } });
     if (error) throw error;
     await qc.invalidateQueries({ queryKey: ["voice-replays"] });
   };
@@ -316,6 +324,7 @@ function VoiceRoomPage() {
       <Dialog open={ending} onOpenChange={(open) => { if (!saving) { setEnding(open); setConfirmChoice(null); } }}>
         <DialogContent><DialogHeader><DialogTitle>{confirmChoice ? (lang === "ar" ? "هل أنت متأكد؟" : "Are you sure?") : (lang === "ar" ? "إنهاء الغرفة" : "End room")}</DialogTitle><DialogDescription>{confirmChoice === "save" ? (lang === "ar" ? "سيتم إنهاء الغرفة وحفظ التسجيل في ملفك الشخصي." : "The room will end and the replay will be saved to your profile.") : confirmChoice === "delete" ? (lang === "ar" ? "سيتم إنهاء الغرفة وحذفها مع التسجيل نهائياً." : "The room and its recording will be ended and deleted permanently.") : (lang === "ar" ? "الغرفة تُسجَّل تلقائياً. احفظها في ملفك الشخصي أو احذفها." : "The room is recorded automatically. Save it to your profile or delete it.")}</DialogDescription></DialogHeader>
           {actionError && <p role="alert" className="text-sm text-destructive">{actionError}</p>}
+          {confirmChoice === "save" && <label className="block text-sm font-medium">{lang === "ar" ? "الوصف (اختياري)" : "Description (optional)"}<textarea rows={3} maxLength={1000} value={recDescription} onChange={(e) => setRecDescription(e.target.value)} placeholder={lang === "ar" ? "عن ماذا كان الحديث؟" : "What was this conversation about?"} className="mt-2 w-full rounded-xl border border-border bg-background p-3 text-base" /></label>}
           {confirmChoice ? (<>
             <button disabled={saving} onClick={() => void finishRoom(confirmChoice === "save")} className={`inline-flex items-center justify-center gap-2 rounded-xl p-3 font-bold disabled:opacity-50 ${confirmChoice === "save" ? "bg-primary text-primary-foreground" : "bg-destructive text-destructive-foreground"}`}>{saving && <Loader2 className="h-4 w-4 animate-spin" />}{lang === "ar" ? "نعم، تأكيد" : "Yes, confirm"}</button>
             <button disabled={saving} onClick={() => setConfirmChoice(null)} className="rounded-xl border border-border p-3 font-bold disabled:opacity-50">{lang === "ar" ? "رجوع" : "Back"}</button>
