@@ -26,6 +26,7 @@ export function ApprovalsPanel() {
   });
   const teamName = new Map((teams.data ?? []).map((t) => [t.id, t.name]));
   const decide = async (id: string, status: "approved" | "rejected") => {
+    if(!confirm(status==='approved' ? 'Approve this Rabta post and make it public?' : 'Reject this Rabta post?'))return;
     await supabase.from("ultras_posts").update({ status }).eq("id", id);
     qc.invalidateQueries({ queryKey: ["approval-rabta"] });
     qc.invalidateQueries({ queryKey: ["ultras-posts"] });
@@ -103,6 +104,7 @@ function PendingTickets() {
   };
 
   const decide = async (id: string, approve: boolean) => {
+    if(!confirm(approve ? 'Approve this ticket offer and make it available?' : 'Reject this ticket offer?'))return;
     await supabase
       .from("ticket_offers")
       .update(approve ? { approval_status: "approved", is_active: true } : { approval_status: "rejected", is_active: false })
@@ -147,6 +149,7 @@ function PendingChanges() {
   const requests = useQuery({ queryKey: ["approval-changes"], queryFn: () => list({}) });
 
   const decide = async (id: string, approve: boolean) => {
+    if(!confirm(approve ? 'Accept and apply this requested change?' : 'Reject this requested change?'))return;
     setError(null);
     try {
       await decideFn({ data: { id, approve } });
