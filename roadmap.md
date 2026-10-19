@@ -1,7 +1,8 @@
 # Roadmap
-- [ ] Add recording comment replies, likes and targeted reports; verify saved interactions
-- [ ] Improve recording description display and editor
-- [ ] Restore calm match notification sounds and complete kickoff/halftime/reminder alerts
+- [x] Add recording comment replies, likes and targeted reports; verified saved interactions and report snapshots
+- [x] Improve recording description display and editor; verified save/reload and phone fit
+- [x] Restore calm match sounds, prevent duplicate foreground phone sounds, and correct period announcements; confirmed kickoff/halftime/reminder delivery records
+- [ ] Hear restored sounds on a real iPhone — requires an updated iPhone app build and device
 - [x] Show full news photo in shared images; verified Abdullah Fares share keeps his entire original photo
 - [x] Load lineup coaches with players and reveal club/national squad portraits together; verified real coach and player photos
 - [x] Fix profile photo cropping; verified drag, zoom, save and profile photo reload
