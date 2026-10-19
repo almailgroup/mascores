@@ -45,6 +45,7 @@ function VoicePage() {
   const [joinCode, setJoinCode] = useState(code ?? "");
   const [codeError, setCodeError] = useState<string | null>(null);
   const suspension = useMySuspension(user?.id);
+  const [tab, setTab] = useState<"live" | "recordings">("live");
 
   const rooms = useQuery({
     queryKey: ["voice-rooms"],
@@ -132,6 +133,16 @@ function VoicePage() {
         {codeError && <p className="mt-2 text-xs font-semibold text-destructive">{codeError}</p>}
       </div>
 
+      <div className="mt-6 grid grid-cols-2 rounded-full border border-border bg-card p-1" role="tablist">
+        {(["live", "recordings"] as const).map((k) => (
+          <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)}
+            className={`h-10 rounded-full text-sm font-bold ${tab === k ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
+            {k === "live" ? (lang === "ar" ? "مباشر" : "Live") : (lang === "ar" ? "التسجيلات" : "Recordings")}
+          </button>
+        ))}
+      </div>
+
+      {tab === "live" ? <>
       {followed.length > 0 && (
         <section className="mt-10">
           <SectionHeader title={tx("From people you follow")} />
@@ -157,10 +168,12 @@ function VoicePage() {
         </div>
       </section>
 
-      <section className="mt-10">
-        <SectionHeader title={tx("Replays")} />
-        <VoiceReplays />
-      </section>
+
+      </> : (
+        <section className="mt-6">
+          <VoiceReplays publicOnly feed limit={60} />
+        </section>
+      )}
 
       {creating && <CreateRoom matchId={match ?? null} onClose={() => setCreating(false)} onCreated={(id) => navigate({ to: "/voice/$id", params: { id } })} />}
     </AppShell>

@@ -28,9 +28,14 @@ export function speakersAt(moments: Moment[], time: number, hold = 1.2) {
 const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 
 /** The app's own replay player: play/pause, skip, a seek bar and the current speaker's picture. */
-export function RecordingPlayer({ src, loading, failed, onRetry, duration, cover, timeline }: {
-  src?: string; loading?: boolean; failed?: boolean; onRetry: () => void; duration: number; cover: string | null; timeline?: unknown;
+type ChatLine = { t: number; name: string; avatar: string | null; body: string };
+export const SPEEDS = [0.5, 1, 1.5, 2, 3] as const;
+
+export function RecordingPlayer({ src, loading, failed, onRetry, duration, cover, timeline, chat }: {
+  src?: string; loading?: boolean; failed?: boolean; onRetry: () => void; duration: number; cover: string | null; timeline?: unknown; chat?: unknown;
 }) {
+  const [speed, setSpeed] = useState<number>(1);
+  const chatLines = useMemo(() => (Array.isArray(chat) ? (chat as ChatLine[]).filter((c) => typeof c?.t === "number" && typeof c?.body === "string") : []), [chat]);
   const { lang } = useI18n();
   const label = (en: string, ar: string) => (lang === "ar" ? ar : en);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -44,6 +49,8 @@ export function RecordingPlayer({ src, loading, failed, onRetry, duration, cover
   const talking = ids.map((id) => people.get(id)).filter(Boolean) as Person[];
 
   useEffect(() => { setError(false); }, [src]);
+  useEffect(() => { if (audioRef.current) audioRef.current.playbackRate = speed; }, [speed, src]);
+  const visibleChat = chatLines.filter((c) => c.t <= time).slice(-4);
 
   const toggle = async () => {
     const el = audioRef.current;
@@ -107,12 +114,32 @@ export function RecordingPlayer({ src, loading, failed, onRetry, duration, cover
         <button type="button" disabled={!src} onClick={() => seek(time + 10)} aria-label={label("Forward 10 seconds", "تقديم 10 ثوانٍ")} className="text-muted-foreground disabled:opacity-40"><RotateCw className="h-5 w-5" /></button>
       </div>
 
+      <div className="mt-3 flex items-center justify-center gap-1.5" role="group" aria-label={label("Playback speed", "سرعة التشغيل")}>
+        {SPEEDS.map((v) => (
+          <button key={v} type="button" onClick={() => setSpeed(v)} aria-pressed={speed === v}
+            className={`h-8 min-w-11 rounded-full px-2 text-xs font-bold tabular-nums ${speed === v ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{v}x</button>
+        ))}
+      </div>
+
+      {chatLines.length > 0 && (
+        <div className="mt-3 space-y-1.5 rounded-xl bg-muted/50 p-2.5">
+          <div className="text-[0.6rem] font-bold uppercase tracking-widest text-muted-foreground">{label("Live chat", "الدردشة المباشرة")}</div>
+          {visibleChat.length === 0 && <p className="text-xs text-muted-foreground">{label("Messages appear as you listen", "تظهر الرسائل أثناء الاستماع")}</p>}
+          {visibleChat.map((c, i) => (
+            <div key={`${c.t}-${i}`} className="flex items-start gap-2">
+              {c.avatar ? <img src={c.avatar} alt="" className="h-6 w-6 shrink-0 rounded-full object-cover" /> : <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-background text-[0.6rem] font-bold">{c.name.slice(0, 1).toUpperCase()}</span>}
+              <div className="min-w-0 text-xs"><span className="font-bold">{c.name}</span> <span className="break-words">{c.body}</span></div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {src && (
         <audio
           ref={audioRef} src={src} preload="metadata" playsInline className="hidden"
           onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => setPlaying(false)}
           onTimeUpdate={(e) => setTime(e.currentTarget.currentTime)}
-          onLoadedMetadata={(e) => { const d = e.currentTarget.duration; if (Number.isFinite(d) && d > 0) setLength(d); }}
+          onLoadedMetadata={(e) => { e.currentTarget.playbackRate = speed; const d = e.currentTarget.duration; if (Number.isFinite(d) && d > 0) setLength(d); }}
           onWaiting={() => setBuffering(true)} onPlaying={() => setBuffering(false)}
           onError={() => { setPlaying(false); setError(true); }}
         />

@@ -99,3 +99,12 @@
 - [x] Admin: nothing preselected on entry; each section opens as a popup; Countries fits the phone
 - [x] Lineup logo watermark light white
 - [x] Profile: followers/following popups with search, recordings count, edit-profile popup with public/private, verification request page, owner Verify section, replay public/private filter, removed My voice replays from settings
+- [x] Recording speeds 0.5x–3x
+- [x] Description when saving a recording; show live chat in recordings
+- [x] Owner (king) badge only for @mascores, not @school
+- [x] Settings: hide followers/following
+- [x] Free news reporting with civil ID + selfie
+- [x] Lineup share shows one team; nicer final-result share
+- [x] Desktop photo download (iPhone unchanged)
+- [x] Voice page Live | Recordings feed with dates
+- [x] Edit profile phone/email
