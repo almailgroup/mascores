@@ -1613,6 +1613,7 @@ export type Database = {
           national_id: string | null
           phone: string | null
           platform: string
+          selfie_photo_path: string | null
           social_links: Json
           status: string
           subscription_status: string
@@ -1633,6 +1634,7 @@ export type Database = {
           national_id?: string | null
           phone?: string | null
           platform?: string
+          selfie_photo_path?: string | null
           social_links?: Json
           status?: string
           subscription_status?: string
@@ -1653,6 +1655,7 @@ export type Database = {
           national_id?: string | null
           phone?: string | null
           platform?: string
+          selfie_photo_path?: string | null
           social_links?: Json
           status?: string
           subscription_status?: string
@@ -1863,6 +1866,27 @@ export type Database = {
           },
         ]
       }
+      profile_contacts: {
+        Row: {
+          email: string | null
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          email?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          email?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profile_follows: {
         Row: {
           created_at: string
@@ -1897,6 +1921,7 @@ export type Database = {
           favorite_player_ids: string[]
           favorite_team_ids: string[]
           height_unit: string
+          hide_follows: boolean
           id: string
           is_public: boolean
           language: string
@@ -1919,6 +1944,7 @@ export type Database = {
           favorite_player_ids?: string[]
           favorite_team_ids?: string[]
           height_unit?: string
+          hide_follows?: boolean
           id: string
           is_public?: boolean
           language?: string
@@ -1941,6 +1967,7 @@ export type Database = {
           favorite_player_ids?: string[]
           favorite_team_ids?: string[]
           height_unit?: string
+          hide_follows?: boolean
           id?: string
           is_public?: boolean
           language?: string
@@ -3090,8 +3117,10 @@ export type Database = {
       voice_recordings: {
         Row: {
           audio_url: string
+          chat_log: Json | null
           cover_url: string | null
           created_at: string
+          description: string | null
           duration_seconds: number
           host_id: string
           id: string
@@ -3104,8 +3133,10 @@ export type Database = {
         }
         Insert: {
           audio_url: string
+          chat_log?: Json | null
           cover_url?: string | null
           created_at?: string
+          description?: string | null
           duration_seconds?: number
           host_id: string
           id?: string
@@ -3118,8 +3149,10 @@ export type Database = {
         }
         Update: {
           audio_url?: string
+          chat_log?: Json | null
           cover_url?: string | null
           created_at?: string
+          description?: string | null
           duration_seconds?: number
           host_id?: string
           id?: string
