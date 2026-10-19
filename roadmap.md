@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Show Zain Premier League teams and Kuwait national team by default in Choose your teams; retain search for all other teams
 - [x] Remove drum-like layer from VAR goal/penalty/red-card sounds and gently raise quiet alerts; refresh owner previews and verify playback
 - [x] Fix stadium edit popup above admin overlays; verified save/reopen on phone
 - [x] Confirm bans, strikes, activation, rejection, verification, approvals and lifting restrictions; verified cancelling news-request actions makes no writes
