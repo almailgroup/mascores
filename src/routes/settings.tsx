@@ -17,6 +17,7 @@ import type { AlertSoundMap } from "@/lib/alert-sounds";
 import { Button } from '@/components/ui/button';
 import { useQuery } from "@tanstack/react-query";
 import { AccountPrivacy } from "@/components/account-privacy";
+import { BlockedAccounts } from "@/components/blocked-accounts";
 import { SocialActivityButton } from "@/components/social-activity";
 import { NotificationSoundPreview } from "@/components/notification-sound-preview";
 import { canPreviewNotificationSounds } from "@/lib/sound-preview-access";
@@ -159,6 +160,7 @@ function SettingsPage() {
                   if (error) setHideFollows(!next);
                 }} />
               </label>
+              <BlockedAccounts />
               <p className="text-[0.65rem] text-muted-foreground">{lang === "ar" ? "يمكن تغيير اسم المستخدم مرة كل 10 أيام والاسم الظاهر مرة كل يومين." : "Username can change once every 10 days, display name once every 2 days."}</p>
               {notice && <div className="rounded-md border border-primary/40 bg-primary/10 px-3 py-2 text-sm text-primary">{notice}</div>}
               <div className="flex flex-wrap items-center gap-4 pt-1">

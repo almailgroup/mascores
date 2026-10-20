@@ -14,6 +14,11 @@ let revision = 0;
 let saveQueue: Promise<unknown> = Promise.resolve();
 const listeners = new Set<() => void>();
 const emit = () => { for (const l of listeners) l(); };
+if (typeof window !== "undefined") window.addEventListener("mas:alerts-muted", () => {
+  revision++;
+  state = { ...state, overrides: Object.fromEntries(Object.keys(state.overrides).map((k) => [k, false])) };
+  emit();
+});
 
 function load(userId: string | null): Promise<void> {
   if (!userId) { state = { userId: null, overrides: {} }; emit(); return Promise.resolve(); }

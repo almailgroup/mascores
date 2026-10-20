@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useFavorites } from "@/hooks/use-favorites";
 import { useTx } from "@/lib/auto-translate";
-import { requestAlertPermission } from "@/lib/notification-permission";
+import { allowBellOn } from "@/lib/notification-permission";
 import { useSignInAction } from "@/lib/sign-in-action";
 
 const KEY = "mas.player_alert_overrides";
@@ -20,14 +20,18 @@ export function PlayerNotificationButton({ playerId }: { playerId: string }) {
   const { favorites } = useFavorites();
   const tx = useTx();
   const [overrides, setOverrides] = useState<Record<string, boolean>>({});
-  useEffect(() => { setOverrides(read()); }, [playerId]);
+  useEffect(() => {
+    const sync = () => setOverrides(read());
+    sync(); window.addEventListener("mas:alerts-changed", sync);
+    return () => window.removeEventListener("mas:alerts-changed", sync);
+  }, [playerId]);
   const active = overrides[playerId] ?? favorites.player.includes(playerId);
   const label = tx(active ? "Turn off player notifications" : "Turn on player notifications");
   const write = (v: Record<string, boolean>) => { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch { /* optional */ } setOverrides(v); };
   return <Button data-no-gesture variant="ghost" size="icon" title={label ?? undefined} aria-label={label ?? undefined} aria-pressed={active} className="sports-header-control bg-transparent text-current hover:bg-transparent" onClick={async (event) => {
     event.preventDefault(); event.stopPropagation();
     if (!user) { signIn(); return; }
-    if (!active) void requestAlertPermission();
+    if (!active && !(await allowBellOn())) return;
     const previous = read();
     write({ ...previous, [playerId]: !active });
     try {

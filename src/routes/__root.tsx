@@ -15,6 +15,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { ThemeProvider } from "../components/theme-provider";
 import { onNativeNotificationTap } from "../lib/native-notify";
 import { initNativePush, syncPushToken, clearPushToken } from "../lib/native-push";
+import { syncBellsWithPermission } from "../lib/notification-permission";
 import { supabase } from "../integrations/supabase/client";
 import { I18nProvider, useI18n } from "../lib/i18n";
 import { CurrencyProvider } from "../lib/currency";
@@ -171,11 +172,15 @@ function RootComponent() {
     // carries the path to open, so a full navigation is the simplest handoff.
     void initNativePush((path) => window.location.assign(path));
     void onNativeNotificationTap((path) => window.location.assign(path));
+    // Notifications switched off in iPhone Settings turn every bell off on return.
+    void syncBellsWithPermission();
+    const onVisible = () => { if (document.visibilityState === "visible") void syncBellsWithPermission(); };
+    document.addEventListener("visibilitychange", onVisible);
 
     // The phone may register with Apple before the user signs in, so link the
     // device token to the account on sign-in and detach it on sign-out.
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN") void syncPushToken();
+      if (event === "SIGNED_IN") { void syncPushToken(); void syncBellsWithPermission(); }
       if (event === "SIGNED_OUT") void clearPushToken();
     });
 
@@ -187,7 +192,7 @@ function RootComponent() {
         window.history.replaceState(window.history.state, "", window.location.pathname + window.location.search);
       });
     }
-    return () => sub.subscription.unsubscribe();
+    return () => { sub.subscription.unsubscribe(); document.removeEventListener("visibilitychange", onVisible); };
   }, []);
 
   useEffect(() => {

@@ -3056,6 +3056,24 @@ export type Database = {
         }
         Relationships: []
       }
+      user_blocks: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       user_suspensions: {
         Row: {
           banned: boolean
@@ -3467,6 +3485,7 @@ export type Database = {
       }
       admin_unlock_allowed: { Args: { _uid: string }; Returns: boolean }
       ar_skeleton: { Args: { _t: string }; Returns: string }
+      block_user: { Args: { _target: string }; Returns: undefined }
       can_view_recording: { Args: { _id: string }; Returns: boolean }
       can_view_social_profile: { Args: { _host: string }; Returns: boolean }
       chat_author_profiles: {
@@ -3515,6 +3534,7 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _uid: string }; Returns: boolean }
+      is_blocked_between: { Args: { _a: string; _b: string }; Returns: boolean }
       is_main_admin: { Args: { _uid: string }; Returns: boolean }
       is_suspended: { Args: { _uid: string }; Returns: boolean }
       match_prediction_tally: {
@@ -3536,6 +3556,17 @@ export type Database = {
           b_id: string
           b_name: string
           score: number
+        }[]
+      }
+      mute_all_alerts: { Args: never; Returns: undefined }
+      my_blocked_users: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          blocked_at: string
+          display_name: string
+          id: string
+          username: string
         }[]
       }
       norm_search: { Args: { _t: string }; Returns: string }
@@ -3632,6 +3663,7 @@ export type Database = {
         }[]
       }
       social_profile: { Args: { _username: string }; Returns: Json }
+      unblock_user: { Args: { _target: string }; Returns: undefined }
       voice_delete_room: { Args: { _room_id: string }; Returns: undefined }
       voice_end_room: { Args: { _room_id: string }; Returns: undefined }
       voice_host_activity: { Args: { _room_id: string }; Returns: undefined }
