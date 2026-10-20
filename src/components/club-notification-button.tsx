@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useClubAlerts } from "@/hooks/use-club-alerts";
 import { useFavorites } from "@/hooks/use-favorites";
 import { useTx } from "@/lib/auto-translate";
-import { requestAlertPermission } from "@/lib/notification-permission";
+import { allowBellOn } from "@/lib/notification-permission";
 import { useSignInAction } from "@/lib/sign-in-action";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -20,7 +20,7 @@ export function ClubNotificationButton({ teamId }: { teamId: string }) {
     event.preventDefault(); event.stopPropagation();
     if (!user) { signIn(); return; }
     try {
-      if (!active) void requestAlertPermission();
+      if (!active && !(await allowBellOn())) return;
       await setClubAlert(teamId, !active);
     } catch { toast.error(tx("Unable to save notifications")); }
   }}><Bell className="h-4 w-4" fill={active ? "currentColor" : "none"} /></Button>;

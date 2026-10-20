@@ -3,7 +3,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useSignInAction } from "@/lib/sign-in-action";
 import { toast } from "sonner";
 import { useCompetitionAlerts } from "@/lib/competition-alerts";
-import { requestAlertPermission } from "@/lib/notification-permission";
+import { allowBellOn } from "@/lib/notification-permission";
 import { PlayerAvatar } from "@/components/player-avatar";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -333,7 +333,7 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
     if (!user) { signIn(); return; }
     const enabled = !alerted;
     // Flip on the first tap; the permission prompt and save follow behind it.
-    if (enabled) void requestAlertPermission();
+    if (enabled && !(await allowBellOn())) return;
     await setCompetitionAlert(c.id, enabled).catch(() => { toast.error(tx("Could not save notifications")); });
   };
 

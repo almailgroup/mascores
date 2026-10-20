@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useFavorites } from "@/hooks/use-favorites";
 import { useTx } from "@/lib/auto-translate";
-import { requestAlertPermission } from "@/lib/notification-permission";
+import { allowBellOn } from "@/lib/notification-permission";
 import { useSignInAction } from "@/lib/sign-in-action";
 
 const KEY = "mas.player_alert_overrides";
@@ -27,7 +27,7 @@ export function PlayerNotificationButton({ playerId }: { playerId: string }) {
   return <Button data-no-gesture variant="ghost" size="icon" title={label ?? undefined} aria-label={label ?? undefined} aria-pressed={active} className="sports-header-control bg-transparent text-current hover:bg-transparent" onClick={async (event) => {
     event.preventDefault(); event.stopPropagation();
     if (!user) { signIn(); return; }
-    if (!active) void requestAlertPermission();
+    if (!active && !(await allowBellOn())) return;
     const previous = read();
     write({ ...previous, [playerId]: !active });
     try {

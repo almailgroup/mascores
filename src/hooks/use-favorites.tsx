@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { useClubAlerts } from "@/hooks/use-club-alerts";
 import { Button } from "@/components/ui/button";
 import { useSignInAction } from "@/lib/sign-in-action";
-import { requestAlertPermission } from "@/lib/notification-permission";
+import { allowBellOn } from "@/lib/notification-permission";
 import { useCompetitionAlerts, competitionOfMatch } from "@/lib/competition-alerts";
 
 export type FavoriteKind = "team" | "player" | "competition" | "match";
@@ -325,6 +325,7 @@ export function MatchNotificationButton({ matchId, competitionId, teamIds = [], 
           const has = current.includes(matchId);
           const next = has ? current.filter((id) => id !== matchId) : [...current, matchId];
           const turningOn = inherited ? has : !has;
+          if (turningOn && !(await allowBellOn())) return;
           const write = (list: string[]) => {
             setAlerts(list);
             if (alertShared) { alertShared = { ...alertShared, alerts: list }; for (const l of alertListeners) l(); }
@@ -334,7 +335,6 @@ export function MatchNotificationButton({ matchId, competitionId, teamIds = [], 
           // Flip the bell on the first tap; permission and saving follow behind it.
           write(next);
           // The choice is saved either way; the phone permission is asked alongside it.
-          if (turningOn) void requestAlertPermission();
           const save = alertSaveQueue.catch(() => {}).then(async () => {
             const { error } = await supabase.from("profiles").update({ match_notification_ids: alertShared?.alerts ?? next }).eq("id", user.id);
             if (error) throw error;

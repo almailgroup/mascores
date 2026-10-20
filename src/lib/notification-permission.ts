@@ -88,3 +88,10 @@ export async function requestAlertPermission(): Promise<boolean> {
   granted = permission === "granted";
   return granted;
 }
+
+/** Called before a bell turns on. In the iPhone app the bell only lights when
+ *  notifications are allowed; on the website in-page alerts still work, so it never blocks. */
+export async function allowBellOn(): Promise<boolean> {
+  if (!isNativeApp()) { void requestAlertPermission(); return true; }
+  return requestAlertPermission();
+}
