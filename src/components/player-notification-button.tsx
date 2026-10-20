@@ -20,7 +20,11 @@ export function PlayerNotificationButton({ playerId }: { playerId: string }) {
   const { favorites } = useFavorites();
   const tx = useTx();
   const [overrides, setOverrides] = useState<Record<string, boolean>>({});
-  useEffect(() => { setOverrides(read()); }, [playerId]);
+  useEffect(() => {
+    const sync = () => setOverrides(read());
+    sync(); window.addEventListener("mas:alerts-changed", sync);
+    return () => window.removeEventListener("mas:alerts-changed", sync);
+  }, [playerId]);
   const active = overrides[playerId] ?? favorites.player.includes(playerId);
   const label = tx(active ? "Turn off player notifications" : "Turn on player notifications");
   const write = (v: Record<string, boolean>) => { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch { /* optional */ } setOverrides(v); };

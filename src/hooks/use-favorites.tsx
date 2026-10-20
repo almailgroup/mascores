@@ -232,6 +232,9 @@ let alertLoading: Promise<void> | null = null;
 let alertLoadingFor: string | null | undefined;
 let alertSaveQueue: Promise<unknown> = Promise.resolve();
 const alertListeners = new Set<() => void>();
+if (typeof window !== "undefined") window.addEventListener("mas:alerts-muted", () => {
+  if (alertShared) { alertShared = { ...alertShared, alerts: [] }; for (const l of alertListeners) l(); }
+});
 function loadAlerts(userId: string | null): Promise<void> {
   if (alertShared && alertShared.userId === userId) return Promise.resolve();
   if (alertLoading && alertLoadingFor === userId) return alertLoading;
