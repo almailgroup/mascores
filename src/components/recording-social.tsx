@@ -85,7 +85,7 @@ export function RecordingSocial({ recordingId, hostId, title }: { recordingId: s
     <SocialScreen open={commentsOpen} title={label('Comments','التعليقات')} onClose={() => setCommentsOpen(false)}>
       <h2 className="mb-5 text-sm font-semibold">{title}</h2>
       {interactions.isError&&<Button variant="outline" onClick={()=>void interactions.refetch()}>{label('Try again','حاول مجددًا')}</Button>}
-      <div className="space-y-5">{commentThreads(rows.filter(r=>r.kind==='comment')).map(({root,replies})=><div key={root.id} className="space-y-3">{commentView(root)}{replies.map(r=>commentView(r,true))}</div>)}</div>
+      <div className="space-y-6">{commentThreads(rows.filter(r=>r.kind==='comment')).map(({root,replies})=><div key={root.id} className="space-y-3">{commentView(root)}{openReplies[root.id]&&replies.map(r=>commentView(r,true))}{replies.length>0&&<button type="button" className="ms-[3.25rem] flex items-center gap-3 text-xs font-semibold text-muted-foreground" onClick={()=>setOpenReplies(o=>({...o,[root.id]:!o[root.id]}))}><span className="h-px w-6 bg-border"/>{openReplies[root.id]?label('Hide replies','إخفاء الردود'):label(`View ${replies.length} more ${replies.length===1?'reply':'replies'}`,`عرض ${replies.length} ردود`)}</button>}</div>)}</div>
       {!rows.some(r => r.kind==='comment') && <p className="py-10 text-center text-sm text-muted-foreground">{label('No comments yet','لا توجد تعليقات بعد')}</p>}
       {user ? <form className="sticky bottom-0 mt-6 border-t border-border bg-background py-3" onSubmit={async e => {
         e.preventDefault(); if (!body.trim() || busy) return; setBusy(true);
