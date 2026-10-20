@@ -407,6 +407,13 @@
       "when": 1792521087334,
       "tag": "0057_user_blocks_and_mute_all_alerts",
       "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "7",
+      "when": 1792522749035,
+      "tag": "0058_migration",
+      "breakpoints": true
     }
   ]
 }
