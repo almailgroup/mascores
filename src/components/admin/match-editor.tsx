@@ -223,13 +223,23 @@ function MainTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
   useEffect(() => setForm(match), [match.id]);
 
   const [notifyHighlights, setNotifyHighlights] = useState(false);
+  const KNOCKOUTS = ["Round of 64", "Round of 32", "Round of 16", "Quarter-finals", "Semi-finals", "Third place", "Final"];
+  const savedRound = match.round ?? "";
+  const qualMatch = /^Qualification round (\d+)/i.exec(savedRound);
+  const [stage, setStage] = useState<"league" | "qualification" | "knockout">(
+    KNOCKOUTS.includes(savedRound) ? "knockout" : qualMatch ? "qualification" : "league",
+  );
+  const [knockout, setKnockout] = useState(KNOCKOUTS.includes(savedRound) ? savedRound : "Round of 16");
+  const [qualNo, setQualNo] = useState<number | null>(qualMatch ? Number(qualMatch[1]) : null);
   const save = async () => {
     await supabase.from("matches").update({
       home_team_id: form.home_team_id ?? null,
       away_team_id: form.away_team_id ?? null,
       kickoff_at: form.kickoff_at ?? null,
-      round_number: form.round_number ?? null,
-      round: form.round_number != null ? `Round ${form.round_number}` : null,
+      round_number: stage !== "league" ? null : (form.round_number ?? null),
+      round: stage === "knockout" ? knockout
+        : stage === "qualification" ? `Qualification round ${qualNo ?? 1}`
+        : form.round_number != null ? `Round ${form.round_number}` : null,
       venue: form.venue ?? null,
       city: form.city ?? null,
       referee: form.referee ?? null,
