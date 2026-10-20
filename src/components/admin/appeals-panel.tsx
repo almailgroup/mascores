@@ -42,6 +42,7 @@ export function AppealsPanel() {
     return "Active";
   };
   const lift = async (id: string) => {
+    if(!confirm('Lift this account’s restriction? Previous strikes will remain.'))return;
     await clear({ data: { userId: id } });
     qc.invalidateQueries({ queryKey: ["admin-users"] });
   };
@@ -74,7 +75,7 @@ export function AppealsPanel() {
                 {u?.reason && <p className="mt-1 text-[0.7rem] font-semibold text-muted-foreground">Reason given: {u.reason}</p>}
                 <p className="mt-2 whitespace-pre-wrap text-sm">{a.message.replace(/^APPEAL:\s*/, "")}</p>
                 {still && (
-                  <button className={`${btnGhost} mt-3`} onClick={() => lift(u!.id)}>
+                  <button className={`${btnGhost} mt-3`} onClick={() => {if(u)void lift(u.id);}}>
                     <ShieldCheck className="h-3.5 w-3.5" /> Lift restriction
                   </button>
                 )}

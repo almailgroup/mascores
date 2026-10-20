@@ -19,6 +19,8 @@ export function ShareCardButton({ render, title, label: buttonLabel, iconOnly = 
   const [busy, setBusy] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [desktop, setDesktop] = useState(false);
+  useEffect(() => { setDesktop(!matchMedia("(pointer: coarse)").matches); }, []);
   const [error, setError] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [retry, setRetry] = useState(0);
@@ -61,7 +63,7 @@ export function ShareCardButton({ render, title, label: buttonLabel, iconOnly = 
     setNotice(null);
     try {
       const result = await savePhoto(blob, fileName, title);
-      setSaved(result === "saved");
+      setSaved(result === "saved" || result === "downloaded");
       if (result === "update-app") {
         setHoldToSave(true);
         // Show the installed build so it's clear whether the new one is on the phone.
@@ -110,7 +112,7 @@ export function ShareCardButton({ render, title, label: buttonLabel, iconOnly = 
           <div className="mt-4 shrink-0 space-y-2">
             <Button disabled={busy || !preview || saving} onClick={saveToPhotos} className="h-12 w-full rounded-lg text-sm font-bold transition-colors">
               {saving ? <LoaderCircle className="animate-spin" /> : saved ? <Check /> : <ImageDown />}
-              {saving ? label("Saving…", "جارٍ الحفظ…") : saved ? label("Saved to Photos", "تم الحفظ في الصور") : label("Save to photos", "حفظ في الصور")}
+              {saving ? label("Saving…", "جارٍ الحفظ…") : desktop ? (saved ? label("Downloaded", "تم التنزيل") : label("Download photo", "تنزيل الصورة")) : saved ? label("Saved to Photos", "تم الحفظ في الصور") : label("Save to photos", "حفظ في الصور")}
             </Button>
           </div>
         </Dialog.Content>

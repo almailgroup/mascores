@@ -45,40 +45,38 @@ export const ALERT_SOUNDS: { id: AlertSoundId; label: string }[] = [
 
 type Tone = { freq: number; to?: number; at: number; length: number; type: OscillatorType; gain?: number };
 const T = (freq: number, at: number, length: number, type: OscillatorType = "sine", gain = 0.1, to?: number): Tone => ({ freq, at, length, type, gain, to });
-const whistle = (at: number, length: number, freq = 2400): Tone => T(freq, at, length, "square", 0.05, freq * 1.04);
-const beeps = (count: number, gap: number, a: number, b: number, type: OscillatorType = "square", gain = 0.05) =>
-  Array.from({ length: count }, (_, i) => T(i % 2 ? b : a, i * gap, gap * 0.7, type, gain));
 
-const RECIPES: Record<AlertEventKey, Tone[]> = {
-  goal: [T(220, 0, 0.5, "sawtooth", 0.1, 520), T(330, 0.12, 0.55, "triangle", 0.08, 660), T(523, 0.6, 0.5, "triangle", 0.08), T(784, 0.6, 0.5, "triangle", 0.06)],
-  scorer: [T(659, 0, 0.18), T(784, 0.09, 0.18), T(988, 0.18, 0.2), T(1319, 0.27, 0.35)],
-  penalty: [whistle(0, 0.2), T(90, 0.3, 0.3, "sine", 0.16, 50), T(587, 0.5, 0.5, "triangle", 0.08), T(880, 0.5, 0.5, "triangle", 0.06)],
-  ownGoal: [T(500, 0, 0.8, "sawtooth", 0.07, 220), T(300, 0.8, 0.5, "triangle", 0.08, 150)],
-  miss: [whistle(0, 0.18), T(320, 0.25, 0.45, "sine", 0.1, 170), T(260, 0.7, 0.55, "sine", 0.08, 120)],
-  card: [whistle(0, 0.3, 2600), T(1200, 0.38, 0.12, "square", 0.05, 1500)],
-  secondYellow: [whistle(0, 0.15, 2600), whistle(0.25, 0.15, 2600), T(900, 0.5, 0.25, "square", 0.06, 600), T(220, 0.8, 0.4, "sawtooth", 0.06, 180)],
-  redcard: [whistle(0, 0.4, 2700), T(180, 0.5, 0.22, "square", 0.1), T(180, 0.78, 0.22, "square", 0.1), T(140, 1.06, 0.4, "square", 0.1)],
-  sub: [T(660, 0, 0.18, "triangle", 0.1, 880), T(880, 0.22, 0.18, "triangle", 0.1, 660), T(990, 0.45, 0.25, "sine", 0.06)],
-  injury: [T(700, 0, 0.35, "sine", 0.08, 900), T(900, 0.4, 0.35, "sine", 0.08, 700), T(600, 0.8, 0.3, "triangle", 0.07)],
-  var: [...beeps(6, 0.13, 1400, 1000), T(500, 0.85, 0.4, "triangle", 0.07)],
-  note: [T(880, 0, 0.4, "sine", 0.09), T(1320, 0.15, 0.4, "sine", 0.05)],
-  kickoff: [whistle(0, 0.8), T(330, 0.85, 0.5, "triangle", 0.06, 440)],
-  halftime: [whistle(0, 0.22), whistle(0.32, 0.55)],
-  secondHalf: [whistle(0, 0.6, 2500), T(523, 0.7, 0.3, "triangle", 0.07), T(659, 0.9, 0.4, "triangle", 0.07)],
-  etWait: beeps(6, 0.25, 2000, 1600, "square", 0.04),
-  etStart: [whistle(0, 0.5), T(110, 0.6, 0.3, "sine", 0.16, 50), T(110, 0.85, 0.3, "sine", 0.16, 50)],
-  etBreak: [whistle(0, 0.22, 2300), whistle(0.32, 0.22, 2300), T(440, 0.65, 0.4, "triangle", 0.06)],
-  etSecond: [whistle(0, 0.5, 2300), T(130, 0.6, 0.3, "sine", 0.16, 60), T(784, 0.8, 0.4, "triangle", 0.07)],
-  shootout: [...Array.from({ length: 12 }, (_, i) => T(180, i * 0.07, 0.06, "square", 0.02 + i * 0.004)), T(80, 0.9, 0.4, "sine", 0.18, 45), T(392, 0.9, 0.5, "sawtooth", 0.05)],
-  final: [whistle(0, 0.22), whistle(0.32, 0.22), whistle(0.64, 0.65)],
-  finalEt: [whistle(0, 0.22, 2300), whistle(0.32, 0.22, 2300), whistle(0.64, 0.6, 2300), T(392, 1.3, 0.5, "triangle", 0.07), T(523, 1.3, 0.5, "triangle", 0.06)],
-  finalPens: [whistle(0, 0.5), T(523, 0.6, 0.6, "triangle", 0.07), T(659, 0.6, 0.6, "triangle", 0.06), T(1047, 0.6, 0.6, "triangle", 0.05)],
-  resumed: [whistle(0, 0.3), T(523, 0.4, 0.2, "triangle", 0.07), T(659, 0.5, 0.2, "triangle", 0.07), T(784, 0.6, 0.3, "triangle", 0.07)],
-  reminder: [T(988, 0, 0.35, "sine", 0.1), T(784, 0.4, 0.5, "sine", 0.1)],
-  myReminder: [...beeps(4, 0.18, 1568, 1319, "sine", 0.07), T(1047, 0.8, 0.5, "sine", 0.09)],
-  voice: [T(440, 0, 0.25, "sine", 0.08, 660), T(880, 0.25, 0.5, "sine", 0.08)],
-  postponed: [T(440, 0, 0.3, "triangle", 0.08, 330), T(330, 0.35, 0.5, "triangle", 0.08, 220)],
+export const ALERT_RECIPES: Record<AlertEventKey, Tone[]> = {
+  goal: [T(220,0,0.5,"sawtooth",0.035,520),T(330,0.12,0.55,"triangle",0.028,660)],
+  scorer: [T(659,0,0.2,"sine",0.035),T(784,0.12,0.25,"sine",0.025)],
+  penalty: [T(440,0,0.28,"triangle",0.035),T(330,0.3,0.35,"triangle",0.03)],
+  ownGoal: [T(440,0,0.3,"sine",0.035,330),T(330,0.2,0.35,"sine",0.025,220)],
+  miss: [T(320,0,0.4,"sine",0.035,170),T(260,0.42,0.5,"sine",0.028,130)],
+  card: [T(1900,0,0.18,"sine",0.02,2100),T(1900,0.22,0.22,"sine",0.02,1600)],
+  secondYellow: [T(880,0,0.18,"sine",0.03),T(660,0.2,0.22,"sine",0.025)],
+  redcard: [T(180,0,0.22,"triangle",0.035),T(180,0.28,0.22,"triangle",0.035),T(140,0.56,0.3,"triangle",0.03)],
+  sub: [T(660,0,0.2,"sine",0.03),T(880,0.2,0.25,"sine",0.025)],
+  injury: [T(600,0,0.3,"sine",0.03),T(440,0.25,0.3,"sine",0.025)],
+  var: [T(660,0,0.15,"sine",0.025),T(660,0.2,0.2,"sine",0.025)],
+  note: [T(520,0,0.35,"sine",0.028,700)],
+  kickoff: [T(880,0,0.45,"sine",0.035),T(1320,0.02,0.4,"sine",0.018)],
+  halftime: [T(660,0,0.3,"sine",0.03),T(520,0.2,0.35,"sine",0.025)],
+  secondHalf: [T(520,0,0.25,"sine",0.03),T(660,0.2,0.3,"sine",0.025)],
+  etWait: [T(440,0,0.35,"sine",0.03)],
+  etStart: [T(440,0,0.25,"sine",0.03),T(784,0.2,0.3,"sine",0.025)],
+  etBreak: [T(784,0,0.25,"sine",0.03),T(440,0.2,0.3,"sine",0.025)],
+  etSecond: [T(587,0,0.25,"sine",0.03),T(784,0.2,0.3,"sine",0.025)],
+  shootout: [T(523,0,0.2,"sine",0.03),T(659,0.2,0.25,"sine",0.025)],
+  final: [T(2080,0,0.5,"sine",0.02),T(2140,0,0.5,"sine",0.02),T(2080,0.58,0.4,"sine",0.02),T(2140,0.58,0.4,"sine",0.02)],
+  finalEt: [T(2080,0,0.28,"sine",0.02),T(2140,0,0.28,"sine",0.02),T(2080,0.36,0.5,"sine",0.02),T(2140,0.36,0.5,"sine",0.02)],
+  finalPens: [T(2080,0,0.2,"sine",0.02),T(2140,0,0.2,"sine",0.02),T(2080,0.28,0.2,"sine",0.02),T(2140,0.28,0.2,"sine",0.02),T(2080,0.56,0.5,"sine",0.02),T(2140,0.56,0.5,"sine",0.02)],
+  resumed: [T(520,0,0.25,"sine",0.03),T(700,0.2,0.3,"sine",0.025)],
+  reminder: [T(880,0,0.45,"sine",0.035),T(1320,0.02,0.4,"sine",0.018)],
+  myReminder: [T(784,0,0.3,"sine",0.03),T(988,0.2,0.35,"sine",0.025)],
+  voice: [T(520,0,0.35,"sine",0.028,700)],
+  postponed: [T(440,0,0.3,"sine",0.03,330),T(330,0.25,0.3,"sine",0.025,220)],
 };
+const RECIPES = ALERT_RECIPES;
 
 /** Plays one of the alert sounds. Silent when the browser blocks audio. */
 export function playAlertSound(sound: AlertSoundId | string | undefined | null) {
@@ -94,7 +92,7 @@ export function playAlertSound(sound: AlertSoundId | string | undefined | null) 
       osc.frequency.setValueAtTime(tone.freq, start);
       if (tone.to) osc.frequency.exponentialRampToValueAtTime(Math.max(40, tone.to), start + tone.length);
       gain.gain.setValueAtTime(0.0001, start);
-      gain.gain.exponentialRampToValueAtTime(tone.gain ?? 0.1, start + 0.03);
+      gain.gain.exponentialRampToValueAtTime((tone.gain ?? 0.1) * (sound === "var" ? 1 : 2.5), start + 0.03);
       gain.gain.exponentialRampToValueAtTime(0.0001, start + tone.length);
       osc.connect(gain).connect(context.destination);
       osc.start(start);

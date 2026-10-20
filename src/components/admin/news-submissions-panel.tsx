@@ -48,6 +48,7 @@ export function NewsSubmissionsPanel() {
   const banReporter = async (userId: string, permanent: boolean) => {
     const reason = banReason.trim();
     if (!reason) return;
+    if (!confirm(permanent ? 'Permanently ban this account? This restriction does not expire.' : 'Apply the next ban strike to this account? Repeated strikes can result in a permanent ban.')) return;
     setBanning(true);
     setReporterError(null);
     try { const result = await suspend({ data: { userId, banned: permanent, days: 1, reason } }); setReporterError(result.banned ? "Permanently banned." : `Banned until ${new Date(result.suspendedUntil!).toLocaleString()}.`); qc.invalidateQueries({ queryKey: ['ban-history', userId] }); qc.invalidateQueries({ queryKey: ['admin-users'] }); setBanTarget(null); }
@@ -77,6 +78,7 @@ export function NewsSubmissionsPanel() {
   const [notifyClub, setNotifyClub] = useState(false);
 
   const approve = async (s: Submission) => {
+    if (!confirm(`Approve and publish “${s.title}”${notify ? ' and send its notification' : ''}?`)) return;
     const author = (reporters.data ?? []).find((r) => r.user_id === s.author_id);
     const slug = slugify(s.title);
     const { error: insertError } = await supabase.from("news_posts").insert({
@@ -103,18 +105,21 @@ export function NewsSubmissionsPanel() {
   };
 
   const reject = async (s: Submission) => {
+    if (!confirm(`Reject “${s.title}”?`)) return;
     await supabase.from("news_submissions").update({ status: "rejected", review_note: note || null }).eq("id", s.id);
     setOpen(null); setNote("");
     qc.invalidateQueries({ queryKey: ["admin", "news-submissions"] });
   };
 
   const setReporter = async (id: string, status: string) => {
+    if (!confirm('Activate this reporter and allow them to submit news?')) return;
     await supabase.from("news_reporters").update({ status }).eq("id", id);
     qc.invalidateQueries({ queryKey: ["admin", "news-reporters"] });
   };
 
   /** Turning a reporter down removes the account entirely. */
   const rejectReporter = async (id: string) => {
+    if (!confirm('Reject and delete this reporter application? Their reporter access will be removed.')) return;
     setReporterError(null);
     try {
       await removeReporter({ data: { id } });
@@ -127,6 +132,7 @@ export function NewsSubmissionsPanel() {
 
   /** Generate an access code to send the reporter manually — they redeem it themselves. */
   const generateCode = async (id: string) => {
+    if (!confirm('Generate a new access code? This replaces the current code.')) return;
     const code = `MAS-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
     await supabase.from("news_reporters").update({ access_code: code }).eq("id", id);
     qc.invalidateQueries({ queryKey: ["admin", "news-reporters"] });
@@ -154,7 +160,7 @@ export function NewsSubmissionsPanel() {
       <div className="grid gap-2">
         {(reporters.data ?? []).map((r) => (
           <div key={r.id} className="flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card p-3 text-sm">
-            <div className="min-w-0 flex-1">
+            <div className="w-full min-w-0 break-words">
               <div className="truncate font-semibold">{r.full_name ? `${r.full_name} · ` : ""}@{r.handle} <span className="text-xs font-normal text-muted-foreground">· {r.platform}</span></div>
               <div className="text-xs text-muted-foreground">{[r.phone, r.email].filter(Boolean).join(" · ") || "No contact supplied"}</div>
               {(() => { const x = r as typeof r & { national_id?: string | null; entity_type?: string | null; company_name?: string | null; social_links?: Record<string, string> | null };
@@ -164,6 +170,7 @@ export function NewsSubmissionsPanel() {
               <BanHistory userId={r.user_id} />
             </div>
             {r.civil_id_photo_path && <Button variant="outline" size="sm" onClick={async () => { setReporterError(null); try { const result = await viewIdentity({ data: { id: r.id } }); setIdentityUrl(result.url); } catch (error) { setReporterError(error instanceof Error ? error.message : 'Could not open photo.'); } }}>Civil ID photo</Button>}
+            {r.selfie_photo_path && <Button variant="outline" size="sm" onClick={async () => { setReporterError(null); try { const result = await viewIdentity({ data: { id: r.id, kind: 'selfie' } }); setIdentityUrl(result.url); } catch (error) { setReporterError(error instanceof Error ? error.message : 'Could not open photo.'); } }}>Selfie</Button>}
             <span className="shrink-0 text-xs font-semibold uppercase text-muted-foreground">{r.status}</span>
             <button className={btnGhost} onClick={() => generateCode(r.id)}><KeyRound className="h-3.5 w-3.5" /> Generate code</button>
             <button className={btnGhost} onClick={() => setReporter(r.id, "active")}><Check className="h-3.5 w-3.5" /> Activate</button>

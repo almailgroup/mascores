@@ -379,6 +379,27 @@
       "when": 1792268697148,
       "tag": "0053_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 54,
+      "version": "7",
+      "when": 1792438962750,
+      "tag": "0054_recordings_profile_contacts_selfie",
+      "breakpoints": true
+    },
+    {
+      "idx": 55,
+      "version": "7",
+      "when": 1792439474019,
+      "tag": "0055_public_profile_contacts",
+      "breakpoints": true
+    },
+    {
+      "idx": 56,
+      "version": "7",
+      "when": 1792440193159,
+      "tag": "0056_recording_comment_replies_likes_reports",
+      "breakpoints": true
     }
   ]
 }

@@ -1,4 +1,13 @@
 # Roadmap
+- [x] Show Zain Premier League teams and Kuwait national team by default in Choose your teams; verified other-team search, selection saving and no repeated setup
+- [x] Remove drum-like layer from VAR goal/penalty/red-card sounds and gently raise quiet alerts; refresh owner previews and verify playback
+- [x] Use the whistle sound for full time notifications (fulltime*.caf replaced with the whistle recording; previews refreshed)
+- [x] Fix stadium edit popup above admin overlays; verified save/reopen on phone
+- [x] Confirm bans, strikes, activation, rejection, verification, approvals and lifting restrictions; verified cancelling news-request actions makes no writes
+- [x] Add recording comment replies, likes and targeted reports; verified saved interactions and report snapshots
+- [x] Improve recording description display and editor; verified save/reload and phone fit
+- [x] Restore calm match sounds, prevent duplicate foreground phone sounds, and correct period announcements; confirmed kickoff/halftime/reminder delivery records
+- [ ] Hear restored sounds on a real iPhone — requires an updated iPhone app build and device
 - [x] Show full news photo in shared images; verified Abdullah Fares share keeps his entire original photo
 - [x] Load lineup coaches with players and reveal club/national squad portraits together; verified real coach and player photos
 - [x] Fix profile photo cropping; verified drag, zoom, save and profile photo reload
@@ -99,3 +108,12 @@
 - [x] Admin: nothing preselected on entry; each section opens as a popup; Countries fits the phone
 - [x] Lineup logo watermark light white
 - [x] Profile: followers/following popups with search, recordings count, edit-profile popup with public/private, verification request page, owner Verify section, replay public/private filter, removed My voice replays from settings
+- [x] Recording speeds 0.5x–3x
+- [x] Description when saving a recording; show live chat in recordings
+- [x] Owner (king) badge only for @mascores, not @school
+- [x] Settings: hide followers/following
+- [x] Free news reporting with civil ID + selfie
+- [x] Lineup share shows one team; nicer final-result share
+- [x] Desktop photo download (iPhone unchanged)
+- [x] Voice page Live | Recordings feed with dates
+- [x] Edit profile phone/email

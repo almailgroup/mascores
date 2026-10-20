@@ -1613,6 +1613,7 @@ export type Database = {
           national_id: string | null
           phone: string | null
           platform: string
+          selfie_photo_path: string | null
           social_links: Json
           status: string
           subscription_status: string
@@ -1633,6 +1634,7 @@ export type Database = {
           national_id?: string | null
           phone?: string | null
           platform?: string
+          selfie_photo_path?: string | null
           social_links?: Json
           status?: string
           subscription_status?: string
@@ -1653,6 +1655,7 @@ export type Database = {
           national_id?: string | null
           phone?: string | null
           platform?: string
+          selfie_photo_path?: string | null
           social_links?: Json
           status?: string
           subscription_status?: string
@@ -1863,6 +1866,30 @@ export type Database = {
           },
         ]
       }
+      profile_contacts: {
+        Row: {
+          email: string | null
+          phone: string | null
+          show_public: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          email?: string | null
+          phone?: string | null
+          show_public?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          email?: string | null
+          phone?: string | null
+          show_public?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profile_follows: {
         Row: {
           created_at: string
@@ -1897,6 +1924,7 @@ export type Database = {
           favorite_player_ids: string[]
           favorite_team_ids: string[]
           height_unit: string
+          hide_follows: boolean
           id: string
           is_public: boolean
           language: string
@@ -1919,6 +1947,7 @@ export type Database = {
           favorite_player_ids?: string[]
           favorite_team_ids?: string[]
           height_unit?: string
+          hide_follows?: boolean
           id: string
           is_public?: boolean
           language?: string
@@ -1941,6 +1970,7 @@ export type Database = {
           favorite_player_ids?: string[]
           favorite_team_ids?: string[]
           height_unit?: string
+          hide_follows?: boolean
           id?: string
           is_public?: boolean
           language?: string
@@ -2089,12 +2119,39 @@ export type Database = {
           },
         ]
       }
+      recording_comment_likes: {
+        Row: {
+          comment_id: string
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recording_comment_likes_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "recording_interactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recording_interactions: {
         Row: {
           body: string | null
           created_at: string
           id: string
           kind: string
+          parent_comment_id: string | null
           recording_id: string
           user_id: string
         }
@@ -2103,6 +2160,7 @@ export type Database = {
           created_at?: string
           id?: string
           kind: string
+          parent_comment_id?: string | null
           recording_id: string
           user_id: string
         }
@@ -2111,10 +2169,18 @@ export type Database = {
           created_at?: string
           id?: string
           kind?: string
+          parent_comment_id?: string | null
           recording_id?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "recording_interactions_parent_comment_id_fkey"
+            columns: ["parent_comment_id"]
+            isOneToOne: false
+            referencedRelation: "recording_interactions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "recording_interactions_recording_id_fkey"
             columns: ["recording_id"]
@@ -2183,6 +2249,8 @@ export type Database = {
       }
       social_reports: {
         Row: {
+          comment_body: string | null
+          comment_id: string | null
           created_at: string
           details: string | null
           id: string
@@ -2193,6 +2261,8 @@ export type Database = {
           target_user_id: string
         }
         Insert: {
+          comment_body?: string | null
+          comment_id?: string | null
           created_at?: string
           details?: string | null
           id?: string
@@ -2203,6 +2273,8 @@ export type Database = {
           target_user_id: string
         }
         Update: {
+          comment_body?: string | null
+          comment_id?: string | null
           created_at?: string
           details?: string | null
           id?: string
@@ -2213,6 +2285,13 @@ export type Database = {
           target_user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "social_reports_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "recording_interactions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "social_reports_recording_id_fkey"
             columns: ["recording_id"]
@@ -3090,8 +3169,10 @@ export type Database = {
       voice_recordings: {
         Row: {
           audio_url: string
+          chat_log: Json | null
           cover_url: string | null
           created_at: string
+          description: string | null
           duration_seconds: number
           host_id: string
           id: string
@@ -3104,8 +3185,10 @@ export type Database = {
         }
         Insert: {
           audio_url: string
+          chat_log?: Json | null
           cover_url?: string | null
           created_at?: string
+          description?: string | null
           duration_seconds?: number
           host_id: string
           id?: string
@@ -3118,8 +3201,10 @@ export type Database = {
         }
         Update: {
           audio_url?: string
+          chat_log?: Json | null
           cover_url?: string | null
           created_at?: string
+          description?: string | null
           duration_seconds?: number
           host_id?: string
           id?: string
@@ -3455,6 +3540,13 @@ export type Database = {
       }
       norm_search: { Args: { _t: string }; Returns: string }
       player_follower_count: { Args: { _player_id: string }; Returns: number }
+      public_contacts: {
+        Args: { _user: string }
+        Returns: {
+          email: string
+          phone: string
+        }[]
+      }
       public_profile: {
         Args: { _id: string }
         Returns: {

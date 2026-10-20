@@ -10,7 +10,7 @@ const applicationSchema = z.object({
   platform: z.enum(['instagram', 'tiktok', 'x', 'snapchat', 'youtube', 'facebook', 'other']),
   handle: z.string().trim().min(1).max(120), entity_type: z.enum(['individual', 'company']),
   company_name: z.string().trim().max(160).nullable(),
-  social_links: z.record(z.string().max(120)), civil_id_photo_path: z.string().max(300),
+  social_links: z.record(z.string().max(120)), civil_id_photo_path: z.string().max(300), selfie_photo_path: z.string().max(300),
 });
 
 export const applyAsReporter = createServerFn({ method: 'POST' })
@@ -24,6 +24,10 @@ export const applyAsReporter = createServerFn({ method: 'POST' })
     if (parts.length !== 2 || parts[0] !== context.userId) throw new Error('Upload your civil ID photo first.');
     const { data: files, error: fileError } = await context.supabase.storage.from('reporter-identity').list(context.userId, { search: parts[1], limit: 100 });
     if (fileError || !files?.some((file) => file.name === parts[1])) throw new Error('Civil ID photo not found. Please upload it again.');
+    const selfieParts = data.selfie_photo_path.split('/');
+    if (selfieParts.length !== 2 || selfieParts[0] !== context.userId) throw new Error('Take your verification selfie first.');
+    const { data: selfies } = await context.supabase.storage.from('reporter-identity').list(context.userId, { search: selfieParts[1], limit: 100 });
+    if (!selfies?.some((file) => file.name === selfieParts[1])) throw new Error('Selfie not found. Please take it again.');
     const { error } = await context.supabase.from('news_reporters').insert({ ...data, user_id: context.userId });
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -31,13 +35,14 @@ export const applyAsReporter = createServerFn({ method: 'POST' })
 
 export const viewReporterIdentity = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid(), kind: z.enum(['civil', 'selfie']).default('civil') }).parse(input))
   .handler(async ({ data, context }) => {
     const { data: owner, error: roleError } = await context.supabase.rpc('is_main_admin', { _uid: context.userId });
     if (roleError || !owner) throw new Error('Owner access only.');
-    const { data: row } = await context.supabase.from('news_reporters').select('civil_id_photo_path').eq('id', data.id).maybeSingle();
-    if (!row?.civil_id_photo_path) throw new Error('No civil ID photo supplied.');
-    const { data: link, error } = await context.supabase.storage.from('reporter-identity').createSignedUrl(row.civil_id_photo_path, 300);
+    const { data: row } = await context.supabase.from('news_reporters').select('civil_id_photo_path, selfie_photo_path').eq('id', data.id).maybeSingle();
+    const path = data.kind === 'selfie' ? row?.selfie_photo_path : row?.civil_id_photo_path;
+    if (!path) throw new Error(data.kind === 'selfie' ? 'No selfie supplied.' : 'No civil ID photo supplied.');
+    const { data: link, error } = await context.supabase.storage.from('reporter-identity').createSignedUrl(path, 300);
     if (error || !link) throw new Error('Could not open the identity photo.');
     return { url: link.signedUrl };
   });
