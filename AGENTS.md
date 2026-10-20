@@ -46,3 +46,5 @@
 - Verification review/replies use owner-authorized RPCs; owner badges derive from protected owner identity, never editable badge rows.
 - Avatar uploads use user-ID folders; crop dialogs portal outside page gestures to keep touch editing stable.
 - Settings previews play one browser-compatible copy of bundled iOS audio at a time; refresh copies when CAF files change so phone sounds match.
+- In the iOS app a bell lights only after notification permission is granted (allowBellOn); denied permission at launch/resume/sign-in runs mute_all_alerts so stored bells match the phone. Why: Apple shows its own prompt only once.
+- Blocking uses user_blocks with block_user/unblock_user RPCs; triggers refuse follows, requests and recording interactions between blocked pairs. Why: App Store requires block plus server enforcement.
