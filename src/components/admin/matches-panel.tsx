@@ -16,6 +16,9 @@ export function MatchesPanel({ competitionId, season = null, friendly = false }:
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<Partial<Match>>({ status: "scheduled" });
+  // League rounds use a number; qualifiers use a numbered qualification round; knockouts use a named stage.
+  const [stage, setStage] = useState<"league" | "qualification" | "knockout">("league");
+  const [knockout, setKnockout] = useState("Round of 16");
   const [editingMatch, setEditingMatch] = useState<Match | null>(null);
   const [resultOf, setResultOf] = useState<Match | null>(null);
   const [aiOpen, setAiOpen] = useState(false);
@@ -85,8 +88,11 @@ export function MatchesPanel({ competitionId, season = null, friendly = false }:
       home_team_id: form.home_team_id,
       away_team_id: form.away_team_id,
       kickoff_at: form.kickoff_at ?? null,
-      round_number: friendly ? null : (form.round_number ?? null),
-      round: !friendly && form.round_number != null ? `Round ${form.round_number}` : null,
+      round_number: friendly || stage !== "league" ? null : (form.round_number ?? null),
+      round: friendly ? null
+        : stage === "knockout" ? knockout
+        : stage === "qualification" ? `Qualification round ${form.round_number ?? 1}`
+        : form.round_number != null ? `Round ${form.round_number}` : null,
       venue: form.venue ?? null,
       city: form.city ?? null,
       status: "scheduled",
@@ -203,7 +209,19 @@ export function MatchesPanel({ competitionId, season = null, friendly = false }:
               value={form.kickoff_at ? new Date(new Date(form.kickoff_at).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ""}
               onChange={(e) => setForm({ ...form, kickoff_at: e.target.value ? new Date(e.target.value).toISOString() : null })} />
           </Field>
-          {!friendly && <Field label="Round number"><input type="number" min={1} inputMode="numeric" className={inputCls} placeholder="1" value={form.round_number ?? ""} onChange={(e) => setForm({ ...form, round_number: e.target.value ? Number(e.target.value) : null })} /></Field>}
+          {!friendly && <Field label="Stage">
+            <select className={inputCls} value={stage} onChange={(e) => setStage(e.target.value as typeof stage)}>
+              <option value="league">League / group round</option>
+              <option value="qualification">Qualification round</option>
+              <option value="knockout">Knockout</option>
+            </select>
+          </Field>}
+          {!friendly && stage === "knockout" && <Field label="Knockout round">
+            <select className={inputCls} value={knockout} onChange={(e) => setKnockout(e.target.value)}>
+              {["Round of 64", "Round of 32", "Round of 16", "Quarter-finals", "Semi-finals", "Third place", "Final"].map((r) => <option key={r} value={r}>{r}</option>)}
+            </select>
+          </Field>}
+          {!friendly && stage !== "knockout" && <Field label={stage === "qualification" ? "Qualification round number" : "Round number"}><input type="number" min={1} inputMode="numeric" className={inputCls} placeholder="1" value={form.round_number ?? ""} onChange={(e) => setForm({ ...form, round_number: e.target.value ? Number(e.target.value) : null })} /></Field>}
           <div className="sm:col-span-2">
             <Field label="Venue"><VenueSelect venue={form.venue} city={form.city} onChange={(v, c) => setForm({ ...form, venue: v, city: c })} /></Field>
           </div>
