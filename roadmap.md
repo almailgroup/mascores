@@ -117,3 +117,6 @@
 - [x] Desktop photo download (iPhone unchanged)
 - [x] Voice page Live | Recordings feed with dates
 - [x] Edit profile phone/email
+- [x] New match: stage picker (league round / qualification round N / knockout round)
+- [x] Bells only turn on when iPhone notifications allowed; Settings prompt when off; all bells off when notifications are off
+- [x] Block accounts (profile) + unblock list in Settings
