@@ -13,6 +13,7 @@ import { SocialShare } from './social-share';
 import { SocialReport } from './social-report';
 import { useI18n } from '@/lib/i18n';
 import { commentThreads, replyParent } from '@/lib/recording-comments';
+import { useBlockedUsers } from '@/lib/blocks';
 
 export function RecordingSocial({ recordingId, hostId, title }: { recordingId: string; hostId: string; title: string }) {
   const { user } = useAuth(); const signIn = useSignInAction(); const qc = useQueryClient();
@@ -34,7 +35,9 @@ export function RecordingSocial({ recordingId, hostId, title }: { recordingId: s
     if (likes.error) throw likes.error;
     return { rows: data ?? [], people: identities.data ?? [], likes: likes.data ?? [] };
   }});
-  const rows = interactions.data?.rows ?? [];
+  const { isBlocked } = useBlockedUsers();
+  // Blocked accounts' comments and reactions are hidden for the person who blocked them.
+  const rows = (interactions.data?.rows ?? []).filter(r => !isBlocked(r.user_id));
   const host = useQuery({ queryKey: ['social-host',hostId], queryFn: async () => { const {data} = await supabase.rpc('social_identity',{_ids:[hostId]}); return data?.[0]; }});
   const invalidate = () => qc.invalidateQueries({queryKey:['recording-social',recordingId]});
   const toggle = async (kind: 'like'|'repost') => {
