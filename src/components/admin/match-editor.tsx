@@ -223,13 +223,23 @@ function MainTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
   useEffect(() => setForm(match), [match.id]);
 
   const [notifyHighlights, setNotifyHighlights] = useState(false);
+  const KNOCKOUTS = ["Round of 64", "Round of 32", "Round of 16", "Quarter-finals", "Semi-finals", "Third place", "Final"];
+  const savedRound = match.round ?? "";
+  const qualMatch = /^Qualification round (\d+)/i.exec(savedRound);
+  const [stage, setStage] = useState<"league" | "qualification" | "knockout">(
+    KNOCKOUTS.includes(savedRound) ? "knockout" : qualMatch ? "qualification" : "league",
+  );
+  const [knockout, setKnockout] = useState(KNOCKOUTS.includes(savedRound) ? savedRound : "Round of 16");
+  const [qualNo, setQualNo] = useState<number | null>(qualMatch ? Number(qualMatch[1]) : null);
   const save = async () => {
     await supabase.from("matches").update({
       home_team_id: form.home_team_id ?? null,
       away_team_id: form.away_team_id ?? null,
       kickoff_at: form.kickoff_at ?? null,
-      round_number: form.round_number ?? null,
-      round: form.round_number != null ? `Round ${form.round_number}` : null,
+      round_number: stage !== "league" ? null : (form.round_number ?? null),
+      round: stage === "knockout" ? knockout
+        : stage === "qualification" ? `Qualification round ${qualNo ?? 1}`
+        : form.round_number != null ? `Round ${form.round_number}` : null,
       venue: form.venue ?? null,
       city: form.city ?? null,
       referee: form.referee ?? null,
@@ -268,7 +278,20 @@ function MainTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
           <input type="datetime-local" className={inputCls} value={local}
             onChange={(e) => setForm({ ...form, kickoff_at: e.target.value ? new Date(e.target.value).toISOString() : null })} />
         </Field>
-        <Field label="Round number"><input type="number" min={1} inputMode="numeric" className={inputCls} placeholder="1" value={form.round_number ?? ""} onChange={(e) => setForm({ ...form, round_number: e.target.value ? Number(e.target.value) : null })} /></Field>
+        <Field label="Stage">
+          <select className={inputCls} value={stage} onChange={(e) => setStage(e.target.value as typeof stage)}>
+            <option value="league">League / group round</option>
+            <option value="qualification">Qualification round</option>
+            <option value="knockout">Knockout</option>
+          </select>
+        </Field>
+        {stage === "knockout" && <Field label="Knockout round">
+          <select className={inputCls} value={knockout} onChange={(e) => setKnockout(e.target.value)}>
+            {KNOCKOUTS.map((r) => <option key={r} value={r}>{r}</option>)}
+          </select>
+        </Field>}
+        {stage === "qualification" && <Field label="Qualification round number"><input type="number" min={1} inputMode="numeric" className={inputCls} placeholder="1" value={qualNo ?? ""} onChange={(e) => setQualNo(e.target.value ? Number(e.target.value) : null)} /></Field>}
+        {stage === "league" && <Field label="Round number"><input type="number" min={1} inputMode="numeric" className={inputCls} placeholder="1" value={form.round_number ?? ""} onChange={(e) => setForm({ ...form, round_number: e.target.value ? Number(e.target.value) : null })} /></Field>}
         <div className="sm:col-span-2">
           <Field label="Venue"><VenueSelect venue={form.venue} city={form.city} onChange={(v, c) => setForm({ ...form, venue: v, city: c })} /></Field>
         </div>
