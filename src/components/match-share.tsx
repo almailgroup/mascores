@@ -4,7 +4,7 @@ import { useI18n } from "@/lib/i18n";
 
 export type ShareTeam = { name?: string | null; logo_url?: string | null };
 export type ShareScorer = { name: string; minute: string };
-export type ShareLineupPlayer = { number: string; name: string; photo?: string | null };
+export type ShareLineupPlayer = { number: string; name: string; photo?: string | null; sub?: { minute: string; out: string } | null };
 
 /** One club's starting eleven laid out by formation row, plus coach and bench. */
 export type ShareLineup = {

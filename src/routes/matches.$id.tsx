@@ -506,7 +506,7 @@ function MatchPage() {
               const startersList = showPitch ? [] : list.filter((r) => r.is_starting);
               const benchList = showPitch ? bench : list.filter((r) => !r.is_starting);
               const row = (lu: (typeof rows)[number]) => {
-                const rating = ratings.data?.find((item) => item.player_id === lu.player_id)?.rating;
+                 const rating = ratings.data?.find((item) => item.player_id === lu.player_id)?.rating;
                 const marks = marksFor(lu.player_id);
                 return (
                   <Link key={lu.id} to="/players/$id" params={{ id: lu.player_id }} className="flex items-center gap-3 border-t border-border py-2 first:border-0">
@@ -516,6 +516,31 @@ function MatchPage() {
                     {marks.length > 0 && <span className="flex shrink-0 items-center gap-1">{marks.filter((t) => hasEventArt(t)).slice(0, 4).map((t, k) => <EventArt key={k} type={t} className="h-4 w-4" />)}</span>}
                     {rating != null && <span className={`shrink-0 rounded px-2 py-1 text-xs font-black ${ratingClass(Number(rating))}`}>{num(formatRating(rating))}</span>}
                     {lu.is_starting && <span className="shrink-0 text-xs text-muted-foreground">{tx(lu.position_code ?? "XI")}</span>}
+                   </Link>
+                );
+              };
+              // Bench players who came on get the reference card: minute on the
+              // left, number badge and green arrow on the photo, rating pill,
+              // name in green with the replaced player's name in grey underneath.
+              const usedSubs = benchList.filter((r) => subByPlayer.has(r.player_id));
+              const restBench = benchList.filter((r) => !subByPlayer.has(r.player_id));
+              const subCard = (lu: (typeof rows)[number]) => {
+                const e = subByPlayer.get(lu.player_id);
+                const rating = ratings.data?.find((item) => item.player_id === lu.player_id)?.rating;
+                const minute = e?.minute != null ? `${num(e.minute)}${e.extra ? `+${num(e.extra)}` : ""}'` : "";
+                return (
+                  <Link key={lu.id} to="/players/$id" params={{ id: lu.player_id }} className="flex flex-col items-center gap-0.5 py-3 text-center">
+                    <span className="flex w-full items-start justify-center gap-1.5">
+                      <span className="w-7 shrink-0 pt-4 text-end text-xs font-bold tabular-nums text-muted-foreground">{minute}</span>
+                      <span className="relative block h-12 w-12">
+                        <PlayerAvatar src={lu.player?.photo_url} name={lu.player?.name} className="h-12 w-12" />
+                        <span className="absolute -left-1.5 -top-1 z-30 flex h-4 min-w-4 items-center justify-center rounded-full bg-background px-1 text-[0.6rem] font-black leading-none text-foreground shadow ring-1 ring-border">{num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}</span>
+                        <span className="absolute -left-1.5 top-[1.15rem] z-30 flex h-4 w-4 items-center justify-center rounded-full bg-background shadow ring-1 ring-border"><svg viewBox="0 0 24 24" aria-hidden="true" className="h-2.5 w-2.5 text-success" fill="currentColor"><path d="M12 5l7 9H5z" /></svg></span>
+                        <span className={`absolute -left-4 bottom-0 z-30 rounded px-1.5 text-[0.6rem] font-black leading-4 ${rating != null ? ratingClass(Number(rating)) : "bg-muted text-muted-foreground"}`}>{rating != null ? num(formatRating(rating)) : "–"}</span>
+                      </span>
+                    </span>
+                    <span className="mt-1 line-clamp-1 w-full text-[0.7rem] font-semibold text-success">{tx(lu.player?.name)}</span>
+                    {e?.sub_out?.name && <span className="line-clamp-1 w-full text-[0.65rem] text-muted-foreground">{tx(e.sub_out.name)}</span>}
                   </Link>
                 );
               };
@@ -523,10 +548,16 @@ function MatchPage() {
                 <>
                   {startersList.length > 0 && <div>{startersList.map(row)}</div>}
                   <TeamCoach coach={side === "home" ? coachNames.data?.home : coachNames.data?.away} />
-                  {benchList.length > 0 && (
+                  {usedSubs.length > 0 && (
+                    <div className="mt-3">
+                      <h4 className="mb-1 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Substitutes")}</h4>
+                      <div className="grid grid-cols-3 divide-x divide-border">{usedSubs.map(subCard)}</div>
+                    </div>
+                  )}
+                  {restBench.length > 0 && (
                     <div className="mt-3">
                       <h4 className="mb-1 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Bench")}</h4>
-                      {benchList.map(row)}
+                      {restBench.map(row)}
                     </div>
                   )}
                 </>
