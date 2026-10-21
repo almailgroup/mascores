@@ -529,28 +529,29 @@ function MatchPage() {
                    </Link>
                 );
               };
-              // Bench players who came on get the reference card: minute on the
-              // left, number badge and green arrow on the photo, rating pill,
-              // name in green with the replaced player's name in grey underneath.
-              const usedSubs = benchList.filter((r) => subByPlayer.has(r.player_id));
-              const restBench = benchList.filter((r) => !subByPlayer.has(r.player_id));
-              const subCard = (lu: (typeof rows)[number]) => {
-                const e = subByPlayer.get(lu.player_id);
-                const rating = ratings.data?.find((item) => item.player_id === lu.player_id)?.rating;
-                const minute = e?.minute != null ? `${num(e.minute)}${e.extra ? `+${num(e.extra)}` : ""}'` : "";
+              // Substitutes who came on come straight from the match events so
+              // they appear even when the submitted bench missed them: minute on
+              // the left, number badge and green arrow on the photo, rating
+              // pill, name in green with the replaced player's name underneath.
+              const subsIn = (events.data ?? []).filter((e) => /sub/i.test(e.type) && e.team_id === team?.id && e.player_id);
+              const subIds = new Set(subsIn.map((e) => e.player_id as string));
+              const restBench = benchList.filter((r) => !subIds.has(r.player_id));
+              const subCard = (e: (typeof events.data)[number]) => {
+                const rating = ratings.data?.find((item) => item.player_id === e.player_id)?.rating;
+                const minute = e.minute != null ? `${num(e.minute)}${e.extra ? `+${num(e.extra)}` : ""}'` : "";
                 return (
-                  <Link key={lu.id} to="/players/$id" params={{ id: lu.player_id }} className="flex flex-col items-center gap-0.5 py-3 text-center">
+                  <Link key={e.id} to="/players/$id" params={{ id: e.player_id as string }} className="flex flex-col items-center gap-0.5 py-3 text-center">
                     <span className="flex w-full items-start justify-center gap-1.5">
                       <span className="w-7 shrink-0 pt-4 text-end text-xs font-bold tabular-nums text-muted-foreground">{minute}</span>
                       <span className="relative block h-12 w-12">
-                        <PlayerAvatar src={lu.player?.photo_url} name={lu.player?.name} className="h-12 w-12" />
-                        <span className="absolute -left-1.5 -top-1 z-30 flex h-4 min-w-4 items-center justify-center rounded-full bg-background px-1 text-[0.6rem] font-black leading-none text-foreground shadow ring-1 ring-border">{num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}</span>
+                        <PlayerAvatar src={e.player?.photo_url} name={e.player?.name} className="h-12 w-12" />
+                        <span className="absolute -left-1.5 -top-1 z-30 flex h-4 min-w-4 items-center justify-center rounded-full bg-background px-1 text-[0.6rem] font-black leading-none text-foreground shadow ring-1 ring-border">{num(e.player?.shirt_number ?? "")}</span>
                         <span className="absolute -left-1.5 top-[1.15rem] z-30 flex h-4 w-4 items-center justify-center rounded-full bg-background shadow ring-1 ring-border"><svg viewBox="0 0 24 24" aria-hidden="true" className="h-2.5 w-2.5 text-success" fill="currentColor"><path d="M12 5l7 9H5z" /></svg></span>
                         <span className={`absolute -left-4 bottom-0 z-30 rounded px-1.5 text-[0.6rem] font-black leading-4 ${rating != null ? ratingClass(Number(rating)) : "bg-muted text-muted-foreground"}`}>{rating != null ? num(formatRating(rating)) : "–"}</span>
                       </span>
                     </span>
-                    <span className="mt-1 line-clamp-1 w-full text-[0.7rem] font-semibold text-success">{tx(lu.player?.name)}</span>
-                    {e?.sub_out?.name && <span className="line-clamp-1 w-full text-[0.65rem] text-muted-foreground">{tx(e.sub_out.name)}</span>}
+                    <span className="mt-1 line-clamp-1 w-full text-[0.7rem] font-semibold text-success">{tx(e.player?.name)}</span>
+                    {e.sub_out?.name && <span className="line-clamp-1 w-full text-[0.65rem] text-muted-foreground">{tx(e.sub_out.name)}</span>}
                   </Link>
                 );
               };
