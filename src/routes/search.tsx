@@ -14,7 +14,7 @@ import { useCompact, useReverseTranslate, useTx } from "@/lib/auto-translate";
 import { COUNTRIES } from "@/lib/countries";
 
 export const Route = createFileRoute("/search")({
-  head: () => ({ meta: [{ title: "Search — MA Scores" }, { name: "robots", content: "noindex" }, { name: "description", content: "Find teams, players, competitions and venues on MA Scores." }, { property: "og:title", content: "Search — MA Scores" }, { property: "og:description", content: "Find teams, players, competitions and venues on MA Scores." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
+  head: () => ({ meta: [{ title: "Search — MaScores" }, { name: "robots", content: "noindex" }, { name: "description", content: "Find teams, players, competitions and venues on MaScores." }, { property: "og:title", content: "Search — MaScores" }, { property: "og:description", content: "Find teams, players, competitions and venues on MaScores." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: SearchPage,
 });
 

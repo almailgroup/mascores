@@ -10,11 +10,11 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/verify")({
   head: () => ({
     meta: [
-      { title: "Request verification — MA Scores" },
+      { title: "Request verification — MaScores" },
       { name: "robots", content: "noindex" },
-      { name: "description", content: "Ask the MA Scores team to verify your account with proof of who you are." },
-      { property: "og:title", content: "Request verification — MA Scores" },
-      { property: "og:description", content: "Ask the MA Scores team to verify your account." },
+      { name: "description", content: "Ask the MaScores team to verify your account with proof of who you are." },
+      { property: "og:title", content: "Request verification — MaScores" },
+      { property: "og:description", content: "Ask the MaScores team to verify your account." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

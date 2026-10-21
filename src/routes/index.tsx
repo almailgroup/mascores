@@ -16,9 +16,9 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "MA Scores — Football, curated" },
-      { name: "description", content: "MA Scores is a football app built to give you good, reliable information — matches, lineups, live events, standings, transfers, and news for every competition you follow." },
-      { property: "og:title", content: "MA Scores — Football, curated" },
+      { title: "MaScores — Football, curated" },
+      { name: "description", content: "MaScores is a football app built to give you good, reliable information — matches, lineups, live events, standings, transfers, and news for every competition you follow." },
+      { property: "og:title", content: "MaScores — Football, curated" },
       { property: "og:description", content: "A football app giving good, reliable information — matches, lineups, standings, and news." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

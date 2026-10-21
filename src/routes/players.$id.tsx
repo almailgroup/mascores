@@ -26,9 +26,9 @@ import { fetchPlayerNationalTeams, findNationalTeamByCountry } from "@/lib/natio
 export const Route = createFileRoute("/players/$id")({
   head: () => ({
     meta: [
-      { title: "Player — MA Scores" },
+      { title: "Player — MaScores" },
       { name: "description", content: "Player profile: details, transfer history, matches and media." },
-      { property: "og:title", content: "Player — MA Scores" },
+      { property: "og:title", content: "Player — MaScores" },
       { property: "og:description", content: "Player profile: details, transfer history, matches and media." },
       { property: "og:type", content: "profile" },
       { name: "twitter:card", content: "summary_large_image" },

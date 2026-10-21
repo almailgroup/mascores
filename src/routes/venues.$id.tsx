@@ -11,9 +11,9 @@ import { Landmark, Navigation } from "lucide-react";
 export const Route = createFileRoute("/venues/$id")({
   head: () => ({
     meta: [
-      { title: "Stadium — MA Scores" },
+      { title: "Stadium — MaScores" },
       { name: "description", content: "Stadium profile: photo, capacity, city, country, resident clubs and upcoming matches." },
-      { property: "og:title", content: "Stadium — MA Scores" },
+      { property: "og:title", content: "Stadium — MaScores" },
       { property: "og:description", content: "Stadium profile: photo, capacity, city, country, resident clubs and upcoming matches." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

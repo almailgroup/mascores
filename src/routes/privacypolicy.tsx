@@ -7,17 +7,17 @@ import { useI18n } from "@/lib/i18n";
 export const Route = createFileRoute("/privacypolicy")({
   head: () => ({
     meta: [
-      { title: "Privacy Policy — MA Scores" },
+      { title: "Privacy Policy — MaScores" },
       {
         name: "description",
         content:
-          "How MA Scores collects, uses, and protects your information. Read our full privacy policy.",
+          "How MaScores collects, uses, and protects your information. Read our full privacy policy.",
       },
-      { property: "og:title", content: "Privacy Policy — MA Scores" },
+      { property: "og:title", content: "Privacy Policy — MaScores" },
       {
         property: "og:description",
         content:
-          "How MA Scores collects, uses, and protects your information. Read our full privacy policy.",
+          "How MaScores collects, uses, and protects your information. Read our full privacy policy.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -98,8 +98,8 @@ function PrivacyPolicyPage() {
             </div>
             <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
               {t(
-                "Your trust matters more than anything we build. This page explains, in plain language, what information MA Scores keeps and why.",
-                "ثقتك أهم من أي شيء نبنيه. توضح هذه الصفحة بلغة بسيطة ما المعلومات التي يحتفظ بها MA Scores ولماذا.",
+                "Your trust matters more than anything we build. This page explains, in plain language, what information MaScores keeps and why.",
+                "ثقتك أهم من أي شيء نبنيه. توضح هذه الصفحة بلغة بسيطة ما المعلومات التي يحتفظ بها MaScores ولماذا.",
               )}
             </p>
             <p className="mt-3 text-xs text-muted-foreground">

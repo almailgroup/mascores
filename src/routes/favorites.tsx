@@ -12,9 +12,9 @@ import type { ReactNode } from "react";
 
 export const Route = createFileRoute("/favorites")({
   head: () => ({ meta: [
-    { title: "Favorites — MA Scores" },
+    { title: "Favorites — MaScores" },
     { name: "description", content: "Your saved matches, clubs, players and competitions." },
-    { property: "og:title", content: "Favorites — MA Scores" },
+    { property: "og:title", content: "Favorites — MaScores" },
     { property: "og:description", content: "Your saved matches, clubs, players and competitions." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary_large_image" },

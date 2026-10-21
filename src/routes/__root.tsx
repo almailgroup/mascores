@@ -99,15 +99,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "apple-mobile-web-app-title", content: "MAS" },
       { name: "mobile-web-app-capable", content: "yes" },
-      { title: "MA Scores — Live Football Scores" },
+      { title: "MaScores — Live Football Scores" },
       {
         name: "description",
         content:
           "Live scores, match centers, lineups, and coverage of the best leagues of the world.",
       },
-      { name: "author", content: "MA Scores" },
+      { name: "author", content: "MaScores" },
       { name: "theme-color", content: "#0a1628" },
-      { property: "og:title", content: "MA Scores — Live Football Scores" },
+      { property: "og:title", content: "MaScores — Live Football Scores" },
       {
         property: "og:description",
         content:
@@ -115,7 +115,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "MA Scores — Live Football Scores" },
+      { name: "twitter:title", content: "MaScores — Live Football Scores" },
       { name: "twitter:description", content: "Live scores, match centers, lineups, and coverage of the best leagues of the world." },
     ],
     links: [

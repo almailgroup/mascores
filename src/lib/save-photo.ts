@@ -37,7 +37,7 @@ function callNativeSave(base64: string) {
 }
 
 /**
- * iPhone app: writes straight into the camera roll. iOS asks "Allow MA Scores
+ * iPhone app: writes straight into the camera roll. iOS asks "Allow MaScores
  * to add photos" the first time; afterwards it saves silently. The app never
  * falls back to the share sheet — that only offered "Save to Files".
  * Website: opens the system share sheet, where "Save Image" puts it in Photos.
