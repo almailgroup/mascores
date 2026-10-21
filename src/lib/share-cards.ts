@@ -1,3 +1,4 @@
+import goalIcon from "@/assets/events/goal.png.asset.json";
 import logoMarkWhite from "@/assets/logo-mark-dark.png";
 const logoMark = { url: logoMarkWhite };
 import { portraitSource } from "@/lib/portrait-source";
@@ -639,7 +640,7 @@ export async function drawResultCard(input: {
   const glow = ctx.createRadialGradient(W, 0, 40, W, 0, 900);
   glow.addColorStop(0, input.accentAway); glow.addColorStop(1, "rgba(11,16,32,0)");
   ctx.fillStyle = glow; ctx.globalAlpha = 0.6; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1;
-  const [hl, al, mark] = await Promise.all([loadImage(input.home.logo), loadImage(input.away.logo), loadImage(logoMark.url)]);
+  const [hl, al, mark, goalImg] = await Promise.all([loadImage(input.home.logo), loadImage(input.away.logo), loadImage(logoMark.url), loadImage(goalIcon.url)]);
 
   ctx.textAlign = "center"; ctx.fillStyle = "rgba(255,255,255,0.85)"; ctx.font = `700 32px ${FONT}`;
   ctx.fillText(input.competition.slice(0, 48).toUpperCase(), W / 2, 110);
@@ -665,7 +666,8 @@ export async function drawResultCard(input: {
     items.slice(0, 9).forEach((s, i) => { ctx.fillStyle = "#ffffff"; ctx.fillText(`${s.name}  ${s.minute}`, x, 870 + i * 52, 430); });
   };
   if (input.homeScorers.length || input.awayScorers.length) {
-    ctx.textAlign = "center"; ctx.fillStyle = "rgba(255,255,255,0.55)"; ctx.font = `800 22px ${FONT}`; ctx.fillText("⚽  GOALS", W / 2, 820);
+    ctx.textAlign = "center"; ctx.fillStyle = "rgba(255,255,255,0.55)"; ctx.font = `800 22px ${FONT}`; ctx.fillText("GOALS", W / 2 + 20, 820);
+    if (goalImg) crest(ctx, goalImg, "", W / 2 - 52, 812, 34);
     ctx.fillStyle = "rgba(255,255,255,0.15)"; ctx.fillRect(W / 2 - 1, 845, 2, 460);
     list(input.homeScorers, W / 2 - 40, "right"); list(input.awayScorers, W / 2 + 40, "left");
   }
