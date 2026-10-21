@@ -559,10 +559,10 @@ function MatchPage() {
                 <>
                   {startersList.length > 0 && <div>{startersList.map(row)}</div>}
                   <TeamCoach coach={side === "home" ? coachNames.data?.home : coachNames.data?.away} />
-                  {usedSubs.length > 0 && (
+                  {subsIn.length > 0 && (
                     <div className="mt-3">
                       <h4 className="mb-1 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Substitutes")}</h4>
-                      <div className="grid grid-cols-3 divide-x divide-border">{usedSubs.map(subCard)}</div>
+                      <div className="grid grid-cols-3 divide-x divide-border">{subsIn.map(subCard)}</div>
                     </div>
                   )}
                   {restBench.length > 0 && (
