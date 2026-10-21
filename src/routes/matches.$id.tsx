@@ -113,9 +113,9 @@ function MatchPage() {
     queryKey: ["match-events", id],
     queryFn: async () => {
       const { data } = await supabase.from("match_events")
-        .select("*, player:player_id(id,name,name_ar), team:team_id(id,name)")
+        .select("*, player:player_id(id,name,name_ar), team:team_id(id,name), sub_out:sub_out_player_id(id,name)")
         .eq("match_id", id).order("minute").order("extra");
-      return (data ?? []) as unknown as (MatchEvent & { player: Player | null; team: Team | null })[];
+      return (data ?? []) as unknown as (MatchEvent & { player: Player | null; team: Team | null; sub_out: { id: string; name: string } | null })[];
     },
   });
   const lineups = useQuery({
@@ -398,6 +398,11 @@ function MatchPage() {
         const rows = lineups.data?.filter((item) => item.team_id === team?.id) ?? [];
         const starters = rows.filter((r) => r.is_starting);
         const bench = rows.filter((r) => !r.is_starting);
+        // Substitution events for this team: player_id is who came on,
+        // sub_out_player_id is who went off.
+        const subByPlayer = new Map((events.data ?? [])
+          .filter((e) => /sub/i.test(e.type) && e.team_id === team?.id && e.player_id)
+          .map((e) => [e.player_id as string, e]));
         const activeFormation = formation ?? "4-3-3";
         const showPitch = starters.length > 0;
         const marksFor = (playerId: string) => (events.data ?? [])
@@ -411,6 +416,10 @@ function MatchPage() {
           number: String(lu.shirt_number ?? lu.player?.shirt_number ?? ""),
           name: tx(displayShortName(lu.player?.short_name, lu.player?.name)) ?? "",
           photo: lu.player?.photo_url,
+          sub: (() => {
+            const e = subByPlayer.get(lu.player_id);
+            return e ? { minute: e.minute != null ? `${num(e.minute)}${e.extra ? `+${num(e.extra)}` : ""}'` : "", out: e.sub_out?.name ? tx(e.sub_out.name) : "" } : null;
+          })(),
         });
         // The shareable card mirrors what is on screen: formation, pitch, coach and bench.
         const lineupShare = {
