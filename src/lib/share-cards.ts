@@ -610,14 +610,27 @@ export async function drawTeamLineupCard(input: {
 
   if (bench.length) {
     const top = py + ph + 40;
+    const lineH = bench.some((p) => p.sub) ? 66 : 50;
     ctx.fillStyle = "rgba(255,255,255,0.07)"; roundRect(ctx, 60, top, 960, benchH, 28); ctx.fill();
     ctx.textAlign = "left"; ctx.fillStyle = "rgba(255,255,255,0.6)"; ctx.font = `800 24px ${FONT}`;
     ctx.fillText("SUBSTITUTES", 96, top + 56);
     bench.forEach((p, i) => {
-      const x = i % 2 ? 560 : 96, y = top + 110 + Math.floor(i / 2) * 50;
-      ctx.fillStyle = input.accent; roundRect(ctx, x, y - 28, 52, 36, 9); ctx.fill();
-      ctx.fillStyle = "#ffffff"; ctx.font = `800 20px ${FONT}`; ctx.textAlign = "center"; ctx.fillText(p.number || "-", x + 26, y - 3);
-      ctx.textAlign = "left"; ctx.font = `600 26px ${FONT}`; ctx.fillText(p.name, x + 68, y - 1, 380);
+      const x = i % 2 ? 560 : 96, y = top + 110 + Math.floor(i / 2) * lineH;
+      if (p.sub) {
+        // Came-on card: minute, number chip with a green up arrow, name in
+        // green and the replaced player in grey underneath.
+        ctx.textAlign = "right"; ctx.font = `700 24px ${FONT}`; ctx.fillStyle = "rgba(255,255,255,0.6)";
+        ctx.fillText(p.sub.minute, x + 40, y - 2);
+        ctx.fillStyle = input.accent; roundRect(ctx, x + 52, y - 34, 48, 34, 9); ctx.fill();
+        ctx.fillStyle = "#ffffff"; ctx.font = `800 20px ${FONT}`; ctx.textAlign = "center"; ctx.fillText(p.number || "-", x + 76, y - 10);
+        ctx.fillStyle = "#4ade80"; ctx.beginPath(); ctx.moveTo(x + 76, y - 2); ctx.lineTo(x + 68, y + 10); ctx.lineTo(x + 84, y + 10); ctx.closePath(); ctx.fill();
+        ctx.textAlign = "left"; ctx.font = `700 26px ${FONT}`; ctx.fillStyle = "#4ade80"; ctx.fillText(p.name, x + 118, y - 10, 340);
+        if (p.sub.out) { ctx.font = `500 22px ${FONT}`; ctx.fillStyle = "rgba(255,255,255,0.55)"; ctx.fillText(p.sub.out, x + 118, y + 18, 340); }
+      } else {
+        ctx.fillStyle = input.accent; roundRect(ctx, x, y - 28, 52, 36, 9); ctx.fill();
+        ctx.fillStyle = "#ffffff"; ctx.font = `800 20px ${FONT}`; ctx.textAlign = "center"; ctx.fillText(p.number || "-", x + 26, y - 3);
+        ctx.textAlign = "left"; ctx.font = `600 26px ${FONT}`; ctx.fillText(p.name, x + 68, y - 1, 380);
+      }
     });
   }
   if (mark) { ctx.save(); ctx.globalAlpha = 0.9; crest(ctx, mark, "", 960, H - 80, 190); ctx.restore(); }
