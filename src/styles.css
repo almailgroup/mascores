@@ -145,6 +145,9 @@
   --event-ink: oklch(0.2 0.03 260);
   --match-foreground: oklch(0.98 0.005 240);
   --match-live: oklch(0.78 0.14 250);
+  --lineup-turf: oklch(0.48 0.13 150);
+  --lineup-turf-stripe: oklch(0.51 0.13 150);
+  --lineup-marking: oklch(0.98 0.005 150 / 35%);
   --sports-header-surface: oklch(0.17 0.015 260);
   --sports-header-foreground: oklch(0.98 0.005 240);
   --sports-header-chip: oklch(1 0 0 / 10%);
@@ -414,6 +417,8 @@ a:has([aria-label*="match notifications"]):active { filter: none; transform: non
 @media (min-width: 640px) { .sports-header .profile-title { font-size: 18px; } .club-profile-header { margin-top: -1.5rem; } }
 
 .round-team-pitch { position: relative; background: var(--card); }
+.match-lineup-turf { background: repeating-linear-gradient(180deg, var(--lineup-turf) 0 40px, var(--lineup-turf-stripe) 40px 80px); }
+.match-lineup-marking { border-color: var(--lineup-marking); }
 .round-team-pitch::before { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(180deg, transparent 0 96px, color-mix(in oklab, var(--border) 50%, transparent) 96px 97px); pointer-events: none; }
 .round-team-pitch::after { content: ""; position: absolute; width: 80px; height: 80px; border: 1px solid var(--border); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; }
 
