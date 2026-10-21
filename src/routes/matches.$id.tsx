@@ -113,7 +113,7 @@ function MatchPage() {
     queryKey: ["match-events", id],
     queryFn: async () => {
       const { data } = await supabase.from("match_events")
-        .select("*, player:player_id(id,name,name_ar), team:team_id(id,name), sub_out:sub_out_player_id(id,name)")
+        .select("*, player:player_id(id,name,name_ar,shirt_number,photo_url), team:team_id(id,name), sub_out:sub_out_player_id(id,name)")
         .eq("match_id", id).order("minute").order("extra");
       return (data ?? []) as unknown as (MatchEvent & { player: Player | null; team: Team | null; sub_out: { id: string; name: string } | null })[];
     },
@@ -421,6 +421,16 @@ function MatchPage() {
             return e ? { minute: e.minute != null ? `${num(e.minute)}${e.extra ? `+${num(e.extra)}` : ""}'` : "", out: e.sub_out?.name ? tx(e.sub_out.name) : "" } : null;
           })(),
         });
+        // Came-on substitutes for a club, for the bench sections and the
+        // shareable card, even when the submitted lineup missed them.
+        const subsOf = (clubId: string | null | undefined) => (events.data ?? [])
+          .filter((e) => /sub/i.test(e.type) && e.team_id === clubId && e.player_id)
+          .map((e) => ({
+            number: String(e.player?.shirt_number ?? ""),
+            name: tx(e.player?.name) ?? "",
+            photo: e.player?.photo_url,
+            sub: { minute: e.minute != null ? `${num(e.minute)}${e.extra ? `+${num(e.extra)}` : ""}'` : "", out: e.sub_out?.name ? tx(e.sub_out.name) : "" },
+          }));
         // The shareable card mirrors what is on screen: formation, pitch, coach and bench.
         const lineupShare = {
           ...shareData,
