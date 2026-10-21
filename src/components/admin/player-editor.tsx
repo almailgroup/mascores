@@ -25,6 +25,8 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
   const qc = useQueryClient();
   const [form, setForm] = useState<Partial<Player>>(player);
   const [busy, setBusy] = useState(false);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
@@ -62,9 +64,13 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
       setBusy(false); setSentForReview(true);
       return;
     }
-    if (form.id) await supabase.from("players").update(payload).eq("id", form.id);
-    else {
-      const { data } = await supabase.from("players").insert(payload as never).select("*").maybeSingle();
+    setSaveError(null);
+    if (form.id) {
+      const { error } = await supabase.from("players").update(payload).eq("id", form.id);
+      if (error) { setBusy(false); setSaveError(error.message); return; }
+    } else {
+      const { data, error } = await supabase.from("players").insert(payload as never).select("*").maybeSingle();
+      if (error) { setBusy(false); setSaveError(error.message); return; }
       if (data) setForm(data as Player);
     }
     setBusy(false); setSaved(true);
@@ -95,8 +101,8 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
       <div className="sticky top-0 z-10 border-b border-border bg-background/95 px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] backdrop-blur lg:px-8">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3">
           <button className={btnGhost} onClick={onClose}><ArrowLeft className="h-3.5 w-3.5" /> Back</button>
-          <button className={btnPrimary} disabled={busy || !form.name?.trim()} onClick={save}>
-            {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />} {form.id ? "Save" : needsApproval ? "Send for review" : "Create"}
+          <button className={btnPrimary} disabled={busy || photoUploading || !form.name?.trim()} onClick={save}>
+            {busy || photoUploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />} {photoUploading ? "Uploading photo…" : form.id ? "Save" : needsApproval ? "Send for review" : "Create"}
           </button>
           <div className="min-w-0 flex-1 truncate text-sm font-bold">{form.name || "New player"}{clubName ? ` · ${clubName}` : " · Free agent"}</div>
         </div>
@@ -148,7 +154,7 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
             <CountrySelect value={form.nationality} onChange={(name, c) => setForm({ ...form, nationality: name, nationality_code: c?.code ?? null })} />
           </Field>
           <div className="sm:col-span-2 lg:col-span-3"><Field label="Photo">
-            <ImageInput value={form.photo_url ?? null} onChange={(v) => setForm((cur) => ({ ...cur, photo_url: v }))} onFile={async (f) => { const url = await uploadMedia("player-photos", f); if (url) setForm((cur) => ({ ...cur, photo_url: url })); }} />
+            <ImageInput value={form.photo_url ?? null} onChange={(v) => setForm((cur) => ({ ...cur, photo_url: v }))} onFile={async (f) => { setPhotoUploading(true); try { const url = await uploadMedia("player-photos", f); if (url) setForm((cur) => ({ ...cur, photo_url: url })); } finally { setPhotoUploading(false); } }} />
           </Field></div>
           <div className="sm:col-span-2 lg:col-span-3"><Field label="Media gallery">
             <MediaUrls urls={form.media_urls ?? []} onChange={(v) => setForm({ ...form, media_urls: v })} bucket="player-photos" />
@@ -194,10 +200,11 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
           <p className="text-xs text-muted-foreground">Create the player to add transfer history and squad moves.</p>
         )}
         {saved && <div className="rounded-xl border border-primary/40 bg-primary/10 px-3 py-2 text-sm text-primary">Saved.</div>}
+        {saveError && <div className="rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">Could not save: {saveError}</div>}
         {sentForReview && <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm font-semibold text-amber-700 dark:text-amber-300">Sent to the site owner. This player appears once he approves it.</div>}
         <div className="flex flex-wrap items-center gap-3 border-t border-border pt-4">
-          <button className={btnPrimary} disabled={busy || !form.name?.trim()} onClick={save}>
-            {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />} {form.id ? "Save" : needsApproval ? "Send for review" : "Create"}
+          <button className={btnPrimary} disabled={busy || photoUploading || !form.name?.trim()} onClick={save}>
+            {busy || photoUploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />} {photoUploading ? "Uploading photo…" : form.id ? "Save" : needsApproval ? "Send for review" : "Create"}
           </button>
           <button className={btnGhost} onClick={onClose}><ArrowLeft className="h-3.5 w-3.5" /> Back</button>
         </div>

@@ -54,8 +54,9 @@ export function ImageCropper({
       new Promise<HTMLImageElement | null>((resolve) => {
         const image = new Image();
         if (anonymous) image.crossOrigin = "anonymous";
-        image.onload = () => resolve(image);
-        image.onerror = () => resolve(null);
+        const timer = window.setTimeout(() => { image.src = ""; resolve(null); }, 10000);
+        image.onload = () => { window.clearTimeout(timer); resolve(image); };
+        image.onerror = () => { window.clearTimeout(timer); resolve(null); };
         image.src = source;
       });
 
@@ -65,7 +66,10 @@ export function ImageCropper({
       let source = url;
       if (!/^(blob:|data:)/.test(url)) {
         try {
-          const res = await fetch(url, { mode: "cors", cache: "no-store" });
+          const ctl = new AbortController();
+          const timer = window.setTimeout(() => ctl.abort(), 10000);
+          const res = await fetch(url, { mode: "cors", cache: "no-store", signal: ctl.signal });
+          window.clearTimeout(timer);
           if (res.ok) {
             source = URL.createObjectURL(await res.blob());
             created = source;
