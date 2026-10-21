@@ -543,7 +543,7 @@ export async function drawMatchLineupsCard(input: {
   return toBlob(canvas);
 }
 
-type CardPlayer = { name: string; number: string; photo?: string | null };
+type CardPlayer = { name: string; number: string; photo?: string | null; sub?: { minute: string; out: string } | null };
 
 /** One club's starting eleven on a full pitch, with coach and substitutes. */
 export async function drawTeamLineupCard(input: {
@@ -553,7 +553,7 @@ export async function drawTeamLineupCard(input: {
   const { team } = input;
   const bench = (team.bench ?? []).slice(0, 14);
   const benchLines = Math.ceil(bench.length / 2);
-  const benchH = bench.length ? 120 + benchLines * 50 : 0;
+  const benchH = bench.length ? 120 + benchLines * (bench.some((p) => p.sub) ? 66 : 50) : 0;
   const W = 1080, py = 300, ph = 1240, H = py + ph + 60 + benchH + 80;
   const made = surface(W, H, input.accent);
   if (!made) return null;
