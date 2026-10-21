@@ -453,7 +453,7 @@ function MatchPage() {
           },
         };
         return (
-          <div key={side} className="rounded-2xl border border-border bg-card p-4">
+          <div key={side}>
             {showPitch && <div className="mb-3 flex items-center justify-between gap-2">
               <MatchShare data={lineupShare} mode="lineups" />
               <span className="rounded bg-muted px-2 py-0.5 text-[0.65rem] font-semibold">{num(activeFormation)}</span>
@@ -461,25 +461,25 @@ function MatchPage() {
             {showPitch && (
               // Turf and markings live on a clipped layer so player cards (and the
               // goalkeeper's rating on the bottom row) are never cut off.
-              <div className="relative mx-auto mb-4 aspect-[3/4] w-full max-w-md rounded-2xl px-3 pb-9 pt-6">
+              <div className="relative mx-auto mb-4 aspect-[7/10] w-full max-w-lg px-2 pb-10 pt-6" data-lineup-pitch>
                 <img src={lineupLogo.url} alt="" aria-hidden="true" className="pointer-events-none absolute bottom-3 right-3 z-10 h-7 w-7 object-contain opacity-60 [filter:brightness(0)_invert(1)]" />
-                <span className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl" style={{ background: "repeating-linear-gradient(180deg,#1b7a3f 0 28px,#17703a 28px 56px)" }} />
-                <span className="pointer-events-none absolute inset-2 rounded-lg border-2 border-white/35" />
-                <span className="pointer-events-none absolute left-2 right-2 top-1/2 border-t-2 border-white/35" />
-                <span className="pointer-events-none absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/35" />
-                <span className="pointer-events-none absolute left-1/2 top-2 h-12 w-32 -translate-x-1/2 border-2 border-t-0 border-white/35" />
-                <span className="pointer-events-none absolute bottom-2 left-1/2 h-12 w-32 -translate-x-1/2 border-2 border-b-0 border-white/35" />
+                <span className="match-lineup-turf pointer-events-none absolute inset-0 overflow-hidden" />
+                <span className="match-lineup-marking pointer-events-none absolute inset-2 border-2" />
+                <span className="match-lineup-marking pointer-events-none absolute left-2 right-2 top-1/2 border-t-2" />
+                <span className="match-lineup-marking pointer-events-none absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full border-2" />
+                <span className="match-lineup-marking pointer-events-none absolute left-1/2 top-2 h-12 w-32 -translate-x-1/2 border-2 border-t-0" />
+                <span className="match-lineup-marking pointer-events-none absolute bottom-2 left-1/2 h-12 w-32 -translate-x-1/2 border-2 border-b-0" />
                 <div className="relative flex h-full flex-col justify-between overflow-visible">
                 {formationRows(activeFormation).map((row, ri) => (
-                <div key={ri} className="relative flex min-h-0 flex-1 items-center justify-around gap-1 py-1">
+                <div key={ri} className="relative grid min-h-0 flex-1 auto-cols-fr grid-flow-col items-center gap-1 py-2">
                     {row.map((slot) => {
                       const lu = starters.find((s) => s.position_code === slot);
-                      if (!lu) return <div key={slot} className="w-14" />;
+                      if (!lu) return <div key={slot} />;
                       const marks = marksFor(lu.player_id);
                       const pitchRating = ratings.data?.find((item) => item.player_id === lu.player_id)?.rating;
                       return (
-                        <Link key={slot} to="/players/$id" params={{ id: lu.player_id }} className="relative z-10 flex w-16 flex-col items-center gap-0.5 overflow-visible text-center">
-                          <span className="relative mb-1 block h-11 w-11 overflow-visible">
+                        <Link key={slot} to="/players/$id" params={{ id: lu.player_id }} className="relative z-10 flex min-w-0 flex-col items-center overflow-visible text-center">
+                          <span className="relative mb-2 block h-11 w-11 overflow-visible">
                             <PlayerAvatar src={lu.player?.photo_url} name={lu.player?.name} className={`h-11 w-11 border-2 ${lu.player?.is_temporary ? "border-dashed border-muted-foreground" : lu.player?.team_id && lu.player.team_id !== lu.team_id ? "border-primary" : ""}`} />
                             {(lu.shirt_number ?? lu.player?.shirt_number) != null && (
                               <span className="absolute -left-1 -top-1 z-30 flex h-4 min-w-4 items-center justify-center rounded-full bg-background px-1 text-[0.6rem] font-black leading-none text-foreground shadow ring-1 ring-border">{num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}</span>
@@ -496,13 +496,13 @@ function MatchPage() {
                               return <>
                                 {(goals.length > 0 || own.length > 0) && <span className={`${dot} -right-2 -top-1.5`}>{goals.length > 0 ? <EventArt type="goal" className="h-3 w-3" /> : <EventArt type="own_goal" className="h-3 w-3" />}{(goals.length || own.length) > 1 && <span className="ps-0.5 pe-0.5 text-[0.6rem] font-black leading-none text-foreground">{num(goals.length || own.length)}</span>}</span>}
                                 {assists.length > 0 && <span className={`${dot} -right-3 top-1/2 -translate-y-1/2`}><span className="text-[0.55rem] leading-none">{hasEventArt("assist") ? <EventArt type="assist" className="h-3 w-3" /> : <span className="font-black text-foreground">A</span>}</span>{count(assists.length)}</span>}
-                                {card && <span className={`${dot} bottom-0 -right-3`}><EventArt type={card} className="h-3 w-3" /></span>}
+                                {card && <span className={`${dot} bottom-0 -right-2`}><EventArt type={card} className="h-3 w-3" /></span>}
                                 {sub && <span className={`${dot} -left-3 top-1/2 -translate-y-1/2`}><EventArt type={sub} className="h-3 w-3" /></span>}
                               </>;
                             })()}
+                            {pitchRating != null && <span className={`absolute -bottom-1 -left-3 z-40 h-4 rounded-full px-1.5 text-[0.65rem] font-black leading-4 ${ratingClass(Number(pitchRating))}`}>{num(formatRating(pitchRating))}</span>}
                           </span>
-                          <span className="line-clamp-1 max-w-full text-[0.6rem] font-semibold leading-tight text-white drop-shadow">{tx(displayShortName(lu.player?.short_name, lu.player?.name))}</span>
-                          <span className={`h-4 rounded px-1.5 text-[0.6rem] font-black leading-4 ${pitchRating != null ? ratingClass(Number(pitchRating)) : "opacity-0"}`}>{pitchRating != null ? num(formatRating(pitchRating)) : "0.0"}</span>
+                          <span className="line-clamp-2 h-7 w-full break-words px-0.5 text-[0.65rem] font-semibold leading-3.5 text-match-foreground">{tx(displayShortName(lu.player?.short_name, lu.player?.name))}</span>
                         </Link>
                       );
                     })}
