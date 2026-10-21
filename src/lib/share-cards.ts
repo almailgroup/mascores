@@ -1,4 +1,4 @@
-import goalIcon from "@/assets/events/goal.png.asset.json";
+import goalIcon from "@/assets/events/goal-white.png";
 import logoMarkWhite from "@/assets/logo-mark-dark.png";
 const logoMark = { url: logoMarkWhite };
 import { portraitSource } from "@/lib/portrait-source";
