@@ -522,7 +522,7 @@ function MatchPage() {
                   <Link key={lu.id} to="/players/$id" params={{ id: lu.player_id }} className="flex items-center gap-3 border-t border-border py-2 first:border-0">
                     <span className="w-6 shrink-0 text-center text-xs font-bold tabular-nums text-muted-foreground">{num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}</span>
                     <PlayerAvatar src={lu.player?.photo_url} name={lu.player?.name} className="h-9 w-9" />
-                    <span className="min-w-0 flex-1 truncate font-semibold">{tx(lu.player?.name)}</span>
+                    <span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(displayShortName(lu.player?.short_name, lu.player?.name))}</span>
                     {marks.length > 0 && <span className="flex shrink-0 items-center gap-1">{marks.filter((t) => hasEventArt(t)).slice(0, 4).map((t, k) => <EventArt key={k} type={t} className="h-4 w-4" />)}</span>}
                     {rating != null && <span className={`shrink-0 rounded px-2 py-1 text-xs font-black ${ratingClass(Number(rating))}`}>{num(formatRating(rating))}</span>}
                     {lu.is_starting && <span className="shrink-0 text-xs text-muted-foreground">{tx(lu.position_code ?? "XI")}</span>}
@@ -531,7 +531,7 @@ function MatchPage() {
               };
               // Substitutes who came on come straight from the match events so
               // they appear even when the submitted bench missed them: minute on
-              // the left, number badge and green arrow on the photo, rating
+              // the left, number badge and original substitution art on the photo, rating
               // pill, name in green with the replaced player's name underneath.
               const subsIn = (events.data ?? []).filter((e) => /sub/i.test(e.type) && e.team_id === team?.id && e.player_id);
               const subIds = new Set(subsIn.map((e) => e.player_id as string));
@@ -540,18 +540,18 @@ function MatchPage() {
                 const rating = ratings.data?.find((item) => item.player_id === e.player_id)?.rating;
                 const minute = e.minute != null ? `${num(e.minute)}${e.extra ? `+${num(e.extra)}` : ""}'` : "";
                 return (
-                  <Link key={e.id} to="/players/$id" params={{ id: e.player_id as string }} className="flex flex-col items-center gap-0.5 py-3 text-center">
-                    <span className="flex w-full items-start justify-center gap-1.5">
-                      <span className="w-7 shrink-0 pt-4 text-end text-xs font-bold tabular-nums text-muted-foreground">{minute}</span>
-                      <span className="relative block h-12 w-12">
-                        <PlayerAvatar src={e.player?.photo_url} name={e.player?.name} className="h-12 w-12" />
+                  <Link key={e.id} to="/players/$id" params={{ id: e.player_id as string }} className="flex min-w-0 flex-col items-center gap-0.5 px-2 py-2 text-center">
+                    <span className="flex h-11 w-full items-start justify-center gap-2">
+                      <span className="w-7 shrink-0 pt-3 text-end text-[0.65rem] font-bold tabular-nums text-muted-foreground">{minute}</span>
+                      <span className="relative block h-9 w-9">
+                        <PlayerAvatar src={e.player?.photo_url} name={e.player?.name} className="h-9 w-9" />
                         <span className="absolute -left-1.5 -top-1 z-30 flex h-4 min-w-4 items-center justify-center rounded-full bg-background px-1 text-[0.6rem] font-black leading-none text-foreground shadow ring-1 ring-border">{num(e.player?.shirt_number ?? "")}</span>
-                        <span className="absolute -left-1.5 top-[1.15rem] z-30 flex h-4 w-4 items-center justify-center rounded-full bg-background shadow ring-1 ring-border"><svg viewBox="0 0 24 24" aria-hidden="true" className="h-2.5 w-2.5 text-success" fill="currentColor"><path d="M12 5l7 9H5z" /></svg></span>
-                        <span className={`absolute -left-4 bottom-0 z-30 rounded px-1.5 text-[0.6rem] font-black leading-4 ${rating != null ? ratingClass(Number(rating)) : "bg-muted text-muted-foreground"}`}>{rating != null ? num(formatRating(rating)) : "–"}</span>
+                        <span className="absolute -left-2 top-3 z-30 flex h-4 w-4 items-center justify-center rounded-full bg-background shadow ring-1 ring-border"><EventArt type="substitution" className="h-3 w-3" /></span>
+                        <span className={`absolute -left-3 -bottom-1 z-30 rounded px-1 text-[0.55rem] font-black leading-3 ${rating != null ? ratingClass(Number(rating)) : "bg-muted text-muted-foreground"}`}>{rating != null ? num(formatRating(rating)) : "–"}</span>
                       </span>
                     </span>
-                    <span className="mt-1 line-clamp-1 w-full text-[0.7rem] font-semibold text-success">{tx(e.player?.name)}</span>
-                    {e.sub_out?.name && <span className="line-clamp-1 w-full text-[0.65rem] text-muted-foreground">{tx(e.sub_out.name)}</span>}
+                    <span className="line-clamp-2 w-full break-words text-[0.65rem] font-semibold leading-3.5 text-success">{tx(displayShortName(e.player?.short_name, e.player?.name))}</span>
+                    {e.sub_out?.name && <span className="line-clamp-2 w-full break-words text-[0.6rem] leading-3.5 text-muted-foreground">{tx(displayShortName(null, e.sub_out.name))}</span>}
                   </Link>
                 );
               };
@@ -562,7 +562,7 @@ function MatchPage() {
                   {subsIn.length > 0 && (
                     <div className="mt-3">
                       <h4 className="mb-1 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Substitutes")}</h4>
-                      <div className="grid grid-cols-3 divide-x divide-border">{subsIn.map(subCard)}</div>
+                      <div className="grid grid-cols-2 gap-y-1 sm:grid-cols-3">{subsIn.map(subCard)}</div>
                     </div>
                   )}
                   {restBench.length > 0 && (
