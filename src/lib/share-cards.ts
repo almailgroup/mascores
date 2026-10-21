@@ -640,7 +640,7 @@ export async function drawResultCard(input: {
   const glow = ctx.createRadialGradient(W, 0, 40, W, 0, 900);
   glow.addColorStop(0, input.accentAway); glow.addColorStop(1, "rgba(11,16,32,0)");
   ctx.fillStyle = glow; ctx.globalAlpha = 0.6; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1;
-  const [hl, al, mark, goalImg] = await Promise.all([loadImage(input.home.logo), loadImage(input.away.logo), loadImage(logoMark.url), loadImage(goalIcon.url)]);
+  const [hl, al, mark, goalImg] = await Promise.all([loadImage(input.home.logo), loadImage(input.away.logo), loadImage(logoMark.url), loadImage(goalIcon)]);
 
   ctx.textAlign = "center"; ctx.fillStyle = "rgba(255,255,255,0.85)"; ctx.font = `700 32px ${FONT}`;
   ctx.fillText(input.competition.slice(0, 48).toUpperCase(), W / 2, 110);
