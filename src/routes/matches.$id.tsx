@@ -504,7 +504,7 @@ function MatchPage() {
                     <span className="w-6 shrink-0 text-center text-xs font-bold tabular-nums text-muted-foreground">{num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}</span>
                     <PlayerAvatar src={lu.player?.photo_url} name={lu.player?.name} className="h-9 w-9" />
                     <span className="min-w-0 flex-1 truncate font-semibold">{tx(lu.player?.name)}</span>
-                    {marks.length > 0 && <span className="flex shrink-0 items-center gap-1">{marks.slice(0, 4).map((t, k) => <EventArt key={k} type={t} className="h-4 w-4" />)}</span>}
+                    {marks.length > 0 && <span className="flex shrink-0 items-center gap-1">{marks.filter((t) => hasEventArt(t)).slice(0, 4).map((t, k) => <EventArt key={k} type={t} className="h-4 w-4" />)}</span>}
                     {rating != null && <span className={`shrink-0 rounded px-2 py-1 text-xs font-black ${ratingClass(Number(rating))}`}>{num(formatRating(rating))}</span>}
                     {lu.is_starting && <span className="shrink-0 text-xs text-muted-foreground">{tx(lu.position_code ?? "XI")}</span>}
                   </Link>
