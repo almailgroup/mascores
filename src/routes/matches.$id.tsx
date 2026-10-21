@@ -113,9 +113,9 @@ function MatchPage() {
     queryKey: ["match-events", id],
     queryFn: async () => {
       const { data } = await supabase.from("match_events")
-        .select("*, player:player_id(id,name,name_ar), team:team_id(id,name)")
+        .select("*, player:player_id(id,name,name_ar,shirt_number,photo_url), team:team_id(id,name), sub_out:sub_out_player_id(id,name)")
         .eq("match_id", id).order("minute").order("extra");
-      return (data ?? []) as unknown as (MatchEvent & { player: Player | null; team: Team | null })[];
+      return (data ?? []) as unknown as (MatchEvent & { player: Player | null; team: Team | null; sub_out: { id: string; name: string } | null })[];
     },
   });
   const lineups = useQuery({
@@ -398,6 +398,11 @@ function MatchPage() {
         const rows = lineups.data?.filter((item) => item.team_id === team?.id) ?? [];
         const starters = rows.filter((r) => r.is_starting);
         const bench = rows.filter((r) => !r.is_starting);
+        // Substitution events for this team: player_id is who came on,
+        // sub_out_player_id is who went off.
+        const subByPlayer = new Map((events.data ?? [])
+          .filter((e) => /sub/i.test(e.type) && e.team_id === team?.id && e.player_id)
+          .map((e) => [e.player_id as string, e]));
         const activeFormation = formation ?? "4-3-3";
         const showPitch = starters.length > 0;
         const marksFor = (playerId: string) => (events.data ?? [])
@@ -411,7 +416,21 @@ function MatchPage() {
           number: String(lu.shirt_number ?? lu.player?.shirt_number ?? ""),
           name: tx(displayShortName(lu.player?.short_name, lu.player?.name)) ?? "",
           photo: lu.player?.photo_url,
+          sub: (() => {
+            const e = subByPlayer.get(lu.player_id);
+            return e ? { minute: e.minute != null ? `${num(e.minute)}${e.extra ? `+${num(e.extra)}` : ""}'` : "", out: e.sub_out?.name ? tx(e.sub_out.name) : "" } : null;
+          })(),
         });
+        // Came-on substitutes for a club, for the bench sections and the
+        // shareable card, even when the submitted lineup missed them.
+        const subsOf = (clubId: string | null | undefined) => (events.data ?? [])
+          .filter((e) => /sub/i.test(e.type) && e.team_id === clubId && e.player_id)
+          .map((e) => ({
+            number: String(e.player?.shirt_number ?? ""),
+            name: tx(e.player?.name) ?? "",
+            photo: e.player?.photo_url,
+            sub: { minute: e.minute != null ? `${num(e.minute)}${e.extra ? `+${num(e.extra)}` : ""}'` : "", out: e.sub_out?.name ? tx(e.sub_out.name) : "" },
+          }));
         // The shareable card mirrors what is on screen: formation, pitch, coach and bench.
         const lineupShare = {
           ...shareData,
@@ -421,7 +440,7 @@ function MatchPage() {
             const squad = (lineups.data ?? []).filter((item) => item.team_id === club?.id);
             return { teamName: tx(club?.name) ?? "TBD", logo: club?.logo_url, formation: shape,
               rows: formationRows(shape).map((row) => row.map((slot) => squad.find((p) => p.is_starting && p.position_code === slot)).filter((p): p is (typeof squad)[number] => Boolean(p)).map(shortOf)),
-              bench: squad.filter((p) => !p.is_starting).map(shortOf) };
+              bench: [...squad.filter((p) => !p.is_starting).map(shortOf), ...subsOf(club?.id).filter((s) => !squad.some((p) => !p.is_starting && (tx(p.player?.name) ?? "") === s.name))] };
           }),
           lineup: {
             teamName: tx(team?.name) ?? "TBD",
@@ -430,7 +449,7 @@ function MatchPage() {
             coach: (side === "home" ? coachNames.data?.home?.name : coachNames.data?.away?.name) ?? null,
             rows: formationRows(activeFormation).map((row) =>
               row.map((slot) => starters.find((s) => s.position_code === slot)).filter((lu): lu is (typeof starters)[number] => lu !== undefined).map(shortOf)),
-            bench: bench.map(shortOf),
+            bench: [...bench.map(shortOf), ...subsOf(team?.id).filter((s) => !bench.some((r) => (tx(r.player?.name) ?? "") === s.name))],
           },
         };
         return (
@@ -497,7 +516,7 @@ function MatchPage() {
               const startersList = showPitch ? [] : list.filter((r) => r.is_starting);
               const benchList = showPitch ? bench : list.filter((r) => !r.is_starting);
               const row = (lu: (typeof rows)[number]) => {
-                const rating = ratings.data?.find((item) => item.player_id === lu.player_id)?.rating;
+                 const rating = ratings.data?.find((item) => item.player_id === lu.player_id)?.rating;
                 const marks = marksFor(lu.player_id);
                 return (
                   <Link key={lu.id} to="/players/$id" params={{ id: lu.player_id }} className="flex items-center gap-3 border-t border-border py-2 first:border-0">
@@ -507,6 +526,32 @@ function MatchPage() {
                     {marks.length > 0 && <span className="flex shrink-0 items-center gap-1">{marks.filter((t) => hasEventArt(t)).slice(0, 4).map((t, k) => <EventArt key={k} type={t} className="h-4 w-4" />)}</span>}
                     {rating != null && <span className={`shrink-0 rounded px-2 py-1 text-xs font-black ${ratingClass(Number(rating))}`}>{num(formatRating(rating))}</span>}
                     {lu.is_starting && <span className="shrink-0 text-xs text-muted-foreground">{tx(lu.position_code ?? "XI")}</span>}
+                   </Link>
+                );
+              };
+              // Substitutes who came on come straight from the match events so
+              // they appear even when the submitted bench missed them: minute on
+              // the left, number badge and green arrow on the photo, rating
+              // pill, name in green with the replaced player's name underneath.
+              const subsIn = (events.data ?? []).filter((e) => /sub/i.test(e.type) && e.team_id === team?.id && e.player_id);
+              const subIds = new Set(subsIn.map((e) => e.player_id as string));
+              const restBench = benchList.filter((r) => !subIds.has(r.player_id));
+              const subCard = (e: MatchEvent & { player: Player | null; team: Team | null; sub_out: { id: string; name: string } | null }) => {
+                const rating = ratings.data?.find((item) => item.player_id === e.player_id)?.rating;
+                const minute = e.minute != null ? `${num(e.minute)}${e.extra ? `+${num(e.extra)}` : ""}'` : "";
+                return (
+                  <Link key={e.id} to="/players/$id" params={{ id: e.player_id as string }} className="flex flex-col items-center gap-0.5 py-3 text-center">
+                    <span className="flex w-full items-start justify-center gap-1.5">
+                      <span className="w-7 shrink-0 pt-4 text-end text-xs font-bold tabular-nums text-muted-foreground">{minute}</span>
+                      <span className="relative block h-12 w-12">
+                        <PlayerAvatar src={e.player?.photo_url} name={e.player?.name} className="h-12 w-12" />
+                        <span className="absolute -left-1.5 -top-1 z-30 flex h-4 min-w-4 items-center justify-center rounded-full bg-background px-1 text-[0.6rem] font-black leading-none text-foreground shadow ring-1 ring-border">{num(e.player?.shirt_number ?? "")}</span>
+                        <span className="absolute -left-1.5 top-[1.15rem] z-30 flex h-4 w-4 items-center justify-center rounded-full bg-background shadow ring-1 ring-border"><svg viewBox="0 0 24 24" aria-hidden="true" className="h-2.5 w-2.5 text-success" fill="currentColor"><path d="M12 5l7 9H5z" /></svg></span>
+                        <span className={`absolute -left-4 bottom-0 z-30 rounded px-1.5 text-[0.6rem] font-black leading-4 ${rating != null ? ratingClass(Number(rating)) : "bg-muted text-muted-foreground"}`}>{rating != null ? num(formatRating(rating)) : "–"}</span>
+                      </span>
+                    </span>
+                    <span className="mt-1 line-clamp-1 w-full text-[0.7rem] font-semibold text-success">{tx(e.player?.name)}</span>
+                    {e.sub_out?.name && <span className="line-clamp-1 w-full text-[0.65rem] text-muted-foreground">{tx(e.sub_out.name)}</span>}
                   </Link>
                 );
               };
@@ -514,10 +559,16 @@ function MatchPage() {
                 <>
                   {startersList.length > 0 && <div>{startersList.map(row)}</div>}
                   <TeamCoach coach={side === "home" ? coachNames.data?.home : coachNames.data?.away} />
-                  {benchList.length > 0 && (
+                  {subsIn.length > 0 && (
+                    <div className="mt-3">
+                      <h4 className="mb-1 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Substitutes")}</h4>
+                      <div className="grid grid-cols-3 divide-x divide-border">{subsIn.map(subCard)}</div>
+                    </div>
+                  )}
+                  {restBench.length > 0 && (
                     <div className="mt-3">
                       <h4 className="mb-1 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Bench")}</h4>
-                      {benchList.map(row)}
+                      {restBench.map(row)}
                     </div>
                   )}
                 </>
