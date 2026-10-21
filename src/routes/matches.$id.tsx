@@ -460,7 +460,7 @@ function MatchPage() {
                       const pitchRating = ratings.data?.find((item) => item.player_id === lu.player_id)?.rating;
                       return (
                         <Link key={slot} to="/players/$id" params={{ id: lu.player_id }} className="relative z-10 flex w-16 flex-col items-center gap-0.5 overflow-visible text-center">
-                          <span className="relative block h-11 w-11 overflow-visible">
+                          <span className="relative mb-1 block h-11 w-11 overflow-visible">
                             <PlayerAvatar src={lu.player?.photo_url} name={lu.player?.name} className={`h-11 w-11 border-2 ${lu.player?.is_temporary ? "border-dashed border-muted-foreground" : lu.player?.team_id && lu.player.team_id !== lu.team_id ? "border-primary" : ""}`} />
                             {(lu.shirt_number ?? lu.player?.shirt_number) != null && (
                               <span className="absolute -left-1 -top-1 z-30 flex h-4 min-w-4 items-center justify-center rounded-full bg-background px-1 text-[0.6rem] font-black leading-none text-foreground shadow ring-1 ring-border">{num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}</span>
@@ -477,7 +477,7 @@ function MatchPage() {
                               return <>
                                 {(goals.length > 0 || own.length > 0) && <span className={`${dot} -right-2 -top-1.5`}>{goals.length > 0 ? <EventArt type="goal" className="h-3 w-3" /> : <EventArt type="own_goal" className="h-3 w-3" />}{(goals.length || own.length) > 1 && <span className="ps-0.5 pe-0.5 text-[0.6rem] font-black leading-none text-foreground">{num(goals.length || own.length)}</span>}</span>}
                                 {assists.length > 0 && <span className={`${dot} -right-3 top-1/2 -translate-y-1/2`}><span className="text-[0.55rem] leading-none">{hasEventArt("assist") ? <EventArt type="assist" className="h-3 w-3" /> : <span className="font-black text-foreground">A</span>}</span>{count(assists.length)}</span>}
-                                {card && <span className={`${dot} -bottom-1.5 -right-2`}><EventArt type={card} className="h-3 w-3" /></span>}
+                                {card && <span className={`${dot} bottom-0 -right-3`}><EventArt type={card} className="h-3 w-3" /></span>}
                                 {sub && <span className={`${dot} -left-3 top-1/2 -translate-y-1/2`}><EventArt type={sub} className="h-3 w-3" /></span>}
                               </>;
                             })()}
