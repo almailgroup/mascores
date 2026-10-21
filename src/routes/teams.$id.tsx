@@ -30,9 +30,9 @@ import { useAuth } from "@/hooks/use-auth";
 export const Route = createFileRoute("/teams/$id")({
   head: () => ({
     meta: [
-      { title: "Club — MA Scores" },
+      { title: "Club — MaScores" },
       { name: "description", content: "Club profile: matches, standings, squad, statistics, media and transfers." },
-      { property: "og:title", content: "Club — MA Scores" },
+      { property: "og:title", content: "Club — MaScores" },
       { property: "og:description", content: "Club profile: matches, standings, squad, statistics, media and transfers." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

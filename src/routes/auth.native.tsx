@@ -36,7 +36,7 @@ function NativeReturnPage() {
         <p className="text-sm text-muted-foreground">Returning to the app…</p>
         {target && (
           <a href={target} className="inline-block rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground">
-            Return to MA Scores
+            Return to MaScores
           </a>
         )}
       </div>

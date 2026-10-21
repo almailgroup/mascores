@@ -148,7 +148,7 @@
   --sports-header-surface: oklch(0.17 0.015 260);
   --sports-header-foreground: oklch(0.98 0.005 240);
   --sports-header-chip: oklch(1 0 0 / 10%);
-  /* MA Scores — Light mode */
+  /* MaScores — Light mode */
   --background: oklch(0.985 0.005 240);
   --foreground: oklch(0.18 0.05 260);
   --card: oklch(1 0 0);
@@ -191,7 +191,7 @@
   --glass-highlight: oklch(1 0 0 / 16%);
   --glass-shadow: 0 3px 12px oklch(0 0 0 / 18%);
   --event-ink: oklch(0.98 0.005 240);
-  /* MA Scores — Dark mode (stadium night) */
+  /* MaScores — Dark mode (stadium night) */
   --background: oklch(0.16 0.03 260);
   --foreground: oklch(0.98 0.005 240);
   --card: oklch(0.21 0.04 262);

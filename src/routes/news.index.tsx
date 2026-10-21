@@ -8,7 +8,7 @@ import { useI18n } from "@/lib/i18n";
 import { PenLine } from "lucide-react";
 
 export const Route = createFileRoute("/news/")({
-  head: () => ({ meta: [{ title: "News — MA Scores" }, { name: "description", content: "Latest football news from MA Scores." }, { property: "og:title", content: "News — MA Scores" }, { property: "og:description", content: "Latest football news from MA Scores." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
+  head: () => ({ meta: [{ title: "News — MaScores" }, { name: "description", content: "Latest football news from MaScores." }, { property: "og:title", content: "News — MaScores" }, { property: "og:description", content: "Latest football news from MaScores." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: NewsPage,
 });
 

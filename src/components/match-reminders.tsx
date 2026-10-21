@@ -64,7 +64,7 @@ export function MatchReminders({ matchId, kickoffAt }: { matchId: string; kickof
 
     // The server sends the reminder to the phone at the right time, even with the app closed.
     if (isNativeApp() && !allowed) {
-      toast.warning(tx("Reminder saved. Turn on notifications for MA Scores in iPhone Settings to get it."));
+      toast.warning(tx("Reminder saved. Turn on notifications for MaScores in iPhone Settings to get it."));
       return;
     }
     if (!isNativeApp() && !allowed) {

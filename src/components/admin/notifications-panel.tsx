@@ -62,7 +62,7 @@ export function NotificationsPanel() {
     <div className="grid min-w-0 grid-cols-1 gap-6">
       <div>
         <h2 className="text-lg font-bold">Send a notification</h2>
-        <p className="text-sm text-muted-foreground">Goes to phones with the MA Scores app. Fill English, Arabic or both — phones set to Arabic get the Arabic text.</p>
+        <p className="text-sm text-muted-foreground">Goes to phones with the MaScores app. Fill English, Arabic or both — phones set to Arabic get the Arabic text.</p>
       </div>
       <div className="grid min-w-0 grid-cols-1 gap-3 rounded-2xl border border-border bg-card p-4">
         <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">

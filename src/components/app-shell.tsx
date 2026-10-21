@@ -142,7 +142,7 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
           <div className="col-start-3 row-start-1 flex items-center gap-1">{user && <SocialActivityButton />}<Link to="/settings" aria-label={t("nav.settings")} className="col-start-3 row-start-1 grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full border border-border bg-card text-sm font-bold text-primary">
             {user && profile.data?.avatar_url ? <img src={profile.data.avatar_url} alt="" className="h-full w-full object-cover" /> : user ? <span>{initials}</span> : <User className="h-6 w-6" />}
           </Link></div>
-          <Link to="/" aria-label="MA Scores" className="col-start-1 row-start-1 shrink-0"><BrandLogo showWordmark={false} className="h-10 w-10 object-contain" /></Link>
+          <Link to="/" aria-label="MaScores" className="col-start-1 row-start-1 shrink-0"><BrandLogo showWordmark={false} className="h-10 w-10 object-contain" /></Link>
           <Link to="/search" onClick={(event) => { if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return; if (document.startViewTransition && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) { event.preventDefault(); document.startViewTransition(() => router.navigate({ to: "/search" })); } }} className="mas-search-field flex h-11 min-w-0 items-center gap-2 rounded-full border border-border bg-card px-4 text-muted-foreground" aria-label="Search MaScores"><Search className="h-5 w-5 shrink-0" /><span className="truncate text-sm">Search MaScores</span></Link>
         </div>
         <nav className="mx-auto hidden max-w-7xl items-center gap-1 px-6 pb-2 md:flex">

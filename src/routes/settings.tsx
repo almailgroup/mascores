@@ -24,7 +24,7 @@ import { canPreviewNotificationSounds } from "@/lib/sound-preview-access";
 
 
 export const Route = createFileRoute("/settings")({
-  head: () => ({ meta: [{ title: "Settings — MA Scores" }, { name: "robots", content: "noindex" }, { name: "description", content: "Manage your MA Scores account and preferences." }, { property: "og:title", content: "Settings — MA Scores" }, { property: "og:description", content: "Manage your MA Scores account and preferences." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
+  head: () => ({ meta: [{ title: "Settings — MaScores" }, { name: "robots", content: "noindex" }, { name: "description", content: "Manage your MaScores account and preferences." }, { property: "og:title", content: "Settings — MaScores" }, { property: "og:description", content: "Manage your MaScores account and preferences." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: SettingsPage,
 });
 

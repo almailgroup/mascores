@@ -1,4 +1,5 @@
-import logoMark from "@/assets/logo-mark-v2.png.asset.json";
+import logoMarkWhite from "@/assets/logo-mark-dark.png";
+const logoMark = { url: logoMarkWhite };
 import { portraitSource } from "@/lib/portrait-source";
 
 /**
@@ -535,9 +536,9 @@ export async function drawMatchLineupsCard(input: {
       });
     });
   }
-  if (mark) { ctx.save(); ctx.globalAlpha = 0.7; ctx.filter = "brightness(0) invert(1)"; crest(ctx, mark, "", 978, 1516, 48); ctx.restore(); }
+  if (mark) { ctx.save(); ctx.globalAlpha = 0.9; crest(ctx, mark, "", 960, 1500, 190); ctx.restore(); }
   ctx.textAlign = "left"; ctx.font = `600 22px ${FONT}`;
-  ctx.fillStyle = "rgba(255,255,255,0.45)"; ctx.fillText("MA Scores · Match lineups", 60, H - 40);
+  ctx.fillStyle = "rgba(255,255,255,0.45)"; ctx.fillText("MaScores · Match lineups", 60, H - 40);
   return toBlob(canvas);
 }
 
@@ -618,9 +619,9 @@ export async function drawTeamLineupCard(input: {
       ctx.textAlign = "left"; ctx.font = `600 26px ${FONT}`; ctx.fillText(p.name, x + 68, y - 1, 380);
     });
   }
-  if (mark) { ctx.save(); ctx.globalAlpha = 0.75; ctx.filter = "brightness(0) invert(1)"; crest(ctx, mark, "", 990, H - 48, 44); ctx.restore(); }
+  if (mark) { ctx.save(); ctx.globalAlpha = 0.9; crest(ctx, mark, "", 960, H - 80, 190); ctx.restore(); }
   ctx.textAlign = "left"; ctx.font = `600 22px ${FONT}`; ctx.fillStyle = "rgba(255,255,255,0.5)";
-  ctx.fillText("MA Scores · Lineup", 60, H - 40);
+  ctx.fillText("MaScores · Lineup", 60, H - 40);
   return toBlob(canvas);
 }
 
@@ -668,7 +669,7 @@ export async function drawResultCard(input: {
     ctx.fillStyle = "rgba(255,255,255,0.15)"; ctx.fillRect(W / 2 - 1, 845, 2, 460);
     list(input.homeScorers, W / 2 - 40, "right"); list(input.awayScorers, W / 2 + 40, "left");
   }
-  if (mark) { ctx.save(); ctx.globalAlpha = 0.8; ctx.filter = "brightness(0) invert(1)"; crest(ctx, mark, "", W - 90, H - 52, 48); ctx.restore(); }
-  ctx.textAlign = "left"; ctx.font = `600 22px ${FONT}`; ctx.fillStyle = "rgba(255,255,255,0.5)"; ctx.fillText("MA Scores · mascores.live", 60, H - 44);
+  if (mark) { ctx.save(); ctx.globalAlpha = 0.9; crest(ctx, mark, "", W - 120, H - 80, 190); ctx.restore(); }
+  ctx.textAlign = "left"; ctx.font = `600 22px ${FONT}`; ctx.fillStyle = "rgba(255,255,255,0.5)"; ctx.fillText("MaScores · mascores.live", 60, H - 44);
   return toBlob(canvas);
 }
