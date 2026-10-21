@@ -406,7 +406,7 @@ function MatchPage() {
             if (e.sub_out_player_id === playerId) return "substitution";
             return "";
           })
-          .filter((type) => type && hasEventArt(type));
+          .filter((type) => type && (type === "assist" || hasEventArt(type)));
         const shortOf = (lu: (typeof rows)[number]) => ({
           number: String(lu.shirt_number ?? lu.player?.shirt_number ?? ""),
           name: tx(displayShortName(lu.player?.short_name, lu.player?.name)) ?? "",
@@ -465,7 +465,22 @@ function MatchPage() {
                             {(lu.shirt_number ?? lu.player?.shirt_number) != null && (
                               <span className="absolute -left-1 -top-1 z-30 flex h-4 min-w-4 items-center justify-center rounded-full bg-background px-1 text-[0.6rem] font-black leading-none text-foreground shadow ring-1 ring-border">{num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}</span>
                             )}
-                            {marks.length > 0 && <span className="absolute -right-2 -top-2 z-30 flex items-center gap-px rounded-full bg-background p-0.5 shadow ring-2 ring-background">{marks.slice(0, 3).map((t, k) => <EventArt key={k} type={t} className="h-4 w-4" />)}</span>}
+                            {(() => {
+                              // Corner badges like the reference: goals top-right, assists right, cards bottom-right, substitution left.
+                              const goals = marks.filter((t) => /goal/.test(t) && t !== "own_goal");
+                              const own = marks.filter((t) => t === "own_goal");
+                              const assists = marks.filter((t) => t === "assist");
+                              const card = [...marks].reverse().find((t) => /yellow|red/.test(t));
+                              const sub = marks.find((t) => /substitution/.test(t));
+                              const dot = "absolute z-30 flex h-[18px] min-w-[18px] items-center justify-center gap-px rounded-full bg-background px-0.5 shadow ring-1 ring-border";
+                              const count = (n: number) => n > 1 ? <span className="text-[0.5rem] font-black leading-none text-foreground">{num(n)}</span> : null;
+                              return <>
+                                {(goals.length > 0 || own.length > 0) && <span className={`${dot} -right-2 -top-1.5`}>{goals.length > 0 ? <EventArt type={goals[0]} className="h-3 w-3" /> : <EventArt type="own_goal" className="h-3 w-3" />}{count(goals.length || own.length)}</span>}
+                                {assists.length > 0 && <span className={`${dot} -right-3 top-1/2 -translate-y-1/2`}><span className="text-[0.55rem] leading-none">{hasEventArt("assist") ? <EventArt type="assist" className="h-3 w-3" /> : <span className="font-black text-foreground">A</span>}</span>{count(assists.length)}</span>}
+                                {card && <span className={`${dot} -bottom-1.5 -right-2`}><EventArt type={card} className="h-3 w-3" /></span>}
+                                {sub && <span className={`${dot} -left-3 top-1/2 -translate-y-1/2`}><EventArt type={sub} className="h-3 w-3" /></span>}
+                              </>;
+                            })()}
                           </span>
                           <span className="line-clamp-1 max-w-full text-[0.6rem] font-semibold leading-tight text-white drop-shadow">{tx(displayShortName(lu.player?.short_name, lu.player?.name))}</span>
                           <span className={`h-4 rounded px-1.5 text-[0.6rem] font-black leading-4 ${pitchRating != null ? ratingClass(Number(pitchRating)) : "opacity-0"}`}>{pitchRating != null ? num(formatRating(pitchRating)) : "0.0"}</span>
@@ -489,7 +504,7 @@ function MatchPage() {
                     <span className="w-6 shrink-0 text-center text-xs font-bold tabular-nums text-muted-foreground">{num(lu.shirt_number ?? lu.player?.shirt_number ?? "")}</span>
                     <PlayerAvatar src={lu.player?.photo_url} name={lu.player?.name} className="h-9 w-9" />
                     <span className="min-w-0 flex-1 truncate font-semibold">{tx(lu.player?.name)}</span>
-                    {marks.length > 0 && <span className="flex shrink-0 items-center gap-1">{marks.slice(0, 4).map((t, k) => <EventArt key={k} type={t} className="h-4 w-4" />)}</span>}
+                    {marks.length > 0 && <span className="flex shrink-0 items-center gap-1">{marks.filter((t) => hasEventArt(t)).slice(0, 4).map((t, k) => <EventArt key={k} type={t} className="h-4 w-4" />)}</span>}
                     {rating != null && <span className={`shrink-0 rounded px-2 py-1 text-xs font-black ${ratingClass(Number(rating))}`}>{num(formatRating(rating))}</span>}
                     {lu.is_starting && <span className="shrink-0 text-xs text-muted-foreground">{tx(lu.position_code ?? "XI")}</span>}
                   </Link>
