@@ -536,7 +536,7 @@ function MatchPage() {
               const subsIn = (events.data ?? []).filter((e) => /sub/i.test(e.type) && e.team_id === team?.id && e.player_id);
               const subIds = new Set(subsIn.map((e) => e.player_id as string));
               const restBench = benchList.filter((r) => !subIds.has(r.player_id));
-              const subCard = (e: (typeof events.data)[number]) => {
+              const subCard = (e: MatchEvent & { player: Player | null; team: Team | null; sub_out: { id: string; name: string } | null }) => {
                 const rating = ratings.data?.find((item) => item.player_id === e.player_id)?.rating;
                 const minute = e.minute != null ? `${num(e.minute)}${e.extra ? `+${num(e.extra)}` : ""}'` : "";
                 return (
