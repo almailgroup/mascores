@@ -475,7 +475,7 @@ function MatchPage() {
                               const dot = "absolute z-30 flex h-[18px] min-w-[18px] items-center justify-center gap-px rounded-full bg-background px-0.5 shadow ring-1 ring-border";
                               const count = (n: number) => n > 1 ? <span className="text-[0.5rem] font-black leading-none text-foreground">{num(n)}</span> : null;
                               return <>
-                                {(goals.length > 0 || own.length > 0) && <span className={`${dot} -right-2 -top-1.5`}>{goals.length > 0 ? <EventArt type={goals[0]} className="h-3 w-3" /> : <EventArt type="own_goal" className="h-3 w-3" />}{count(goals.length || own.length)}</span>}
+                                {(goals.length > 0 || own.length > 0) && <span className={`${dot} -right-2 -top-1.5`}>{goals.length > 0 ? <EventArt type="goal" className="h-3 w-3" /> : <EventArt type="own_goal" className="h-3 w-3" />}{(goals.length || own.length) > 1 && <span className="ps-0.5 pe-0.5 text-[0.6rem] font-black leading-none text-foreground">{num(goals.length || own.length)}</span>}</span>}
                                 {assists.length > 0 && <span className={`${dot} -right-3 top-1/2 -translate-y-1/2`}><span className="text-[0.55rem] leading-none">{hasEventArt("assist") ? <EventArt type="assist" className="h-3 w-3" /> : <span className="font-black text-foreground">A</span>}</span>{count(assists.length)}</span>}
                                 {card && <span className={`${dot} -bottom-1.5 -right-2`}><EventArt type={card} className="h-3 w-3" /></span>}
                                 {sub && <span className={`${dot} -left-3 top-1/2 -translate-y-1/2`}><EventArt type={sub} className="h-3 w-3" /></span>}
