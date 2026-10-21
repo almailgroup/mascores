@@ -440,7 +440,7 @@ function MatchPage() {
             const squad = (lineups.data ?? []).filter((item) => item.team_id === club?.id);
             return { teamName: tx(club?.name) ?? "TBD", logo: club?.logo_url, formation: shape,
               rows: formationRows(shape).map((row) => row.map((slot) => squad.find((p) => p.is_starting && p.position_code === slot)).filter((p): p is (typeof squad)[number] => Boolean(p)).map(shortOf)),
-              bench: squad.filter((p) => !p.is_starting).map(shortOf) };
+              bench: [...squad.filter((p) => !p.is_starting).map(shortOf), ...subsOf(club?.id).filter((s) => !squad.some((p) => !p.is_starting && (tx(p.player?.name) ?? "") === s.name))] };
           }),
           lineup: {
             teamName: tx(team?.name) ?? "TBD",
@@ -449,7 +449,7 @@ function MatchPage() {
             coach: (side === "home" ? coachNames.data?.home?.name : coachNames.data?.away?.name) ?? null,
             rows: formationRows(activeFormation).map((row) =>
               row.map((slot) => starters.find((s) => s.position_code === slot)).filter((lu): lu is (typeof starters)[number] => lu !== undefined).map(shortOf)),
-            bench: bench.map(shortOf),
+            bench: [...bench.map(shortOf), ...subsOf(team?.id).filter((s) => !bench.some((r) => (tx(r.player?.name) ?? "") === s.name))],
           },
         };
         return (
