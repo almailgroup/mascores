@@ -436,6 +436,16 @@ function TeamFilterDialog({ onClose, onPick, onPickPair }: {
       </div>
     );
   };
+  const teamBox = (team: Team) => {
+    const chosen = slots[0]?.id === team.id || slots[1]?.id === team.id;
+    return (
+      <button key={team.id} type="button" onClick={() => pick({ id: team.id, name: team.name, logo_url: team.logo_url ?? null })}
+        className={`flex flex-col items-center gap-1.5 rounded-xl border px-1 py-3 text-center transition ${chosen ? "border-primary bg-primary/10" : "border-border bg-card hover:bg-accent"}`}>
+        <TeamCrest name={team.name} logo={team.logo_url} className="h-9 w-9" rounded="rounded-lg" />
+        <span className="w-full truncate text-[11px] font-semibold leading-tight">{tx(team.name)}</span>
+      </button>
+    );
+  };
   return createPortal(
     <div data-no-gesture className="fixed inset-0 z-[120] overflow-y-auto bg-background text-foreground" role="dialog" aria-modal="true" aria-label={tx("Filter by team")}>
       <div className="mx-auto flex min-h-dvh max-w-xl flex-col px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-[calc(1.5rem+env(safe-area-inset-top))]">
