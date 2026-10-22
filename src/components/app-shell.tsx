@@ -108,6 +108,7 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
   const router = useRouter();
   const hideHeader = bare || location.pathname !== "/";
   useEffect(() => { void user; }, [user]);
+  useEffect(() => { initTimeFormat(); }, []);
   useReminderAlerts();
   useLiveEventAlerts();
   useAskForAlerts();
