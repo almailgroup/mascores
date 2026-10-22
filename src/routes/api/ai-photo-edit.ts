@@ -27,7 +27,7 @@ export const Route = createFileRoute("/api/ai-photo-edit")({
         const blob = await src.blob();
 
         const form = new FormData();
-        form.append("model", "openai/gpt-image-2.5-sunburst");
+        form.append("model", "openai/gpt-image-2.5-flare");
         form.append("image", new File([blob], "photo.png", { type: blob.type || "image/png" }));
         form.append("prompt", `This is a football player's portrait photo. Apply this request: "${instruction}". Keep the same person recognisable, the same pose, framing, kit and background unless the request says otherwise. Photorealistic result.`);
         form.append("output_format", "png");
