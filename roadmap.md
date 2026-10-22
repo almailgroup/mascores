@@ -13,5 +13,5 @@
 - [x] Compact Home tabs and original Live/competition styling; full Favorites category labels and a star navigation icon.
 - [x] Replace Home Latest News with expandable countries that have upcoming matches, including World → Friendlies, in an original design.
 - [x] Stretch Matches/Competitions across the available width with a small central gap and make Live clearly clickable.
-- [ ] Mark match dates in the calendar and add Upcoming beside Live, filtered from the selected date onward.
-- [ ] Lower the account-deletion confirmation and verify its placement.
+- [x] Mark match dates in the calendar and add Upcoming beside Live, filtered from the selected date onward.
+- [x] Lower the account-deletion confirmation and verify its placement.
