@@ -8,6 +8,7 @@ import { AppShell, BackButton } from "@/components/app-shell";
 import { uploadMedia } from "@/components/admin/upload";
 import { CURRENCIES, useCurrency } from "@/lib/currency";
 import { useHeightUnit } from "@/lib/units";
+import { getTimeFormat, setTimeFormat, type TimeFormat } from "@/lib/time-format";
 import { deleteMyAccount } from "@/lib/account.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { Save, LogOut, Loader2, LogIn, Camera, Trash2, BellRing, ChevronDown, ChevronRight, User, ShieldCheck, LifeBuoy, Ticket as TicketIcon, Settings as SettingsIcon } from "lucide-react";
@@ -15,7 +16,7 @@ import { ImageCropper } from "@/components/image-cropper";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import type { AlertSoundMap } from "@/lib/alert-sounds";
 import { Button } from '@/components/ui/button';
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AccountPrivacy } from "@/components/account-privacy";
 import { BlockedAccounts } from "@/components/blocked-accounts";
 import { SocialActivityButton } from "@/components/social-activity";
@@ -48,6 +49,8 @@ function SettingsPage() {
   const [isPublic, setIsPublic] = useState(true);
   const [hideFollows, setHideFollows] = useState(false);
   const { heightUnit, setHeightUnit } = useHeightUnit();
+  const [timeFormat, setTimeFormatState] = useState<TimeFormat>(getTimeFormat());
+  const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -63,7 +66,7 @@ function SettingsPage() {
     if (authLoading) return;
     if (!user) return;
     (async () => {
-      const { data: prof } = await supabase.from("profiles").select("display_name,language,avatar_url,height_unit,username,is_public,hide_follows,notification_preferences").eq("id", user.id).maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("display_name,language,avatar_url,height_unit,time_format,username,is_public,hide_follows,notification_preferences").eq("id", user.id).maybeSingle();
       setDisplayName(prof?.display_name ?? "");
       setAvatarUrl(prof?.avatar_url ?? null);
       setUsername(prof?.username ?? "");
@@ -71,6 +74,7 @@ function SettingsPage() {
       setHideFollows(!!prof?.hide_follows);
       if (prof?.notification_preferences && typeof prof.notification_preferences === "object" && !Array.isArray(prof.notification_preferences)) setAlertPrefs((prev) => ({ ...prev, ...(prof.notification_preferences as typeof prev) }));
       if (prof?.height_unit === "ft" || prof?.height_unit === "cm") setHeightUnit(prof.height_unit);
+      if (prof?.time_format === "12" || prof?.time_format === "24") { setTimeFormat(prof.time_format); setTimeFormatState(prof.time_format); }
     })();
   }, [user, authLoading]);
 
@@ -259,6 +263,22 @@ function SettingsPage() {
                 <button key={u} type="button" onClick={() => { setHeightUnit(u); if (user) void supabase.from("profiles").update({ height_unit: u }).eq("id", user.id); }}
                   className={`rounded-xl border px-3 py-2 text-sm ${heightUnit === u ? "border-primary bg-primary/10 text-primary" : "border-border bg-background hover:bg-accent"}`}>
                   {u === "cm" ? "cm" : "ft / in"}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-2xl border border-border bg-background p-4">
+            <div className="mb-3 text-sm font-semibold">{lang === "ar" ? "صيغة الوقت" : "Time format"}</div>
+            <div className="grid max-w-xs grid-cols-2 gap-2">
+              {(["12", "24"] as const).map((f) => (
+                <button key={f} type="button" onClick={() => {
+                  setTimeFormat(f);
+                  setTimeFormatState(f);
+                  if (user) void supabase.from("profiles").update({ time_format: f }).eq("id", user.id);
+                  void queryClient.invalidateQueries();
+                }}
+                  className={`rounded-xl border px-3 py-2 text-sm ${timeFormat === f ? "border-primary bg-primary/10 text-primary" : "border-border bg-background hover:bg-accent"}`}>
+                  {f === "12" ? "12 h" : "24 h"}
                 </button>
               ))}
             </div>
