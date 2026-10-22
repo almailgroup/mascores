@@ -166,7 +166,7 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
   const { favorites } = useFavorites();
   const [scope, setScope] = useState<"all" | "favourites" | "competitions">("all");
   const [offset, setOffset] = useState(0);
-  const [status, setStatus] = useState<"live" | "finished" | "upcoming" | null>(null);
+  const [status, setStatus] = useState<"live" | "finished" | "upcoming" | null>("upcoming");
   const [calendarOpen, setCalendarOpen] = useState(false);
 
   const day = useMemo(() => {
@@ -260,14 +260,15 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
           {tx("Upcoming")}
         </Button>
         <div className="ms-auto flex h-9 min-w-0 items-center gap-0">
-          <Button variant="ghost" size="icon" className="size-8 rounded-md text-muted-foreground" onClick={() => setOffset(offset - 1)} aria-label={tx("Previous day")}><ChevronLeft className="size-4" /></Button>
+          <Button variant="ghost" size="icon" className="size-8 rounded-md text-muted-foreground" onClick={() => { setOffset(offset - 1); setStatus(null); }} aria-label={tx("Previous day")}><ChevronLeft className="size-4" /></Button>
           <Button variant="ghost" onClick={() => setCalendarOpen(true)} className="h-9 min-w-0 gap-1.5 px-2 text-xs font-semibold"><CalendarDays className="size-3.5 text-muted-foreground" />{dayLabel}</Button>
-          <Button variant="ghost" size="icon" className="size-8 rounded-md text-muted-foreground" onClick={() => setOffset(offset + 1)} aria-label={tx("Next day")}><ChevronRight className="size-4" /></Button>
+          <Button variant="ghost" size="icon" className="size-8 rounded-md text-muted-foreground" onClick={() => { setOffset(offset + 1); setStatus(null); }} aria-label={tx("Next day")}><ChevronRight className="size-4" /></Button>
         </div>
       </div>
       {calendarOpen && <MonthCalendar day={day} onPick={(selected) => {
         const today = new Date(); today.setHours(0, 0, 0, 0);
         setOffset(Math.round((selected.getTime() - today.getTime()) / 86400000));
+        setStatus(null);
         setCalendarOpen(false);
       }} onClose={() => setCalendarOpen(false)} />}
 

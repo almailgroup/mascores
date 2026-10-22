@@ -33,8 +33,28 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
   ctx.closePath();
 }
 
-function toBlob(canvas: HTMLCanvasElement): Promise<Blob | null> {
-  return new Promise((resolve) => canvas.toBlob((blob) => resolve(blob), "image/png", 0.95));
+async function toBlob(canvas: HTMLCanvasElement): Promise<Blob | null> {
+  // A dedicated footer keeps every export branded without covering photos or names.
+  const output = document.createElement("canvas");
+  output.width = canvas.width;
+  output.height = canvas.height + 180;
+  const ctx = output.getContext("2d");
+  if (!ctx) return null;
+  ctx.drawImage(canvas, 0, 0);
+  ctx.fillStyle = "#0b1020";
+  ctx.fillRect(0, canvas.height, output.width, 180);
+  ctx.fillStyle = "rgba(255,255,255,0.2)";
+  ctx.fillRect(60, canvas.height + 10, output.width - 120, 1);
+  const mark = await loadImage(logoMark.url);
+  if (mark) crest(ctx, mark, "", output.width - 140, canvas.height + 95, 160);
+  ctx.textAlign = "left";
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `800 34px ${FONT}`;
+  ctx.fillText("MaScores", 60, canvas.height + 65);
+  ctx.font = `500 28px ${FONT}`;
+  ctx.fillText("mascores.live", 60, canvas.height + 108);
+  ctx.fillText("Instagram · @mascoreslive", 60, canvas.height + 148);
+  return new Promise((resolve) => output.toBlob((blob) => resolve(blob), "image/png", 0.95));
 }
 
 function surface(width: number, height: number, accent: string) {
@@ -537,9 +557,6 @@ export async function drawMatchLineupsCard(input: {
       });
     });
   }
-  if (mark) { ctx.save(); ctx.globalAlpha = 0.9; crest(ctx, mark, "", 960, 1500, 190); ctx.restore(); }
-  ctx.textAlign = "left"; ctx.font = `600 22px ${FONT}`;
-  ctx.fillStyle = "rgba(255,255,255,0.45)"; ctx.fillText("MaScores · Match lineups", 60, H - 40);
   return toBlob(canvas);
 }
 
@@ -633,9 +650,6 @@ export async function drawTeamLineupCard(input: {
       }
     });
   }
-  if (mark) { ctx.save(); ctx.globalAlpha = 0.9; crest(ctx, mark, "", 960, H - 80, 190); ctx.restore(); }
-  ctx.textAlign = "left"; ctx.font = `600 22px ${FONT}`; ctx.fillStyle = "rgba(255,255,255,0.5)";
-  ctx.fillText("MaScores · Lineup", 60, H - 40);
   return toBlob(canvas);
 }
 
@@ -684,7 +698,5 @@ export async function drawResultCard(input: {
     ctx.fillStyle = "rgba(255,255,255,0.15)"; ctx.fillRect(W / 2 - 1, 845, 2, 460);
     list(input.homeScorers, W / 2 - 40, "right"); list(input.awayScorers, W / 2 + 40, "left");
   }
-  if (mark) { ctx.save(); ctx.globalAlpha = 0.9; crest(ctx, mark, "", W - 120, H - 80, 190); ctx.restore(); }
-  ctx.textAlign = "left"; ctx.font = `600 22px ${FONT}`; ctx.fillStyle = "rgba(255,255,255,0.5)"; ctx.fillText("MaScores · mascores.live", 60, H - 44);
   return toBlob(canvas);
 }
