@@ -32,6 +32,7 @@ function Home() {
   const tx = useTx();
   const { t, lang } = useI18n();
   useRealtime(["competitions", "matches", "news_posts"]);
+  const [mode, setMode] = useState<"matches" | "competitions">("matches");
 
   const comps = useQuery({
     queryKey: ["home", "competitions"],
@@ -98,17 +99,21 @@ function Home() {
 
   return (
     <AppShell>
-      <ScoreBoard liveCount={live.data?.length ?? 0} />
-      <TicketsBanner />
+      <div data-no-gesture className="mb-4 grid grid-cols-2 gap-1 rounded-full bg-muted p-1">
+        {(["matches", "competitions"] as const).map((m) => (
+          <button key={m} onClick={() => setMode(m)}
+            className={`h-10 rounded-full text-sm font-black uppercase tracking-wide transition ${mode === m ? "bg-foreground text-background" : "text-foreground"}`}>
+            {tx(m === "matches" ? "Matches" : "Competitions")}
+          </button>
+        ))}
+      </div>
 
-
-      {(live.data?.length ?? 0) > 0 && <MatchSection title={t("home.live")} data={live.data} loading={live.isLoading} />}
-      <MatchSection title={t("home.upcoming")} data={upcoming.data} loading={upcoming.isLoading} />
-      <FavoriteMatches />
-      {(recent.data?.length ?? 0) > 0 && <MatchSection title={t("home.recent")} data={recent.data} loading={recent.isLoading} />}
-
-      <section className="mt-10">
-        <SectionHeader title={t("home.competitions")} />
+      {mode === "matches" ? (<>
+        <ScoreBoard liveCount={live.data?.length ?? 0} />
+        <TicketsBanner />
+        <FavoriteMatches />
+      </>) : (
+      <section>
         {comps.isLoading ? (
           <LoadingSkeleton />
         ) : !comps.data || comps.data.length === 0 ? (
@@ -127,6 +132,8 @@ function Home() {
           </div>
         )}
       </section>
+      )}
+
 
       {news.data && news.data.length > 0 && (
         <section className="mt-10">
@@ -237,23 +244,19 @@ function ScoreBoard({ liveCount }: { liveCount: number }) {
   );
 
   return (
-    <section className="mb-8 overflow-hidden rounded-3xl border border-border bg-card">
-      <div data-no-gesture className="flex flex-col gap-2 border-b border-border px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="grid w-full min-w-0 grid-cols-3 gap-1 sm:w-auto">
-          {(["all", "favourites", "competitions"] as const).map((s) => (
-            <Button variant="ghost"
-              key={s}
-              onClick={() => setScope(s)}
-              className={`relative h-10 min-w-0 whitespace-normal rounded-md px-2 py-2 text-xs font-bold transition ${scope === s ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-            >
-              {t(`board.${s}`)}
-            </Button>
-          ))}
-        </div>
-        <div className="glass-picker flex w-full min-w-0 items-center justify-between rounded-lg sm:w-auto">
-          <Button variant="ghost" size="icon" onClick={() => setOffset(offset - 1)} aria-label={tx("Previous day")}><ChevronLeft className="h-4 w-4" /></Button>
-          <Button variant="ghost" onClick={() => setCalendarOpen(true)} className="min-w-0 flex-1 px-2 text-xs font-semibold">{dayLabel}</Button>
-          <Button variant="ghost" size="icon" onClick={() => setOffset(offset + 1)} aria-label={tx("Next day")}><ChevronRight className="h-4 w-4" /></Button>
+    <section className="mb-8">
+      <div data-no-gesture className="flex items-center gap-2">
+        <button
+          onClick={() => setStatus(status === "live" ? null : "live")}
+          className={`inline-flex h-11 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-semibold transition ${status === "live" ? "border-destructive bg-destructive/15 text-destructive" : "border-destructive/60 bg-destructive/5 text-destructive"}`}
+        >
+          {t("board.live")}{liveCount > 0 ? ` (${liveCount})` : ""}
+          <span className={`h-3.5 w-3.5 rounded-full border-2 border-destructive ${status === "live" ? "bg-destructive" : ""}`} />
+        </button>
+        <div className="flex h-11 min-w-0 flex-1 items-center justify-between rounded-full border border-border bg-card">
+          <Button variant="ghost" size="icon" className="rounded-full text-primary" onClick={() => setOffset(offset - 1)} aria-label={tx("Previous day")}><ChevronLeft className="h-5 w-5" /></Button>
+          <Button variant="ghost" onClick={() => setCalendarOpen(true)} className="min-w-0 flex-1 px-2 text-sm font-semibold text-primary">{dayLabel}</Button>
+          <Button variant="ghost" size="icon" className="rounded-full text-primary" onClick={() => setOffset(offset + 1)} aria-label={tx("Next day")}><ChevronRight className="h-5 w-5" /></Button>
         </div>
       </div>
       {calendarOpen && <MonthCalendar day={day} onPick={(selected) => {
@@ -262,18 +265,11 @@ function ScoreBoard({ liveCount }: { liveCount: number }) {
         setCalendarOpen(false);
       }} onClose={() => setCalendarOpen(false)} />}
 
-
-      <div data-no-gesture className="grid grid-cols-3 gap-2 px-3 py-3">
-        {chip("live", t("board.live"))}
-        {chip("finished", t("board.finished"))}
-        {chip("upcoming", t("board.upcoming"))}
-      </div>
-
-      <div className="border-t border-border p-4">
+      <div className="mt-4">
         {dayQ.isLoading ? (
           <LoadingSkeleton count={3} className="h-16" />
         ) : rows.length === 0 ? (
-          <div className="py-6 text-center text-sm text-muted-foreground">{t("board.none")}</div>
+          <div className="rounded-2xl border border-border bg-card py-6 text-center text-sm text-muted-foreground">{t("board.none")}</div>
         ) : (
           <MatchGroups data={rows} />
         )}
@@ -285,7 +281,7 @@ function ScoreBoard({ liveCount }: { liveCount: number }) {
 function FavoriteMatches() {
   const tx = useTx();
   const { favorites, ready } = useFavorites();
-  const [view, setView] = useState<"matches" | "all">("matches");
+  const [view, setView] = useState<"matches" | "clubs" | "competitions" | "players">("matches");
   const ids = favorites.match;
   const teamIds = favorites.team;
   const q = useQuery({
@@ -308,7 +304,7 @@ function FavoriteMatches() {
     },
   });
   const others = useQuery({
-    enabled: ready && view === "all",
+    enabled: ready && view !== "matches",
     queryKey: ["fav-others", favorites.team.join(","), favorites.player.join(","), favorites.competition.join(",")],
     queryFn: async () => {
       const [teams, players, competitions] = await Promise.all([
@@ -325,21 +321,34 @@ function FavoriteMatches() {
   });
 
   if (!ready) return null;
+  const tabs = [
+    { key: "matches", label: "Matches" },
+    { key: "clubs", label: "Clubs" },
+    { key: "competitions", label: "Competitions" },
+    { key: "players", label: "Players" },
+  ] as const;
+  const row = "flex items-center gap-3 rounded-xl border border-border bg-card p-3 hover:border-primary";
+  const empty = (label: string) => <EmptyState title={tx(label)} />;
   return <section className="mt-8">
-    <SectionHeader title={tx("Favorites")} action={
-      <div className="flex items-center gap-1 rounded-full border border-border p-0.5 text-xs font-semibold">
-        {(["matches", "all"] as const).map((key) => (
-          <button key={key} onClick={() => setView(key)} className={`rounded-full px-3 py-1 ${view === key ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>{tx(key === "matches" ? "Matches" : "All")}</button>
-        ))}
-      </div>
-    } />
-    {q.data?.length ? <MatchGroups data={q.data} /> : <EmptyState title={tx("No favorite matches yet")} />}
-    {view === "all" && <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-      {others.data?.competitions.map((c) => <Link key={c.id} to="/competitions/$slug" params={{ slug: c.slug }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 hover:border-primary">{c.logo_url ? <img src={c.logo_url} alt="" className="h-8 w-8 object-contain" /> : <Trophy className="h-6 w-6 text-primary" />}<span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(c.name)}</span></Link>)}
-      {others.data?.teams.map((team) => <Link key={team.id} to="/teams/$id" params={{ id: team.id }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 hover:border-primary"><TeamCrest name={team.name} logo={team.logo_url} className="h-8 w-8" /><span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(team.name)}</span></Link>)}
-      {others.data?.players.map((player) => <Link key={player.id} to="/players/$id" params={{ id: player.id }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 hover:border-primary"><PlayerAvatar src={player.photo_url} name={player.name} className="h-8 w-8" /><span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(player.name)}</span></Link>)}
-      <Link to="/favorites" className="flex items-center justify-center rounded-xl border border-dashed border-border p-3 text-sm font-semibold text-primary">{tx("Open favorites")}</Link>
-    </div>}
+    <SectionHeader title={tx("Favorites")} />
+    <div data-no-gesture className="mb-4 grid grid-cols-4 border-b border-border">
+      {tabs.map((tab) => (
+        <button key={tab.key} onClick={() => setView(tab.key)}
+          className={`-mb-px truncate border-b-2 px-1 pb-2 text-sm font-semibold transition ${view === tab.key ? "border-primary text-foreground" : "border-transparent text-muted-foreground"}`}>
+          {tx(tab.label)}
+        </button>
+      ))}
+    </div>
+    {view === "matches" && (q.data?.length ? <MatchGroups data={q.data} /> : empty("No favorite matches yet"))}
+    {view === "clubs" && (others.data?.teams.length ? <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+      {others.data.teams.map((team) => <Link key={team.id} to="/teams/$id" params={{ id: team.id }} className={row}><TeamCrest name={team.name} logo={team.logo_url} className="h-8 w-8" /><span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(team.name)}</span></Link>)}
+    </div> : !others.isLoading && empty("No favorite clubs yet"))}
+    {view === "competitions" && (others.data?.competitions.length ? <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+      {others.data.competitions.map((c) => <Link key={c.id} to="/competitions/$slug" params={{ slug: c.slug }} className={row}>{c.logo_url ? <img src={c.logo_url} alt="" className="h-8 w-8 object-contain" /> : <Trophy className="h-6 w-6 text-primary" />}<span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(c.name)}</span></Link>)}
+    </div> : !others.isLoading && empty("No favorite competitions yet"))}
+    {view === "players" && (others.data?.players.length ? <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+      {others.data.players.map((player) => <Link key={player.id} to="/players/$id" params={{ id: player.id }} className={row}><PlayerAvatar src={player.photo_url} name={player.name} className="h-8 w-8" /><span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(player.name)}</span></Link>)}
+    </div> : !others.isLoading && empty("No favorite players yet"))}
   </section>;
 }
 
