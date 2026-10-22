@@ -190,6 +190,24 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
     refetchInterval: 60_000,
   });
 
+  // When the picked day has no matches at all, offer the next scheduled ones.
+  const [showUpcoming, setShowUpcoming] = useState(false);
+  const upcomingQ = useQuery({
+    enabled: !dayQ.isLoading && (dayQ.data ?? []).length === 0,
+    queryKey: ["board", "upcoming-fallback"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("matches")
+        .select("*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url,country,country_code)")
+        .eq("status", "scheduled")
+        .gte("kickoff_at", new Date().toISOString())
+        .order("kickoff_at")
+        .limit(12);
+      return (data ?? []) as unknown as MatchWithTeams[];
+    },
+  });
+
+
   const rows = (dayQ.data ?? []).filter((m) => {
     if (scope === "favourites") {
       const favTeam = favorites.team.includes(m.home_team_id ?? "") || favorites.team.includes(m.away_team_id ?? "");
@@ -248,6 +266,20 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
       <div className="mt-4">
         {dayQ.isLoading ? (
           <LoadingSkeleton count={3} className="h-16" />
+        ) : rows.length === 0 && (dayQ.data ?? []).length === 0 && (upcomingQ.data?.length ?? 0) > 0 ? (
+          <div className="rounded-2xl border border-border bg-card py-6 text-center text-sm text-muted-foreground">
+            {t("board.none")}
+            <Button variant="outline" size="sm" aria-expanded={showUpcoming} onClick={() => setShowUpcoming((v) => !v)}
+              className="mx-auto mt-3 block rounded-full border-primary/60 px-5 font-bold text-primary">
+              {showUpcoming ? tx("Hide upcoming") : tx("Show upcoming")}
+            </Button>
+            {showUpcoming && (
+              <div className="mt-5 text-start">
+                <div className="mb-2 px-1 text-xs font-bold uppercase tracking-widest text-muted-foreground">{tx("Upcoming matches")}</div>
+                <MatchGroups data={upcomingQ.data!} />
+              </div>
+            )}
+          </div>
         ) : rows.length === 0 ? (
           <div className="rounded-2xl border border-border bg-card py-6 text-center text-sm text-muted-foreground">{t("board.none")}</div>
         ) : (
