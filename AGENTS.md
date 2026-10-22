@@ -45,3 +45,4 @@
 
 - Home match-calendar helpers centralize local-day keys and upcoming start boundaries so calendar markers and date filters agree across timezones.
 - Shared card renderers finalize through one canvas export footer so every saved/shared image has consistent branding without obscuring content.
+- Edge functions must not import from src/; deploys bundle only supabase/functions, so a shared import silently keeps the old sender live.
