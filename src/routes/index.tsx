@@ -15,6 +15,8 @@ import { FlagIcon } from "@/components/flag";
 import { groupUpcomingCountries } from "@/lib/upcoming-countries";
 import { Calendar } from "@/components/ui/calendar";
 import { ar, enGB } from "date-fns/locale";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { DEFAULT_MATCH_VIEW, matchDateKey, matchDates, upcomingStart } from "@/lib/match-calendar";
 
 export const Route = createFileRoute("/")({
@@ -168,6 +170,7 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
   const [offset, setOffset] = useState(0);
   const [status, setStatus] = useState<"live" | "finished" | "upcoming" | null>(DEFAULT_MATCH_VIEW);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
 
   const day = useMemo(() => {
     const d = new Date();
@@ -245,6 +248,12 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
     <section className={title ? "mb-8 mt-10" : "mb-8"}>
       {title && <SectionHeader title={title} />}
       <div data-no-gesture className="flex flex-wrap items-center gap-1 border-b border-border pb-3">
+        <Button variant="ghost" size="sm" aria-expanded={filterOpen}
+          onClick={() => setFilterOpen(true)}
+          className="h-9 shrink-0 gap-1.5 rounded-md border px-3 text-xs font-semibold shadow-sm">
+          <ListFilter className="size-4" />
+          {tx("Filter")}
+        </Button>
         {!hideLive && (
           <Button variant="ghost" size="sm" aria-pressed={status === "live"}
             onClick={() => setStatus(status === "live" ? null : "live")}
@@ -271,6 +280,7 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
         setStatus(null);
         setCalendarOpen(false);
       }} onClose={() => setCalendarOpen(false)} />}
+      {filterOpen && <TeamFilterDialog onClose={() => setFilterOpen(false)} />}
 
       <div className="mt-4">
         {activeQ.isLoading ? (
