@@ -410,31 +410,10 @@ function TeamFilterDialog({ onClose, onPick, onPickPair }: {
         </div>
         {mode === "h2h" && (
           <div className="mt-3 shrink-0">
-            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-              {[0, 1].map((slotIndex) => {
-                const i = slotIndex as 0 | 1;
-                const team = slots[i];
-                if (!team) return (
-                  <button key={i} type="button" onClick={() => setActiveSlot(i)}
-                    className={`flex h-14 flex-col items-center justify-center gap-1 rounded-xl border border-dashed text-xs font-semibold transition ${activeSlot === i ? "border-primary text-primary" : "border-border text-muted-foreground"}`}>
-                    <Plus className="size-4" />
-                    {tx("Add club")}
-                  </button>
-                );
-                return (
-                  <div key={i} className={`flex h-14 items-center gap-1 rounded-xl border px-2 transition ${activeSlot === i ? "border-primary bg-primary/10" : "border-border bg-card"}`}>
-                    <button type="button" className="flex min-w-0 flex-1 items-center gap-2 text-start" onClick={() => setActiveSlot(i)} aria-label={tx("Edit club")}>
-                      <TeamCrest name={team.name} logo={team.logo_url} className="h-8 w-8 shrink-0" rounded="rounded-lg" />
-                      <span className="min-w-0 flex-1 truncate text-xs font-semibold">{tx(team.name)}</span>
-                    </button>
-                    <button type="button" className="shrink-0 rounded-full p-1 text-muted-foreground hover:text-foreground" aria-label={tx("Remove club")}
-                      onClick={() => { setSlots((cur) => (i === 0 ? [null, cur[1]] : [cur[0], null])); setActiveSlot(i); setQ(""); }}>
-                      <X className="size-4" />
-                    </button>
-                  </div>
-                );
-              })}
-              <span className="text-[10px] font-bold uppercase text-muted-foreground">{tx("vs")}</span>
+            <div className="grid grid-cols-[1fr_auto_1fr] items-stretch gap-2">
+              {renderSlot(0)}
+              <span className="self-center text-[10px] font-bold uppercase text-muted-foreground">{tx("vs")}</span>
+              {renderSlot(1)}
             </div>
             <p className="mt-2 text-center text-xs text-muted-foreground">
               {slots[0] && slots[1] ? tx("Showing matches between these clubs") : tx("Add two clubs to see only their matches")}
