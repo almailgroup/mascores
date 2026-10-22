@@ -1,6 +1,6 @@
 import { isOwnerEmail } from "@/lib/owner.functions";
 import { Link, useLocation, useRouter } from "@tanstack/react-router";
-import { Home, Search, Trophy, Newspaper, ArrowLeftRight, Ticket, Settings, LogIn, ArrowLeft, Radio, User, ChevronLeft, ChevronRight } from "lucide-react";
+import { Home, Search, Heart, Newspaper, ArrowLeftRight, Ticket, Settings, LogIn, ArrowLeft, Radio, User, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -83,11 +83,11 @@ function SuspendedScreen({ text }: { text: string }) {
 }
 
 
-type NavItem = { to: "/" | "/search" | "/competitions" | "/news" | "/transfers" | "/tickets" | "/voice" | "/settings"; labelKey: string; icon: typeof Home; exact?: boolean };
+type NavItem = { to: "/" | "/search" | "/competitions" | "/favorites" | "/news" | "/transfers" | "/tickets" | "/voice" | "/settings"; labelKey: string; icon: typeof Home; exact?: boolean };
 /** Shown in the mobile tab bar and the desktop nav row. */
 const PRIMARY_NAV: NavItem[] = [
   { to: "/", labelKey: "nav.home", icon: Home, exact: true },
-  { to: "/competitions", labelKey: "nav.competitions", icon: Trophy },
+  { to: "/favorites", labelKey: "nav.favorites", icon: Heart },
   { to: "/news", labelKey: "nav.news", icon: Newspaper },
   { to: "/transfers", labelKey: "nav.transfers", icon: ArrowLeftRight },
   { to: "/tickets", labelKey: "nav.tickets", icon: Ticket },
