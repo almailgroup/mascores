@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import { getTimeFormat } from "@/lib/time-format";
 
 export type Competition = Database["public"]["Tables"]["competitions"]["Row"];
 export type Team = Database["public"]["Tables"]["teams"]["Row"];
