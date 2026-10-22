@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ShieldCheck, Database, Eye, Lock, Mail, UserX, FileText, RefreshCcw } from "lucide-react";
-import { AppShell } from "@/components/app-shell";
+import { AppShell, BackButton } from "@/components/app-shell";
 import { BrandLogo } from "@/components/brand-logo";
 import { useI18n } from "@/lib/i18n";
 
@@ -84,6 +84,7 @@ function PrivacyPolicyPage() {
 
   return (
     <AppShell>
+      <BackButton iconOnly className="mb-3" />
       <div className="mx-auto max-w-3xl pb-16">
         {/* Hero */}
         <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-8 sm:p-10">

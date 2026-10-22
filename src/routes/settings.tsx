@@ -8,14 +8,15 @@ import { AppShell, BackButton } from "@/components/app-shell";
 import { uploadMedia } from "@/components/admin/upload";
 import { CURRENCIES, useCurrency } from "@/lib/currency";
 import { useHeightUnit } from "@/lib/units";
+import { getTimeFormat, setTimeFormat, type TimeFormat } from "@/lib/time-format";
 import { deleteMyAccount } from "@/lib/account.functions";
 import { useServerFn } from "@tanstack/react-start";
-import { Save, LogOut, Loader2, LogIn, Camera, Trash2, BellRing, ChevronDown, ChevronRight, User, ShieldCheck, LifeBuoy, Ticket as TicketIcon } from "lucide-react";
+import { Save, LogOut, Loader2, LogIn, Camera, Trash2, BellRing, ChevronDown, ChevronRight, User, ShieldCheck, LifeBuoy, Ticket as TicketIcon, Settings as SettingsIcon } from "lucide-react";
 import { ImageCropper } from "@/components/image-cropper";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import type { AlertSoundMap } from "@/lib/alert-sounds";
 import { Button } from '@/components/ui/button';
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AccountPrivacy } from "@/components/account-privacy";
 import { BlockedAccounts } from "@/components/blocked-accounts";
 import { SocialActivityButton } from "@/components/social-activity";
@@ -48,6 +49,8 @@ function SettingsPage() {
   const [isPublic, setIsPublic] = useState(true);
   const [hideFollows, setHideFollows] = useState(false);
   const { heightUnit, setHeightUnit } = useHeightUnit();
+  const [timeFormat, setTimeFormatState] = useState<TimeFormat>(getTimeFormat());
+  const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -56,13 +59,14 @@ function SettingsPage() {
   const [openProfile, setOpenProfile] = useState(false);
   const [openNotifs, setOpenNotifs] = useState(false);
   const [openTickets, setOpenTickets] = useState(false);
+  const [openSettings, setOpenSettings] = useState(false);
   const [alertPrefs, setAlertPrefs] = useState<{ goals: boolean; cards: boolean; kickoff: boolean; final: boolean; voice: boolean; social: boolean; social_follow: boolean; social_request: boolean; social_like: boolean; social_comment: boolean; social_repost: boolean; sound: string; sounds: AlertSoundMap }>({ goals: true, cards: true, kickoff: true, final: true, voice: true, social: true, social_follow: true, social_request: true, social_like: true, social_comment: true, social_repost: true, sound: "stadium", sounds: {} });
 
   useEffect(() => {
     if (authLoading) return;
     if (!user) return;
     (async () => {
-      const { data: prof } = await supabase.from("profiles").select("display_name,language,avatar_url,height_unit,username,is_public,hide_follows,notification_preferences").eq("id", user.id).maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("display_name,language,avatar_url,height_unit,time_format,username,is_public,hide_follows,notification_preferences").eq("id", user.id).maybeSingle();
       setDisplayName(prof?.display_name ?? "");
       setAvatarUrl(prof?.avatar_url ?? null);
       setUsername(prof?.username ?? "");
@@ -70,6 +74,7 @@ function SettingsPage() {
       setHideFollows(!!prof?.hide_follows);
       if (prof?.notification_preferences && typeof prof.notification_preferences === "object" && !Array.isArray(prof.notification_preferences)) setAlertPrefs((prev) => ({ ...prev, ...(prof.notification_preferences as typeof prev) }));
       if (prof?.height_unit === "ft" || prof?.height_unit === "cm") setHeightUnit(prof.height_unit);
+      if (prof?.time_format === "12" || prof?.time_format === "24") { setTimeFormat(prof.time_format); setTimeFormatState(prof.time_format); }
     })();
   }, [user, authLoading]);
 
@@ -191,7 +196,15 @@ function SettingsPage() {
         )}
       </section>
 
-      {user && <section className="mt-4 rounded-3xl border border-border bg-card p-6">
+            {user && <section className="mt-4 rounded-3xl border border-border bg-card p-6">
+        <button type="button" onClick={() => setOpenTickets((v) => !v)} className="flex w-full items-center justify-between gap-2 text-start">
+          <div className="flex items-center gap-2 text-sm font-semibold"><TicketIcon className="h-4 w-4 text-primary" /> {lang === "ar" ? "سجل التذاكر" : "Ticket history"}</div>
+          <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${openTickets ? "rotate-180" : ""}`} />
+        </button>
+        {openTickets && <TicketHistory open={openTickets} />}
+      </section>}
+
+{user && <section className="mt-4 rounded-3xl border border-border bg-card p-6">
         <button type="button" onClick={() => setOpenNotifs((v) => !v)} className="flex w-full items-center justify-between gap-2 text-start">
           <div className="flex items-center gap-2 text-sm font-semibold"><BellRing className="h-4 w-4 text-primary" /> {t("settings.notifications")}</div>
           <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${openNotifs ? "rotate-180" : ""}`} />
@@ -209,70 +222,83 @@ function SettingsPage() {
       {canPreviewNotificationSounds(user?.email, owner.data === true) && <NotificationSoundPreview />}
       {avatarFile && <ImageCropper file={avatarFile} aspect={1} onCancel={() => setAvatarFile(null)} onDone={async (file) => { await pickAvatar(file); setAvatarFile(null); }} />}
 
-      <section className="mt-4 grid gap-4 sm:grid-cols-2">
-        <div className="rounded-3xl border border-border bg-card p-6">
-          <div className="mb-3 text-sm font-semibold">{t("settings.language")}</div>
-          <div className="grid grid-cols-2 gap-2">
-            {(["en", "ar"] as const).map((l) => (
-              <Button key={l} type="button" variant="ghost" onClick={async () => {
-                setLang(l);
-                if (user) {
-                  const { error } = await supabase.from("profiles").update({ language: l }).eq("id", user.id);
-                  if (error) setNotice(l === "ar" ? "تم حفظ اللغة على هذا الجهاز. تعذّر مزامنتها مع حسابك." : "Language saved on this device. Account sync failed.");
-                }
-              }}
-                className={`rounded-xl border px-3 py-2 text-sm ${lang === l ? "border-primary bg-primary/10 text-primary" : "border-border bg-background hover:bg-accent"}`}>
-                {l === "en" ? "English" : "العربية"}
-              </Button>
-            ))}
-          </div>
-        </div>
-        <div className="rounded-3xl border border-border bg-card p-6">
-          <div className="mb-3 text-sm font-semibold">{t("settings.theme")}</div>
-          <div className="grid grid-cols-2 gap-2">
-            {(["light", "dark"] as const).map((th) => (
-              <button key={th} type="button" onClick={() => { setTheme(th); if (user) void supabase.from("profiles").update({ theme: th }).eq("id", user.id); }}
-                className={`rounded-xl border px-3 py-2 text-sm capitalize ${theme === th ? "border-primary bg-primary/10 text-primary" : "border-border bg-background hover:bg-accent"}`}>
-                {t(`settings.theme.${th}`)}
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
-
       <section className="mt-4 rounded-3xl border border-border bg-card p-6">
-        <div className="mb-3 text-sm font-semibold">{t("settings.heightUnit")}</div>
-        <div className="grid max-w-xs grid-cols-2 gap-2">
-          {(["cm", "ft"] as const).map((u) => (
-            <button key={u} type="button" onClick={() => { setHeightUnit(u); if (user) void supabase.from("profiles").update({ height_unit: u }).eq("id", user.id); }}
-              className={`rounded-xl border px-3 py-2 text-sm ${heightUnit === u ? "border-primary bg-primary/10 text-primary" : "border-border bg-background hover:bg-accent"}`}>
-              {u === "cm" ? "cm" : "ft / in"}
-            </button>
-          ))}
-        </div>
-      </section>
-
-      <section className="mt-4 rounded-3xl border border-border bg-card p-6">
-        <div className="mb-1 text-sm font-semibold">{t("settings.currency")}</div>
-        <p className="mb-3 text-xs text-muted-foreground">{t("settings.currencyHint")}</p>
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-7">
-          {CURRENCIES.map((c) => (
-            <button key={c} type="button" onClick={() => setCurrency(c)}
-              className={`rounded-xl border px-2 py-2 text-sm font-semibold ${currency === c ? "border-primary bg-primary/10 text-primary" : "border-border bg-background hover:bg-accent"}`}>
-              {c}
-            </button>
-          ))}
-        </div>
-      </section>
-
-      {user && <section className="mt-4 rounded-3xl border border-border bg-card p-6">
-        <button type="button" onClick={() => setOpenTickets((v) => !v)} className="flex w-full items-center justify-between gap-2 text-start">
-          <div className="flex items-center gap-2 text-sm font-semibold"><TicketIcon className="h-4 w-4 text-primary" /> {lang === "ar" ? "سجل التذاكر" : "Ticket history"}</div>
-          <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${openTickets ? "rotate-180" : ""}`} />
+        <button type="button" onClick={() => setOpenSettings((v) => !v)} className="flex w-full items-center justify-between gap-2 text-start">
+          <div className="flex items-center gap-2 text-sm font-semibold"><SettingsIcon className="h-4 w-4 text-primary" /> {t("settings.title")}</div>
+          <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${openSettings ? "rotate-180" : ""}`} />
         </button>
-        {openTickets && <TicketHistory open={openTickets} />}
-      </section>}
+        {openSettings && <div className="mt-4 grid gap-4">
+          <div className="rounded-2xl border border-border bg-background p-4">
+            <div className="mb-3 text-sm font-semibold">{t("settings.language")}</div>
+            <div className="grid grid-cols-2 gap-2">
+              {(["en", "ar"] as const).map((l) => (
+                <Button key={l} type="button" variant="ghost" onClick={async () => {
+                  setLang(l);
+                  if (user) {
+                    const { error } = await supabase.from("profiles").update({ language: l }).eq("id", user.id);
+                    if (error) setNotice(l === "ar" ? "تم حفظ اللغة على هذا الجهاز. تعذّر مزامنتها مع حسابك." : "Language saved on this device. Account sync failed.");
+                  }
+                }}
+                  className={`rounded-xl border px-3 py-2 text-sm ${lang === l ? "border-primary bg-primary/10 text-primary" : "border-border bg-background hover:bg-accent"}`}>
+                  {l === "en" ? "English" : "العربية"}
+                </Button>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-2xl border border-border bg-background p-4">
+            <div className="mb-3 text-sm font-semibold">{t("settings.theme")}</div>
+            <div className="grid grid-cols-2 gap-2">
+              {(["light", "dark"] as const).map((th) => (
+                <button key={th} type="button" onClick={() => { setTheme(th); if (user) void supabase.from("profiles").update({ theme: th }).eq("id", user.id); }}
+                  className={`rounded-xl border px-3 py-2 text-sm capitalize ${theme === th ? "border-primary bg-primary/10 text-primary" : "border-border bg-background hover:bg-accent"}`}>
+                  {t(`settings.theme.${th}`)}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-2xl border border-border bg-background p-4">
+            <div className="mb-3 text-sm font-semibold">{t("settings.heightUnit")}</div>
+            <div className="grid max-w-xs grid-cols-2 gap-2">
+              {(["cm", "ft"] as const).map((u) => (
+                <button key={u} type="button" onClick={() => { setHeightUnit(u); if (user) void supabase.from("profiles").update({ height_unit: u }).eq("id", user.id); }}
+                  className={`rounded-xl border px-3 py-2 text-sm ${heightUnit === u ? "border-primary bg-primary/10 text-primary" : "border-border bg-background hover:bg-accent"}`}>
+                  {u === "cm" ? "cm" : "ft / in"}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-2xl border border-border bg-background p-4">
+            <div className="mb-3 text-sm font-semibold">{lang === "ar" ? "صيغة الوقت" : "Time format"}</div>
+            <div className="grid max-w-xs grid-cols-2 gap-2">
+              {(["12", "24"] as const).map((f) => (
+                <button key={f} type="button" onClick={() => {
+                  setTimeFormat(f);
+                  setTimeFormatState(f);
+                  if (user) void supabase.from("profiles").update({ time_format: f }).eq("id", user.id);
+                  void queryClient.invalidateQueries();
+                }}
+                  className={`rounded-xl border px-3 py-2 text-sm ${timeFormat === f ? "border-primary bg-primary/10 text-primary" : "border-border bg-background hover:bg-accent"}`}>
+                  {f === "12" ? "12 h" : "24 h"}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-2xl border border-border bg-background p-4">
+            <div className="mb-1 text-sm font-semibold">{t("settings.currency")}</div>
+            <p className="mb-3 text-xs text-muted-foreground">{t("settings.currencyHint")}</p>
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-7">
+              {CURRENCIES.map((c) => (
+                <button key={c} type="button" onClick={() => setCurrency(c)}
+                  className={`rounded-xl border px-2 py-2 text-sm font-semibold ${currency === c ? "border-primary bg-primary/10 text-primary" : "border-border bg-background hover:bg-accent"}`}>
+                  {c}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>}
+      </section>
 
+      
       <section className="mt-4 grid gap-4 sm:grid-cols-2">
         <Link to="/privacypolicy" className="flex items-center justify-between gap-3 rounded-3xl border border-border bg-card p-5 text-sm font-semibold hover:bg-accent">
           <span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-primary" /> {lang === "ar" ? "سياسة الخصوصية" : "Privacy policy"}</span>

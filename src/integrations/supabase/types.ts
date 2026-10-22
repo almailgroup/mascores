@@ -1931,6 +1931,7 @@ export type Database = {
           match_notification_ids: string[]
           notification_preferences: Json
           theme: string
+          time_format: string
           updated_at: string
           username: string | null
           username_changed_at: string | null
@@ -1954,6 +1955,7 @@ export type Database = {
           match_notification_ids?: string[]
           notification_preferences?: Json
           theme?: string
+          time_format?: string
           updated_at?: string
           username?: string | null
           username_changed_at?: string | null
@@ -1977,6 +1979,7 @@ export type Database = {
           match_notification_ids?: string[]
           notification_preferences?: Json
           theme?: string
+          time_format?: string
           updated_at?: string
           username?: string | null
           username_changed_at?: string | null

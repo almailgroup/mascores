@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
+import { initTimeFormat } from "@/lib/time-format";
 import { BrandLogo } from "@/components/brand-logo";
 import { LiveVoiceAlert } from "@/components/live-voice-alert";
 import { useReminderAlerts } from "@/components/match-reminders";
@@ -108,6 +109,7 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
   const router = useRouter();
   const hideHeader = bare || location.pathname !== "/";
   useEffect(() => { void user; }, [user]);
+  useEffect(() => { initTimeFormat(); }, []);
   useReminderAlerts();
   useLiveEventAlerts();
   useAskForAlerts();
