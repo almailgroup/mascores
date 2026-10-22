@@ -24,3 +24,5 @@
 - [x] Fix: tapping the active bottom tab scrolls back to top (smooth); switching tabs starts the new page at the top.
 - [x] Filter rework: full-screen, Zain Premier League clubs + Kuwait national team by default, search reveals the rest, picked club filters the home board.
 - [x] Upcoming toggle: re-tapping Upcoming keeps upcoming matches; day/calendar views bring it back.
+- [x] Filter sections: Club | Head to head tabs with + vs + slot picker and equal boxes; head-to-head notice kept.
+- [x] Filter default browse shows grouped sections: Zain Premier League, Kuwait national teams, Zain First Division, Zain U19 League, Kuwait U17 League; search spans all teams.
