@@ -25,6 +25,7 @@ import { Route as SupportRouteImport } from './routes/support'
 import { Route as TicketsRouteImport } from './routes/tickets'
 import { Route as TransfersRouteImport } from './routes/transfers'
 import { Route as VerifyRouteImport } from './routes/verify'
+import { Route as ApiAiPhotoEditRouteImport } from './routes/api/ai-photo-edit'
 import { Route as ApiRemoveBgRouteImport } from './routes/api/remove-bg'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as AuthNativeRouteImport } from './routes/auth.native'
@@ -120,6 +121,11 @@ const TransfersRoute = TransfersRouteImport.update({
 const VerifyRoute = VerifyRouteImport.update({
   id: '/verify',
   path: '/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAiPhotoEditRoute = ApiAiPhotoEditRouteImport.update({
+  id: '/api/ai-photo-edit',
+  path: '/api/ai-photo-edit',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiRemoveBgRoute = ApiRemoveBgRouteImport.update({
@@ -220,6 +226,7 @@ export interface FileRoutesByFullPath {
   '/tickets': typeof TicketsRoute
   '/transfers': typeof TransfersRoute
   '/verify': typeof VerifyRoute
+  '/api/ai-photo-edit': typeof ApiAiPhotoEditRoute
   '/api/remove-bg': typeof ApiRemoveBgRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/native': typeof AuthNativeRoute
@@ -254,6 +261,7 @@ export interface FileRoutesByTo {
   '/tickets': typeof TicketsRoute
   '/transfers': typeof TransfersRoute
   '/verify': typeof VerifyRoute
+  '/api/ai-photo-edit': typeof ApiAiPhotoEditRoute
   '/api/remove-bg': typeof ApiRemoveBgRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/native': typeof AuthNativeRoute
@@ -289,6 +297,7 @@ export interface FileRoutesById {
   '/tickets': typeof TicketsRoute
   '/transfers': typeof TransfersRoute
   '/verify': typeof VerifyRoute
+  '/api/ai-photo-edit': typeof ApiAiPhotoEditRoute
   '/api/remove-bg': typeof ApiRemoveBgRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/native': typeof AuthNativeRoute
@@ -325,6 +334,7 @@ export interface FileRouteTypes {
     | '/tickets'
     | '/transfers'
     | '/verify'
+    | '/api/ai-photo-edit'
     | '/api/remove-bg'
     | '/auth/callback'
     | '/auth/native'
@@ -359,6 +369,7 @@ export interface FileRouteTypes {
     | '/tickets'
     | '/transfers'
     | '/verify'
+    | '/api/ai-photo-edit'
     | '/api/remove-bg'
     | '/auth/callback'
     | '/auth/native'
@@ -393,6 +404,7 @@ export interface FileRouteTypes {
     | '/tickets'
     | '/transfers'
     | '/verify'
+    | '/api/ai-photo-edit'
     | '/api/remove-bg'
     | '/auth/callback'
     | '/auth/native'
@@ -428,6 +440,7 @@ export interface RootRouteChildren {
   TicketsRoute: typeof TicketsRoute
   TransfersRoute: typeof TransfersRoute
   VerifyRoute: typeof VerifyRoute
+  ApiAiPhotoEditRoute: typeof ApiAiPhotoEditRoute
   ApiRemoveBgRoute: typeof ApiRemoveBgRoute
   CoachesIdRoute: typeof CoachesIdRoute
   CompetitionsSlugRoute: typeof CompetitionsSlugRoute
@@ -556,6 +569,13 @@ declare module '@tanstack/react-router' {
       path: '/verify'
       fullPath: '/verify'
       preLoaderRoute: typeof VerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ai-photo-edit': {
+      id: '/api/ai-photo-edit'
+      path: '/api/ai-photo-edit'
+      fullPath: '/api/ai-photo-edit'
+      preLoaderRoute: typeof ApiAiPhotoEditRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/remove-bg': {
@@ -702,6 +722,7 @@ const rootRouteChildren: RootRouteChildren = {
   TicketsRoute: TicketsRoute,
   TransfersRoute: TransfersRoute,
   VerifyRoute: VerifyRoute,
+  ApiAiPhotoEditRoute: ApiAiPhotoEditRoute,
   ApiRemoveBgRoute: ApiRemoveBgRoute,
   CoachesIdRoute: CoachesIdRoute,
   CompetitionsSlugRoute: CompetitionsSlugRoute,

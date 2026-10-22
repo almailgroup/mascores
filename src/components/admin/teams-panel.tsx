@@ -22,6 +22,7 @@ import { useAdminAbility } from "@/lib/admin-ability";
 import { requestReview } from "@/lib/review";
 import { SeasonSquadModal } from "./season-squad-modal";
 import { PlayerBatchImport } from "./player-batch-import";
+import { AiPhotoRequest } from "./ai-photo-request";
 import { Plus, Pencil, Trash2, Users, UserCog, UserMinus, ImagePlus, Library, Flag, Sparkles } from "lucide-react";
 
 type TeamForm = Partial<Team>;
@@ -356,6 +357,7 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
   const [editing, setEditing] = useState<Partial<Player> | null>(null);
   const [addExisting, setAddExisting] = useState(false);
   const [batchOpen, setBatchOpen] = useState(false);
+  const [photoAiOpen, setPhotoAiOpen] = useState(false);
   const [pick, setPick] = useState("");
   const [poolSearch, setPoolSearch] = useState("");
 
@@ -385,6 +387,7 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
         <button className={btnPrimary} onClick={() => setEditing({ team_id: team.id })}><Plus className="h-3.5 w-3.5" /> Add player</button>
         <button className={btnGhost} onClick={() => setAddExisting(true)}><Library className="h-3.5 w-3.5" /> Add existing player</button>
         <button className={btnGhost} onClick={() => setBatchOpen(true)}><Sparkles className="h-3.5 w-3.5" /> Add many with Almail AI</button>
+        <button className={btnGhost} onClick={() => setPhotoAiOpen(true)}><ImagePlus className="h-3.5 w-3.5" /> AI photo request</button>
       </div>
 
       {addExisting && (
@@ -452,6 +455,7 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
       <p className="mt-4 text-[0.65rem] text-muted-foreground">Releasing a player keeps him in the database as a free agent. To delete a player for good, use the Players section.</p>
 
       <PlayerBatchImport open={batchOpen} onClose={() => setBatchOpen(false)} teamId={team.id} onSaved={invalidate} />
+      {photoAiOpen && <AiPhotoRequest open onClose={() => setPhotoAiOpen(false)} players={q.data ?? []} onSaved={invalidate} />}
       {editing && <PlayerEditor player={editing} teamId={team.id} teamName={team.name} onClose={() => { setEditing(null); invalidate(); }} />}
 
     </Modal>
