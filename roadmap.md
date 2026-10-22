@@ -12,3 +12,4 @@
 - [x] Bottom bar: Competitions tab replaced with Favorites (opens the Favorites page).
 - [ ] Compact Home tabs and original Live/competition styling; full Favorites category labels and a star navigation icon.
 - [ ] Replace Home Latest News with expandable countries that have upcoming matches, including World → Friendlies, in an original design.
+- [ ] Stretch Matches/Competitions across the available width with a small central gap and make Live clearly clickable.

@@ -86,10 +86,10 @@ function Home() {
 
   return (
     <AppShell>
-      <div data-no-gesture role="tablist" aria-label={tx("Football")} className="mb-4 flex gap-5 border-b border-border">
+      <div data-no-gesture role="tablist" aria-label={tx("Football")} className="mb-4 grid grid-cols-2 gap-2 border-b border-border">
         {(["matches", "competitions"] as const).map((m) => (
           <Button variant="ghost" role="tab" aria-selected={mode === m} key={m} onClick={() => setMode(m)}
-            className={`-mb-px h-11 gap-1.5 rounded-none border-b-2 px-1 text-xs font-semibold transition ${mode === m ? "border-primary text-foreground" : "border-transparent text-muted-foreground"}`}>
+            className={`-mb-px h-11 w-full gap-1.5 rounded-none border-b-2 px-1 text-xs font-semibold transition ${mode === m ? "border-primary text-foreground" : "border-transparent text-muted-foreground"}`}>
             {m === "matches" ? <ListFilter className="size-3.5" /> : <Trophy className="size-3.5" />}
             {tx(m === "matches" ? "Matches" : "Competitions")}
           </Button>
@@ -227,7 +227,7 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
         {!hideLive && (
           <Button variant="ghost" size="sm" aria-pressed={status === "live"}
             onClick={() => setStatus(status === "live" ? null : "live")}
-            className={`h-9 shrink-0 gap-1.5 rounded-md px-2.5 text-xs font-semibold transition ${status === "live" ? "bg-destructive/10 text-destructive" : "bg-muted/60 text-foreground"}`}
+            className={`h-9 shrink-0 gap-1.5 rounded-md border px-3 text-xs font-semibold shadow-sm transition ${status === "live" ? "border-destructive bg-destructive/10 text-destructive" : "border-border bg-card text-foreground hover:border-destructive/50"}`}
           >
             <span className="size-1.5 rounded-full bg-destructive" />
             {t("board.live")}{liveCount > 0 ? ` (${liveCount})` : ""}
