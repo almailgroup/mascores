@@ -402,7 +402,14 @@ function MonthCalendar({ day, onPick, onClose }: { day: Date; onPick: (d: Date) 
       <Calendar mode="single" selected={day} onSelect={(date) => { if (date) onPick(date); }}
         month={month} onMonthChange={setMonth} locale={lang === "ar" ? ar : enGB}
         className="pointer-events-auto mx-auto w-full bg-transparent"
-        classNames={{ root: "w-full", day: "relative w-full", month: "flex w-full flex-col gap-4" }}
+        classNames={{
+          root: "w-full",
+          month: "flex w-full flex-col gap-3",
+          table: "block w-full [&_tbody]:block",
+          weekdays: "grid grid-cols-7",
+          week: "mt-1 grid h-11 grid-cols-7",
+          day: "relative block h-11 w-full aspect-auto [&_button]:h-11 [&_button]:min-w-0 [&_button]:aspect-auto",
+        }}
         modifiers={{ hasMatch: (date) => marked.has(matchDateKey(date)) }}
         modifiersClassNames={{ hasMatch: "after:pointer-events-none after:absolute after:bottom-1 after:left-1/2 after:size-1 after:-translate-x-1/2 after:rounded-full after:bg-primary [&:has([data-selected-single=true])]:after:bg-primary-foreground" }}
       />
