@@ -369,21 +369,40 @@ function TeamFilterDialog({ onClose, onPick, onPickPair }: {
   const teamsQ = useQuery({
     queryKey: ["filter-teams", "catalogue"],
     queryFn: async () => {
-      const [catalogue, competition] = await Promise.all([
+      const [catalogue, comps] = await Promise.all([
         supabase.from("teams").select("id,name,name_ar,short_name,logo_url,country,country_code,is_national,parent_team_id,age_group").order("name"),
-        supabase.from("competitions").select("id,season").eq("slug", "zain-premier-league").maybeSingle(),
+        supabase.from("competitions").select("id,slug,name,season").in("slug", ["zain-premier-league", "zain-first-division", "kuwait-u19-league", "kuwait-u17-league"]),
       ]);
       if (catalogue.error) throw catalogue.error;
-      let leagueTeamIds: string[] = [];
-      if (competition.data) {
-        const { data, error } = await supabase.from("competition_teams").select("team_id,season").eq("competition_id", competition.data.id);
-        if (error) throw error;
-        leagueTeamIds = (data ?? []).filter((row) => !row.season || !competition.data?.season || row.season === competition.data.season).map((row) => row.team_id);
-      }
-      return { catalogue: (catalogue.data ?? []) as Team[], leagueTeamIds };
+      if (comps.error) throw comps.error;
+      const ids = (comps.data ?? []).map((row) => row.id);
+      const { data, error } = await supabase.from("competition_teams").select("competition_id,team_id,season").in("competition_id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
+      if (error) throw error;
+      return { catalogue: (catalogue.data ?? []) as Team[], competitions: (comps.data ?? []) as { id: string; slug: string; name: string; season: string | null }[], memberships: data ?? [] };
     },
   });
-  const visible = visibleWelcomeTeams(teamsQ.data?.catalogue ?? [], teamsQ.data?.leagueTeamIds ?? [], q, tx);
+  const catalogue = teamsQ.data?.catalogue ?? [];
+  const byId = new Map(catalogue.map((team) => [team.id, team]));
+  const seasonTeams = (slug: string) => {
+    const comp = (teamsQ.data?.competitions ?? []).find((row) => row.slug === slug);
+    if (!comp) return [] as Team[];
+    return (teamsQ.data?.memberships ?? [])
+      .filter((row) => row.competition_id === comp.id && (!row.season || !comp.season || row.season === comp.season))
+      .map((row) => byId.get(row.team_id))
+      .filter((team): team is Team => Boolean(team));
+  };
+  const nationals = catalogue
+    .filter((team) => team.is_national === true && team.country_code?.toUpperCase() === "KW")
+    .sort((a, b) => Number(Boolean(a.age_group)) - Number(Boolean(b.age_group)));
+  const sections: { label: string; teams: Team[] }[] = [
+    { label: "Zain Premier League", teams: seasonTeams("zain-premier-league") },
+    { label: "Kuwait national teams", teams: nationals },
+    { label: "Zain First Division", teams: seasonTeams("zain-first-division") },
+    { label: "Zain U19 League", teams: seasonTeams("kuwait-u19-league") },
+    { label: "Kuwait U17 League", teams: seasonTeams("kuwait-u17-league") },
+  ].filter((section) => section.teams.length > 0);
+  const searching = q.trim().length > 0;
+  const visible = searching ? visibleWelcomeTeams(catalogue, [], q, tx) : [];
   const pick = (team: FilterTeam) => {
     if (mode === "club") { onPick(team); onClose(); return; }
     const other = slots[1 - activeSlot];
