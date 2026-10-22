@@ -376,8 +376,8 @@ function TeamFilterDialog({ onClose, onPick }: { onClose: () => void; onPick: (t
     },
   });
   const visible = visibleWelcomeTeams(teamsQ.data?.catalogue ?? [], teamsQ.data?.leagueTeamIds ?? [], q, tx);
-  return (
-    <div data-no-gesture className="fixed inset-0 z-[110] overflow-y-auto bg-background text-foreground" role="dialog" aria-modal="true" aria-label={tx("Filter by team")}>
+  return createPortal(
+    <div data-no-gesture className="fixed inset-0 z-[120] overflow-y-auto bg-background text-foreground" role="dialog" aria-modal="true" aria-label={tx("Filter by team")}>
       <div className="mx-auto flex min-h-dvh max-w-xl flex-col px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-[calc(1.5rem+env(safe-area-inset-top))]">
         <div className="flex items-center gap-2">
           <Button type="button" variant="ghost" size="icon" className="size-10 shrink-0" onClick={onClose} aria-label="Close">
@@ -402,7 +402,7 @@ function TeamFilterDialog({ onClose, onPick }: { onClose: () => void; onPick: (t
           ))}
         </div>
       </div>
-    </div>
+    </div>, document.body
   );
 }
 
