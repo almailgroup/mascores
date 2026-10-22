@@ -466,20 +466,22 @@ function TeamFilterDialog({ onClose, onPick, onPickPair }: {
           <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder={tx("Search teams")} aria-label={tx("Search teams")} className="min-w-0 flex-1 bg-transparent text-sm outline-none" />
         </label>
         <div className="mt-4 flex-1">
-          {teamsQ.isLoading ? <LoadingSkeleton count={6} className="h-14" /> : visible.length === 0 ? (
+          {teamsQ.isLoading ? <LoadingSkeleton count={6} className="h-14" /> : searching && visible.length === 0 ? (
             <div className="py-10 text-center text-sm text-muted-foreground">{tx("No teams found")}</div>
-          ) : (
+          ) : searching ? (
             <div className="grid grid-cols-3 gap-2">
-              {visible.map((team) => {
-                const chosen = slots[0]?.id === team.id || slots[1]?.id === team.id;
-                return (
-                  <button key={team.id} type="button" onClick={() => pick({ id: team.id, name: team.name, logo_url: team.logo_url ?? null })}
-                    className={`flex flex-col items-center gap-1.5 rounded-xl border px-1 py-3 text-center transition ${chosen ? "border-primary bg-primary/10" : "border-border bg-card hover:bg-accent"}`}>
-                    <TeamCrest name={team.name} logo={team.logo_url} className="h-9 w-9" rounded="rounded-lg" />
-                    <span className="w-full truncate text-[11px] font-semibold leading-tight">{tx(team.name)}</span>
-                  </button>
-                );
-              })}
+              {visible.map((team) => teamBox(team))}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-5">
+              {sections.map((section) => (
+                <div key={section.label}>
+                  <h3 className="mb-2 px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">{tx(section.label)}</h3>
+                  <div className="grid grid-cols-3 gap-2">
+                    {section.teams.map((team) => teamBox(team))}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
