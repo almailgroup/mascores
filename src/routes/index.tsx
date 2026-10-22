@@ -1,6 +1,8 @@
 import { TeamCrest } from "@/components/team-crest";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { createPortal } from "react-dom";
+const H2H_NOTICE_KEY = "mascores:h2h-filter-notice-dismissed";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, SectionHeader, EmptyState, LoadingSkeleton } from "@/components/app-shell";
 import { supabase, formatKickoff, matchClockSeconds, type Competition, type Match, type Team } from "@/lib/db";
@@ -170,7 +172,10 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
   const [status, setStatus] = useState<"live" | "finished" | "upcoming" | null>(DEFAULT_MATCH_VIEW);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
-  const [teamFilter, setTeamFilter] = useState<{ id: string; name: string; logo_url: string | null } | null>(null);
+  type FilterTeam = { id: string; name: string; logo_url: string | null };
+  const [teamFilters, setTeamFilters] = useState<FilterTeam[]>([]);
+  const [pendingPair, setPendingPair] = useState<FilterTeam[] | null>(null);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
 
   const day = useMemo(() => {
     const d = new Date();
@@ -219,7 +224,7 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
       const favTeam = favorites.team.includes(m.home_team_id ?? "") || favorites.team.includes(m.away_team_id ?? "");
       if (!favTeam && !favorites.match.includes(m.id) && !favorites.competition.includes(m.competition_id)) return false;
     }
-    if (teamFilter && m.home_team_id !== teamFilter.id && m.away_team_id !== teamFilter.id) return false;
+    if (teamFilters.some((f) => m.home_team_id !== f.id && m.away_team_id !== f.id)) return false;
     if (status === "live") return ["live", "ht"].includes(m.status);
     if (status === "finished") return ["ft", "aet", "pen", "awarded"].includes(m.status);
     if (status === "upcoming") return m.status === "scheduled";
@@ -255,14 +260,17 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
           <ListFilter className="size-4" />
           {tx("Filter")}
         </Button>
-        {teamFilter && (
-          <button type="button" onClick={() => setTeamFilter(null)} aria-label={tx("Clear team filter")}
-            className="flex h-9 shrink-0 items-center gap-1.5 rounded-md border border-primary/40 bg-primary/10 px-2 text-xs font-semibold text-primary">
-            <TeamCrest name={teamFilter.name} logo={teamFilter.logo_url} className="h-5 w-5" rounded="rounded-full" />
-            <span className="max-w-28 truncate">{tx(teamFilter.name)}</span>
-            <X className="size-3.5" />
-          </button>
-        )}
+        {teamFilters.map((teamFilter, i) => (
+          <span key={teamFilter.id} className="flex items-center gap-1">
+            {i === 1 && <span className="text-[10px] font-bold text-muted-foreground">vs</span>}
+            <button type="button" onClick={() => setTeamFilters((cur) => cur.filter((f) => f.id !== teamFilter.id))} aria-label={tx("Clear team filter")}
+              className="flex h-9 shrink-0 items-center gap-1.5 rounded-md border border-primary/40 bg-primary/10 px-2 text-xs font-semibold text-primary">
+              <TeamCrest name={teamFilter.name} logo={teamFilter.logo_url} className="h-5 w-5" rounded="rounded-full" />
+              <span className="max-w-24 truncate">{tx(teamFilter.name)}</span>
+              <X className="size-3.5" />
+            </button>
+          </span>
+        ))}
         {!hideLive && (
           <Button variant="ghost" size="sm" aria-pressed={status === "live"}
             onClick={() => setStatus(status === "live" ? null : "live")}
@@ -289,7 +297,35 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
         setStatus(null);
         setCalendarOpen(false);
       }} onClose={() => setCalendarOpen(false)} />}
-      {filterOpen && <TeamFilterDialog onClose={() => setFilterOpen(false)} onPick={(team) => { setTeamFilter(team); setOffset(0); setStatus("upcoming"); }} />}
+      {filterOpen && <TeamFilterDialog onClose={() => setFilterOpen(false)} onPick={(team) => {
+        setOffset(0); setStatus("upcoming");
+        if (teamFilters.some((f) => f.id === team.id)) return;
+        if (teamFilters.length === 0) { setTeamFilters([team]); return; }
+        const next = [teamFilters[teamFilters.length - 1], team];
+        let skip = false;
+        try { skip = localStorage.getItem(H2H_NOTICE_KEY) === "1"; } catch { /* ignore */ }
+        if (skip) setTeamFilters(next); else setPendingPair(next);
+      }} />}
+      {pendingPair && createPortal(
+        <div className="fixed inset-0 z-[130] grid place-items-center bg-background/70 p-6 backdrop-blur-sm" role="dialog" aria-modal="true">
+          <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-5 text-card-foreground shadow-xl">
+            <h3 className="text-base font-bold">{tx("Head-to-head filter")}</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {tx("This will show only matches between")} {tx(pendingPair[0].name)} {tx("and")} {tx(pendingPair[1].name)}.
+            </p>
+            <label className="mt-4 flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={dontShowAgain} onChange={(e) => setDontShowAgain(e.target.checked)} className="size-4" />
+              {tx("Don't show again")}
+            </label>
+            <div className="mt-5 grid grid-cols-2 gap-2">
+              <Button variant="outline" onClick={() => setPendingPair(null)}>{tx("Cancel")}</Button>
+              <Button onClick={() => {
+                if (dontShowAgain) { try { localStorage.setItem(H2H_NOTICE_KEY, "1"); } catch { /* ignore */ } }
+                setTeamFilters(pendingPair); setPendingPair(null);
+              }}>{tx("Continue")}</Button>
+            </div>
+          </div>
+        </div>, document.body)}
 
       <div className="mt-4">
         {activeQ.isLoading ? (
@@ -340,8 +376,8 @@ function TeamFilterDialog({ onClose, onPick }: { onClose: () => void; onPick: (t
     },
   });
   const visible = visibleWelcomeTeams(teamsQ.data?.catalogue ?? [], teamsQ.data?.leagueTeamIds ?? [], q, tx);
-  return (
-    <div data-no-gesture className="fixed inset-0 z-[110] overflow-y-auto bg-background text-foreground" role="dialog" aria-modal="true" aria-label={tx("Filter by team")}>
+  return createPortal(
+    <div data-no-gesture className="fixed inset-0 z-[120] overflow-y-auto bg-background text-foreground" role="dialog" aria-modal="true" aria-label={tx("Filter by team")}>
       <div className="mx-auto flex min-h-dvh max-w-xl flex-col px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-[calc(1.5rem+env(safe-area-inset-top))]">
         <div className="flex items-center gap-2">
           <Button type="button" variant="ghost" size="icon" className="size-10 shrink-0" onClick={onClose} aria-label="Close">
@@ -366,7 +402,7 @@ function TeamFilterDialog({ onClose, onPick }: { onClose: () => void; onPick: (t
           ))}
         </div>
       </div>
-    </div>
+    </div>, document.body
   );
 }
 
