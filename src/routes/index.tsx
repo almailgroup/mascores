@@ -190,6 +190,24 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
     refetchInterval: 60_000,
   });
 
+  // When the picked day has no matches at all, offer the next scheduled ones.
+  const [showUpcoming, setShowUpcoming] = useState(false);
+  const upcomingQ = useQuery({
+    enabled: !dayQ.isLoading && (dayQ.data ?? []).length === 0,
+    queryKey: ["board", "upcoming-fallback"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("matches")
+        .select("*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url,country,country_code)")
+        .eq("status", "scheduled")
+        .gte("kickoff_at", new Date().toISOString())
+        .order("kickoff_at")
+        .limit(12);
+      return (data ?? []) as unknown as MatchWithTeams[];
+    },
+  });
+
+
   const rows = (dayQ.data ?? []).filter((m) => {
     if (scope === "favourites") {
       const favTeam = favorites.team.includes(m.home_team_id ?? "") || favorites.team.includes(m.away_team_id ?? "");
