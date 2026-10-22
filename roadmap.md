@@ -19,3 +19,6 @@
 - [x] Add consistent watermark, website, and Instagram to every shared image and verify exports.
 
 - [x] Fix the reported calendar lag/layout issue.
+
+- [ ] Home board: Filter pill that opens a team-search dialog; picking a team opens its matches.
+- [ ] Fix: tapping the active bottom tab (Home, Favorites, News, Transfers, Tickets) should scroll back to top.
