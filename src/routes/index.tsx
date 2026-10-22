@@ -98,17 +98,21 @@ function Home() {
 
   return (
     <AppShell>
-      <ScoreBoard liveCount={live.data?.length ?? 0} />
-      <TicketsBanner />
+      <div data-no-gesture className="mb-4 grid grid-cols-2 gap-1 rounded-full bg-muted p-1">
+        {(["matches", "competitions"] as const).map((m) => (
+          <button key={m} onClick={() => setMode(m)}
+            className={`h-10 rounded-full text-sm font-black uppercase tracking-wide transition ${mode === m ? "bg-foreground text-background" : "text-foreground"}`}>
+            {tx(m === "matches" ? "Matches" : "Competitions")}
+          </button>
+        ))}
+      </div>
 
-
-      {(live.data?.length ?? 0) > 0 && <MatchSection title={t("home.live")} data={live.data} loading={live.isLoading} />}
-      <MatchSection title={t("home.upcoming")} data={upcoming.data} loading={upcoming.isLoading} />
-      <FavoriteMatches />
-      {(recent.data?.length ?? 0) > 0 && <MatchSection title={t("home.recent")} data={recent.data} loading={recent.isLoading} />}
-
-      <section className="mt-10">
-        <SectionHeader title={t("home.competitions")} />
+      {mode === "matches" ? (<>
+        <ScoreBoard liveCount={live.data?.length ?? 0} />
+        <TicketsBanner />
+        <FavoriteMatches />
+      </>) : (
+      <section>
         {comps.isLoading ? (
           <LoadingSkeleton />
         ) : !comps.data || comps.data.length === 0 ? (
@@ -127,6 +131,8 @@ function Home() {
           </div>
         )}
       </section>
+      )}
+
 
       {news.data && news.data.length > 0 && (
         <section className="mt-10">
