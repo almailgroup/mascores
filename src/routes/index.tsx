@@ -10,7 +10,7 @@ import { useI18n } from "@/lib/i18n";
 import { useRealtime } from "@/lib/realtime";
 import { useFavorites, FavoriteButton } from "@/hooks/use-favorites";
 import { MatchGroups, MatchRow, type MatchWithTeams } from "@/components/match-list";
-import { Trophy, ChevronLeft, ChevronRight, ChevronDown, Globe, Ticket as TicketIcon, ArrowRight, CalendarDays, ListFilter, Search, X } from "lucide-react";
+import { Trophy, ChevronLeft, ChevronRight, ChevronDown, Globe, Ticket as TicketIcon, ArrowRight, CalendarDays, ListFilter, Plus, Search, X } from "lucide-react";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
 import { Button } from "@/components/ui/button";
 import { FlagIcon } from "@/components/flag";
@@ -299,12 +299,12 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
       }} onClose={() => setCalendarOpen(false)} />}
       {filterOpen && <TeamFilterDialog onClose={() => setFilterOpen(false)} onPick={(team) => {
         setOffset(0); setStatus("upcoming");
-        if (teamFilters.some((f) => f.id === team.id)) return;
-        if (teamFilters.length === 0) { setTeamFilters([team]); return; }
-        const next = [teamFilters[teamFilters.length - 1], team];
+        setTeamFilters([team]);
+      }} onPickPair={(pair) => {
+        setOffset(0); setStatus("upcoming");
         let skip = false;
         try { skip = localStorage.getItem(H2H_NOTICE_KEY) === "1"; } catch { /* ignore */ }
-        if (skip) setTeamFilters(next); else setPendingPair(next);
+        if (skip) setTeamFilters(pair); else setPendingPair(pair);
       }} />}
       {pendingPair && createPortal(
         <div className="fixed inset-0 z-[130] grid place-items-center bg-background/70 p-6 backdrop-blur-sm" role="dialog" aria-modal="true">
@@ -354,10 +354,18 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
   );
 }
 
-/** Full-screen match-board filter: Zain Premier League clubs plus the Kuwait national team first, search reveals the rest. */
-function TeamFilterDialog({ onClose, onPick }: { onClose: () => void; onPick: (team: { id: string; name: string; logo_url: string | null }) => void }) {
+/** Full-screen match-board filter with Club and Head-to-head sections; teams appear as tappable boxes. */
+function TeamFilterDialog({ onClose, onPick, onPickPair }: {
+  onClose: () => void;
+  onPick: (team: { id: string; name: string; logo_url: string | null }) => void;
+  onPickPair: (pair: [{ id: string; name: string; logo_url: string | null }, { id: string; name: string; logo_url: string | null }]) => void;
+}) {
   const tx = useTx();
+  const [mode, setMode] = useState<"club" | "h2h">("club");
   const [q, setQ] = useState("");
+  type FilterTeam = { id: string; name: string; logo_url: string | null };
+  const [slots, setSlots] = useState<[FilterTeam | null, FilterTeam | null]>([null, null]);
+  const [activeSlot, setActiveSlot] = useState<0 | 1>(0);
   const teamsQ = useQuery({
     queryKey: ["filter-teams", "catalogue"],
     queryFn: async () => {
@@ -376,6 +384,17 @@ function TeamFilterDialog({ onClose, onPick }: { onClose: () => void; onPick: (t
     },
   });
   const visible = visibleWelcomeTeams(teamsQ.data?.catalogue ?? [], teamsQ.data?.leagueTeamIds ?? [], q, tx);
+  const pick = (team: FilterTeam) => {
+    if (mode === "club") { onPick(team); onClose(); return; }
+    const other = slots[1 - activeSlot];
+    if (other && other.id === team.id) return;
+    const chosen: FilterTeam = { id: team.id, name: team.name, logo_url: team.logo_url ?? null };
+    const next: [FilterTeam | null, FilterTeam | null] = [...slots];
+    next[activeSlot] = chosen;
+    setSlots(next);
+    if (other) { onPickPair([chosen, other]); onClose(); }
+    else { setQ(""); setActiveSlot(activeSlot === 0 ? 1 : 0); }
+  };
   return createPortal(
     <div data-no-gesture className="fixed inset-0 z-[120] overflow-y-auto bg-background text-foreground" role="dialog" aria-modal="true" aria-label={tx("Filter by team")}>
       <div className="mx-auto flex min-h-dvh max-w-xl flex-col px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-[calc(1.5rem+env(safe-area-inset-top))]">
@@ -385,21 +404,64 @@ function TeamFilterDialog({ onClose, onPick }: { onClose: () => void; onPick: (t
           </Button>
           <h2 className="text-lg font-bold">{tx("Filter by team")}</h2>
         </div>
+        <div className="mt-4 grid shrink-0 grid-cols-2 gap-1 rounded-xl bg-muted p-1">
+          <Button type="button" size="sm" variant={mode === "club" ? "secondary" : "ghost"} className="rounded-lg font-semibold" aria-pressed={mode === "club"} onClick={() => { setMode("club"); setQ(""); }}>{tx("Club")}</Button>
+          <Button type="button" size="sm" variant={mode === "h2h" ? "secondary" : "ghost"} className="rounded-lg font-semibold" aria-pressed={mode === "h2h"} onClick={() => { setMode("h2h"); setQ(""); }}>{tx("Head to head")}</Button>
+        </div>
+        {mode === "h2h" && (
+          <div className="mt-3 shrink-0">
+            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+              {[0, 1].map((slotIndex) => {
+                const i = slotIndex as 0 | 1;
+                const team = slots[i];
+                if (!team) return (
+                  <button key={i} type="button" onClick={() => setActiveSlot(i)}
+                    className={`flex h-14 flex-col items-center justify-center gap-1 rounded-xl border border-dashed text-xs font-semibold transition ${activeSlot === i ? "border-primary text-primary" : "border-border text-muted-foreground"}`}>
+                    <Plus className="size-4" />
+                    {tx("Add club")}
+                  </button>
+                );
+                return (
+                  <div key={i} className={`flex h-14 items-center gap-1 rounded-xl border px-2 transition ${activeSlot === i ? "border-primary bg-primary/10" : "border-border bg-card"}`}>
+                    <button type="button" className="flex min-w-0 flex-1 items-center gap-2 text-start" onClick={() => setActiveSlot(i)} aria-label={tx("Edit club")}>
+                      <TeamCrest name={team.name} logo={team.logo_url} className="h-8 w-8 shrink-0" rounded="rounded-lg" />
+                      <span className="min-w-0 flex-1 truncate text-xs font-semibold">{tx(team.name)}</span>
+                    </button>
+                    <button type="button" className="shrink-0 rounded-full p-1 text-muted-foreground hover:text-foreground" aria-label={tx("Remove club")}
+                      onClick={() => { setSlots((cur) => (i === 0 ? [null, cur[1]] : [cur[0], null])); setActiveSlot(i); setQ(""); }}>
+                      <X className="size-4" />
+                    </button>
+                  </div>
+                );
+              })}
+              <span className="text-[10px] font-bold uppercase text-muted-foreground">{tx("vs")}</span>
+            </div>
+            <p className="mt-2 text-center text-xs text-muted-foreground">
+              {slots[0] && slots[1] ? tx("Showing matches between these clubs") : tx("Add two clubs to see only their matches")}
+            </p>
+          </div>
+        )}
         <label className="mt-4 flex h-12 shrink-0 items-center gap-3 rounded-full border border-border bg-card px-4">
           <Search className="h-5 w-5 shrink-0 text-muted-foreground" />
           <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder={tx("Search teams")} aria-label={tx("Search teams")} className="min-w-0 flex-1 bg-transparent text-sm outline-none" />
         </label>
-        <div className="mt-4 flex flex-1 flex-col gap-1.5">
+        <div className="mt-4 flex-1">
           {teamsQ.isLoading ? <LoadingSkeleton count={6} className="h-14" /> : visible.length === 0 ? (
             <div className="py-10 text-center text-sm text-muted-foreground">{tx("No teams found")}</div>
-          ) : visible.map((team) => (
-            <button key={team.id} type="button" onClick={() => { onPick({ id: team.id, name: team.name, logo_url: team.logo_url ?? null }); onClose(); }}
-              className="flex items-center gap-3 rounded-2xl border border-border bg-card px-3 py-2.5 text-start transition hover:bg-accent">
-              <TeamCrest name={team.name} logo={team.logo_url} className="h-10 w-10 shrink-0" rounded="rounded-xl" />
-              <span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(team.name)}</span>
-              <ArrowRight className="size-4 shrink-0 text-muted-foreground rtl:rotate-180" />
-            </button>
-          ))}
+          ) : (
+            <div className="grid grid-cols-3 gap-2">
+              {visible.map((team) => {
+                const chosen = slots[0]?.id === team.id || slots[1]?.id === team.id;
+                return (
+                  <button key={team.id} type="button" onClick={() => pick({ id: team.id, name: team.name, logo_url: team.logo_url ?? null })}
+                    className={`flex flex-col items-center gap-1.5 rounded-xl border px-1 py-3 text-center transition ${chosen ? "border-primary bg-primary/10" : "border-border bg-card hover:bg-accent"}`}>
+                    <TeamCrest name={team.name} logo={team.logo_url} className="h-9 w-9" rounded="rounded-lg" />
+                    <span className="w-full truncate text-[11px] font-semibold leading-tight">{tx(team.name)}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </div>, document.body
