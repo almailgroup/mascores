@@ -1,4 +1,6 @@
 /** Calendar dates follow the device's timezone, just like match kickoffs. */
+export const DEFAULT_MATCH_VIEW = "upcoming" as const;
+
 export function matchDateKey(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }

@@ -44,3 +44,4 @@
 - Home country discovery uses the shared upcoming-country grouping helper so past fixtures are excluded and friendly competitions are grouped consistently under World.
 
 - Home match-calendar helpers centralize local-day keys and upcoming start boundaries so calendar markers and date filters agree across timezones.
+- Shared card renderers finalize through one canvas export footer so every saved/shared image has consistent branding without obscuring content.

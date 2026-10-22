@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { matchDateKey, matchDates, upcomingStart } from "./match-calendar";
+import { DEFAULT_MATCH_VIEW, matchDateKey, matchDates, upcomingStart } from "./match-calendar";
 
 describe("match calendar", () => {
+  it("defaults to upcoming matches", () => {
+    expect(DEFAULT_MATCH_VIEW).toBe("upcoming");
+  });
   it("marks only dates with matches, including finished matches", () => {
     const date = new Date(2026, 9, 23, 17);
     const dates = matchDates([{ kickoff_at: date.toISOString() }, { kickoff_at: null }]);
