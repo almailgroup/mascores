@@ -94,6 +94,13 @@ const PRIMARY_NAV: NavItem[] = [
 ];
 const NAV: NavItem[] = [...PRIMARY_NAV];
 
+/** Tapping a nav tab goes back to the top: smooth when already on that page, instant when switching pages. */
+function scrollToNavTop(item: NavItem, currentPath: string) {
+  const active = item.exact ? currentPath === item.to : currentPath.startsWith(item.to);
+  if (active) window.scrollTo({ top: 0, behavior: "smooth" });
+  else window.scrollTo(0, 0);
+}
+
 export function AppShell({ children, bare = false }: { children: ReactNode; bare?: boolean }) {
   const { user, loading } = useAuth();
   const { data: hasGrants = false } = useQuery({
