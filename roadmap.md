@@ -7,3 +7,4 @@
 - [x] Settings: Profile and Notifications collapse into tap-to-open headers; add Privacy policy and Support links; add collapsible ticket history.
 - [x] Match times follow the device's timezone (e.g. US time when in the USA) instead of a fixed Kuwait time.
 - [ ] Settings: add 12/24-hour time format option (user request 10:12 UTC)
+- [ ] Privacy policy and Support pages: add a back button returning to where the user came from (10:13 UTC)
