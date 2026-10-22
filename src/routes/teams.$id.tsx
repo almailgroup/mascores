@@ -28,8 +28,6 @@ import { ClubNotificationButton } from "@/components/club-notification-button";
 import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/teams/$id")({
-  validateSearch: (search: Record<string, unknown>): { tab?: string } =>
-    ({ tab: typeof search.tab === "string" ? search.tab : undefined }),
   head: () => ({
     meta: [
       { title: "Club — MaScores" },
@@ -61,8 +59,7 @@ function TeamPage() {
     return data ?? 0;
   }});
   const { t: tr } = useI18n();
-  const { tab: initialTab } = Route.useSearch();
-  const [tab, setTab] = useState<Tab>(TABS.includes(initialTab as Tab) ? (initialTab as Tab) : "info");
+  const [tab, setTab] = useState<Tab>("info");
   useRealtime(["teams", "players", "matches", "standings_rows", "transfers"]);
 
   const team = useQuery({ queryKey: ["team", id], queryFn: async () => {
