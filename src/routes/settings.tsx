@@ -360,3 +360,57 @@ function FeedbackBox() {
     </section>
   );
 }
+
+/** Collapsible ticket history shown in Settings — compact rows linking to the full Tickets page. */
+function TicketHistory({ open }: { open: boolean }) {
+  const { user } = useAuth();
+  const { lang } = useI18n();
+  const label = (en: string, ar: string) => (lang === "ar" ? ar : en);
+  const mine = useQuery({
+    enabled: open && !!user,
+    queryKey: ["settings-tickets", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("tickets")
+        .select("id, code, status, offer:offer_id(name, event_home, event_away, event_competition, event_venue, event_kickoff_at), match:match_id(kickoff_at, venue, home:home_team_id(name), away:away_team_id(name), competition:competition_id(name))")
+        .eq("user_id", user!.id)
+        .neq("status", "pool")
+        .order("created_at", { ascending: false })
+        .limit(50);
+      return (data ?? []) as unknown as {
+        id: string; code: string; status: string;
+        offer: { name: string; event_home: string | null; event_away: string | null; event_competition: string | null; event_venue: string | null; event_kickoff_at: string | null } | null;
+        match: { kickoff_at: string | null; venue: string | null; home: { name: string } | null; away: { name: string } | null; competition: { name: string } | null } | null;
+      }[];
+    },
+  });
+  if (mine.isLoading) return <div className="flex justify-center py-4"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
+  if ((mine.data ?? []).length === 0) return <p className="mt-4 text-sm text-muted-foreground">{label("You have no tickets yet. Get passes from the Tickets tab.", "لا توجد تذاكر بعد. احصل على تذاكرك من قسم التذاكر.")}</p>;
+  return (
+    <div className="mt-4 space-y-2">
+      {mine.data!.map((tk) => {
+        const info = tk.offer && (tk.offer.event_home || tk.offer.event_away)
+          ? { home: tk.offer.event_home || "TBD", away: tk.offer.event_away || "TBD", comp: tk.offer.event_competition, venue: tk.offer.event_venue, kickoff: tk.offer.event_kickoff_at }
+          : { home: tk.match?.home?.name || "TBD", away: tk.match?.away?.name || "TBD", comp: tk.match?.competition?.name ?? null, venue: tk.match?.venue ?? null, kickoff: tk.match?.kickoff_at ?? null };
+        const used = tk.status === "used";
+        const expired = !used && !!info.kickoff && new Date(info.kickoff).getTime() < Date.now();
+        const when = info.kickoff ? new Date(info.kickoff).toLocaleString(lang === "ar" ? "ar" : "en", { dateStyle: "medium", timeStyle: "short" }) : "";
+        return (
+          <div key={tk.id} className={`flex items-center gap-3 rounded-2xl border p-3 ${used || expired ? "border-border bg-muted/40" : "border-primary/40 bg-card"}`}>
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><TicketIcon className="h-4 w-4" /></span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-bold">{info.home} <span className="text-muted-foreground">vs</span> {info.away}</span>
+              <span className="mt-0.5 block truncate text-[0.7rem] text-muted-foreground">{[info.comp, when, info.venue].filter(Boolean).join(" · ")}</span>
+            </span>
+            <span className={`shrink-0 rounded-full px-2 py-0.5 text-[0.6rem] font-bold ${used || expired ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary"}`}>
+              {used ? label("Scanned", "مستخدمة") : expired ? label("Expired", "منتهية") : label("Valid", "صالحة")}
+            </span>
+          </div>
+        );
+      })}
+      <Link to="/tickets" className="mt-1 flex items-center justify-center gap-1 rounded-2xl border border-border px-3 py-2 text-xs font-semibold text-primary">
+        {label("Open Tickets", "فتح التذاكر")} <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" />
+      </Link>
+    </div>
+  );
+}
