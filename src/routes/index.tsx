@@ -266,6 +266,20 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
       <div className="mt-4">
         {dayQ.isLoading ? (
           <LoadingSkeleton count={3} className="h-16" />
+        ) : rows.length === 0 && (dayQ.data ?? []).length === 0 && (upcomingQ.data?.length ?? 0) > 0 ? (
+          <div className="rounded-2xl border border-border bg-card py-6 text-center text-sm text-muted-foreground">
+            {t("board.none")}
+            <Button variant="outline" size="sm" aria-expanded={showUpcoming} onClick={() => setShowUpcoming((v) => !v)}
+              className="mx-auto mt-3 block rounded-full border-primary/60 px-5 font-bold text-primary">
+              {showUpcoming ? tx("Hide upcoming") : tx("Show upcoming")}
+            </Button>
+            {showUpcoming && (
+              <div className="mt-5 text-start">
+                <div className="mb-2 px-1 text-xs font-bold uppercase tracking-widest text-muted-foreground">{tx("Upcoming matches")}</div>
+                <MatchGroups data={upcomingQ.data!} />
+              </div>
+            )}
+          </div>
         ) : rows.length === 0 ? (
           <div className="rounded-2xl border border-border bg-card py-6 text-center text-sm text-muted-foreground">{t("board.none")}</div>
         ) : (
