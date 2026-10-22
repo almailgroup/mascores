@@ -11,3 +11,4 @@
 - [x] Home Competitions view: Competitions grid, then Live, Today (calendar), Favorites (simple list with See all); tabbed Matches/Clubs/Competitions/Players layout lives on the Favorites page.
 - [x] Bottom bar: Competitions tab replaced with Favorites (opens the Favorites page).
 - [ ] Compact Home tabs and original Live/competition styling; full Favorites category labels and a star navigation icon.
+- [ ] Replace Home Latest News with expandable countries that have upcoming matches, including World → Friendlies, in an original design.
