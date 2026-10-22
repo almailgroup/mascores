@@ -1,5 +1,4 @@
 import { TeamCrest } from "@/components/team-crest";
-import { PlayerAvatar } from "@/components/player-avatar";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -111,9 +110,9 @@ function Home() {
       {mode === "matches" ? (<>
         <ScoreBoard liveCount={live.data?.length ?? 0} />
         <TicketsBanner />
-        <FavoriteMatches />
-      </>) : (
+      </>) : (<>
       <section>
+        <SectionHeader title={tx("Competitions")} />
         {comps.isLoading ? (
           <LoadingSkeleton />
         ) : !comps.data || comps.data.length === 0 ? (
@@ -132,7 +131,10 @@ function Home() {
           </div>
         )}
       </section>
-      )}
+      <LiveSection live={live.data} />
+      <ScoreBoard liveCount={live.data?.length ?? 0} hideLive title={tx("Today")} />
+      <FavoriteMatches />
+      </>)}
 
 
       {news.data && news.data.length > 0 && (
@@ -180,7 +182,7 @@ function TicketsBanner() {
   );
 }
 
-function ScoreBoard({ liveCount }: { liveCount: number }) {
+function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLive?: boolean; title?: string }) {
   const tx = useTx();
   const { t, lang } = useI18n();
   const { favorites } = useFavorites();
@@ -244,15 +246,18 @@ function ScoreBoard({ liveCount }: { liveCount: number }) {
   );
 
   return (
-    <section className="mb-8">
+    <section className={title ? "mb-8 mt-10" : "mb-8"}>
+      {title && <SectionHeader title={title} />}
       <div data-no-gesture className="flex items-center gap-2">
-        <button
-          onClick={() => setStatus(status === "live" ? null : "live")}
-          className={`inline-flex h-11 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-semibold transition ${status === "live" ? "border-destructive bg-destructive/15 text-destructive" : "border-destructive/60 bg-destructive/5 text-destructive"}`}
-        >
-          {t("board.live")}{liveCount > 0 ? ` (${liveCount})` : ""}
-          <span className={`h-3.5 w-3.5 rounded-full border-2 border-destructive ${status === "live" ? "bg-destructive" : ""}`} />
-        </button>
+        {!hideLive && (
+          <button
+            onClick={() => setStatus(status === "live" ? null : "live")}
+            className={`inline-flex h-11 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-semibold transition ${status === "live" ? "border-destructive bg-destructive/15 text-destructive" : "border-destructive/60 bg-destructive/5 text-destructive"}`}
+          >
+            {t("board.live")}{liveCount > 0 ? ` (${liveCount})` : ""}
+            <span className={`h-3.5 w-3.5 rounded-full border-2 border-destructive ${status === "live" ? "bg-destructive" : ""}`} />
+          </button>
+        )}
         <div className="flex h-11 min-w-0 flex-1 items-center justify-between rounded-full border border-border bg-card">
           <Button variant="ghost" size="icon" className="rounded-full text-primary" onClick={() => setOffset(offset - 1)} aria-label={tx("Previous day")}><ChevronLeft className="h-5 w-5" /></Button>
           <Button variant="ghost" onClick={() => setCalendarOpen(true)} className="min-w-0 flex-1 px-2 text-sm font-semibold text-primary">{dayLabel}</Button>
