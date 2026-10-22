@@ -244,23 +244,19 @@ function ScoreBoard({ liveCount }: { liveCount: number }) {
   );
 
   return (
-    <section className="mb-8 overflow-hidden rounded-3xl border border-border bg-card">
-      <div data-no-gesture className="flex flex-col gap-2 border-b border-border px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="grid w-full min-w-0 grid-cols-3 gap-1 sm:w-auto">
-          {(["all", "favourites", "competitions"] as const).map((s) => (
-            <Button variant="ghost"
-              key={s}
-              onClick={() => setScope(s)}
-              className={`relative h-10 min-w-0 whitespace-normal rounded-md px-2 py-2 text-xs font-bold transition ${scope === s ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-            >
-              {t(`board.${s}`)}
-            </Button>
-          ))}
-        </div>
-        <div className="glass-picker flex w-full min-w-0 items-center justify-between rounded-lg sm:w-auto">
-          <Button variant="ghost" size="icon" onClick={() => setOffset(offset - 1)} aria-label={tx("Previous day")}><ChevronLeft className="h-4 w-4" /></Button>
-          <Button variant="ghost" onClick={() => setCalendarOpen(true)} className="min-w-0 flex-1 px-2 text-xs font-semibold">{dayLabel}</Button>
-          <Button variant="ghost" size="icon" onClick={() => setOffset(offset + 1)} aria-label={tx("Next day")}><ChevronRight className="h-4 w-4" /></Button>
+    <section className="mb-8">
+      <div data-no-gesture className="flex items-center gap-2">
+        <button
+          onClick={() => setStatus(status === "live" ? null : "live")}
+          className={`inline-flex h-11 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-semibold transition ${status === "live" ? "border-destructive bg-destructive/15 text-destructive" : "border-destructive/60 bg-destructive/5 text-destructive"}`}
+        >
+          {t("board.live")}{liveCount > 0 ? ` (${liveCount})` : ""}
+          <span className={`h-3.5 w-3.5 rounded-full border-2 border-destructive ${status === "live" ? "bg-destructive" : ""}`} />
+        </button>
+        <div className="flex h-11 min-w-0 flex-1 items-center justify-between rounded-full border border-border bg-card">
+          <Button variant="ghost" size="icon" className="rounded-full text-primary" onClick={() => setOffset(offset - 1)} aria-label={tx("Previous day")}><ChevronLeft className="h-5 w-5" /></Button>
+          <Button variant="ghost" onClick={() => setCalendarOpen(true)} className="min-w-0 flex-1 px-2 text-sm font-semibold text-primary">{dayLabel}</Button>
+          <Button variant="ghost" size="icon" className="rounded-full text-primary" onClick={() => setOffset(offset + 1)} aria-label={tx("Next day")}><ChevronRight className="h-5 w-5" /></Button>
         </div>
       </div>
       {calendarOpen && <MonthCalendar day={day} onPick={(selected) => {
@@ -269,18 +265,11 @@ function ScoreBoard({ liveCount }: { liveCount: number }) {
         setCalendarOpen(false);
       }} onClose={() => setCalendarOpen(false)} />}
 
-
-      <div data-no-gesture className="grid grid-cols-3 gap-2 px-3 py-3">
-        {chip("live", t("board.live"))}
-        {chip("finished", t("board.finished"))}
-        {chip("upcoming", t("board.upcoming"))}
-      </div>
-
-      <div className="border-t border-border p-4">
+      <div className="mt-4">
         {dayQ.isLoading ? (
           <LoadingSkeleton count={3} className="h-16" />
         ) : rows.length === 0 ? (
-          <div className="py-6 text-center text-sm text-muted-foreground">{t("board.none")}</div>
+          <div className="rounded-2xl border border-border bg-card py-6 text-center text-sm text-muted-foreground">{t("board.none")}</div>
         ) : (
           <MatchGroups data={rows} />
         )}
