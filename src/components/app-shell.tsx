@@ -1,6 +1,6 @@
 import { isOwnerEmail } from "@/lib/owner.functions";
 import { Link, useLocation, useRouter } from "@tanstack/react-router";
-import { Home, Search, Trophy, Newspaper, ArrowLeftRight, Ticket, Settings, LogIn, ArrowLeft, MoreHorizontal, Radio, User, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Home, Search, Trophy, Newspaper, ArrowLeftRight, Ticket, Settings, LogIn, ArrowLeft, Radio, User, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -83,19 +83,15 @@ function SuspendedScreen({ text }: { text: string }) {
 
 
 type NavItem = { to: "/" | "/search" | "/competitions" | "/news" | "/transfers" | "/tickets" | "/voice" | "/settings"; labelKey: string; icon: typeof Home; exact?: boolean };
-/** Shown in the mobile tab bar. */
+/** Shown in the mobile tab bar and the desktop nav row. */
 const PRIMARY_NAV: NavItem[] = [
   { to: "/", labelKey: "nav.home", icon: Home, exact: true },
   { to: "/competitions", labelKey: "nav.competitions", icon: Trophy },
   { to: "/news", labelKey: "nav.news", icon: Newspaper },
-  { to: "/voice", labelKey: "nav.voice", icon: Radio },
-];
-/** Reached from the "More" sheet on mobile, always visible on desktop. */
-const SECONDARY_NAV: NavItem[] = [
   { to: "/transfers", labelKey: "nav.transfers", icon: ArrowLeftRight },
   { to: "/tickets", labelKey: "nav.tickets", icon: Ticket },
 ];
-const NAV: NavItem[] = [...PRIMARY_NAV, ...SECONDARY_NAV];
+const NAV: NavItem[] = [...PRIMARY_NAV];
 
 export function AppShell({ children, bare = false }: { children: ReactNode; bare?: boolean }) {
   const { user, loading } = useAuth();
@@ -111,7 +107,6 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
   const location = useLocation();
   const router = useRouter();
   const hideHeader = bare || location.pathname !== "/";
-  const [moreOpen, setMoreOpen] = useState(false);
   useEffect(() => { void user; }, [user]);
   useReminderAlerts();
   useLiveEventAlerts();
@@ -139,7 +134,7 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
       <div data-browse-page>
       {!hideHeader && <header data-shell-header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
         <div dir="ltr" className="mx-auto grid min-h-16 max-w-7xl grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 py-2 sm:px-6">
-          <div className="col-start-3 row-start-1 flex items-center gap-1">{user && <SocialActivityButton />}<Link to="/settings" aria-label={t("nav.settings")} className="col-start-3 row-start-1 grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full border border-border bg-card text-sm font-bold text-primary">
+          <div className="col-start-3 row-start-1 flex items-center gap-1"><Link to="/voice" aria-label={t("nav.voice")} className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-border bg-card text-primary"><Radio className="h-5 w-5" /></Link>{user && <SocialActivityButton />}<Link to="/settings" aria-label={t("nav.settings")} className="col-start-3 row-start-1 grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full border border-border bg-card text-sm font-bold text-primary">
             {user && profile.data?.avatar_url ? <img src={profile.data.avatar_url} alt="" className="h-full w-full object-cover" /> : user ? <span>{initials}</span> : <User className="h-6 w-6" />}
           </Link></div>
           <Link to="/" aria-label="MaScores" className="col-start-1 row-start-1 shrink-0"><BrandLogo showWordmark={false} className="h-10 w-10 object-contain" /></Link>
@@ -186,46 +181,9 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
               </Link>
             );
           })}
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => setMoreOpen(true)}
-            className={`flex h-auto flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-1 text-[0.6rem] font-medium ${
-              SECONDARY_NAV.some((item) => location.pathname.startsWith(item.to)) ? "text-primary" : "text-muted-foreground"
-            }`}
-          >
-            <MoreHorizontal className="h-5 w-5" />
-            {t("nav.more")}
-          </Button>
         </div>
       </nav>}
 
-      {!bare && moreOpen && (
-        <div data-no-gesture className="fixed inset-0 z-50 flex items-end bg-black/50 md:hidden" onClick={() => setMoreOpen(false)}>
-          <div className="w-full rounded-t-3xl border-t border-border bg-background p-4" style={{ paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))" }} onClick={(e) => e.stopPropagation()}>
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-sm font-bold">{t("nav.more")}</h2>
-              <button onClick={() => setMoreOpen(false)} aria-label="Close" className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              {SECONDARY_NAV.map((item) => (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  onClick={() => setMoreOpen(false)}
-                  className={`flex min-w-0 items-center gap-2 rounded-2xl border p-3 text-sm font-semibold ${
-                    location.pathname.startsWith(item.to) ? "border-primary bg-primary/10 text-primary" : "border-border bg-card"
-                  }`}
-                >
-                  <item.icon className="h-4 w-4" /> {t(item.labelKey)}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

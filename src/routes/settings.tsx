@@ -53,6 +53,9 @@ function SettingsPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [openProfile, setOpenProfile] = useState(false);
+  const [openNotifs, setOpenNotifs] = useState(false);
+  const [openTickets, setOpenTickets] = useState(false);
   const [alertPrefs, setAlertPrefs] = useState<{ goals: boolean; cards: boolean; kickoff: boolean; final: boolean; voice: boolean; social: boolean; social_follow: boolean; social_request: boolean; social_like: boolean; social_comment: boolean; social_repost: boolean; sound: string; sounds: AlertSoundMap }>({ goals: true, cards: true, kickoff: true, final: true, voice: true, social: true, social_follow: true, social_request: true, social_like: true, social_comment: true, social_repost: true, sound: "stadium", sounds: {} });
 
   useEffect(() => {
@@ -127,9 +130,12 @@ function SettingsPage() {
       {user && <p className="mt-1 text-sm text-muted-foreground">{user.email}</p>}
 
       <section className="mt-6 rounded-3xl border border-border bg-card p-6">
-        <div className="mb-3 text-sm font-semibold">{t("settings.profile")}</div>
-        {user ? (
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+        <button type="button" onClick={() => user && setOpenProfile((v) => !v)} className="flex w-full items-center justify-between gap-2 text-start">
+          <div className="flex items-center gap-2 text-sm font-semibold"><User className="h-4 w-4 text-primary" /> {t("settings.profile")}</div>
+          {user && <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${openProfile ? "rotate-180" : ""}`} />}
+        </button>
+        {user ? openProfile && (
+          <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center">
             <div className="relative h-20 w-20 shrink-0">
               <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border border-border bg-muted text-xl font-bold">
                 {avatarUrl ? <img src={avatarUrl} alt="" className="h-full w-full object-cover" /> : (displayName || user.email || "?").slice(0, 1).toUpperCase()}
@@ -186,7 +192,11 @@ function SettingsPage() {
       </section>
 
       {user && <section className="mt-4 rounded-3xl border border-border bg-card p-6">
-        <div className="flex items-center gap-2 text-sm font-semibold"><BellRing className="h-4 w-4 text-primary" /> {t("settings.notifications")}</div>
+        <button type="button" onClick={() => setOpenNotifs((v) => !v)} className="flex w-full items-center justify-between gap-2 text-start">
+          <div className="flex items-center gap-2 text-sm font-semibold"><BellRing className="h-4 w-4 text-primary" /> {t("settings.notifications")}</div>
+          <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${openNotifs ? "rotate-180" : ""}`} />
+        </button>
+        {openNotifs && <>
         <div className="mt-4 grid gap-2 sm:grid-cols-2">
           {([['goals','Goals and penalties','الأهداف وركلات الجزاء'],['cards','Cards','البطاقات'],['kickoff','Kick-off and reminders','انطلاق المباراة والتذكيرات'],['final','Full-time results','نتائج نهاية المباراة'],['voice','Voice rooms — someone you follow goes live','غرف صوتية — شخص تتابعه يبدأ بثًا']] as const).map(([key,label,labelAr]) => <label key={key} className="flex items-center justify-between gap-3 rounded-xl border border-border bg-background px-3 py-2 text-sm"><span>{lang === "ar" ? labelAr : label}</span><input type="checkbox" checked={alertPrefs[key]} onChange={(event) => void saveAlertPrefs({ ...alertPrefs, [key]: event.target.checked })} /></label>)}
         </div>
@@ -194,6 +204,7 @@ function SettingsPage() {
           {([['social','All social phone alerts','جميع تنبيهات النشاط'],['social_follow','New followers','متابعون جدد'],['social_request','Follow requests','طلبات المتابعة'],['social_like','Recording likes','إعجابات التسجيلات'],['social_comment','Comments','التعليقات'],['social_repost','Reposts','إعادة النشر']] as const).map(([key,en,ar]) => <label key={key} className="flex items-center justify-between gap-3 border-b border-border py-3 text-sm"><span>{lang === 'ar' ? ar : en}</span><input type="checkbox" role="switch" checked={alertPrefs[key]} onChange={e => void saveAlertPrefs({...alertPrefs,[key]:e.target.checked})} /></label>)}
         </div>
         <p className="mt-2 text-[0.7rem] text-muted-foreground">{lang === "ar" ? "تصل تنبيهات الهاتف حتى لو كان التطبيق مغلقًا، أما التنبيهات داخل التطبيق فتظهر أثناء فتحه." : "Phone alerts arrive even when the app is closed. In-app alerts appear while the app is open."}</p>
+        </>}
       </section>}
       {canPreviewNotificationSounds(user?.email, owner.data === true) && <NotificationSoundPreview />}
       {avatarFile && <ImageCropper file={avatarFile} aspect={1} onCancel={() => setAvatarFile(null)} onDone={async (file) => { await pickAvatar(file); setAvatarFile(null); }} />}
@@ -252,6 +263,25 @@ function SettingsPage() {
             </button>
           ))}
         </div>
+      </section>
+
+      {user && <section className="mt-4 rounded-3xl border border-border bg-card p-6">
+        <button type="button" onClick={() => setOpenTickets((v) => !v)} className="flex w-full items-center justify-between gap-2 text-start">
+          <div className="flex items-center gap-2 text-sm font-semibold"><TicketIcon className="h-4 w-4 text-primary" /> {lang === "ar" ? "سجل التذاكر" : "Ticket history"}</div>
+          <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${openTickets ? "rotate-180" : ""}`} />
+        </button>
+        {openTickets && <TicketHistory open={openTickets} />}
+      </section>}
+
+      <section className="mt-4 grid gap-4 sm:grid-cols-2">
+        <Link to="/privacypolicy" className="flex items-center justify-between gap-3 rounded-3xl border border-border bg-card p-5 text-sm font-semibold hover:bg-accent">
+          <span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-primary" /> {lang === "ar" ? "سياسة الخصوصية" : "Privacy policy"}</span>
+          <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground rtl:rotate-180" />
+        </Link>
+        <Link to="/support" className="flex items-center justify-between gap-3 rounded-3xl border border-border bg-card p-5 text-sm font-semibold hover:bg-accent">
+          <span className="flex items-center gap-2"><LifeBuoy className="h-4 w-4 text-primary" /> {lang === "ar" ? "الدعم" : "Support"}</span>
+          <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground rtl:rotate-180" />
+        </Link>
       </section>
 
       <FeedbackBox />
