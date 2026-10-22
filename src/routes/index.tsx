@@ -318,48 +318,55 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
   );
 }
 
-/** Match-board filter: search any team, then open that team's page on its matches. */
-function TeamFilterDialog({ onClose }: { onClose: () => void }) {
+/** Full-screen match-board filter: Zain Premier League clubs plus the Kuwait national team first, search reveals the rest. */
+function TeamFilterDialog({ onClose, onPick }: { onClose: () => void; onPick: (team: { id: string; name: string; logo_url: string | null }) => void }) {
   const tx = useTx();
-  const navigate = useNavigate();
   const [q, setQ] = useState("");
-  const trimmed = q.trim();
   const teamsQ = useQuery({
-    queryKey: ["filter-teams", trimmed],
+    queryKey: ["filter-teams", "catalogue"],
     queryFn: async () => {
-      let query = supabase.from("teams").select("id,name,short_name,name_ar,logo_url").neq("is_temporary", true).order("name").limit(25);
-      if (trimmed) query = query.or(`name.ilike.%${trimmed}%,short_name.ilike.%${trimmed}%,name_ar.ilike.%${trimmed}%`);
-      const { data } = await query;
-      return (data ?? []) as Team[];
+      const [catalogue, competition] = await Promise.all([
+        supabase.from("teams").select("id,name,name_ar,short_name,logo_url,country,country_code,is_national,parent_team_id,age_group").order("name"),
+        supabase.from("competitions").select("id,season").eq("slug", "zain-premier-league").maybeSingle(),
+      ]);
+      if (catalogue.error) throw catalogue.error;
+      let leagueTeamIds: string[] = [];
+      if (competition.data) {
+        const { data, error } = await supabase.from("competition_teams").select("team_id,season").eq("competition_id", competition.data.id);
+        if (error) throw error;
+        leagueTeamIds = (data ?? []).filter((row) => !row.season || !competition.data?.season || row.season === competition.data.season).map((row) => row.team_id);
+      }
+      return { catalogue: (catalogue.data ?? []) as Team[], leagueTeamIds };
     },
   });
+  const visible = visibleWelcomeTeams(teamsQ.data?.catalogue ?? [], teamsQ.data?.leagueTeamIds ?? [], q, tx);
   return (
-    <Dialog open onOpenChange={(next) => { if (!next) onClose(); }}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-base">{tx("Filter by team")}</DialogTitle>
-        </DialogHeader>
-        <Input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder={tx("Search teams")} className="h-10 rounded-full" aria-label={tx("Search teams")} />
-        <div className="-mx-1 max-h-72 overflow-y-auto px-1">
-          {teamsQ.isLoading ? <LoadingSkeleton count={4} className="h-12" /> : (teamsQ.data ?? []).length === 0 ? (
-            <div className="py-6 text-center text-sm text-muted-foreground">{tx("No teams found")}</div>
-          ) : (
-            <div className="flex flex-col gap-1">
-              {(teamsQ.data ?? []).map((team) => (
-                <button key={team.id} type="button" onClick={async () => {
-                  onClose();
-                  await navigate({ to: "/teams/$id", params: { id: team.id }, search: { tab: "matches" } });
-                }} className="flex items-center gap-3 rounded-2xl border border-transparent px-2 py-2 text-start transition hover:border-border hover:bg-accent">
-                  <TeamCrest name={team.name} logo={team.logo_url} className="h-9 w-9 shrink-0" rounded="rounded-xl" />
-                  <span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(team.name)}</span>
-                  <ArrowRight className="size-4 shrink-0 text-muted-foreground rtl:rotate-180" />
-                </button>
-              ))}
-            </div>
-          )}
+    <div data-no-gesture className="fixed inset-0 z-[110] overflow-y-auto bg-background text-foreground" role="dialog" aria-modal="true" aria-label={tx("Filter by team")}>
+      <div className="mx-auto flex min-h-dvh max-w-xl flex-col px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-[calc(1.5rem+env(safe-area-inset-top))]">
+        <div className="flex items-center gap-2">
+          <Button type="button" variant="ghost" size="icon" className="size-10 shrink-0" onClick={onClose} aria-label="Close">
+            <ChevronLeft className="size-5 rtl:rotate-180" />
+          </Button>
+          <h2 className="text-lg font-bold">{tx("Filter by team")}</h2>
         </div>
-      </DialogContent>
-    </Dialog>
+        <label className="mt-4 flex h-12 shrink-0 items-center gap-3 rounded-full border border-border bg-card px-4">
+          <Search className="h-5 w-5 shrink-0 text-muted-foreground" />
+          <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder={tx("Search teams")} aria-label={tx("Search teams")} className="min-w-0 flex-1 bg-transparent text-sm outline-none" />
+        </label>
+        <div className="mt-4 flex flex-1 flex-col gap-1.5">
+          {teamsQ.isLoading ? <LoadingSkeleton count={6} className="h-14" /> : visible.length === 0 ? (
+            <div className="py-10 text-center text-sm text-muted-foreground">{tx("No teams found")}</div>
+          ) : visible.map((team) => (
+            <button key={team.id} type="button" onClick={() => { onPick({ id: team.id, name: team.name, logo_url: team.logo_url ?? null }); onClose(); }}
+              className="flex items-center gap-3 rounded-2xl border border-border bg-card px-3 py-2.5 text-start transition hover:bg-accent">
+              <TeamCrest name={team.name} logo={team.logo_url} className="h-10 w-10 shrink-0" rounded="rounded-xl" />
+              <span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(team.name)}</span>
+              <ArrowRight className="size-4 shrink-0 text-muted-foreground rtl:rotate-180" />
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 
