@@ -281,7 +281,7 @@ function ScoreBoard({ liveCount }: { liveCount: number }) {
 function FavoriteMatches() {
   const tx = useTx();
   const { favorites, ready } = useFavorites();
-  const [view, setView] = useState<"matches" | "all">("matches");
+  const [view, setView] = useState<"matches" | "clubs" | "competitions" | "players">("matches");
   const ids = favorites.match;
   const teamIds = favorites.team;
   const q = useQuery({
@@ -321,21 +321,34 @@ function FavoriteMatches() {
   });
 
   if (!ready) return null;
+  const tabs = [
+    { key: "matches", label: "Matches" },
+    { key: "clubs", label: "Clubs" },
+    { key: "competitions", label: "Competitions" },
+    { key: "players", label: "Players" },
+  ] as const;
+  const row = "flex items-center gap-3 rounded-xl border border-border bg-card p-3 hover:border-primary";
+  const empty = (label: string) => <EmptyState title={tx(label)} />;
   return <section className="mt-8">
-    <SectionHeader title={tx("Favorites")} action={
-      <div className="flex items-center gap-1 rounded-full border border-border p-0.5 text-xs font-semibold">
-        {(["matches", "all"] as const).map((key) => (
-          <button key={key} onClick={() => setView(key)} className={`rounded-full px-3 py-1 ${view === key ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>{tx(key === "matches" ? "Matches" : "All")}</button>
-        ))}
-      </div>
-    } />
-    {q.data?.length ? <MatchGroups data={q.data} /> : <EmptyState title={tx("No favorite matches yet")} />}
-    {view === "all" && <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-      {others.data?.competitions.map((c) => <Link key={c.id} to="/competitions/$slug" params={{ slug: c.slug }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 hover:border-primary">{c.logo_url ? <img src={c.logo_url} alt="" className="h-8 w-8 object-contain" /> : <Trophy className="h-6 w-6 text-primary" />}<span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(c.name)}</span></Link>)}
-      {others.data?.teams.map((team) => <Link key={team.id} to="/teams/$id" params={{ id: team.id }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 hover:border-primary"><TeamCrest name={team.name} logo={team.logo_url} className="h-8 w-8" /><span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(team.name)}</span></Link>)}
-      {others.data?.players.map((player) => <Link key={player.id} to="/players/$id" params={{ id: player.id }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 hover:border-primary"><PlayerAvatar src={player.photo_url} name={player.name} className="h-8 w-8" /><span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(player.name)}</span></Link>)}
-      <Link to="/favorites" className="flex items-center justify-center rounded-xl border border-dashed border-border p-3 text-sm font-semibold text-primary">{tx("Open favorites")}</Link>
-    </div>}
+    <SectionHeader title={tx("Favorites")} />
+    <div data-no-gesture className="mb-4 grid grid-cols-4 border-b border-border">
+      {tabs.map((tab) => (
+        <button key={tab.key} onClick={() => setView(tab.key)}
+          className={`-mb-px truncate border-b-2 px-1 pb-2 text-sm font-semibold transition ${view === tab.key ? "border-primary text-foreground" : "border-transparent text-muted-foreground"}`}>
+          {tx(tab.label)}
+        </button>
+      ))}
+    </div>
+    {view === "matches" && (q.data?.length ? <MatchGroups data={q.data} /> : empty("No favorite matches yet"))}
+    {view === "clubs" && (others.data?.teams.length ? <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+      {others.data.teams.map((team) => <Link key={team.id} to="/teams/$id" params={{ id: team.id }} className={row}><TeamCrest name={team.name} logo={team.logo_url} className="h-8 w-8" /><span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(team.name)}</span></Link>)}
+    </div> : !others.isLoading && empty("No favorite clubs yet"))}
+    {view === "competitions" && (others.data?.competitions.length ? <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+      {others.data.competitions.map((c) => <Link key={c.id} to="/competitions/$slug" params={{ slug: c.slug }} className={row}>{c.logo_url ? <img src={c.logo_url} alt="" className="h-8 w-8 object-contain" /> : <Trophy className="h-6 w-6 text-primary" />}<span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(c.name)}</span></Link>)}
+    </div> : !others.isLoading && empty("No favorite competitions yet"))}
+    {view === "players" && (others.data?.players.length ? <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+      {others.data.players.map((player) => <Link key={player.id} to="/players/$id" params={{ id: player.id }} className={row}><PlayerAvatar src={player.photo_url} name={player.name} className="h-8 w-8" /><span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(player.name)}</span></Link>)}
+    </div> : !others.isLoading && empty("No favorite players yet"))}
   </section>;
 }
 
