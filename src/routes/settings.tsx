@@ -10,7 +10,7 @@ import { CURRENCIES, useCurrency } from "@/lib/currency";
 import { useHeightUnit } from "@/lib/units";
 import { deleteMyAccount } from "@/lib/account.functions";
 import { useServerFn } from "@tanstack/react-start";
-import { Save, LogOut, Loader2, LogIn, Camera, Trash2, BellRing } from "lucide-react";
+import { Save, LogOut, Loader2, LogIn, Camera, Trash2, BellRing, ChevronDown, ChevronRight, User, ShieldCheck, LifeBuoy, Ticket as TicketIcon } from "lucide-react";
 import { ImageCropper } from "@/components/image-cropper";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import type { AlertSoundMap } from "@/lib/alert-sounds";
