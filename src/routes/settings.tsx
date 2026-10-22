@@ -10,7 +10,7 @@ import { CURRENCIES, useCurrency } from "@/lib/currency";
 import { useHeightUnit } from "@/lib/units";
 import { deleteMyAccount } from "@/lib/account.functions";
 import { useServerFn } from "@tanstack/react-start";
-import { Save, LogOut, Loader2, LogIn, Camera, Trash2, BellRing } from "lucide-react";
+import { Save, LogOut, Loader2, LogIn, Camera, Trash2, BellRing, ChevronDown, ChevronRight, User, ShieldCheck, LifeBuoy, Ticket as TicketIcon } from "lucide-react";
 import { ImageCropper } from "@/components/image-cropper";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import type { AlertSoundMap } from "@/lib/alert-sounds";
@@ -53,6 +53,9 @@ function SettingsPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [openProfile, setOpenProfile] = useState(false);
+  const [openNotifs, setOpenNotifs] = useState(false);
+  const [openTickets, setOpenTickets] = useState(false);
   const [alertPrefs, setAlertPrefs] = useState<{ goals: boolean; cards: boolean; kickoff: boolean; final: boolean; voice: boolean; social: boolean; social_follow: boolean; social_request: boolean; social_like: boolean; social_comment: boolean; social_repost: boolean; sound: string; sounds: AlertSoundMap }>({ goals: true, cards: true, kickoff: true, final: true, voice: true, social: true, social_follow: true, social_request: true, social_like: true, social_comment: true, social_repost: true, sound: "stadium", sounds: {} });
 
   useEffect(() => {
@@ -127,9 +130,12 @@ function SettingsPage() {
       {user && <p className="mt-1 text-sm text-muted-foreground">{user.email}</p>}
 
       <section className="mt-6 rounded-3xl border border-border bg-card p-6">
-        <div className="mb-3 text-sm font-semibold">{t("settings.profile")}</div>
-        {user ? (
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+        <button type="button" onClick={() => user && setOpenProfile((v) => !v)} className="flex w-full items-center justify-between gap-2 text-start">
+          <div className="flex items-center gap-2 text-sm font-semibold"><User className="h-4 w-4 text-primary" /> {t("settings.profile")}</div>
+          {user && <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${openProfile ? "rotate-180" : ""}`} />}
+        </button>
+        {user ? openProfile && (
+          <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center">
             <div className="relative h-20 w-20 shrink-0">
               <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border border-border bg-muted text-xl font-bold">
                 {avatarUrl ? <img src={avatarUrl} alt="" className="h-full w-full object-cover" /> : (displayName || user.email || "?").slice(0, 1).toUpperCase()}
@@ -186,7 +192,11 @@ function SettingsPage() {
       </section>
 
       {user && <section className="mt-4 rounded-3xl border border-border bg-card p-6">
-        <div className="flex items-center gap-2 text-sm font-semibold"><BellRing className="h-4 w-4 text-primary" /> {t("settings.notifications")}</div>
+        <button type="button" onClick={() => setOpenNotifs((v) => !v)} className="flex w-full items-center justify-between gap-2 text-start">
+          <div className="flex items-center gap-2 text-sm font-semibold"><BellRing className="h-4 w-4 text-primary" /> {t("settings.notifications")}</div>
+          <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${openNotifs ? "rotate-180" : ""}`} />
+        </button>
+        {openNotifs && <>
         <div className="mt-4 grid gap-2 sm:grid-cols-2">
           {([['goals','Goals and penalties','الأهداف وركلات الجزاء'],['cards','Cards','البطاقات'],['kickoff','Kick-off and reminders','انطلاق المباراة والتذكيرات'],['final','Full-time results','نتائج نهاية المباراة'],['voice','Voice rooms — someone you follow goes live','غرف صوتية — شخص تتابعه يبدأ بثًا']] as const).map(([key,label,labelAr]) => <label key={key} className="flex items-center justify-between gap-3 rounded-xl border border-border bg-background px-3 py-2 text-sm"><span>{lang === "ar" ? labelAr : label}</span><input type="checkbox" checked={alertPrefs[key]} onChange={(event) => void saveAlertPrefs({ ...alertPrefs, [key]: event.target.checked })} /></label>)}
         </div>
@@ -194,6 +204,7 @@ function SettingsPage() {
           {([['social','All social phone alerts','جميع تنبيهات النشاط'],['social_follow','New followers','متابعون جدد'],['social_request','Follow requests','طلبات المتابعة'],['social_like','Recording likes','إعجابات التسجيلات'],['social_comment','Comments','التعليقات'],['social_repost','Reposts','إعادة النشر']] as const).map(([key,en,ar]) => <label key={key} className="flex items-center justify-between gap-3 border-b border-border py-3 text-sm"><span>{lang === 'ar' ? ar : en}</span><input type="checkbox" role="switch" checked={alertPrefs[key]} onChange={e => void saveAlertPrefs({...alertPrefs,[key]:e.target.checked})} /></label>)}
         </div>
         <p className="mt-2 text-[0.7rem] text-muted-foreground">{lang === "ar" ? "تصل تنبيهات الهاتف حتى لو كان التطبيق مغلقًا، أما التنبيهات داخل التطبيق فتظهر أثناء فتحه." : "Phone alerts arrive even when the app is closed. In-app alerts appear while the app is open."}</p>
+        </>}
       </section>}
       {canPreviewNotificationSounds(user?.email, owner.data === true) && <NotificationSoundPreview />}
       {avatarFile && <ImageCropper file={avatarFile} aspect={1} onCancel={() => setAvatarFile(null)} onDone={async (file) => { await pickAvatar(file); setAvatarFile(null); }} />}
@@ -252,6 +263,25 @@ function SettingsPage() {
             </button>
           ))}
         </div>
+      </section>
+
+      {user && <section className="mt-4 rounded-3xl border border-border bg-card p-6">
+        <button type="button" onClick={() => setOpenTickets((v) => !v)} className="flex w-full items-center justify-between gap-2 text-start">
+          <div className="flex items-center gap-2 text-sm font-semibold"><TicketIcon className="h-4 w-4 text-primary" /> {lang === "ar" ? "سجل التذاكر" : "Ticket history"}</div>
+          <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${openTickets ? "rotate-180" : ""}`} />
+        </button>
+        {openTickets && <TicketHistory open={openTickets} />}
+      </section>}
+
+      <section className="mt-4 grid gap-4 sm:grid-cols-2">
+        <Link to="/privacypolicy" className="flex items-center justify-between gap-3 rounded-3xl border border-border bg-card p-5 text-sm font-semibold hover:bg-accent">
+          <span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-primary" /> {lang === "ar" ? "سياسة الخصوصية" : "Privacy policy"}</span>
+          <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground rtl:rotate-180" />
+        </Link>
+        <Link to="/support" className="flex items-center justify-between gap-3 rounded-3xl border border-border bg-card p-5 text-sm font-semibold hover:bg-accent">
+          <span className="flex items-center gap-2"><LifeBuoy className="h-4 w-4 text-primary" /> {lang === "ar" ? "الدعم" : "Support"}</span>
+          <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground rtl:rotate-180" />
+        </Link>
       </section>
 
       <FeedbackBox />
@@ -328,5 +358,59 @@ function FeedbackBox() {
         {history.map((item) => <div key={item.id} className="rounded-xl bg-muted/50 p-3 text-xs"><p>{item.message}</p>{item.admin_reply && <div className="mt-2 rounded-lg border border-primary/20 bg-primary/10 p-2"><div className="mb-1 font-bold text-primary">Owner reply</div>{item.admin_reply}</div>}</div>)}
       </div>}
     </section>
+  );
+}
+
+/** Collapsible ticket history shown in Settings — compact rows linking to the full Tickets page. */
+function TicketHistory({ open }: { open: boolean }) {
+  const { user } = useAuth();
+  const { lang } = useI18n();
+  const label = (en: string, ar: string) => (lang === "ar" ? ar : en);
+  const mine = useQuery({
+    enabled: open && !!user,
+    queryKey: ["settings-tickets", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("tickets")
+        .select("id, code, status, offer:offer_id(name, event_home, event_away, event_competition, event_venue, event_kickoff_at), match:match_id(kickoff_at, venue, home:home_team_id(name), away:away_team_id(name), competition:competition_id(name))")
+        .eq("user_id", user!.id)
+        .neq("status", "pool")
+        .order("created_at", { ascending: false })
+        .limit(50);
+      return (data ?? []) as unknown as {
+        id: string; code: string; status: string;
+        offer: { name: string; event_home: string | null; event_away: string | null; event_competition: string | null; event_venue: string | null; event_kickoff_at: string | null } | null;
+        match: { kickoff_at: string | null; venue: string | null; home: { name: string } | null; away: { name: string } | null; competition: { name: string } | null } | null;
+      }[];
+    },
+  });
+  if (mine.isLoading) return <div className="flex justify-center py-4"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
+  if ((mine.data ?? []).length === 0) return <p className="mt-4 text-sm text-muted-foreground">{label("You have no tickets yet. Get passes from the Tickets tab.", "لا توجد تذاكر بعد. احصل على تذاكرك من قسم التذاكر.")}</p>;
+  return (
+    <div className="mt-4 space-y-2">
+      {mine.data!.map((tk) => {
+        const info = tk.offer && (tk.offer.event_home || tk.offer.event_away)
+          ? { home: tk.offer.event_home || "TBD", away: tk.offer.event_away || "TBD", comp: tk.offer.event_competition, venue: tk.offer.event_venue, kickoff: tk.offer.event_kickoff_at }
+          : { home: tk.match?.home?.name || "TBD", away: tk.match?.away?.name || "TBD", comp: tk.match?.competition?.name ?? null, venue: tk.match?.venue ?? null, kickoff: tk.match?.kickoff_at ?? null };
+        const used = tk.status === "used";
+        const expired = !used && !!info.kickoff && new Date(info.kickoff).getTime() < Date.now();
+        const when = info.kickoff ? new Date(info.kickoff).toLocaleString(lang === "ar" ? "ar" : "en", { dateStyle: "medium", timeStyle: "short" }) : "";
+        return (
+          <div key={tk.id} className={`flex items-center gap-3 rounded-2xl border p-3 ${used || expired ? "border-border bg-muted/40" : "border-primary/40 bg-card"}`}>
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><TicketIcon className="h-4 w-4" /></span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-bold">{info.home} <span className="text-muted-foreground">vs</span> {info.away}</span>
+              <span className="mt-0.5 block truncate text-[0.7rem] text-muted-foreground">{[info.comp, when, info.venue].filter(Boolean).join(" · ")}</span>
+            </span>
+            <span className={`shrink-0 rounded-full px-2 py-0.5 text-[0.6rem] font-bold ${used || expired ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary"}`}>
+              {used ? label("Scanned", "مستخدمة") : expired ? label("Expired", "منتهية") : label("Valid", "صالحة")}
+            </span>
+          </div>
+        );
+      })}
+      <Link to="/tickets" className="mt-1 flex items-center justify-center gap-1 rounded-2xl border border-border px-3 py-2 text-xs font-semibold text-primary">
+        {label("Open Tickets", "فتح التذاكر")} <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" />
+      </Link>
+    </div>
   );
 }
