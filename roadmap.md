@@ -6,3 +6,4 @@
 - [x] Header: Voice icon next to the search bar; bottom tabs become Home/Competitions/News/Transfers/Tickets and the More sheet is removed.
 - [x] Settings: Profile and Notifications collapse into tap-to-open headers; add Privacy policy and Support links; add collapsible ticket history.
 - [x] Match times follow the device's timezone (e.g. US time when in the USA) instead of a fixed Kuwait time.
+- [ ] Settings: add 12/24-hour time format option (user request 10:12 UTC)
