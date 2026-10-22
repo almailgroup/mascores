@@ -15,7 +15,7 @@ import { FlagIcon } from "@/components/flag";
 import { groupUpcomingCountries } from "@/lib/upcoming-countries";
 import { Calendar } from "@/components/ui/calendar";
 import { ar, enGB } from "date-fns/locale";
-import { matchDateKey, matchDates, upcomingStart } from "@/lib/match-calendar";
+import { DEFAULT_MATCH_VIEW, matchDateKey, matchDates, upcomingStart } from "@/lib/match-calendar";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -166,7 +166,7 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
   const { favorites } = useFavorites();
   const [scope, setScope] = useState<"all" | "favourites" | "competitions">("all");
   const [offset, setOffset] = useState(0);
-  const [status, setStatus] = useState<"live" | "finished" | "upcoming" | null>("upcoming");
+  const [status, setStatus] = useState<"live" | "finished" | "upcoming" | null>(DEFAULT_MATCH_VIEW);
   const [calendarOpen, setCalendarOpen] = useState(false);
 
   const day = useMemo(() => {
