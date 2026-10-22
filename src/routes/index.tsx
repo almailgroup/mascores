@@ -3,14 +3,16 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, SectionHeader, EmptyState, LoadingSkeleton } from "@/components/app-shell";
-import { supabase, formatKickoff, matchClockSeconds, type Competition, type Match, type Team, type NewsPost } from "@/lib/db";
+import { supabase, formatKickoff, matchClockSeconds, type Competition, type Match, type Team } from "@/lib/db";
 import { useI18n } from "@/lib/i18n";
 import { useRealtime } from "@/lib/realtime";
 import { useFavorites, FavoriteButton } from "@/hooks/use-favorites";
 import { MatchGroups, MatchRow, type MatchWithTeams } from "@/components/match-list";
-import { Trophy, ChevronLeft, ChevronRight, Ticket as TicketIcon, ArrowRight, CalendarDays, ListFilter } from "lucide-react";
+import { Trophy, ChevronLeft, ChevronRight, ChevronDown, Globe, Ticket as TicketIcon, ArrowRight, CalendarDays, ListFilter } from "lucide-react";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
 import { Button } from "@/components/ui/button";
+import { FlagIcon } from "@/components/flag";
+import { groupUpcomingCountries } from "@/lib/upcoming-countries";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -69,20 +71,6 @@ function Home() {
     refetchInterval: 30_000,
   });
 
-  const news = useQuery({
-    queryKey: ["home", "news"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("news_posts")
-        .select("*")
-        .not("published_at", "is", null)
-        .lte("published_at", new Date().toISOString())
-        .order("published_at", { ascending: false })
-        .limit(3);
-      return (data ?? []) as NewsPost[];
-    },
-  });
-
   const recent = useQuery({
     queryKey: ["home", "recent"],
     queryFn: async () => {
@@ -139,22 +127,7 @@ function Home() {
       </>)}
 
 
-      {news.data && news.data.length > 0 && (
-        <section className="mt-10">
-          <SectionHeader title={t("home.news")} />
-          <div className="grid gap-3 sm:grid-cols-3">
-            {news.data.map((n) => (
-              <Link key={n.id} to="/news/$slug" params={{ slug: n.slug }} className="group overflow-hidden rounded-2xl border border-border bg-card transition hover:border-primary/50 hover:shadow-lg">
-                 {n.cover_url && <div className="flex h-32 w-full items-center justify-center bg-muted/60"><img src={n.cover_url} alt="" className="h-full w-full object-contain" /></div>}
-                <div className="p-4">
-                  <div className="font-semibold">{tx(n.title)}</div>
-                   {n.excerpt && <div className="mt-1 line-clamp-2 text-xs text-muted-foreground">{tx(n.excerpt)}</div>}
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
+      <UpcomingCountries />
     </AppShell>
   );
 }
@@ -283,6 +256,40 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
       </div>
     </section>
   );
+}
+
+function UpcomingCountries() {
+  const tx = useTx();
+  const [open, setOpen] = useState<string[]>([]);
+  const fixtures = useQuery({
+    queryKey: ["home", "upcoming-countries"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("matches")
+        .select("*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url,country,country_code)")
+        .eq("status", "scheduled").gte("kickoff_at", new Date().toISOString()).order("kickoff_at");
+      if (error) throw error;
+      return (data ?? []) as unknown as MatchWithTeams[];
+    },
+  });
+  const groups = groupUpcomingCountries(fixtures.data ?? []);
+  return <section className="mt-6" aria-label={tx("Upcoming matches")}>
+    <div className="mb-3 flex items-center gap-2"><Globe className="size-4 text-primary" /><h2 className="text-sm font-semibold">{tx("Upcoming matches")}</h2></div>
+    {fixtures.isLoading ? <LoadingSkeleton count={3} className="h-14" /> : fixtures.isError ? <EmptyState title={tx("Could not load matches")} /> : !groups.length ? <EmptyState title={tx("No upcoming matches")} /> :
+      <div className="divide-y divide-border border-y border-border">
+        {groups.map((group) => {
+          const expanded = open.includes(group.name);
+          return <div key={group.name}>
+            <Button variant="ghost" aria-expanded={expanded} aria-controls={`country-${group.name.replace(/\s/g, "-")}`} onClick={() => setOpen((current) => expanded ? current.filter((name) => name !== group.name) : [...current, group.name])} className="h-auto min-h-14 w-full justify-start gap-3 rounded-none px-2 py-3">
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted/60">{group.name === "World" ? <Globe className="size-5 text-primary" /> : <FlagIcon value={group.code} size="md" />}</span>
+              <span className="min-w-0 flex-1 whitespace-normal text-start text-sm font-semibold">{tx(group.name)}</span>
+              <span className="text-xs tabular-nums text-muted-foreground">{group.matches.length}</span>
+              <ChevronDown className={`size-4 shrink-0 text-muted-foreground transition-transform ${expanded ? "rotate-180" : ""}`} />
+            </Button>
+            {expanded && <div id={`country-${group.name.replace(/\s/g, "-")}`} className="pb-4 pt-1"><MatchGroups data={group.matches.map((match) => ({ ...match, competition: match.competition ? { ...match.competition, name: /friendly|friendlies|ودية|وديه/i.test(match.competition.name) ? "Friendlies" : match.competition.name } : null }))} /></div>}
+          </div>;
+        })}
+      </div>}
+  </section>;
 }
 
 function FavoriteMatches() {

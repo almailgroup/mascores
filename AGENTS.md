@@ -41,3 +41,4 @@
 - Stars/bells share sign-in-return and permission helpers; competition overrides inherit into match alerts. iOS bells light only after permission; denied permission runs mute_all_alerts (Apple prompts once).
 - Blocks live in user_blocks via RPCs; triggers refuse follows, requests and recording interactions between blocked pairs (App Store rule).
 - src/components has its own AGENTS.md; read it before changing files there.
+- Home country discovery uses the shared upcoming-country grouping helper so past fixtures are excluded and friendly competitions are grouped consistently under World.
