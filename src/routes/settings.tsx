@@ -322,6 +322,7 @@ function SettingsPage() {
           </Button>
         <ConfirmDelete
           open={confirmDelete}
+          lower
           title={t("settings.deleteAccount")}
           description={t("settings.deleteAccountConfirm")}
           confirmWord="DELETE"

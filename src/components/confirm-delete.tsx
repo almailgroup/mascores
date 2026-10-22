@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { AlertTriangle, Loader2, Trash2 } from "lucide-react";
 
 /**
@@ -12,6 +13,7 @@ export function ConfirmDelete({
   confirmWord,
   actionLabel = "Delete",
   twice = false,
+  lower = false,
   onCancel,
   onConfirm,
 }: {
@@ -22,22 +24,25 @@ export function ConfirmDelete({
   actionLabel?: string;
   /** Asks for the word twice — used for things that can never be brought back. */
   twice?: boolean;
+  lower?: boolean;
   onCancel: () => void;
   onConfirm: () => Promise<void> | void;
 }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const [value, setValue] = useState("");
   const [second, setSecond] = useState("");
   const [step, setStep] = useState(1);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => { if (open) { setValue(""); setSecond(""); setStep(1); setBusy(false); } }, [open]);
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
   const matches = (text: string) => text.trim().toLowerCase() === confirmWord.trim().toLowerCase();
   const ready = twice && step === 2 ? matches(second) : matches(value);
 
-  return (
-    <div className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-foreground/60 p-3 backdrop-blur-sm sm:p-6" onClick={onCancel}>
+  return createPortal(
+    <div className={`fixed inset-0 z-[80] flex items-start justify-center overflow-y-auto bg-foreground/60 p-3 backdrop-blur-sm sm:p-6 ${lower ? "pt-[22dvh] sm:pt-[22dvh]" : ""}`} onClick={onCancel}>
       <div className="my-8 w-full max-w-md rounded-3xl border border-destructive/40 bg-card p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-2 text-sm font-bold text-destructive"><AlertTriangle className="h-4 w-4" /> {title}</div>
         {description && <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{description}</p>}
@@ -70,6 +75,7 @@ export function ConfirmDelete({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

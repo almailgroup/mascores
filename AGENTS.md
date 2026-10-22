@@ -42,3 +42,5 @@
 - Blocks live in user_blocks via RPCs; triggers refuse follows, requests and recording interactions between blocked pairs (App Store rule).
 - src/components has its own AGENTS.md; read it before changing files there.
 - Home country discovery uses the shared upcoming-country grouping helper so past fixtures are excluded and friendly competitions are grouped consistently under World.
+
+- Home match-calendar helpers centralize local-day keys and upcoming start boundaries so calendar markers and date filters agree across timezones.
