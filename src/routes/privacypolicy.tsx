@@ -137,10 +137,10 @@ function PrivacyPolicyPage() {
             )}
           </p>
           <a
-            href="mailto:mansouralmailscores@gmail.com"
+            href="mailto:info@mascores.live"
             className="mt-4 inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground transition hover:opacity-90"
           >
-            <Mail className="h-4 w-4" /> mansouralmailscores@gmail.com
+            <Mail className="h-4 w-4" /> info@mascores.live
           </a>
         </section>
       </div>
