@@ -15,7 +15,7 @@
 - [x] Stretch Matches/Competitions across the available width with a small central gap and make Live clearly clickable.
 - [x] Mark match dates in the calendar and add Upcoming beside Live, filtered from the selected date onward.
 - [x] Lower the account-deletion confirmation and verify its placement.
-- [ ] Default Home to Upcoming; date selection switches to the picked day.
-- [ ] Add consistent watermark, website, and Instagram to every shared image and verify exports.
+- [x] Default Home to Upcoming; date selection switches to the picked day.
+- [x] Add consistent watermark, website, and Instagram to every shared image and verify exports.
 
-- [ ] Fix the reported calendar lag/layout issue.
+- [x] Fix the reported calendar lag/layout issue.
