@@ -96,14 +96,14 @@ function SupportPage() {
         {/* Channels */}
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           <a
-            href="mailto:mansouralmailscores@gmail.com"
+            href="mailto:info@mascores.live"
             className="group rounded-3xl border border-border bg-card p-6 transition hover:border-primary/50 hover:ring-2 hover:ring-primary/20"
           >
             <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <Mail className="h-6 w-6" />
             </div>
             <h2 className="mt-4 text-base font-bold tracking-tight">{t("Email us", "راسلنا بالبريد")}</h2>
-            <p className="mt-1 break-all text-sm font-semibold text-primary">mansouralmailscores@gmail.com</p>
+            <p className="mt-1 break-all text-sm font-semibold text-primary">info@mascores.live</p>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
               {t(
                 "Best for account issues, tickets, and anything with an attachment.",

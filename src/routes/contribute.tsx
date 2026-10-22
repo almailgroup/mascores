@@ -186,7 +186,7 @@ function ContributePage() {
           <section className="rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/15 via-card to-card p-6">
             <div className="flex items-center gap-2 text-sm font-bold"><Mail className="h-4 w-4 text-primary" /> How to get access</div>
             <p className="mt-2 text-sm text-muted-foreground">
-              Publishing news is <strong className="text-foreground">free</strong>. To confirm your identity, send your civil ID photo and a verification selfie. Questions? Contact <a href="mailto:mansouralmailscores@gmail.com" className="font-semibold text-primary">mansouralmailscores@gmail.com</a>.
+              Publishing news is <strong className="text-foreground">free</strong>. To confirm your identity, send your civil ID photo and a verification selfie. Questions? Contact <a href="mailto:info@mascores.live" className="font-semibold text-primary">info@mascores.live</a>.
             </p>
             <ul className="mt-4 grid gap-2 text-sm">
               {[
@@ -280,7 +280,7 @@ function ContributePage() {
           <div className="font-semibold">Your details are with the main admin</div>
           <p className="mt-1 text-muted-foreground">{reporter.data.full_name ? `${reporter.data.full_name} · ` : ""}@{reporter.data.handle} on {reporter.data.platform}.</p>
           <p className="mt-2 text-xs text-muted-foreground">
-            Email <a href="mailto:mansouralmailscores@gmail.com" className="font-semibold text-primary">mansouralmailscores@gmail.com</a> if you have not heard back. Once the admin sends your
+            Email <a href="mailto:info@mascores.live" className="font-semibold text-primary">info@mascores.live</a> if you have not heard back. Once the admin sends your
             access code, enter it below to open the news desk.
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-2">
