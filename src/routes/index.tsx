@@ -309,6 +309,51 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
   );
 }
 
+/** Match-board filter: search any team, then open that team's page on its matches. */
+function TeamFilterDialog({ onClose }: { onClose: () => void }) {
+  const tx = useTx();
+  const navigate = useNavigate();
+  const [q, setQ] = useState("");
+  const trimmed = q.trim();
+  const teamsQ = useQuery({
+    queryKey: ["filter-teams", trimmed],
+    queryFn: async () => {
+      let query = supabase.from("teams").select("id,name,short_name,name_ar,logo_url").neq("is_temporary", true).order("name").limit(25);
+      if (trimmed) query = query.or(`name.ilike.%${trimmed}%,short_name.ilike.%${trimmed}%,name_ar.ilike.%${trimmed}%`);
+      const { data } = await query;
+      return (data ?? []) as Team[];
+    },
+  });
+  return (
+    <Dialog open onOpenChange={(next) => { if (!next) onClose(); }}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-base">{tx("Filter by team")}</DialogTitle>
+        </DialogHeader>
+        <Input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder={tx("Search teams")} className="h-10 rounded-full" aria-label={tx("Search teams")} />
+        <div className="-mx-1 max-h-72 overflow-y-auto px-1">
+          {teamsQ.isLoading ? <LoadingSkeleton count={4} className="h-12" /> : (teamsQ.data ?? []).length === 0 ? (
+            <div className="py-6 text-center text-sm text-muted-foreground">{tx("No teams found")}</div>
+          ) : (
+            <div className="flex flex-col gap-1">
+              {(teamsQ.data ?? []).map((team) => (
+                <button key={team.id} type="button" onClick={async () => {
+                  onClose();
+                  await navigate({ to: "/teams/$id", params: { id: team.id }, search: { tab: "matches" } });
+                }} className="flex items-center gap-3 rounded-2xl border border-transparent px-2 py-2 text-start transition hover:border-border hover:bg-accent">
+                  <TeamCrest name={team.name} logo={team.logo_url} className="h-9 w-9 shrink-0" rounded="rounded-xl" />
+                  <span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(team.name)}</span>
+                  <ArrowRight className="size-4 shrink-0 text-muted-foreground rtl:rotate-180" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function UpcomingCountries() {
   const tx = useTx();
   const [open, setOpen] = useState<string[]>([]);
