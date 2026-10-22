@@ -483,15 +483,8 @@ function TeamFilterDialog({ onClose, onPick, onPickPair }: {
               {visible.map((team) => teamBox(team))}
             </div>
           ) : (
-            <div className="flex flex-col gap-5">
-              {sections.map((section) => (
-                <div key={section.label}>
-                  <h3 className="mb-2 px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">{tx(section.label)}</h3>
-                  <div className="grid grid-cols-3 gap-2">
-                    {section.teams.map((team) => teamBox(team))}
-                  </div>
-                </div>
-              ))}
+            <div className="grid grid-cols-3 gap-2">
+              {sections.flatMap((section) => section.teams.map((team) => teamBox(team)))}
             </div>
           )}
         </div>
