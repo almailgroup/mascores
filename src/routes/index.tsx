@@ -8,7 +8,7 @@ import { useI18n } from "@/lib/i18n";
 import { useRealtime } from "@/lib/realtime";
 import { useFavorites, FavoriteButton } from "@/hooks/use-favorites";
 import { MatchGroups, MatchRow, type MatchWithTeams } from "@/components/match-list";
-import { Trophy, ChevronLeft, ChevronRight, Ticket as TicketIcon, ArrowRight } from "lucide-react";
+import { Trophy, ChevronLeft, ChevronRight, Ticket as TicketIcon, ArrowRight, CalendarDays, ListFilter } from "lucide-react";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
 import { Button } from "@/components/ui/button";
 
@@ -98,12 +98,13 @@ function Home() {
 
   return (
     <AppShell>
-      <div data-no-gesture className="mb-4 grid grid-cols-2 gap-1 rounded-full bg-muted p-1">
+      <div data-no-gesture role="tablist" aria-label={tx("Football")} className="mb-4 flex gap-5 border-b border-border">
         {(["matches", "competitions"] as const).map((m) => (
-          <button key={m} onClick={() => setMode(m)}
-            className={`h-10 rounded-full text-sm font-black uppercase tracking-wide transition ${mode === m ? "bg-foreground text-background" : "text-foreground"}`}>
+          <Button variant="ghost" role="tab" aria-selected={mode === m} key={m} onClick={() => setMode(m)}
+            className={`-mb-px h-11 gap-1.5 rounded-none border-b-2 px-1 text-xs font-semibold transition ${mode === m ? "border-primary text-foreground" : "border-transparent text-muted-foreground"}`}>
+            {m === "matches" ? <ListFilter className="size-3.5" /> : <Trophy className="size-3.5" />}
             {tx(m === "matches" ? "Matches" : "Competitions")}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -112,20 +113,21 @@ function Home() {
         <TicketsBanner />
       </>) : (<>
       <section>
-        <SectionHeader title={tx("Competitions")} />
+        <div className="mb-2 flex items-center gap-2 text-sm font-semibold"><Trophy className="size-4 text-primary" /><h2>{tx("Competitions")}</h2></div>
         {comps.isLoading ? (
           <LoadingSkeleton />
         ) : !comps.data || comps.data.length === 0 ? (
           <EmptyState title={t("home.empty")} />
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-x-6 sm:grid-cols-2 lg:grid-cols-3">
             {comps.data.map((c) => (
-              <Link key={c.id} to="/competitions/$slug" params={{ slug: c.slug }} className="group flex items-center gap-3 rounded-2xl border border-border bg-card p-4 transition hover:border-primary/50 hover:shadow-lg">
+              <Link key={c.id} to="/competitions/$slug" params={{ slug: c.slug }} className="group flex items-center gap-3 border-b border-border/60 py-3 transition hover:bg-accent/40">
                 <CompLogo logo={c.logo_url} />
-                <div className="min-w-0">
-                   <div className="truncate font-semibold">{lang === "ar" && c.name_ar ? c.name_ar : tx(c.name)}</div>
+                <div className="min-w-0 flex-1">
+                   <div className="text-sm font-semibold leading-5">{lang === "ar" && c.name_ar ? c.name_ar : tx(c.name)}</div>
                   <div className="truncate text-xs text-muted-foreground">{[tx(c.country), c.season].filter(Boolean).join(" · ")}</div>
                 </div>
+                <ChevronRight className="size-4 shrink-0 text-muted-foreground rtl:rotate-180" />
               </Link>
             ))}
           </div>
@@ -248,20 +250,20 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
   return (
     <section className={title ? "mb-8 mt-10" : "mb-8"}>
       {title && <SectionHeader title={title} />}
-      <div data-no-gesture className="flex items-center gap-2">
+      <div data-no-gesture className="flex items-center gap-3 border-b border-border pb-3">
         {!hideLive && (
-          <button
+          <Button variant="ghost" size="sm" aria-pressed={status === "live"}
             onClick={() => setStatus(status === "live" ? null : "live")}
-            className={`inline-flex h-11 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-semibold transition ${status === "live" ? "border-destructive bg-destructive/15 text-destructive" : "border-destructive/60 bg-destructive/5 text-destructive"}`}
+            className={`h-9 shrink-0 gap-1.5 rounded-md px-2.5 text-xs font-semibold transition ${status === "live" ? "bg-destructive/10 text-destructive" : "bg-muted/60 text-foreground"}`}
           >
+            <span className="size-1.5 rounded-full bg-destructive" />
             {t("board.live")}{liveCount > 0 ? ` (${liveCount})` : ""}
-            <span className={`h-3.5 w-3.5 rounded-full border-2 border-destructive ${status === "live" ? "bg-destructive" : ""}`} />
-          </button>
+          </Button>
         )}
-        <div className="flex h-11 min-w-0 flex-1 items-center justify-between rounded-full border border-border bg-card">
-          <Button variant="ghost" size="icon" className="rounded-full text-primary" onClick={() => setOffset(offset - 1)} aria-label={tx("Previous day")}><ChevronLeft className="h-5 w-5" /></Button>
-          <Button variant="ghost" onClick={() => setCalendarOpen(true)} className="min-w-0 flex-1 px-2 text-sm font-semibold text-primary">{dayLabel}</Button>
-          <Button variant="ghost" size="icon" className="rounded-full text-primary" onClick={() => setOffset(offset + 1)} aria-label={tx("Next day")}><ChevronRight className="h-5 w-5" /></Button>
+        <div className="ms-auto flex h-9 min-w-0 items-center gap-1">
+          <Button variant="ghost" size="icon" className="size-8 rounded-md text-muted-foreground" onClick={() => setOffset(offset - 1)} aria-label={tx("Previous day")}><ChevronLeft className="size-4" /></Button>
+          <Button variant="ghost" onClick={() => setCalendarOpen(true)} className="h-9 min-w-0 gap-1.5 px-2 text-xs font-semibold"><CalendarDays className="size-3.5 text-muted-foreground" />{dayLabel}</Button>
+          <Button variant="ghost" size="icon" className="size-8 rounded-md text-muted-foreground" onClick={() => setOffset(offset + 1)} aria-label={tx("Next day")}><ChevronRight className="size-4" /></Button>
         </div>
       </div>
       {calendarOpen && <MonthCalendar day={day} onPick={(selected) => {
@@ -324,7 +326,7 @@ function LiveSection({ live }: { live: MatchWithTeams[] | undefined }) {
   if (!live || live.length === 0) return null;
   return (
     <section className="mt-10">
-      <SectionHeader title={tx("Live")} />
+      <div className="mb-3 flex items-center gap-2 border-s-2 border-destructive ps-3"><h2 className="text-sm font-semibold">{tx("Live")}</h2><span className="text-xs tabular-nums text-muted-foreground">{live.length}</span></div>
       <MatchGroups data={live} />
     </section>
   );
@@ -374,7 +376,7 @@ function MonthCalendar({ day, onPick, onClose }: { day: Date; onPick: (d: Date) 
 function CompLogo({ logo }: { logo: string | null }) {
 
   return (
-     <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl text-primary">
+     <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden text-primary">
       {logo ? <img src={logo} alt="" className="h-full w-full object-contain" /> : <Trophy className="h-6 w-6" />}
     </div>
   );

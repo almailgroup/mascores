@@ -9,6 +9,7 @@ import { useFavorites } from "@/hooks/use-favorites";
 import { supabase, type Competition, type Player, type Team } from "@/lib/db";
 import { useTx } from "@/lib/auto-translate";
 import { Trophy } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/favorites")({
   head: () => ({ meta: [
@@ -48,13 +49,13 @@ function FavoritesPage() {
   const row = "flex items-center gap-3 rounded-lg border border-border bg-card p-3 hover:border-primary";
   const empty = (label: string) => <EmptyState title={tx(label)} />;
   return <AppShell>
-    <h1 className="mb-7 text-2xl font-bold">{tx("Favorites")}</h1>
-    <div data-no-gesture className="mb-5 grid grid-cols-4 border-b border-border">
+    <h1 className="mb-5 text-xl font-bold">{tx("Favorites")}</h1>
+    <div data-no-gesture role="tablist" aria-label={tx("Favorites")} className="mb-5 grid grid-cols-[1fr_0.8fr_1.45fr_1fr] border-b border-border">
       {tabs.map((tab) => (
-        <button key={tab.key} onClick={() => setView(tab.key)}
-          className={`-mb-px truncate border-b-2 px-1 pb-2 text-sm font-semibold transition ${view === tab.key ? "border-primary text-foreground" : "border-transparent text-muted-foreground"}`}>
+        <Button variant="ghost" role="tab" aria-selected={view === tab.key} key={tab.key} onClick={() => setView(tab.key)}
+          className={`-mb-px h-11 min-w-0 rounded-none border-b-2 px-0 text-xs font-semibold transition ${view === tab.key ? "border-primary text-foreground" : "border-transparent text-muted-foreground"}`}>
           {tx(tab.label)}
-        </button>
+        </Button>
       ))}
     </div>
     {view === "matches" && (matches.isLoading ? <LoadingSkeleton /> : matches.data?.length ? <MatchGroups data={matches.data} /> : empty("No favorite matches yet"))}

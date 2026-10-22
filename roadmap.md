@@ -9,4 +9,5 @@
 - [x] Settings: add 12/24-hour time format option
 - [x] Privacy policy and Support pages: back button
 - [x] Home Competitions view: Competitions grid, then Live, Today (calendar), Favorites (simple list with See all); tabbed Matches/Clubs/Competitions/Players layout lives on the Favorites page.
-- [x] Bottom bar: Competitions tab replaced with Favorites (heart icon, opens the Favorites page).
+- [x] Bottom bar: Competitions tab replaced with Favorites (opens the Favorites page).
+- [ ] Compact Home tabs and original Live/competition styling; full Favorites category labels and a star navigation icon.
