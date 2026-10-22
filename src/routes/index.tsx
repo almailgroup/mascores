@@ -32,6 +32,7 @@ function Home() {
   const tx = useTx();
   const { t, lang } = useI18n();
   useRealtime(["competitions", "matches", "news_posts"]);
+  const [mode, setMode] = useState<"matches" | "competitions">("matches");
 
   const comps = useQuery({
     queryKey: ["home", "competitions"],
