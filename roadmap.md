@@ -22,3 +22,5 @@
 
 - [ ] Home board: Filter pill that opens a team-search dialog; picking a team opens its matches.
 - [ ] Fix: tapping the active bottom tab (Home, Favorites, News, Transfers, Tickets) should scroll back to top.
+- [ ] Filter rework: full-screen, default shows Zain Premier League clubs + Kuwait national team, search shows the rest, picking a club shows its matches on the home board (no club-page navigation).
+- [ ] Upcoming toggle: clicking Upcoming again keeps upcoming matches visible (no clearing); only day/calendar selection re-enables the toggle to switch to a specific day.
