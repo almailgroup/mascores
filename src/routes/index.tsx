@@ -286,7 +286,6 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
 function FavoriteMatches() {
   const tx = useTx();
   const { favorites, ready } = useFavorites();
-  const [view, setView] = useState<"matches" | "clubs" | "competitions" | "players">("matches");
   const ids = favorites.match;
   const teamIds = favorites.team;
   const q = useQuery({
@@ -308,53 +307,27 @@ function FavoriteMatches() {
       return [...new Map(out.map((m) => [m.id, m])).values()];
     },
   });
-  const others = useQuery({
-    enabled: ready && view !== "matches",
-    queryKey: ["fav-others", favorites.team.join(","), favorites.player.join(","), favorites.competition.join(",")],
-    queryFn: async () => {
-      const [teams, players, competitions] = await Promise.all([
-        favorites.team.length ? supabase.from("teams").select("id,name,logo_url").in("id", favorites.team) : Promise.resolve({ data: [] }),
-        favorites.player.length ? supabase.from("players").select("id,name,photo_url").in("id", favorites.player) : Promise.resolve({ data: [] }),
-        favorites.competition.length ? supabase.from("competitions").select("id,name,slug,logo_url").in("id", favorites.competition) : Promise.resolve({ data: [] }),
-      ]);
-      return {
-        teams: (teams.data ?? []) as { id: string; name: string; logo_url: string | null }[],
-        players: (players.data ?? []) as { id: string; name: string; photo_url: string | null }[],
-        competitions: (competitions.data ?? []) as { id: string; name: string; slug: string; logo_url: string | null }[],
-      };
-    },
-  });
 
   if (!ready) return null;
-  const tabs = [
-    { key: "matches", label: "Matches" },
-    { key: "clubs", label: "Clubs" },
-    { key: "competitions", label: "Competitions" },
-    { key: "players", label: "Players" },
-  ] as const;
-  const row = "flex items-center gap-3 rounded-xl border border-border bg-card p-3 hover:border-primary";
-  const empty = (label: string) => <EmptyState title={tx(label)} />;
-  return <section className="mt-8">
-    <SectionHeader title={tx("Favorites")} />
-    <div data-no-gesture className="mb-4 grid grid-cols-4 border-b border-border">
-      {tabs.map((tab) => (
-        <button key={tab.key} onClick={() => setView(tab.key)}
-          className={`-mb-px truncate border-b-2 px-1 pb-2 text-sm font-semibold transition ${view === tab.key ? "border-primary text-foreground" : "border-transparent text-muted-foreground"}`}>
-          {tx(tab.label)}
-        </button>
-      ))}
-    </div>
-    {view === "matches" && (q.data?.length ? <MatchGroups data={q.data} /> : empty("No favorite matches yet"))}
-    {view === "clubs" && (others.data?.teams.length ? <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-      {others.data.teams.map((team) => <Link key={team.id} to="/teams/$id" params={{ id: team.id }} className={row}><TeamCrest name={team.name} logo={team.logo_url} className="h-8 w-8" /><span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(team.name)}</span></Link>)}
-    </div> : !others.isLoading && empty("No favorite clubs yet"))}
-    {view === "competitions" && (others.data?.competitions.length ? <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-      {others.data.competitions.map((c) => <Link key={c.id} to="/competitions/$slug" params={{ slug: c.slug }} className={row}>{c.logo_url ? <img src={c.logo_url} alt="" className="h-8 w-8 object-contain" /> : <Trophy className="h-6 w-6 text-primary" />}<span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(c.name)}</span></Link>)}
-    </div> : !others.isLoading && empty("No favorite competitions yet"))}
-    {view === "players" && (others.data?.players.length ? <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-      {others.data.players.map((player) => <Link key={player.id} to="/players/$id" params={{ id: player.id }} className={row}><PlayerAvatar src={player.photo_url} name={player.name} className="h-8 w-8" /><span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(player.name)}</span></Link>)}
-    </div> : !others.isLoading && empty("No favorite players yet"))}
-  </section>;
+  return (
+    <section className="mt-10 mb-8">
+      <SectionHeader title={tx("Favorites")} action={
+        <Link to="/favorites" className="text-[0.65rem] font-bold uppercase tracking-widest text-primary">{tx("See all")}</Link>
+      } />
+      {q.data?.length ? <MatchGroups data={q.data} /> : <EmptyState title={tx("No favorite matches yet")} />}
+    </section>
+  );
+}
+
+function LiveSection({ live }: { live: MatchWithTeams[] | undefined }) {
+  const tx = useTx();
+  if (!live || live.length === 0) return null;
+  return (
+    <section className="mt-10">
+      <SectionHeader title={tx("Live")} />
+      <MatchGroups data={live} />
+    </section>
+  );
 }
 
 /** In-app month calendar, so tapping the date never opens the phone's own picker. */
