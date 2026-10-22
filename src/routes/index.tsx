@@ -395,6 +395,28 @@ function TeamFilterDialog({ onClose, onPick, onPickPair }: {
     if (other) { onPickPair([chosen, other]); onClose(); }
     else { setQ(""); setActiveSlot(activeSlot === 0 ? 1 : 0); }
   };
+  const renderSlot = (i: 0 | 1) => {
+    const team = slots[i];
+    if (!team) return (
+      <button key={i} type="button" onClick={() => setActiveSlot(i)}
+        className={`flex h-14 flex-col items-center justify-center gap-1 rounded-xl border border-dashed text-xs font-semibold transition ${activeSlot === i ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground"}`}>
+        <Plus className="size-4" />
+        {tx("Add club")}
+      </button>
+    );
+    return (
+      <div key={i} className={`flex h-14 items-center gap-1 rounded-xl border px-2 transition ${activeSlot === i ? "border-primary bg-primary/10" : "border-border bg-card"}`}>
+        <button type="button" className="flex min-w-0 flex-1 items-center gap-2 text-start" onClick={() => setActiveSlot(i)} aria-label={tx("Edit club")}>
+          <TeamCrest name={team.name} logo={team.logo_url} className="h-8 w-8 shrink-0" rounded="rounded-lg" />
+          <span className="min-w-0 flex-1 truncate text-xs font-semibold">{tx(team.name)}</span>
+        </button>
+        <button type="button" className="shrink-0 rounded-full p-1 text-muted-foreground hover:text-foreground" aria-label={tx("Remove club")}
+          onClick={() => { setSlots((cur) => (i === 0 ? [null, cur[1]] : [cur[0], null])); setActiveSlot(i); setQ(""); }}>
+          <X className="size-4" />
+        </button>
+      </div>
+    );
+  };
   return createPortal(
     <div data-no-gesture className="fixed inset-0 z-[120] overflow-y-auto bg-background text-foreground" role="dialog" aria-modal="true" aria-label={tx("Filter by team")}>
       <div className="mx-auto flex min-h-dvh max-w-xl flex-col px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-[calc(1.5rem+env(safe-area-inset-top))]">
