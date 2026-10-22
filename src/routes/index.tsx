@@ -304,7 +304,7 @@ function FavoriteMatches() {
     },
   });
   const others = useQuery({
-    enabled: ready && view === "all",
+    enabled: ready && view !== "matches",
     queryKey: ["fav-others", favorites.team.join(","), favorites.player.join(","), favorites.competition.join(",")],
     queryFn: async () => {
       const [teams, players, competitions] = await Promise.all([
