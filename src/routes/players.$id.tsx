@@ -155,7 +155,7 @@ function PlayerPage() {
            <div className="relative flex flex-wrap gap-1.5 pb-3">
             {national.data!.map((call) => call.team ? (
               <Link key={call.id} to="/teams/$id" params={{ id: call.team.id }}
-                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-2.5 py-1 text-[0.65rem] font-semibold hover:border-primary">
+                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-2.5 py-1 text-[0.65rem] font-semibold text-foreground hover:border-primary">
                 <FlagIcon value={call.team.country_code ?? call.team.country} size="sm" />
                 <span className="truncate">{tx(call.team.name)}</span>
                 <span className="text-muted-foreground">{tx("National team")}{call.shirt_number != null ? ` · #${call.shirt_number}` : ""}</span>
