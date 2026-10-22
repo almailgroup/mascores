@@ -8,15 +8,14 @@ import { useI18n } from "@/lib/i18n";
 import { useRealtime } from "@/lib/realtime";
 import { useFavorites, FavoriteButton } from "@/hooks/use-favorites";
 import { MatchGroups, MatchRow, type MatchWithTeams } from "@/components/match-list";
-import { Trophy, ChevronLeft, ChevronRight, ChevronDown, Globe, Ticket as TicketIcon, ArrowRight, CalendarDays, ListFilter } from "lucide-react";
+import { Trophy, ChevronLeft, ChevronRight, ChevronDown, Globe, Ticket as TicketIcon, ArrowRight, CalendarDays, ListFilter, Search, X } from "lucide-react";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
 import { Button } from "@/components/ui/button";
 import { FlagIcon } from "@/components/flag";
 import { groupUpcomingCountries } from "@/lib/upcoming-countries";
 import { Calendar } from "@/components/ui/calendar";
 import { ar, enGB } from "date-fns/locale";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import { visibleWelcomeTeams } from "@/lib/welcome-teams";
 import { DEFAULT_MATCH_VIEW, matchDateKey, matchDates, upcomingStart } from "@/lib/match-calendar";
 
 export const Route = createFileRoute("/")({
@@ -171,6 +170,7 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
   const [status, setStatus] = useState<"live" | "finished" | "upcoming" | null>(DEFAULT_MATCH_VIEW);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [teamFilter, setTeamFilter] = useState<{ id: string; name: string; logo_url: string | null } | null>(null);
 
   const day = useMemo(() => {
     const d = new Date();
@@ -219,6 +219,7 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
       const favTeam = favorites.team.includes(m.home_team_id ?? "") || favorites.team.includes(m.away_team_id ?? "");
       if (!favTeam && !favorites.match.includes(m.id) && !favorites.competition.includes(m.competition_id)) return false;
     }
+    if (teamFilter && m.home_team_id !== teamFilter.id && m.away_team_id !== teamFilter.id) return false;
     if (status === "live") return ["live", "ht"].includes(m.status);
     if (status === "finished") return ["ft", "aet", "pen", "awarded"].includes(m.status);
     if (status === "upcoming") return m.status === "scheduled";
@@ -254,6 +255,14 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
           <ListFilter className="size-4" />
           {tx("Filter")}
         </Button>
+        {teamFilter && (
+          <button type="button" onClick={() => setTeamFilter(null)} aria-label={tx("Clear team filter")}
+            className="flex h-9 shrink-0 items-center gap-1.5 rounded-md border border-primary/40 bg-primary/10 px-2 text-xs font-semibold text-primary">
+            <TeamCrest name={teamFilter.name} logo={teamFilter.logo_url} className="h-5 w-5" rounded="rounded-full" />
+            <span className="max-w-28 truncate">{tx(teamFilter.name)}</span>
+            <X className="size-3.5" />
+          </button>
+        )}
         {!hideLive && (
           <Button variant="ghost" size="sm" aria-pressed={status === "live"}
             onClick={() => setStatus(status === "live" ? null : "live")}
@@ -264,7 +273,7 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
           </Button>
         )}
         <Button variant={status === "upcoming" ? "secondary" : "ghost"} size="sm" aria-pressed={status === "upcoming"}
-          onClick={() => setStatus(status === "upcoming" ? null : "upcoming")}
+          onClick={() => { if (status !== "upcoming") setStatus("upcoming"); }}
           className="h-9 shrink-0 rounded-md px-2 text-xs font-semibold">
           {tx("Upcoming")}
         </Button>
@@ -280,7 +289,7 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
         setStatus(null);
         setCalendarOpen(false);
       }} onClose={() => setCalendarOpen(false)} />}
-      {filterOpen && <TeamFilterDialog onClose={() => setFilterOpen(false)} />}
+      {filterOpen && <TeamFilterDialog onClose={() => setFilterOpen(false)} onPick={(team) => { setTeamFilter(team); setOffset(0); setStatus("upcoming"); }} />}
 
       <div className="mt-4">
         {activeQ.isLoading ? (
