@@ -19,3 +19,8 @@
 - [x] Add consistent watermark, website, and Instagram to every shared image and verify exports.
 
 - [x] Fix the reported calendar lag/layout issue.
+
+- [x] Home board: Filter pill opens a full-screen team search (Zain Premier League clubs + Kuwait national team first); picking a team shows its matches on the board with a clearable chip.
+- [x] Fix: tapping the active bottom tab scrolls back to top (smooth); switching tabs starts the new page at the top.
+- [x] Filter rework: full-screen, Zain Premier League clubs + Kuwait national team by default, search reveals the rest, picked club filters the home board.
+- [x] Upcoming toggle: re-tapping Upcoming keeps upcoming matches; day/calendar views bring it back.

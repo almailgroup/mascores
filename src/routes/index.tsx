@@ -8,13 +8,14 @@ import { useI18n } from "@/lib/i18n";
 import { useRealtime } from "@/lib/realtime";
 import { useFavorites, FavoriteButton } from "@/hooks/use-favorites";
 import { MatchGroups, MatchRow, type MatchWithTeams } from "@/components/match-list";
-import { Trophy, ChevronLeft, ChevronRight, ChevronDown, Globe, Ticket as TicketIcon, ArrowRight, CalendarDays, ListFilter } from "lucide-react";
+import { Trophy, ChevronLeft, ChevronRight, ChevronDown, Globe, Ticket as TicketIcon, ArrowRight, CalendarDays, ListFilter, Search, X } from "lucide-react";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
 import { Button } from "@/components/ui/button";
 import { FlagIcon } from "@/components/flag";
 import { groupUpcomingCountries } from "@/lib/upcoming-countries";
 import { Calendar } from "@/components/ui/calendar";
 import { ar, enGB } from "date-fns/locale";
+import { visibleWelcomeTeams } from "@/lib/welcome-teams";
 import { DEFAULT_MATCH_VIEW, matchDateKey, matchDates, upcomingStart } from "@/lib/match-calendar";
 
 export const Route = createFileRoute("/")({
@@ -168,6 +169,8 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
   const [offset, setOffset] = useState(0);
   const [status, setStatus] = useState<"live" | "finished" | "upcoming" | null>(DEFAULT_MATCH_VIEW);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [teamFilter, setTeamFilter] = useState<{ id: string; name: string; logo_url: string | null } | null>(null);
 
   const day = useMemo(() => {
     const d = new Date();
@@ -216,6 +219,7 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
       const favTeam = favorites.team.includes(m.home_team_id ?? "") || favorites.team.includes(m.away_team_id ?? "");
       if (!favTeam && !favorites.match.includes(m.id) && !favorites.competition.includes(m.competition_id)) return false;
     }
+    if (teamFilter && m.home_team_id !== teamFilter.id && m.away_team_id !== teamFilter.id) return false;
     if (status === "live") return ["live", "ht"].includes(m.status);
     if (status === "finished") return ["ft", "aet", "pen", "awarded"].includes(m.status);
     if (status === "upcoming") return m.status === "scheduled";
@@ -245,6 +249,20 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
     <section className={title ? "mb-8 mt-10" : "mb-8"}>
       {title && <SectionHeader title={title} />}
       <div data-no-gesture className="flex flex-wrap items-center gap-1 border-b border-border pb-3">
+        <Button variant="ghost" size="sm" aria-expanded={filterOpen}
+          onClick={() => setFilterOpen(true)}
+          className="h-9 shrink-0 gap-1.5 rounded-md border px-3 text-xs font-semibold shadow-sm">
+          <ListFilter className="size-4" />
+          {tx("Filter")}
+        </Button>
+        {teamFilter && (
+          <button type="button" onClick={() => setTeamFilter(null)} aria-label={tx("Clear team filter")}
+            className="flex h-9 shrink-0 items-center gap-1.5 rounded-md border border-primary/40 bg-primary/10 px-2 text-xs font-semibold text-primary">
+            <TeamCrest name={teamFilter.name} logo={teamFilter.logo_url} className="h-5 w-5" rounded="rounded-full" />
+            <span className="max-w-28 truncate">{tx(teamFilter.name)}</span>
+            <X className="size-3.5" />
+          </button>
+        )}
         {!hideLive && (
           <Button variant="ghost" size="sm" aria-pressed={status === "live"}
             onClick={() => setStatus(status === "live" ? null : "live")}
@@ -255,7 +273,7 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
           </Button>
         )}
         <Button variant={status === "upcoming" ? "secondary" : "ghost"} size="sm" aria-pressed={status === "upcoming"}
-          onClick={() => setStatus(status === "upcoming" ? null : "upcoming")}
+          onClick={() => { if (status !== "upcoming") setStatus("upcoming"); }}
           className="h-9 shrink-0 rounded-md px-2 text-xs font-semibold">
           {tx("Upcoming")}
         </Button>
@@ -271,6 +289,7 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
         setStatus(null);
         setCalendarOpen(false);
       }} onClose={() => setCalendarOpen(false)} />}
+      {filterOpen && <TeamFilterDialog onClose={() => setFilterOpen(false)} onPick={(team) => { setTeamFilter(team); setOffset(0); setStatus("upcoming"); }} />}
 
       <div className="mt-4">
         {activeQ.isLoading ? (
@@ -296,6 +315,58 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
         )}
       </div>
     </section>
+  );
+}
+
+/** Full-screen match-board filter: Zain Premier League clubs plus the Kuwait national team first, search reveals the rest. */
+function TeamFilterDialog({ onClose, onPick }: { onClose: () => void; onPick: (team: { id: string; name: string; logo_url: string | null }) => void }) {
+  const tx = useTx();
+  const [q, setQ] = useState("");
+  const teamsQ = useQuery({
+    queryKey: ["filter-teams", "catalogue"],
+    queryFn: async () => {
+      const [catalogue, competition] = await Promise.all([
+        supabase.from("teams").select("id,name,name_ar,short_name,logo_url,country,country_code,is_national,parent_team_id,age_group").order("name"),
+        supabase.from("competitions").select("id,season").eq("slug", "zain-premier-league").maybeSingle(),
+      ]);
+      if (catalogue.error) throw catalogue.error;
+      let leagueTeamIds: string[] = [];
+      if (competition.data) {
+        const { data, error } = await supabase.from("competition_teams").select("team_id,season").eq("competition_id", competition.data.id);
+        if (error) throw error;
+        leagueTeamIds = (data ?? []).filter((row) => !row.season || !competition.data?.season || row.season === competition.data.season).map((row) => row.team_id);
+      }
+      return { catalogue: (catalogue.data ?? []) as Team[], leagueTeamIds };
+    },
+  });
+  const visible = visibleWelcomeTeams(teamsQ.data?.catalogue ?? [], teamsQ.data?.leagueTeamIds ?? [], q, tx);
+  return (
+    <div data-no-gesture className="fixed inset-0 z-[110] overflow-y-auto bg-background text-foreground" role="dialog" aria-modal="true" aria-label={tx("Filter by team")}>
+      <div className="mx-auto flex min-h-dvh max-w-xl flex-col px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-[calc(1.5rem+env(safe-area-inset-top))]">
+        <div className="flex items-center gap-2">
+          <Button type="button" variant="ghost" size="icon" className="size-10 shrink-0" onClick={onClose} aria-label="Close">
+            <ChevronLeft className="size-5 rtl:rotate-180" />
+          </Button>
+          <h2 className="text-lg font-bold">{tx("Filter by team")}</h2>
+        </div>
+        <label className="mt-4 flex h-12 shrink-0 items-center gap-3 rounded-full border border-border bg-card px-4">
+          <Search className="h-5 w-5 shrink-0 text-muted-foreground" />
+          <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder={tx("Search teams")} aria-label={tx("Search teams")} className="min-w-0 flex-1 bg-transparent text-sm outline-none" />
+        </label>
+        <div className="mt-4 flex flex-1 flex-col gap-1.5">
+          {teamsQ.isLoading ? <LoadingSkeleton count={6} className="h-14" /> : visible.length === 0 ? (
+            <div className="py-10 text-center text-sm text-muted-foreground">{tx("No teams found")}</div>
+          ) : visible.map((team) => (
+            <button key={team.id} type="button" onClick={() => { onPick({ id: team.id, name: team.name, logo_url: team.logo_url ?? null }); onClose(); }}
+              className="flex items-center gap-3 rounded-2xl border border-border bg-card px-3 py-2.5 text-start transition hover:bg-accent">
+              <TeamCrest name={team.name} logo={team.logo_url} className="h-10 w-10 shrink-0" rounded="rounded-xl" />
+              <span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(team.name)}</span>
+              <ArrowRight className="size-4 shrink-0 text-muted-foreground rtl:rotate-180" />
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 
