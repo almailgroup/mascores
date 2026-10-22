@@ -13,6 +13,9 @@ import { useDates, useNum, useTx } from "@/lib/auto-translate";
 import { Button } from "@/components/ui/button";
 import { FlagIcon } from "@/components/flag";
 import { groupUpcomingCountries } from "@/lib/upcoming-countries";
+import { Calendar } from "@/components/ui/calendar";
+import { ar, enGB } from "date-fns/locale";
+import { matchDateKey, matchDates, upcomingStart } from "@/lib/match-calendar";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -193,22 +196,22 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
   // When the picked day has no matches at all, offer the next scheduled ones.
   const [showUpcoming, setShowUpcoming] = useState(false);
   const upcomingQ = useQuery({
-    enabled: !dayQ.isLoading && (dayQ.data ?? []).length === 0,
-    queryKey: ["board", "upcoming-fallback"],
+    enabled: status === "upcoming" || (!dayQ.isLoading && (dayQ.data ?? []).length === 0),
+    queryKey: ["board", "upcoming", day.toISOString()],
     queryFn: async () => {
       const { data } = await supabase
         .from("matches")
         .select("*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url,country,country_code)")
         .eq("status", "scheduled")
-        .gte("kickoff_at", new Date().toISOString())
-        .order("kickoff_at")
-        .limit(12);
+        .gte("kickoff_at", upcomingStart(day))
+        .order("kickoff_at");
       return (data ?? []) as unknown as MatchWithTeams[];
     },
   });
 
 
-  const rows = (dayQ.data ?? []).filter((m) => {
+  const activeQ = status === "upcoming" ? upcomingQ : dayQ;
+  const rows = (activeQ.data ?? []).filter((m) => {
     if (scope === "favourites") {
       const favTeam = favorites.team.includes(m.home_team_id ?? "") || favorites.team.includes(m.away_team_id ?? "");
       if (!favTeam && !favorites.match.includes(m.id) && !favorites.competition.includes(m.competition_id)) return false;
@@ -241,7 +244,7 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
   return (
     <section className={title ? "mb-8 mt-10" : "mb-8"}>
       {title && <SectionHeader title={title} />}
-      <div data-no-gesture className="flex items-center gap-3 border-b border-border pb-3">
+      <div data-no-gesture className="flex flex-wrap items-center gap-1 border-b border-border pb-3">
         {!hideLive && (
           <Button variant="ghost" size="sm" aria-pressed={status === "live"}
             onClick={() => setStatus(status === "live" ? null : "live")}
@@ -251,7 +254,12 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
             {t("board.live")}{liveCount > 0 ? ` (${liveCount})` : ""}
           </Button>
         )}
-        <div className="ms-auto flex h-9 min-w-0 items-center gap-1">
+        <Button variant={status === "upcoming" ? "secondary" : "ghost"} size="sm" aria-pressed={status === "upcoming"}
+          onClick={() => setStatus(status === "upcoming" ? null : "upcoming")}
+          className="h-9 shrink-0 rounded-md px-2 text-xs font-semibold">
+          {tx("Upcoming")}
+        </Button>
+        <div className="ms-auto flex h-9 min-w-0 items-center gap-0">
           <Button variant="ghost" size="icon" className="size-8 rounded-md text-muted-foreground" onClick={() => setOffset(offset - 1)} aria-label={tx("Previous day")}><ChevronLeft className="size-4" /></Button>
           <Button variant="ghost" onClick={() => setCalendarOpen(true)} className="h-9 min-w-0 gap-1.5 px-2 text-xs font-semibold"><CalendarDays className="size-3.5 text-muted-foreground" />{dayLabel}</Button>
           <Button variant="ghost" size="icon" className="size-8 rounded-md text-muted-foreground" onClick={() => setOffset(offset + 1)} aria-label={tx("Next day")}><ChevronRight className="size-4" /></Button>
@@ -264,9 +272,9 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
       }} onClose={() => setCalendarOpen(false)} />}
 
       <div className="mt-4">
-        {dayQ.isLoading ? (
+        {activeQ.isLoading ? (
           <LoadingSkeleton count={3} className="h-16" />
-        ) : rows.length === 0 && (dayQ.data ?? []).length === 0 && (upcomingQ.data?.length ?? 0) > 0 ? (
+        ) : status !== "upcoming" && rows.length === 0 && (dayQ.data ?? []).length === 0 && (upcomingQ.data?.length ?? 0) > 0 ? (
           <div className="rounded-2xl border border-border bg-card py-6 text-center text-sm text-muted-foreground">
             {t("board.none")}
             <Button variant="outline" size="sm" aria-expanded={showUpcoming} onClick={() => setShowUpcoming((v) => !v)}
@@ -276,7 +284,7 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
             {showUpcoming && (
               <div className="mt-5 text-start">
                 <div className="mb-2 px-1 text-xs font-bold uppercase tracking-widest text-muted-foreground">{tx("Upcoming matches")}</div>
-                <MatchGroups data={upcomingQ.data!} />
+                <MatchGroups data={upcomingQ.data ?? []} />
               </div>
             )}
           </div>
@@ -371,42 +379,35 @@ function LiveSection({ live }: { live: MatchWithTeams[] | undefined }) {
   );
 }
 
-/** In-app month calendar, so tapping the date never opens the phone's own picker. */
+/** Match dots are loaded for the visible month, including adjacent calendar days. */
 function MonthCalendar({ day, onPick, onClose }: { day: Date; onPick: (d: Date) => void; onClose: () => void }) {
   const tx = useTx();
   const { lang } = useI18n();
   const [month, setMonth] = useState(() => new Date(day.getFullYear(), day.getMonth(), 1));
-  const today = new Date(); today.setHours(0, 0, 0, 0);
-  const first = new Date(month.getFullYear(), month.getMonth(), 1);
-  const startPad = first.getDay();
-  const daysInMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
-  const cells: (Date | null)[] = [
-    ...Array.from({ length: startPad }, () => null),
-    ...Array.from({ length: daysInMonth }, (_, i) => new Date(month.getFullYear(), month.getMonth(), i + 1)),
-  ];
-  const locale = lang === "ar" ? "ar-EG" : "en-GB";
-  const same = (a: Date, b: Date) => a.toDateString() === b.toDateString();
+  const fixtures = useQuery({
+    queryKey: ["board", "calendar", month.getFullYear(), month.getMonth()],
+    queryFn: async () => {
+      const start = new Date(month.getFullYear(), month.getMonth(), -6);
+      const end = new Date(month.getFullYear(), month.getMonth() + 1, 8);
+      const { data, error } = await supabase.from("matches").select("kickoff_at")
+        .gte("kickoff_at", start.toISOString()).lt("kickoff_at", end.toISOString());
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const marked = matchDates(fixtures.data ?? []);
   return (
-    <div className="border-b border-border bg-muted/30 px-3 py-3">
-      <div className="mb-2 flex items-center justify-between">
-        <button onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))} className="grid h-8 w-8 place-items-center rounded-full border border-border text-primary"><ChevronLeft className="h-4 w-4" /></button>
-        <div className="text-sm font-bold">{month.toLocaleDateString(locale, { month: "long", year: "numeric" })}</div>
-        <button onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))} className="grid h-8 w-8 place-items-center rounded-full border border-border text-primary"><ChevronRight className="h-4 w-4" /></button>
-      </div>
-      <div className="grid grid-cols-7 gap-1 text-center text-[0.6rem] font-bold uppercase text-muted-foreground">
-        {Array.from({ length: 7 }, (_, i) => <div key={i}>{new Date(2024, 8, 1 + i).toLocaleDateString(locale, { weekday: "short" })}</div>)}
-      </div>
-      <div className="mt-1 grid grid-cols-7 gap-1">
-        {cells.map((cell, index) => cell ? (
-          <button key={index} onClick={() => onPick(cell)}
-            className={`h-9 rounded-xl text-sm font-semibold transition ${same(cell, day) ? "bg-primary text-primary-foreground" : same(cell, today) ? "border border-primary/50 text-primary" : "hover:bg-accent"}`}>
-            {cell.getDate()}
-          </button>
-        ) : <div key={index} />)}
-      </div>
+    <div data-no-gesture className="pointer-events-auto border-b border-border bg-muted/30 px-3 py-3">
+      <Calendar mode="single" selected={day} onSelect={(date) => { if (date) onPick(date); }}
+        month={month} onMonthChange={setMonth} locale={lang === "ar" ? ar : enGB}
+        className="pointer-events-auto mx-auto w-full bg-transparent"
+        classNames={{ root: "w-full", day: "relative w-full", month: "flex w-full flex-col gap-4" }}
+        modifiers={{ hasMatch: (date) => marked.has(matchDateKey(date)) }}
+        modifiersClassNames={{ hasMatch: "after:pointer-events-none after:absolute after:bottom-1 after:left-1/2 after:size-1 after:-translate-x-1/2 after:rounded-full after:bg-primary [&:has([data-selected-single=true])]:after:bg-primary-foreground" }}
+      />
       <div className="mt-2 flex justify-between">
-        <button onClick={() => onPick(today)} className="rounded-full px-3 py-1.5 text-xs font-bold text-primary">{tx("Today")}</button>
-        <button onClick={onClose} className="rounded-full px-3 py-1.5 text-xs font-semibold text-muted-foreground">{tx("Close")}</button>
+        <Button variant="ghost" size="sm" onClick={() => onPick(new Date())} className="text-xs font-bold text-primary">{tx("Today")}</Button>
+        <Button variant="ghost" size="sm" onClick={onClose} className="text-xs text-muted-foreground">{tx("Close")}</Button>
       </div>
     </div>
   );
