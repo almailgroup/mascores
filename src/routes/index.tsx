@@ -473,7 +473,7 @@ function TeamFilterDialog({ onClose, onPick, onPickPair }: {
         )}
         <label className="mt-4 flex h-12 shrink-0 items-center gap-3 rounded-full border border-border bg-card px-4">
           <Search className="h-5 w-5 shrink-0 text-muted-foreground" />
-          <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder={tx("Search teams")} aria-label={tx("Search teams")} className="min-w-0 flex-1 bg-transparent text-sm outline-none" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={tx("Search teams")} aria-label={tx("Search teams")} className="min-w-0 flex-1 bg-transparent text-sm outline-none" />
         </label>
         <div className="mt-4 flex-1">
           {teamsQ.isLoading ? <LoadingSkeleton count={6} className="h-14" /> : searching && visible.length === 0 ? (
