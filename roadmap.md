@@ -20,7 +20,7 @@
 
 - [x] Fix the reported calendar lag/layout issue.
 
-- [ ] Home board: Filter pill that opens a team-search dialog; picking a team opens its matches.
-- [ ] Fix: tapping the active bottom tab (Home, Favorites, News, Transfers, Tickets) should scroll back to top.
-- [ ] Filter rework: full-screen, default shows Zain Premier League clubs + Kuwait national team, search shows the rest, picking a club shows its matches on the home board (no club-page navigation).
-- [ ] Upcoming toggle: clicking Upcoming again keeps upcoming matches visible (no clearing); only day/calendar selection re-enables the toggle to switch to a specific day.
+- [x] Home board: Filter pill opens a full-screen team search (Zain Premier League clubs + Kuwait national team first); picking a team shows its matches on the board with a clearable chip.
+- [x] Fix: tapping the active bottom tab scrolls back to top (smooth); switching tabs starts the new page at the top.
+- [x] Filter rework: full-screen, Zain Premier League clubs + Kuwait national team by default, search reveals the rest, picked club filters the home board.
+- [x] Upcoming toggle: re-tapping Upcoming keeps upcoming matches; day/calendar views bring it back.
