@@ -66,7 +66,7 @@ export function AiPhotoRequest({ open, onClose, players, onSaved }: { open: bool
         {running
           ? <button className={btnGhost} onClick={() => { stop.current = true; }}>Stop after current</button>
           : <button className={btnGhost} onClick={onClose}>Close</button>}
-        <button className={btnPrimary} disabled={running || !text.trim() || withPhotos.length === 0} onClick={run}>{running ? "Working…" : "Apply to all photos"}</button>
+        <button className={btnPrimary} disabled={running || !text.trim() || withPhotos.length === 0} onClick={run}>{running ? "Working…" : "Save changes"}</button>
       </div>
       {Object.keys(status).length > 0 && (
         <div className="mt-4 grid gap-1">
