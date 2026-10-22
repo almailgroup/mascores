@@ -17,3 +17,5 @@
 - [x] Lower the account-deletion confirmation and verify its placement.
 - [ ] Default Home to Upcoming; date selection switches to the picked day.
 - [ ] Add consistent watermark, website, and Instagram to every shared image and verify exports.
+
+- [ ] Fix the reported calendar lag/layout issue.
