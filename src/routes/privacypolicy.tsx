@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ShieldCheck, Database, Eye, Lock, Mail, UserX, FileText, RefreshCcw } from "lucide-react";
 import { AppShell, BackButton } from "@/components/app-shell";
+import { BrandLogo } from "@/components/brand-logo";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/privacypolicy")({

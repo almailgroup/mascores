@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Mail, Instagram, MessageCircle, Bug, Trophy, ArrowLeftRight } from "lucide-react";
 import { AppShell, BackButton } from "@/components/app-shell";
+import { BrandLogo } from "@/components/brand-logo";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/support")({
