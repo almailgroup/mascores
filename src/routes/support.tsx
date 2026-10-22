@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Mail, Instagram, MessageCircle, Bug, Trophy, ArrowLeftRight } from "lucide-react";
-import { AppShell } from "@/components/app-shell";
-import { BrandLogo } from "@/components/brand-logo";
+import { AppShell, BackButton } from "@/components/app-shell";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/support")({
@@ -68,6 +67,7 @@ function SupportPage() {
 
   return (
     <AppShell>
+      <BackButton iconOnly className="mb-3" />
       <div className="mx-auto max-w-3xl pb-16">
         {/* Hero */}
         <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-8 sm:p-10">
