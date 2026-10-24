@@ -182,7 +182,7 @@ export function MatchesPanel({ competitionId, season = null, friendly = false }:
                         <span className="min-w-0 flex-1 truncate">{teamName(m.away_team_id)}</span>
                         {m.away_score != null && <span className="shrink-0 tabular-nums">{m.away_score}</span>}
                       </div>
-                      <div className="truncate text-[0.65rem] text-muted-foreground">{formatKickoff(m.kickoff_at)}{m.venue ? ` · ${m.venue}` : ""}</div>
+                      <div className="truncate text-[0.65rem] text-muted-foreground">{m.status === "postponed" ? "Postponed" : formatKickoff(m.kickoff_at, undefined, m.kickoff_date)}{m.venue ? ` · ${m.venue}` : ""}</div>
                     </div>
                   </div>
 

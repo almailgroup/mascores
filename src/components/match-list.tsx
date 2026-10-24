@@ -137,7 +137,7 @@ export function MatchRow({ m, highlightTeamId }: { m: MatchWithTeams; highlightT
           <span className="block font-semibold">{tx(m.status.charAt(0).toUpperCase() + m.status.slice(1))}</span>
         ) : (
           <>
-            <div className="tabular-nums">{num(dates.kickoff(m.kickoff_at))}</div>
+            <div className="tabular-nums">{num(dates.kickoff(m.kickoff_at, m.kickoff_date))}</div>
             {started && <div className="font-semibold uppercase">{m.status === "ft" ? "FT" : m.status.toUpperCase()}</div>}
           </>
         )}
