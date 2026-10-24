@@ -307,7 +307,7 @@ function PlayerMatches({ data, playerId, playerTeamId }: { data: PlayerMatchData
                   </div>
                   <div className="flex w-11 shrink-0 items-center justify-end gap-0.5 text-[0.65rem]">
                     {goals > 0 && <span className="flex items-center gap-0.5"><EventIcon type="goal" className="h-3.5 w-3.5" />{goals > 1 ? num(String(goals)) : ""}</span>}
-                    {assists > 0 && <span title={tx("Assist") ?? "Assist"}>👟</span>}
+                    {assists > 0 && <EventIcon type="assist" className="h-3.5 w-3.5" />}
                     {yellow && <EventIcon type="yellow" className="h-3.5 w-3.5" />}
                     {red && <EventIcon type="red" className="h-3.5 w-3.5" />}
                   </div>
