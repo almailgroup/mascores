@@ -1,5 +1,8 @@
 # Roadmap
 
+- [ ] Check full match-specific benches for rounds 1–6 against source records; add only confirmed reserves.
+- [ ] Audit and correct historical match coaches, including reversed home/away snapshots; verify saved results.
+
 - [x] Import verified Zain Premier League rounds 1–6: results, referee/channel, lineups, events, stats, and transparent calculated ratings; resolve player identities and use Al names without hyphens.
 - [x] Verify imported totals and a real match in the app; source omits one incoming substitute, performance ratings, and detailed possession/shot statistics. Ratings are explicitly event-based estimates; upcoming fixtures retain no results.
 
