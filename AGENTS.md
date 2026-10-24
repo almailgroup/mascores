@@ -49,3 +49,7 @@
 - Shared card renderers finalize through one canvas export footer so every saved/shared image has consistent branding without obscuring content.
 - Edge functions must not import from src/; deploys bundle only supabase/functions, so a shared import silently keeps the old sender live.
 - Historical imports retain source attribution and label calculated ratings as estimates; validate fixture counts and starters with scripts/verify-rounds-1-6.sql to avoid fabricating future results. Source-calculated benches retain that distinction in match notes; scripts/mfsoccer_bench.py applies source participation/absence rules, and scripts/mfsoccer-bench-import.json records confirmed additions for repeatable auditing without inferring conflicting identities.
+- Possible lineups are read-only projections from the latest completed, published same-season competition lineup; never insert projections as confirmed match participants.
+- Missing-player records use the match admin permission boundary and remain distinct from participating lineup rows.
+- Match clock formatting uses a shared connection timezone store with device fallback; local clock-format choices take precedence over stale profile hydration.
+- Batch social-link AI only proposes existing squad IDs and exact supplied URLs; review and merge links without replacing unrelated networks.
