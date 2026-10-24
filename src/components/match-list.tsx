@@ -130,13 +130,15 @@ export function MatchRow({ m, highlightTeamId }: { m: MatchWithTeams; highlightT
   );
   return (
     <Link data-fixture-id={m.id} to="/matches/$id" params={{ id: m.id }} className="flex items-center gap-2.5 px-3.5 py-2 hover:bg-accent">
-      <div className="w-12 shrink-0 text-center text-[0.65rem] leading-tight text-muted-foreground">
+      <div className="w-[4.5rem] shrink-0 break-words text-center text-[0.65rem] leading-tight text-muted-foreground">
         {isLive ? (
            <span className="font-bold text-primary">{m.status === "live" ? `${num(minute)}'` : "HT"}</span>
+        ) : specialStatus ? (
+          <span className="block font-semibold">{tx(m.status.charAt(0).toUpperCase() + m.status.slice(1))}</span>
         ) : (
           <>
             <div className="tabular-nums">{num(dates.kickoff(m.kickoff_at))}</div>
-            {(started || specialStatus) && <div className="font-semibold uppercase">{m.status === "ft" ? "FT" : m.status.toUpperCase()}</div>}
+            {started && <div className="font-semibold uppercase">{m.status === "ft" ? "FT" : m.status.toUpperCase()}</div>}
           </>
         )}
       </div>

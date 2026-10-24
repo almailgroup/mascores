@@ -26,6 +26,7 @@ import { StandingsTable } from "@/components/standings-table";
 import { useCompetitionLogo } from "@/lib/comp-logo";
 import { useLogoAccent } from "@/lib/logo-accent";
 import { compareGroupLabels } from "@/lib/group-order";
+import { compareCompetitionRounds, fixtureTime } from "@/lib/competition-match-order";
 import { useCollapsingHeader } from "@/hooks/use-collapsing-header";
 import { SportsHeaderBackground } from "@/components/sports-header-background";
 import { Button } from "@/components/ui/button";
@@ -436,22 +437,15 @@ function CompetitionMatches({ data }: { data: MatchWithTeams[] }) {
     bucket.matches.push(m);
     buckets.set(key, bucket);
   });
-  // Cards follow the calendar: each card sits where its earliest match falls,
-  // so Group A and Group B rounds interleave by date instead of all of Group A
-  // running before Group B. Ties fall back to group then round order.
-  const firstDate = (b: { matches: MatchWithTeams[] }) =>
-    Math.min(...b.matches.map((m) => new Date(m.kickoff_at ?? 0).getTime()));
+  // Keep numbered rounds in place even when fixtures are TBD or postponed.
   for (const bucket of buckets.values()) {
-    bucket.matches.sort((a, b) => new Date(a.kickoff_at ?? 0).getTime() - new Date(b.kickoff_at ?? 0).getTime());
+    bucket.matches.sort((a, b) => fixtureTime(a) - fixtureTime(b));
   }
   const list = [...buckets.values()].sort((a, b) => {
-    const byDate = firstDate(a) - firstDate(b);
-    if (byDate) return byDate;
+    const byRound = compareCompetitionRounds(a, b);
+    if (byRound) return byRound;
     const byGroup = compareGroupLabels(a.group, b.group, false);
     if (byGroup) return byGroup;
-    const ra = a.round.startsWith("#") ? Number(a.round.slice(1)) : null;
-    const rb = b.round.startsWith("#") ? Number(b.round.slice(1)) : null;
-    if (ra != null && rb != null && ra !== rb) return ra - rb;
     return a.order - b.order;
   });
   return (

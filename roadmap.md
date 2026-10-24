@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Keep TBD/postponed rounds in sequence, fit status-only postponed labels, and replace the player-match assist emoji with a shared symbol; four round-order tests pass and verified the real competition/player pages at phone size.
+
 - [x] Check source benches: mfsoccer rounds 1–6 contains starters and came-on substitutions only, not full match-day reserves.
 - [x] Import 667 confirmed mfsoccer displayed reserves across all 64 completed round 1–6 match sides; preserve starters/substitutions, attribute calculated benches in notes, and verify Al Qadsia’s bench on-screen.
 - [x] Add all eight resolved bench players’ 31 omitted round 1–6 appearances using the six user-confirmed aliases and the newly created Meshal Al Habs / Abdulaziz Salah profiles; verified 704 starters unchanged, 986 reserves/substitutes, no future lineups, and Vinicius on the round-3 match bench. Audit: scripts/mfsoccer-bench-resolved.json.
