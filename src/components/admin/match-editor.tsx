@@ -398,12 +398,11 @@ function RatingsEditor({ match, lineups, players }: { match: Match; lineups: Lin
   };
   if (lineups.length === 0) return null;
   const cameOn = new Set((eventsQ.data ?? []).filter((e) => e.type === "substitution" && e.player_id).map((e) => e.player_id as string));
-  const rated = lineups.filter((lu) => lu.is_starting || cameOn.has(lu.player_id));
+  const rated = lineups;
   if (rated.length === 0) return null;
   return (
     <section className="rounded-xl border border-border bg-background/40 p-3">
       <h4 className="mb-2 text-sm font-bold">Player ratings</h4>
-      <p className="mb-2 text-[0.65rem] text-muted-foreground">Starting eleven and substitutes who came on.</p>
       <div className="grid gap-1.5 sm:grid-cols-2">
         {rated.map((lu) => {
           const player = players.find((p) => p.id === lu.player_id);

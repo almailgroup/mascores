@@ -181,6 +181,7 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
                   <span className="text-center text-xs tabular-nums text-muted-foreground">{num(row.drawn)}</span>
                   <span className="text-center text-xs tabular-nums text-muted-foreground">{num(row.lost)}</span>
                   <span className="text-center text-xs tabular-nums text-muted-foreground">{num(row.gf)}:{num(row.ga)}</span>
+                  <span className="text-center text-xs tabular-nums text-muted-foreground">{num(row.gf - row.ga)}</span>
                   <span className="text-center text-sm font-black tabular-nums text-primary">{num(row.points + row.points_adjust)}</span>
                 </>}
                 {view === "form" && <span className="flex justify-end">
