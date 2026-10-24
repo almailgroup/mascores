@@ -1,5 +1,11 @@
 # Roadmap
 
+- [ ] Possible lineups seven days before kickoff, missing-player reasons, richer event player dialogs and substitutions.
+- [ ] Preserve clock preference and adopt connection-location timezone when available.
+- [ ] Full standings GD and full-table image sharing.
+- [ ] Batch social links from admin messages for club squads.
+- [ ] Open all admin lineup/bench players for match rating and shirt-number editing.
+
 - [x] Fix admin numbered-round sorting with shared comparator; authenticated phone verification shows rounds 1–11 in sequence.
 - [x] Apply uploaded Zain Premier League rounds 7–11 photos to all 30 existing fixtures: correct sides/dates/stadiums, postpone Kuwait–Kazma with no invented date, and store rounds 9–11 as announced dates with Time TBD. Verified database counts, match detail, Home Upcoming and 15 tests.
 
