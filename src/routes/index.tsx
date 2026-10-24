@@ -19,6 +19,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { ar, enGB } from "date-fns/locale";
 import { visibleWelcomeTeams } from "@/lib/welcome-teams";
 import { DEFAULT_MATCH_VIEW, matchDateKey, matchDates, upcomingStart } from "@/lib/match-calendar";
+import { scheduleTime } from "@/lib/fixture-schedule";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -193,10 +194,9 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
       const { data } = await supabase
         .from("matches")
         .select("*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url,country,country_code)")
-        .gte("kickoff_at", start.toISOString())
-        .lt("kickoff_at", end.toISOString())
+        .or(`and(kickoff_at.gte.${start.toISOString()},kickoff_at.lt.${end.toISOString()}),and(kickoff_at.is.null,kickoff_date.eq.${matchDateKey(day)})`)
         .order("kickoff_at");
-      return (data ?? []) as unknown as MatchWithTeams[];
+      return ((data ?? []) as unknown as MatchWithTeams[]).sort((a, b) => scheduleTime(a) - scheduleTime(b));
     },
     refetchInterval: 60_000,
   });
@@ -211,9 +211,9 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
         .from("matches")
         .select("*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url,country,country_code)")
         .eq("status", "scheduled")
-        .gte("kickoff_at", upcomingStart(day))
+        .or(`kickoff_at.gte.${upcomingStart(day)},and(kickoff_at.is.null,kickoff_date.gte.${matchDateKey(day)})`)
         .order("kickoff_at");
-      return (data ?? []) as unknown as MatchWithTeams[];
+      return ((data ?? []) as unknown as MatchWithTeams[]).sort((a, b) => scheduleTime(a) - scheduleTime(b));
     },
   });
 
@@ -584,8 +584,8 @@ function MonthCalendar({ day, onPick, onClose }: { day: Date; onPick: (d: Date) 
     queryFn: async () => {
       const start = new Date(month.getFullYear(), month.getMonth(), -6);
       const end = new Date(month.getFullYear(), month.getMonth() + 1, 8);
-      const { data, error } = await supabase.from("matches").select("kickoff_at")
-        .gte("kickoff_at", start.toISOString()).lt("kickoff_at", end.toISOString());
+      const { data, error } = await supabase.from("matches").select("kickoff_at,kickoff_date")
+        .or(`and(kickoff_at.gte.${start.toISOString()},kickoff_at.lt.${end.toISOString()}),and(kickoff_at.is.null,kickoff_date.gte.${matchDateKey(start)},kickoff_date.lt.${matchDateKey(end)})`);
       if (error) throw error;
       return data ?? [];
     },
@@ -676,7 +676,7 @@ export function MatchTile({ m }: { m: MatchWithTeams }) {
               )}
             </div>
           ) : (
-            <div className="text-xs font-medium text-muted-foreground">{num(dates.kickoff(m.kickoff_at))}</div>
+            <div className="text-xs font-medium text-muted-foreground">{num(dates.kickoff(m.kickoff_at, m.kickoff_date))}</div>
           )}
         </div>
         <TeamRow name={tx(m.away?.name) ?? "TBD"} logo={m.away?.logo_url ?? null} align="left" />

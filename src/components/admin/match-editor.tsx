@@ -236,6 +236,7 @@ function MainTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
       home_team_id: form.home_team_id ?? null,
       away_team_id: form.away_team_id ?? null,
       kickoff_at: form.kickoff_at ?? null,
+      kickoff_date: form.kickoff_at ? null : form.kickoff_date ?? null,
       round_number: stage !== "league" ? null : (form.round_number ?? null),
       round: stage === "knockout" ? knockout
         : stage === "qualification" ? `Qualification round ${qualNo ?? 1}`
@@ -278,6 +279,7 @@ function MainTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
           <input type="datetime-local" className={inputCls} value={local}
             onChange={(e) => setForm({ ...form, kickoff_at: e.target.value ? new Date(e.target.value).toISOString() : null })} />
         </Field>
+        {!form.kickoff_at && <Field label="Announced date (time TBD)"><input type="date" className={inputCls} value={form.kickoff_date ?? ""} onChange={(e) => setForm({ ...form, kickoff_date: e.target.value || null })} /></Field>}
         <Field label="Stage">
           <select className={inputCls} value={stage} onChange={(e) => setStage(e.target.value as typeof stage)}>
             <option value="league">League / group round</option>
