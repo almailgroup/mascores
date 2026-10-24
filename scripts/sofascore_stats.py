@@ -13,7 +13,7 @@ LABELS = {
 def team_key(name):
     value = re.sub(r"\b(?:sc|fc|kuwait)\b", "", name.lower())
     value = re.sub(r"[^a-z]", "", value)
-    return {"": "kuwait", "alkuwait": "kuwait", "alsulaibikhat": "sulaibikhat",
+    return {"": "kuwait", "al": "kuwait", "alkuwait": "kuwait", "alsulaibikhat": "sulaibikhat",
             "tadhamon": "altadamon"}.get(value, value)
 
 
