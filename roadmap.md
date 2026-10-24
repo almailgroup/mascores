@@ -1,5 +1,8 @@
 # Roadmap
 
+- [ ] Fix admin numbered-round sorting with shared comparator and verify against the real competition.
+- [ ] Compare uploaded Zain Premier League rounds 7–11 schedule photos and apply confirmed date, venue and postponement changes without inventing times.
+
 - [x] Keep TBD/postponed rounds in sequence, fit status-only postponed labels, and replace the player-match assist emoji with a shared symbol; four round-order tests pass and verified the real competition/player pages at phone size.
 
 - [x] Check source benches: mfsoccer rounds 1–6 contains starters and came-on substitutions only, not full match-day reserves.
