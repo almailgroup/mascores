@@ -1,5 +1,6 @@
 import { createOpenAI } from "@ai-sdk/openai";
-import { streamText, type ModelMessage } from "ai";
+import { streamText, Output, type ModelMessage } from "ai";
+import { z } from "zod";
 
 import {
   createLovableAiGatewayRunIdFetch,
@@ -22,6 +23,7 @@ export function createResponsesCall(
   });
   const reasoning = config.model !== "openai/chat-latest";
   const result = streamText({
+    output: Output.object({ schema: z.object({ links: z.array(z.object({ player_id:z.string(),network:z.string(),url:z.string() })) }) }),
     model: provider.responses(config.model),
     // AI SDK 6 lacks `instructions`: rename this key to `system` there.
     ...(instructions ? { system: instructions } : {}),
