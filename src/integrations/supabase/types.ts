@@ -1040,6 +1040,55 @@ export type Database = {
           },
         ]
       }
+      match_missing_players: {
+        Row: {
+          custom_reason: string | null
+          id: string
+          match_id: string
+          player_id: string
+          reason: string
+          team_id: string
+        }
+        Insert: {
+          custom_reason?: string | null
+          id?: string
+          match_id: string
+          player_id: string
+          reason?: string
+          team_id: string
+        }
+        Update: {
+          custom_reason?: string | null
+          id?: string
+          match_id?: string
+          player_id?: string
+          reason?: string
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_missing_players_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_missing_players_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_missing_players_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       match_momentum: {
         Row: {
           match_id: string

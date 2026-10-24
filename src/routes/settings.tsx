@@ -8,7 +8,7 @@ import { AppShell, BackButton } from "@/components/app-shell";
 import { uploadMedia } from "@/components/admin/upload";
 import { CURRENCIES, useCurrency } from "@/lib/currency";
 import { useHeightUnit } from "@/lib/units";
-import { getTimeFormat, setTimeFormat, type TimeFormat } from "@/lib/time-format";
+import { getTimeFormat, setTimeFormat, adoptProfileTimeFormat, subscribeTimeFormat, type TimeFormat } from "@/lib/time-format";
 import { deleteMyAccount } from "@/lib/account.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { Save, LogOut, Loader2, LogIn, Camera, Trash2, BellRing, ChevronDown, ChevronRight, User, ShieldCheck, LifeBuoy, Ticket as TicketIcon, Settings as SettingsIcon } from "lucide-react";
@@ -50,6 +50,7 @@ function SettingsPage() {
   const [hideFollows, setHideFollows] = useState(false);
   const { heightUnit, setHeightUnit } = useHeightUnit();
   const [timeFormat, setTimeFormatState] = useState<TimeFormat>(getTimeFormat());
+  useEffect(() => subscribeTimeFormat(() => setTimeFormatState(getTimeFormat())), []);
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -74,7 +75,7 @@ function SettingsPage() {
       setHideFollows(!!prof?.hide_follows);
       if (prof?.notification_preferences && typeof prof.notification_preferences === "object" && !Array.isArray(prof.notification_preferences)) setAlertPrefs((prev) => ({ ...prev, ...(prof.notification_preferences as typeof prev) }));
       if (prof?.height_unit === "ft" || prof?.height_unit === "cm") setHeightUnit(prof.height_unit);
-      if (prof?.time_format === "12" || prof?.time_format === "24") { setTimeFormat(prof.time_format); setTimeFormatState(prof.time_format); }
+      adoptProfileTimeFormat(prof?.time_format); setTimeFormatState(getTimeFormat());
     })();
   }, [user, authLoading]);
 
@@ -271,15 +272,15 @@ function SettingsPage() {
             <div className="mb-3 text-sm font-semibold">{lang === "ar" ? "صيغة الوقت" : "Time format"}</div>
             <div className="grid max-w-xs grid-cols-2 gap-2">
               {(["12", "24"] as const).map((f) => (
-                <button key={f} type="button" onClick={() => {
+                <Button key={f} type="button" variant="ghost" onClick={async () => {
                   setTimeFormat(f);
                   setTimeFormatState(f);
-                  if (user) void supabase.from("profiles").update({ time_format: f }).eq("id", user.id);
+                  if (user) { const { error } = await supabase.from("profiles").update({ time_format: f }).eq("id", user.id); if (error) setNotice(lang === "ar" ? "تم حفظ الوقت على جهازك؛ تعذرت مزامنة الحساب." : "Time saved on this device; account sync failed."); }
                   void queryClient.invalidateQueries();
                 }}
                   className={`rounded-xl border px-3 py-2 text-sm ${timeFormat === f ? "border-primary bg-primary/10 text-primary" : "border-border bg-background hover:bg-accent"}`}>
                   {f === "12" ? "12 h" : "24 h"}
-                </button>
+                </Button>
               ))}
             </div>
           </div>

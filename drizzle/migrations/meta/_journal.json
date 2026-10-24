@@ -428,6 +428,13 @@
       "when": 1792883577607,
       "tag": "0060_store_announced_fixture_dates",
       "breakpoints": true
+    },
+    {
+      "idx": 61,
+      "version": "7",
+      "when": 1792884499215,
+      "tag": "0061_match_missing_players",
+      "breakpoints": true
     }
   ]
 }

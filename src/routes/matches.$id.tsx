@@ -1,3 +1,7 @@
+import { possibleLineupWindow } from "@/lib/possible-lineup";
+import { MatchMissingPlayers } from "@/components/match-missing-players";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import lineupLogo from "@/assets/logo-mark-v2.png.asset.json";
 import { LineupPortraits, PlayerAvatar } from "@/components/player-avatar";
 import { TeamCrest } from "@/components/team-crest";
@@ -97,6 +101,7 @@ function MatchPage() {
   const { id } = Route.useParams();
   const { lang } = useI18n();
   const [tab, setTab] = useState<"details" | "lineups" | "stats" | "standings" | "previous" | "media">("details");
+  const [selectedEvent, setSelectedEvent] = useState<(MatchEvent & { player: Player | null; sub_out: { id: string; name: string } | null; assister?: { id: string; name: string; photo_url: string | null } | null }) | null>(null);
   const [lineupSide, setLineupSide] = useState<"home" | "away">("home");
   useRealtime(["matches", "match_events", "match_lineups", "player_ratings", "match_stats", "match_chat_messages", "media_items", "standings_rows"]);
   const m = useQuery({
@@ -113,9 +118,9 @@ function MatchPage() {
     queryKey: ["match-events", id],
     queryFn: async () => {
       const { data } = await supabase.from("match_events")
-        .select("*, player:player_id(id,name,name_ar,shirt_number,photo_url), team:team_id(id,name), sub_out:sub_out_player_id(id,name)")
+        .select("*, player:player_id(id,name,name_ar,shirt_number,photo_url), team:team_id(id,name), sub_out:sub_out_player_id(id,name), assister:assist_player_id(id,name,photo_url)")
         .eq("match_id", id).order("minute").order("extra");
-      return (data ?? []) as unknown as (MatchEvent & { player: Player | null; team: Team | null; sub_out: { id: string; name: string } | null })[];
+      return (data ?? []) as unknown as (MatchEvent & { player: Player | null; team: Team | null; sub_out: { id: string; name: string } | null; assister?: { id: string; name: string; photo_url: string | null } | null })[];
     },
   });
   const lineups = useQuery({
@@ -134,6 +139,24 @@ function MatchPage() {
         return { ...row, shirt_number: row.shirt_number ?? call.shirt_number, player: applyCallUp(row.player, call) };
       });
     },
+  });
+  const possible = useQuery({
+    queryKey: ["possible-lineups", id, m.data?.competition_id, m.data?.kickoff_at, m.data?.kickoff_date],
+    enabled: !!m.data && !m.data.lineups_published && possibleLineupWindow(m.data.status, m.data.kickoff_at, m.data.kickoff_date),
+    queryFn: async () => {
+      const match = m.data; if (!match?.season) return { rows: [] as (Lineup & { player: Player | null })[], formations: {} as Record<string,string> };
+      const season = match.season;
+      const sides = await Promise.all([match.home_team_id, match.away_team_id].map(async teamId => {
+        if (!teamId) return null;
+        const { data: history } = await supabase.from("matches").select("id,home_team_id,home_formation,away_formation").eq("competition_id",match.competition_id).eq("season",season).eq("lineups_published",true).in("status",["ft","aet","pen","awarded"]).or(`home_team_id.eq.${teamId},away_team_id.eq.${teamId}`).lt("kickoff_at",match.kickoff_at ?? `${match.kickoff_date}T00:00:00Z`).order("kickoff_at",{ascending:false}).limit(1).maybeSingle();
+        if (!history) return null;
+        const { data } = await supabase.from("match_lineups").select("*,player:player_id(*)").eq("match_id",history.id).eq("team_id",teamId);
+        const { data: absent } = await supabase.from("match_missing_players").select("player_id").eq("match_id",id).eq("team_id",teamId);
+        const missing = new Set((absent ?? []).map(p=>p.player_id));
+        return { teamId, formation: (history.home_team_id === teamId ? history.home_formation : history.away_formation) ?? "4-3-3", rows: ((data ?? []) as unknown as (Lineup & {player:Player|null})[]).filter(row=> !missing.has(row.player_id) && (!row.player?.team_id || row.player.team_id===teamId)) };
+      }));
+      return { rows: sides.flatMap(s=>s?.rows ?? []), formations: Object.fromEntries(sides.flatMap(s=>s ? [[s.teamId,s.formation]] : [])) as Record<string,string> };
+    }
   });
   const stats = useQuery({ queryKey: ["match-stats", id], queryFn: async () => (await supabase.from("match_stats").select("*").eq("match_id", id).order("sort_order")).data ?? [] });
   const prediction = useQuery({ queryKey: ["match-prediction", id], queryFn: async () => (await supabase.from("match_predictions").select("*").eq("match_id", id).maybeSingle()).data });
@@ -170,7 +193,9 @@ function MatchPage() {
   const match = m.data;
   const isLive = ["live", "ht"].includes(match.status);
   const hasStarted = !["scheduled", "postponed", "cancelled"].includes(match.status);
-  const lineupsVisible = match.lineups_published && (lineups.data?.length ?? 0) > 0;
+  const isPossible = !match.lineups_published && possibleLineupWindow(match.status,match.kickoff_at,match.kickoff_date) && (possible.data?.rows.length ?? 0) > 0;
+  const displayLineups = isPossible ? possible.data?.rows ?? [] : lineups.data ?? [];
+  const lineupsVisible = (match.lineups_published && (lineups.data?.length ?? 0) > 0) || isPossible;
   const tabs: ("details" | "lineups" | "stats" | "standings" | "previous" | "media")[] = ["details", ...(lineupsVisible ? ["lineups" as const] : []), "stats", ...(match.competition?.format === "friendly" ? [] : ["standings" as const]), "previous", "media"];
   const clock = matchClockSeconds(match);
 
@@ -216,6 +241,7 @@ function MatchPage() {
 
   return (
     <AppShell>
+      <Dialog open={!!selectedEvent} onOpenChange={open=>{if(!open)setSelectedEvent(null);}}><DialogContent><DialogHeader><DialogTitle>{tx(selectedEvent ? eventLabel(selectedEvent.type) : "Player")}</DialogTitle></DialogHeader>{selectedEvent && [{p:selectedEvent.player,label:/sub/i.test(selectedEvent.type)?"In":eventLabel(selectedEvent.type)},{p:selectedEvent.assister,label:"Assist"},{p:selectedEvent.sub_out,label:"Out"}].map(({p,label})=>p && <Link key={`${label}-${p.id}`} to="/players/$id" params={{id:p.id}} className="flex items-center justify-between border-b border-border py-3"><span className="font-semibold">{tx(p.name)}</span><span className="text-xs text-muted-foreground">{tx(label)}</span></Link>)}</DialogContent></Dialog>
       <div ref={heroRef} dir="ltr" className="match-hero sports-header -mx-4 mb-4 overflow-hidden px-4 pb-0 text-match-foreground sm:-mx-6 sm:px-6">
         <SportsHeaderBackground start={homeAccent?.color} end={awayAccent?.color} />
         <div className="relative flex items-center justify-between px-1 pb-1">
@@ -304,13 +330,15 @@ function MatchPage() {
                   {tx(entry.label)}{entry.score ? <span className="tabular-nums">{num(entry.score)}</span> : null}
                 </li>
               ) : (
-                <li key={entry.event.id} className={`relative flex items-center gap-3 px-4 py-2.5 ${entry.event.player ? "active:bg-muted/60 hover:bg-muted/40" : ""} ${entry.side === "away" ? "flex-row-reverse text-end" : ""}`}>
+                <li key={entry.event.id}><Button variant="ghost" onClick={() => entry.event.player && setSelectedEvent(entry.event)} className={`h-auto w-full justify-start rounded-none relative flex items-center gap-3 px-4 py-2.5 ${entry.event.player ? "active:bg-muted/60 hover:bg-muted/40" : ""} ${entry.side === "away" ? "flex-row-reverse text-end" : ""}`}>
                   <span className="w-9 shrink-0 font-mono text-[0.7rem] text-muted-foreground">{entry.event.minute != null ? num(entry.event.minute) : "-"}{entry.event.extra ? `+${num(entry.event.extra)}` : ""}'</span>
                   <EventIcon type={entry.event.type} />
                   <span className="min-w-0 flex-1">
                     {entry.event.player ? (
                       <>
-                        <Link to="/players/$id" params={{ id: entry.event.player.id }} className="block truncate text-sm font-semibold after:absolute after:inset-0 after:content-['']">{tx(entry.event.player.name)}</Link>
+                        <span className="block truncate text-sm font-semibold">{tx(entry.event.player.name)}</span>
+                        {entry.event.assister && <span className="block text-xs text-muted-foreground">{tx("Assist")}: {tx(entry.event.assister.name)}</span>}
+                        {entry.event.sub_out && <span className="block text-xs text-muted-foreground">{tx("Out")}: {tx(entry.event.sub_out.name)}</span>}
                         <span className="block truncate text-[0.65rem] text-muted-foreground">{tx(eventLabel(entry.event.type))}{entry.event.team ? ` · ${tx(entry.event.team.name)}` : ""}</span>
                       </>
                     ) : entry.event.description ? (
@@ -325,7 +353,7 @@ function MatchPage() {
                       </span>
                     )}
                   </span>
-                </li>
+                </Button></li>
               ))}
             </ul>
           ) : <div className="px-4 py-6 text-center text-sm text-muted-foreground">{tx("No events yet.")}</div>}
@@ -375,7 +403,8 @@ function MatchPage() {
         </div>
       </div>}
 
-      {tab === "lineups" && lineupsVisible && <LineupPortraits ready={!lineups.isPending && !coachNames.isPending} sources={[...(lineups.data ?? []).map((item) => item.player?.photo_url),coachNames.data?.home?.photo_url,coachNames.data?.away?.photo_url]}><div className="space-y-4">
+      {tab === "lineups" && lineupsVisible && <LineupPortraits ready={!lineups.isPending && !coachNames.isPending} sources={[...displayLineups.map((item) => item.player?.photo_url),coachNames.data?.home?.photo_url,coachNames.data?.away?.photo_url]}><div className="space-y-4">
+      {isPossible && <h3 className="text-center text-sm font-bold">{tx("Possible lineup")}</h3>}
       <div dir="ltr" className="relative grid grid-cols-2 gap-1 rounded-full border border-border bg-muted/60 p-1">
         <span
           className="absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-full bg-primary shadow-sm transition-transform duration-300 ease-out"
@@ -395,7 +424,7 @@ function MatchPage() {
       <div>
 
       {([["home", match.home, match.home_formation], ["away", match.away, match.away_formation]] as const).filter(([side]) => side === lineupSide).map(([side, team, formation]) => {
-        const rows = lineups.data?.filter((item) => item.team_id === team?.id) ?? [];
+        const rows = displayLineups.filter((item) => item.team_id === team?.id) ?? [];
         const starters = rows.filter((r) => r.is_starting);
         const bench = rows.filter((r) => !r.is_starting);
         // Substitution events for this team: player_id is who came on,
@@ -403,7 +432,7 @@ function MatchPage() {
         const subByPlayer = new Map((events.data ?? [])
           .filter((e) => /sub/i.test(e.type) && e.team_id === team?.id && e.player_id)
           .map((e) => [e.player_id as string, e]));
-        const activeFormation = formation ?? "4-3-3";
+        const activeFormation = (isPossible && team?.id ? possible.data?.formations[team.id] : formation) ?? "4-3-3";
         const showPitch = starters.length > 0;
         const marksFor = (playerId: string) => (events.data ?? [])
           .map((e) => {
@@ -437,7 +466,7 @@ function MatchPage() {
           lineups: (["home", "away"] as const).map((clubSide) => {
             const club = clubSide === "home" ? match.home : match.away;
             const shape = (clubSide === "home" ? match.home_formation : match.away_formation) ?? "4-3-3";
-            const squad = (lineups.data ?? []).filter((item) => item.team_id === club?.id);
+            const squad = displayLineups.filter((item) => item.team_id === club?.id);
             return { teamName: tx(club?.name) ?? "TBD", logo: club?.logo_url, formation: shape,
               rows: formationRows(shape).map((row) => row.map((slot) => squad.find((p) => p.is_starting && p.position_code === slot)).filter((p): p is (typeof squad)[number] => Boolean(p)).map(shortOf)),
               bench: [...squad.filter((p) => !p.is_starting).map(shortOf), ...subsOf(club?.id).filter((s) => !squad.some((p) => !p.is_starting && (tx(p.player?.name) ?? "") === s.name))] };
@@ -574,6 +603,7 @@ function MatchPage() {
                 </>
               );
             })()}
+            {team?.id && <MatchMissingPlayers matchId={id} teamId={team.id} />}
             {rows.length === 0 && <p className="text-sm text-muted-foreground">{tx("No lineup posted.")}</p>}
           </div>
         );
@@ -784,7 +814,7 @@ function EventIcon({ type }: { type: string }) {
   return <EventArt type={type} className="h-5 w-5" />;
 }
 
-type TimelineEvent = MatchEvent & { player: Player | null; team: Team | null };
+type TimelineEvent = MatchEvent & { player: Player | null; team: Team | null; sub_out: { id: string; name: string } | null; assister?: { id: string; name: string; photo_url: string | null } | null };
 type TimelineEntry =
   | { kind: "divider"; key: string; label: string; score?: string }
   | { kind: "event"; event: TimelineEvent; side: "home" | "away" };

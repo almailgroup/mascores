@@ -1,3 +1,5 @@
+import { MatchMissingPlayers } from "@/components/match-missing-players";
+import { Button } from "@/components/ui/button";
 import { useServerFn } from "@tanstack/react-start";
 import { readStatsPhoto } from "@/lib/stats-photo.functions";
 import { useEffect, useMemo, useState } from "react";
@@ -396,12 +398,11 @@ function RatingsEditor({ match, lineups, players }: { match: Match; lineups: Lin
   };
   if (lineups.length === 0) return null;
   const cameOn = new Set((eventsQ.data ?? []).filter((e) => e.type === "substitution" && e.player_id).map((e) => e.player_id as string));
-  const rated = lineups.filter((lu) => lu.is_starting || cameOn.has(lu.player_id));
+  const rated = lineups;
   if (rated.length === 0) return null;
   return (
     <section className="rounded-xl border border-border bg-background/40 p-3">
       <h4 className="mb-2 text-sm font-bold">Player ratings</h4>
-      <p className="mb-2 text-[0.65rem] text-muted-foreground">Starting eleven and substitutes who came on.</p>
       <div className="grid gap-1.5 sm:grid-cols-2">
         {rated.map((lu) => {
           const player = players.find((p) => p.id === lu.player_id);
@@ -423,6 +424,10 @@ function RatingsEditor({ match, lineups, players }: { match: Match; lineups: Lin
 function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSaved: () => void }) {
   const qc = useQueryClient();
   const [picker, setPicker] = useState<{ teamId: string; slot: string } | null>(null);
+  const [editingLineup, setEditingLineup] = useState<Lineup | null>(null);
+  const [editNumber, setEditNumber] = useState("");
+  const [editRating, setEditRating] = useState("");
+  const [playerSaving, setPlayerSaving] = useState(false);
   const [benchPicker, setBenchPicker] = useState<string | null>(null);
   const [clearTeam, setClearTeam] = useState<string | null>(null);
   const teamIds = [match.home_team_id, match.away_team_id].filter(Boolean) as string[];
@@ -565,7 +570,8 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
 
   const setMatchNumber = async (lineupId: string, value: string) => {
     const n = value.trim() === "" ? null : Number(value);
-    await supabase.from("match_lineups").update({ shirt_number: Number.isFinite(n as number) ? n : null }).eq("id", lineupId);
+    const { error } = await supabase.from("match_lineups").update({ shirt_number: Number.isFinite(n as number) ? n : null }).eq("id", lineupId);
+    if (error) throw error;
     qc.invalidateQueries({ queryKey: ["admin", "lineups", match.id] });
   };
 
@@ -573,11 +579,11 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
   const saveRating = async (playerId: string, value: string) => {
     const existing = (ratingsQ.data ?? []).find((r) => r.player_id === playerId);
     if (value.trim() === "") {
-      if (existing) await supabase.from("player_ratings").delete().eq("id", existing.id);
+      if (existing) { const {error}=await supabase.from("player_ratings").delete().eq("id", existing.id); if(error)throw error; }
     } else if (existing) {
-      await supabase.from("player_ratings").update({ rating: Number(value) }).eq("id", existing.id);
+      const {error}=await supabase.from("player_ratings").update({ rating: Number(value) }).eq("id", existing.id); if(error)throw error;
     } else {
-      await supabase.from("player_ratings").insert({ match_id: match.id, player_id: playerId, competition_id: match.competition_id, rating: Number(value) } as never);
+      const {error}=await supabase.from("player_ratings").insert({ match_id: match.id, player_id: playerId, competition_id: match.competition_id, rating: Number(value) } as never); if(error)throw error;
     }
     qc.invalidateQueries({ queryKey: ["admin", "match-ratings", match.id] });
   };
@@ -614,7 +620,7 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
                       const icons = p ? iconsFor(p.id) : [];
                       const kit = assigned?.shirt_number ?? p?.shirt_number ?? null;
                       return (
-                        <button key={slot} type="button" onClick={() => setPicker({ teamId: tid, slot })}
+                        <button key={slot} type="button" onClick={() => { if (assigned) { setEditingLineup(assigned); setEditNumber(String(assigned.shirt_number ?? p?.shirt_number ?? "")); setEditRating(String(rating ?? "")); } else setPicker({ teamId: tid, slot }); }}
                           className="relative z-10 flex w-16 flex-col items-center gap-0.5 text-center">
                           <span className="relative block overflow-visible">
                             {p ? <PlayerAvatar src={p.photo_url} name={p.name} size="sm" className="h-10 w-10" />
@@ -672,13 +678,13 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
                     const rating = p ? ratingFor(p.id) : null;
                     return (
                       <div key={l.id} className="flex flex-col items-center gap-1 text-center">
-                        <span className="relative block">
+                        <Button variant="ghost" className="h-auto flex-col p-0" onClick={() => {setEditingLineup(l);setEditNumber(String(l.shirt_number ?? p?.shirt_number ?? ""));setEditRating(String(rating ?? ""));}}><span className="relative block">
                           <PlayerAvatar src={p?.photo_url} name={p?.name ?? "?"} size="sm" className="h-10 w-10" />
                           {(l.shirt_number ?? p?.shirt_number) != null && <span className="absolute -left-1 -top-1 rounded-full bg-muted px-1.5 text-[0.55rem] font-black ring-2 ring-background">{l.shirt_number ?? p?.shirt_number}</span>}
                           {icons.length > 0 && <span className="absolute -right-2 -top-1 z-30 flex items-center gap-px rounded-full bg-background p-0.5 ring-2 ring-background">{icons.slice(0, 3).map((ic, k) => <EventIcon key={k} type={ic} className="h-4 w-4" />)}</span>}
                           {rating != null && <span className={`absolute -bottom-1 -right-2 rounded-md px-1 text-[0.55rem] font-black shadow ring-2 ring-background ${ratingClass(Number(rating))}`}>{formatRating(rating)}</span>}
                         </span>
-                        <span className="line-clamp-2 text-[0.55rem] font-semibold leading-tight">{p?.name ?? "—"}</span>
+                        <span className="line-clamp-2 text-[0.55rem] font-semibold leading-tight">{p?.name ?? "—"}</span></Button>
                         <button onClick={() => toggle(l.player_id, tid, false)} className="text-destructive" aria-label="Remove from bench"><Trash2 className="h-3 w-3" /></button>
                       </div>
                     );
@@ -687,34 +693,16 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
                 {bench.length === 0 && <p className="text-[0.6rem] text-muted-foreground">No bench yet — tap + to pick from the squad.</p>}
               </div>
 
-              {(() => {
-                const rows = lineups.filter((l) => l.team_id === tid);
-                if (rows.length === 0) return null;
-                return (
-                  <div className="mt-3 rounded-lg border border-border p-2">
-                    <h4 className="mb-2 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">Kit numbers (this match only)</h4>
-                    <div className="space-y-1">
-                      {rows.map((l) => {
-                        const p = players.find((x) => x.id === l.player_id);
-                        return (
-                          <div key={l.id} className="flex items-center gap-2">
-                            <span className="min-w-0 flex-1 truncate text-xs">{p?.name ?? "—"}</span>
-                            <input type="number" min={0} max={99} defaultValue={l.shirt_number ?? ""} placeholder={String(p?.shirt_number ?? "")}
-                              onBlur={(e) => setMatchNumber(l.id, e.target.value)}
-                              className="w-16 rounded border border-border bg-background px-2 py-1 text-xs" />
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })()}
+              <MatchMissingPlayers matchId={match.id} teamId={tid} players={players} />
             </div>
           );
         })}
         {teamIds.length === 0 && <div className="text-xs text-muted-foreground">Pick both teams in Match details first.</div>}
       </div>
 
+      <Modal open={!!editingLineup} onClose={()=>setEditingLineup(null)} title={players.find(p=>p.id===editingLineup?.player_id)?.name ?? "Edit player"}>
+        <div className="grid gap-3"><Field label="Kit number"><input aria-label="Kit number" type="number" min={0} max={999} className={inputCls} value={editNumber} onChange={e=>setEditNumber(e.target.value)} /></Field><Field label="Match rating"><input aria-label="Match rating" type="number" min={0} max={10} step="0.1" className={inputCls} value={editRating} onChange={e=>setEditRating(e.target.value)} /></Field><Button disabled={playerSaving || (editRating!=="" && (Number(editRating)<0 || Number(editRating)>10))} onClick={async()=>{if(!editingLineup)return;setPlayerSaving(true);try{await setMatchNumber(editingLineup.id,editNumber);await saveRating(editingLineup.player_id,editRating);setEditingLineup(null);}catch(e){toast.error(e instanceof Error?e.message:"Save failed");}finally{setPlayerSaving(false);}}}>Save changes</Button>{editingLineup?.is_starting && <Button variant="outline" onClick={()=>{if(!editingLineup?.position_code)return;setPicker({teamId:editingLineup.team_id,slot:editingLineup.position_code});setEditingLineup(null);}}>Replace player</Button>}</div>
+      </Modal>
       <RatingsEditor match={match} lineups={lineups} players={players} />
 
       <Modal open={!!benchPicker} onClose={() => setBenchPicker(null)} title="Pick bench players">

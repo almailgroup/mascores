@@ -1,5 +1,12 @@
 # Roadmap
 
+- [x] Possible lineups seven days before kickoff, missing-player reasons, richer event player dialogs and substitutions; checked an upcoming Al Arabi lineup and real event dialog.
+- [x] Preserve clock preference and adopt connection-location timezone when available; 24-hour preference verified after reopening Settings.
+- [ ] Verify VPN exit-location timezone on hosted requests — local preview supplies no connection-location metadata and no VPN session is available; device timezone is the fallback.
+- [x] Full standings GD and full-table image sharing; verified all 12 rows and all full columns in the generated image.
+- [x] Batch social links from admin messages for club squads; real AI request correctly matched a supplied sample URL to Zaid Qunbar, without saving the sample.
+- [x] Open all admin lineup/bench players for match rating and shirt-number editing; saved/reopened an unchanged bench kit number and verified its value.
+
 - [x] Fix admin numbered-round sorting with shared comparator; authenticated phone verification shows rounds 1–11 in sequence.
 - [x] Apply uploaded Zain Premier League rounds 7–11 photos to all 30 existing fixtures: correct sides/dates/stadiums, postpone Kuwait–Kazma with no invented date, and store rounds 9–11 as announced dates with Time TBD. Verified database counts, match detail, Home Upcoming and 15 tests.
 

@@ -9,14 +9,19 @@ export function getTimeFormat(): TimeFormat {
 }
 
 export function setTimeFormat(f: TimeFormat): void {
-  if (f === current) return;
+  const changed = f !== current;
   current = f;
   try {
     localStorage.setItem("mas:time-format", f);
   } catch {
     /* storage unavailable — keep in memory */
   }
-  listeners.forEach((l) => l());
+  if (changed) listeners.forEach((l) => l());
+}
+
+export function adoptProfileTimeFormat(f: unknown): void {
+  try { if (localStorage.getItem("mas:time-format")) return; } catch { /* optional storage */ }
+  if (f === "12" || f === "24") setTimeFormat(f);
 }
 
 /** Client-only: adopt the stored format once after mount so SSR and first render agree. */

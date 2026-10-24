@@ -99,6 +99,7 @@ export type StandingsCardRow = {
   name: string;
   logo?: string | null;
   played: number;
+  won?: number; drawn?: number; lost?: number; gf?: number; ga?: number;
   goalDifference: number;
   points: number;
   form?: ("W" | "D" | "L")[];
@@ -114,10 +115,11 @@ export async function drawStandingsCard(input: {
   accent?: string | null;
   groups: StandingsCardGroup[];
   withForm?: boolean;
+  withFull?: boolean;
 }): Promise<Blob | null> {
   const W = 1080;
   const rowH = 68;
-  const groups = input.groups.map((g) => ({ ...g, rows: g.rows.slice(0, 22) }));
+  const groups = input.groups.map((g) => ({ ...g, rows: g.rows }));
   const body = groups.reduce((total, g) => total + (g.label ? 58 : 0) + 54 + g.rows.length * rowH + 28, 0);
   const H = Math.max(760, 250 + body + 90);
   const made = surface(W, H, input.accent || "#1d4ed8");
@@ -154,6 +156,8 @@ export async function drawStandingsCard(input: {
     ctx.textAlign = "center";
     if (input.withForm) {
       ctx.fillText("LAST 5", W - 190, y + 34);
+    } else if (input.withFull) {
+      ["P","W","D","L","GLS","GD","PTS"].forEach((label,i)=>ctx.fillText(label,580+i*65,y+34));
     } else {
       ctx.fillText("P", W - 300, y + 34);
       ctx.fillText("GD", W - 200, y + 34);
@@ -178,7 +182,7 @@ export async function drawStandingsCard(input: {
       ctx.textAlign = "left";
       ctx.font = `700 30px ${FONT}`;
       ctx.fillStyle = "#ffffff";
-      ctx.fillText(row.name.slice(0, 22), 175, top + 39);
+      ctx.fillText(row.name, 175, top + 39, input.withFull ? 350 : 480);
 
       if (input.withForm) {
         const results = (row.form ?? []).slice(-5);
@@ -193,6 +197,9 @@ export async function drawStandingsCard(input: {
           ctx.font = `800 24px ${FONT}`;
           ctx.fillText(result, x + boxW / 2, top + 37);
         });
+      } else if (input.withFull) {
+        ctx.textAlign="center";ctx.font=`600 24px ${FONT}`;ctx.fillStyle="#ffffff";
+        [row.played,row.won??0,row.drawn??0,row.lost??0,`${row.gf??0}:${row.ga??0}`,row.goalDifference,row.points].forEach((value,i)=>ctx.fillText(String(value),580+i*65,top+39,62));
       } else {
         ctx.textAlign = "center";
         ctx.font = `600 28px ${FONT}`;

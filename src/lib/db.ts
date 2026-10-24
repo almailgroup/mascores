@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { getTimeFormat } from "@/lib/time-format";
+import { getMatchTimezone } from "@/lib/match-timezone";
 import { formatAnnouncedDate } from "@/lib/fixture-schedule";
 
 export type Competition = Database["public"]["Tables"]["competitions"]["Row"];
@@ -64,7 +65,7 @@ export function formatKickoff(iso: string | null | undefined, locale?: string, a
   if (!iso && announcedDate) return formatAnnouncedDate(announcedDate, locale);
   if (!iso) return locale?.startsWith("ar") ? "لم يُحدد" : "TBD";
   const d = new Date(iso);
-  return d.toLocaleString(locale, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit", hour12: getTimeFormat() === "12" });
+  return d.toLocaleString(locale, { timeZone: getMatchTimezone(), weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit", hour12: getTimeFormat() === "12" });
 }
 
 /** Shared event presentation so admin and public views always agree. */

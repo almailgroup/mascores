@@ -23,6 +23,8 @@ import { requestReview } from "@/lib/review";
 import { SeasonSquadModal } from "./season-squad-modal";
 import { PlayerBatchImport } from "./player-batch-import";
 import { AiPhotoRequest } from "./ai-photo-request";
+import { SocialLinkBatch } from "./social-link-batch";
+import { Button } from "@/components/ui/button";
 import { Plus, Pencil, Trash2, Users, UserCog, UserMinus, ImagePlus, Library, Flag, Sparkles } from "lucide-react";
 
 type TeamForm = Partial<Team>;
@@ -358,6 +360,7 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
   const [addExisting, setAddExisting] = useState(false);
   const [batchOpen, setBatchOpen] = useState(false);
   const [photoAiOpen, setPhotoAiOpen] = useState(false);
+  const [socialAiOpen, setSocialAiOpen] = useState(false);
   const [pick, setPick] = useState("");
   const [poolSearch, setPoolSearch] = useState("");
 
@@ -388,6 +391,7 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
         <button className={btnGhost} onClick={() => setAddExisting(true)}><Library className="h-3.5 w-3.5" /> Add existing player</button>
         <button className={btnGhost} onClick={() => setBatchOpen(true)}><Sparkles className="h-3.5 w-3.5" /> Add many with Almail AI</button>
         <button className={btnGhost} onClick={() => setPhotoAiOpen(true)}><ImagePlus className="h-3.5 w-3.5" /> AI photo request</button>
+        <Button variant="outline" size="sm" onClick={() => setSocialAiOpen(true)}><Sparkles className="h-3.5 w-3.5" /> Social links with AI</Button>
       </div>
 
       {addExisting && (
@@ -456,6 +460,7 @@ function SquadModal({ team, onClose }: { team: Team; onClose: () => void }) {
 
       <PlayerBatchImport open={batchOpen} onClose={() => setBatchOpen(false)} teamId={team.id} onSaved={invalidate} />
       {photoAiOpen && <AiPhotoRequest open onClose={() => setPhotoAiOpen(false)} players={q.data ?? []} onSaved={invalidate} />}
+      {socialAiOpen && <SocialLinkBatch teamId={team.id} players={q.data ?? []} onClose={() => setSocialAiOpen(false)} onSaved={invalidate} />}
       {editing && <PlayerEditor player={editing} teamId={team.id} teamName={team.name} onClose={() => { setEditing(null); invalidate(); }} />}
 
     </Modal>
