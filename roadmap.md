@@ -1,7 +1,7 @@
 # Roadmap
 
 - [x] Check source benches: mfsoccer rounds 1–6 contains starters and came-on substitutions only, not full match-day reserves.
-- [ ] Add full round 1–6 benches — blocked by missing match-specific bench sheets; never infer from season squads.
+- [ ] Import mfsoccer’s displayed round 1–6 benches, preserving starters/substitutions and identifying source-calculated reserves rather than claiming official match-day sheets.
 - [x] Correct four wrong-side historical coach assignments and fill confirmed round-2 Qadsia/Kuwait coaches; database checks pass and Kuwait round-3 coach verified on-screen.
 - [ ] Complete historical coach verification — 11 completed matches still lack coach slots; blocked by missing dated match reports, and other preserved coach snapshots remain not independently verified.
 
