@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Import publicly available, verified Sofascore match statistics for current-season Zain Premier League fixtures; preserve results, lineups and ratings.
+
 - [x] Modernize multi-player event chooser and navigate single-player events directly; verified player destination with no dialog and portrait-based substitution chooser.
 - [x] Label possible-lineup exports explicitly; verified rendered canvas label and preview.
 - [x] Verify local match-time formatting across device timezones and connection timezone fallback: same fixture renders 17:30 Kuwait, 10:30 New York and 14:30 London. Simulated connection timezone updates Kuwait device display to 10:30; actual VPN exit detection remains blocked below.
