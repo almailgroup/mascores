@@ -46,4 +46,4 @@
 - Home match-calendar helpers centralize local-day keys and upcoming start boundaries so calendar markers and date filters agree across timezones.
 - Shared card renderers finalize through one canvas export footer so every saved/shared image has consistent branding without obscuring content.
 - Edge functions must not import from src/; deploys bundle only supabase/functions, so a shared import silently keeps the old sender live.
-- Historical imports retain source attribution and label calculated ratings as estimates; validate fixture counts and starters with scripts/verify-rounds-1-6.sql to avoid fabricating future results.
+- Historical imports retain source attribution and label calculated ratings as estimates; validate fixture counts and starters with scripts/verify-rounds-1-6.sql to avoid fabricating future results. Source-calculated benches retain that distinction in match notes; scripts/mfsoccer_bench.py applies source participation/absence rules, and scripts/mfsoccer-bench-import.json records confirmed additions for repeatable auditing without inferring conflicting identities.

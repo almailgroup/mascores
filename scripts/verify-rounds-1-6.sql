@@ -41,3 +41,21 @@ SELECT count(*) = 1 AND bool_and(
   AND away_coach_id = '3f62d234-64e2-413d-9d48-0cb5f045ae62'::uuid
 ) AS round_two_qadsia_kuwait_coaches_correct
 FROM public.matches WHERE id = 'c6b00c0b-1e3f-4f7c-b0ce-ecbd419e4437';
+
+-- 667 source-calculated unused reserves added; existing starters/subs unchanged.
+SELECT count(*) FILTER (WHERE l.is_starting) = 704 AS original_starters_preserved,
+       count(*) FILTER (WHERE NOT l.is_starting) = 955 AS reserves_and_substitutes_present,
+       count(*) FILTER (WHERE m.status = 'scheduled') = 0 AS future_lineups_not_invented
+FROM public.matches m JOIN public.match_lineups l ON l.match_id = m.id
+WHERE m.competition_id = '792f150e-1c25-4f3c-878f-75536c7edd5b'
+  AND m.season = '2026/2027' AND m.round_number BETWEEN 1 AND 6;
+
+SELECT count(*) = 64 AS every_completed_match_side_has_reserves
+FROM (
+  SELECT l.match_id, l.team_id
+  FROM public.match_lineups l JOIN public.matches m ON m.id = l.match_id
+  WHERE m.competition_id = '792f150e-1c25-4f3c-878f-75536c7edd5b'
+    AND m.season = '2026/2027' AND m.round_number BETWEEN 1 AND 6
+    AND m.status = 'ft' AND NOT l.is_starting
+  GROUP BY l.match_id, l.team_id
+) sides;
