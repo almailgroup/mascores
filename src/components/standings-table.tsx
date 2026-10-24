@@ -120,13 +120,14 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
         title: shareTitle,
         subtitle: [tx("Standings"), rows[0]?.season ?? null].filter(Boolean).join(" · "),
         withForm: view === "form",
+         withFull: view === "full",
         groups: grouped(rows).map(([group, groupRows]) => ({
           label: group ? tx(group) : null,
           rows: groupRows.map((row, index) => ({
             position: index + 1,
             name: tx(row.team?.name) ?? "",
             logo: row.team?.logo_url ?? null,
-            played: row.played,
+            played: row.played, won: row.won, drawn: row.drawn, lost: row.lost, gf: row.gf, ga: row.ga,
             goalDifference: row.gf - row.ga,
             points: row.points + (row.points_adjust ?? 0),
             form: (form.data?.[row.team_id] ?? []) as ("W" | "D" | "L")[],
@@ -145,7 +146,7 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
       };
       const used = groupRows.map(rowLabel).filter((label): label is { label: string; color: string | null } => !!label).filter((label, index, list) => list.findIndex((item) => item.label === label.label && item.color === label.color) === index);
       const cols = view === "full"
-        ? "grid-cols-[1.75rem_minmax(0,1fr)_1.25rem_1.25rem_1.25rem_1.25rem_2.75rem_2rem]"
+        ? "grid-cols-[1.25rem_minmax(4rem,1fr)_1rem_1rem_1rem_1rem_2.5rem_1.5rem_1.75rem]"
         : view === "form"
           ? "grid-cols-[2.75rem_minmax(0,1fr)_10rem]"
         : modern ? "grid-cols-[1.5rem_minmax(0,1fr)_1.75rem_2rem_2rem]" : "grid-cols-[2.75rem_minmax(0,1fr)_2rem_2.25rem_2.5rem]";
@@ -155,7 +156,7 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
           <div className={`grid ${cols} items-center gap-1 ${modern ? "bg-card" : "bg-muted/40"} px-3 py-1.5 text-[0.6rem] font-semibold text-muted-foreground`}>
             <span>#</span>
             <span>{group ? tx(group) : tx("Team")}</span>
-            {view === "full" && <><span className="text-center">P</span><span className="text-center">W</span><span className="text-center">D</span><span className="text-center">L</span><span className="text-center">GLS</span><span className="text-center">PTS</span></>}
+            {view === "full" && <><span className="text-center">P</span><span className="text-center">W</span><span className="text-center">D</span><span className="text-center">L</span><span className="text-center">GLS</span><span className="text-center">GD</span><span className="text-center">PTS</span></>}
             {view === "form" && <span className="text-end">{tx("Last 5")}</span>}
             {view === "short" && <><span className="text-center">P</span><span className="text-center">GD</span><span className="text-center">PTS</span></>}
           </div>
