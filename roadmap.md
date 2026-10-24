@@ -1,7 +1,7 @@
 # Roadmap
 
-- [ ] Import verified Zain Premier League rounds 1–6: results, referee/channel, lineups, events, stats, and transparent calculated ratings; resolve player identities and use Al names without hyphens.
-- [ ] Verify imported totals and a real match in the app; list any source gaps or unresolved identities.
+- [x] Import verified Zain Premier League rounds 1–6: results, referee/channel, lineups, events, stats, and transparent calculated ratings; resolve player identities and use Al names without hyphens.
+- [x] Verify imported totals and a real match in the app; source omits one incoming substitute, performance ratings, and detailed possession/shot statistics. Ratings are explicitly event-based estimates; upcoming fixtures retain no results.
 
 - [x] Goal icon on saved result images: white version that shows on dark background (rebuilt from original artwork after a corrupted render).
 - [x] Substitutes section redesign: came-on players from match events, minute on the left, shirt number badge top-left of the photo, green up-arrow badge, rating pill bottom-left, name in green with the replaced player's name in grey below; the lineup share card mirrors the same layout.
