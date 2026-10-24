@@ -1,5 +1,9 @@
 # Roadmap
 
+- [ ] Modernize multi-player event chooser and navigate single-player events directly.
+- [ ] Label possible-lineup exports explicitly.
+- [ ] Verify local match-time formatting across device timezones and connection timezone fallback; report actual VPN verification limits.
+
 - [x] Possible lineups seven days before kickoff, missing-player reasons, richer event player dialogs and substitutions; checked an upcoming Al Arabi lineup and real event dialog.
 - [x] Preserve clock preference and adopt connection-location timezone when available; 24-hour preference verified after reopening Settings.
 - [ ] Verify VPN exit-location timezone on hosted requests — local preview supplies no connection-location metadata and no VPN session is available; device timezone is the fallback.

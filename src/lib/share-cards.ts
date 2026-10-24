@@ -571,6 +571,7 @@ type CardPlayer = { name: string; number: string; photo?: string | null; sub?: {
 
 /** One club's starting eleven on a full pitch, with coach and substitutes. */
 export async function drawTeamLineupCard(input: {
+  possibleLineup?: boolean;
   competition: string; kickoff: string; accent: string;
   team: { teamName: string; logo?: string | null; formation: string; coach?: string | null; rows: CardPlayer[][]; bench?: CardPlayer[] };
 }): Promise<Blob | null> {
@@ -593,6 +594,7 @@ export async function drawTeamLineupCard(input: {
   ctx.font = `500 28px ${FONT}`; ctx.fillStyle = "rgba(255,255,255,0.72)";
   ctx.fillText(input.competition.slice(0, 48), 210, 165, 640);
   ctx.font = `500 24px ${FONT}`; ctx.fillText(input.kickoff, 210, 202, 640);
+  if (input.possibleLineup) { ctx.textAlign="left"; ctx.fillStyle="#ffffff"; ctx.font=`800 28px ${FONT}`; ctx.fillText("POSSIBLE LINEUP",60,267); }
   ctx.textAlign = "right"; ctx.fillStyle = "#ffffff"; ctx.font = `800 40px ${FONT}`;
   ctx.fillText(team.formation, 1020, 120);
   if (team.coach) { ctx.font = `600 24px ${FONT}`; ctx.fillStyle = "rgba(255,255,255,0.72)"; ctx.fillText(`Coach · ${team.coach}`, 1020, 165, 360); }
