@@ -1,7 +1,7 @@
 # Roadmap
 
-- [ ] Fix admin numbered-round sorting with shared comparator and verify against the real competition.
-- [ ] Compare uploaded Zain Premier League rounds 7–11 schedule photos and apply confirmed date, venue and postponement changes without inventing times.
+- [x] Fix admin numbered-round sorting with shared comparator; authenticated phone verification shows rounds 1–11 in sequence.
+- [x] Apply uploaded Zain Premier League rounds 7–11 photos to all 30 existing fixtures: correct sides/dates/stadiums, postpone Kuwait–Kazma with no invented date, and store rounds 9–11 as announced dates with Time TBD. Verified database counts, match detail, Home Upcoming and 15 tests.
 
 - [x] Keep TBD/postponed rounds in sequence, fit status-only postponed labels, and replace the player-match assist emoji with a shared symbol; four round-order tests pass and verified the real competition/player pages at phone size.
 
