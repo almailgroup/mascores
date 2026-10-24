@@ -12,6 +12,7 @@
     "format": "prettier --write ."
   },
   "dependencies": {
+    "@ai-sdk/openai": "^3",
     "@ai-sdk/openai-compatible": "^3.0.17",
     "@capacitor/app": "^8.1.1",
     "@capacitor/browser": "^8.0.5",
