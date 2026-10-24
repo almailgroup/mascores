@@ -144,10 +144,11 @@ function MatchPage() {
     queryKey: ["possible-lineups", id, m.data?.competition_id, m.data?.kickoff_at, m.data?.kickoff_date],
     enabled: !!m.data && !m.data.lineups_published && possibleLineupWindow(m.data.status, m.data.kickoff_at, m.data.kickoff_date),
     queryFn: async () => {
-      const match = m.data; if (!match) return { rows: [] as (Lineup & { player: Player | null })[], formations: {} as Record<string,string> };
+      const match = m.data; if (!match?.season) return { rows: [] as (Lineup & { player: Player | null })[], formations: {} as Record<string,string> };
+      const season = match.season;
       const sides = await Promise.all([match.home_team_id, match.away_team_id].map(async teamId => {
         if (!teamId) return null;
-        const { data: history } = await supabase.from("matches").select("id,home_team_id,home_formation,away_formation").eq("competition_id",match.competition_id).eq("season",match.season).eq("lineups_published",true).in("status",["ft","aet","pen","awarded"]).or(`home_team_id.eq.${teamId},away_team_id.eq.${teamId}`).lt("kickoff_at",match.kickoff_at ?? `${match.kickoff_date}T00:00:00Z`).order("kickoff_at",{ascending:false}).limit(1).maybeSingle();
+        const { data: history } = await supabase.from("matches").select("id,home_team_id,home_formation,away_formation").eq("competition_id",match.competition_id).eq("season",season).eq("lineups_published",true).in("status",["ft","aet","pen","awarded"]).or(`home_team_id.eq.${teamId},away_team_id.eq.${teamId}`).lt("kickoff_at",match.kickoff_at ?? `${match.kickoff_date}T00:00:00Z`).order("kickoff_at",{ascending:false}).limit(1).maybeSingle();
         if (!history) return null;
         const { data } = await supabase.from("match_lineups").select("*,player:player_id(*)").eq("match_id",history.id).eq("team_id",teamId);
         const { data: absent } = await supabase.from("match_missing_players").select("player_id").eq("match_id",id).eq("team_id",teamId);
@@ -813,7 +814,7 @@ function EventIcon({ type }: { type: string }) {
   return <EventArt type={type} className="h-5 w-5" />;
 }
 
-type TimelineEvent = MatchEvent & { player: Player | null; team: Team | null };
+type TimelineEvent = MatchEvent & { player: Player | null; team: Team | null; sub_out: { id: string; name: string } | null; assister?: { id: string; name: string; photo_url: string | null } | null };
 type TimelineEntry =
   | { kind: "divider"; key: string; label: string; score?: string }
   | { kind: "event"; event: TimelineEvent; side: "home" | "away" };

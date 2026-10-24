@@ -571,7 +571,8 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
 
   const setMatchNumber = async (lineupId: string, value: string) => {
     const n = value.trim() === "" ? null : Number(value);
-    await supabase.from("match_lineups").update({ shirt_number: Number.isFinite(n as number) ? n : null }).eq("id", lineupId);
+    const { error } = await supabase.from("match_lineups").update({ shirt_number: Number.isFinite(n as number) ? n : null }).eq("id", lineupId);
+    if (error) throw error;
     qc.invalidateQueries({ queryKey: ["admin", "lineups", match.id] });
   };
 
@@ -579,11 +580,11 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
   const saveRating = async (playerId: string, value: string) => {
     const existing = (ratingsQ.data ?? []).find((r) => r.player_id === playerId);
     if (value.trim() === "") {
-      if (existing) await supabase.from("player_ratings").delete().eq("id", existing.id);
+      if (existing) { const {error}=await supabase.from("player_ratings").delete().eq("id", existing.id); if(error)throw error; }
     } else if (existing) {
-      await supabase.from("player_ratings").update({ rating: Number(value) }).eq("id", existing.id);
+      const {error}=await supabase.from("player_ratings").update({ rating: Number(value) }).eq("id", existing.id); if(error)throw error;
     } else {
-      await supabase.from("player_ratings").insert({ match_id: match.id, player_id: playerId, competition_id: match.competition_id, rating: Number(value) } as never);
+      const {error}=await supabase.from("player_ratings").insert({ match_id: match.id, player_id: playerId, competition_id: match.competition_id, rating: Number(value) } as never); if(error)throw error;
     }
     qc.invalidateQueries({ queryKey: ["admin", "match-ratings", match.id] });
   };
