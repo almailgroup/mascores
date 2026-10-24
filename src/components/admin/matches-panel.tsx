@@ -11,6 +11,7 @@ import { readAiImages } from "@/lib/image-files";
 import { TeamCrest } from "@/components/team-crest";
 import { useAdminAbility } from "@/lib/admin-ability";
 import { requestReview } from "@/lib/review";
+import { compareCompetitionRounds, fixtureTime } from "@/lib/competition-match-order";
 
 export function MatchesPanel({ competitionId, season = null, friendly = false }: { competitionId: string; season?: string | null; friendly?: boolean }) {
   const qc = useQueryClient();
@@ -44,7 +45,7 @@ export function MatchesPanel({ competitionId, season = null, friendly = false }:
     queryFn: async () => {
       let query = supabase.from("matches").select("*").eq("competition_id", competitionId);
       if (season) query = query.eq("season", season);
-      const { data } = await query.order("kickoff_at", { nullsFirst: true });
+      const { data } = await query.order("kickoff_at", { nullsFirst: false });
       return (data ?? []) as Match[];
     },
   });
@@ -75,9 +76,17 @@ export function MatchesPanel({ competitionId, season = null, friendly = false }:
     for (const m of matches) {
       const k = friendly ? "All matches" : (roundLabel(m.round_number, m.round) ?? "Unassigned round");
       if (!map.has(k)) map.set(k, []);
-      map.get(k)!.push(m);
+      const bucket = map.get(k);
+      if (bucket) bucket.push(m);
     }
-    return [...map.entries()];
+    return [...map.entries()]
+      .map(([round, list], order) => ({ round, matches: [...list].sort((a, b) => {
+        const timeA = fixtureTime(a);
+        const timeB = fixtureTime(b);
+        return timeA === timeB ? 0 : timeA < timeB ? -1 : 1;
+      }), order }))
+      .sort(compareCompetitionRounds)
+      .map(({ round, matches }) => [round, matches] as const);
   }, [matches, friendly]);
 
   const create = async () => {
@@ -173,7 +182,7 @@ export function MatchesPanel({ competitionId, season = null, friendly = false }:
                         <span className="min-w-0 flex-1 truncate">{teamName(m.away_team_id)}</span>
                         {m.away_score != null && <span className="shrink-0 tabular-nums">{m.away_score}</span>}
                       </div>
-                      <div className="truncate text-[0.65rem] text-muted-foreground">{formatKickoff(m.kickoff_at)}{m.venue ? ` · ${m.venue}` : ""}</div>
+                      <div className="truncate text-[0.65rem] text-muted-foreground">{m.status === "postponed" ? "Postponed" : formatKickoff(m.kickoff_at, undefined, m.kickoff_date)}{m.venue ? ` · ${m.venue}` : ""}</div>
                     </div>
                   </div>
 

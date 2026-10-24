@@ -11,9 +11,9 @@ export function upcomingStart(day: Date, now = new Date()): string {
   return new Date(Math.max(start.getTime(), now.getTime())).toISOString();
 }
 
-export function matchDates(fixtures: { kickoff_at: string | null }[]): Set<string> {
-  return new Set(fixtures.flatMap(({ kickoff_at }) => {
-    if (!kickoff_at) return [];
+export function matchDates(fixtures: { kickoff_at: string | null; kickoff_date?: string | null }[]): Set<string> {
+  return new Set(fixtures.flatMap(({ kickoff_at, kickoff_date }) => {
+    if (!kickoff_at) return kickoff_date ? [kickoff_date] : [];
     const date = new Date(kickoff_at);
     return Number.isNaN(date.getTime()) ? [] : [matchDateKey(date)];
   }));

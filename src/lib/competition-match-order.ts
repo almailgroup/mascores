@@ -1,4 +1,5 @@
-type Fixture = { kickoff_at: string | null };
+import { scheduleTime } from "./fixture-schedule";
+type Fixture = { kickoff_at: string | null; kickoff_date?: string | null };
 type RoundBucket = { round: string; matches: Fixture[]; order: number };
 
 function numberedRound(label: string) {
@@ -7,8 +8,7 @@ function numberedRound(label: string) {
 }
 
 export function fixtureTime(fixture: Fixture) {
-  const time = fixture.kickoff_at ? Date.parse(fixture.kickoff_at) : NaN;
-  return Number.isFinite(time) ? time : Infinity;
+  return scheduleTime(fixture);
 }
 
 /** Round identity takes precedence over missing or rescheduled kickoff times. */

@@ -4,6 +4,15 @@ import { compareCompetitionRounds, fixtureTime } from "./competition-match-order
 const bucket = (round: number, kickoff: string | null) => ({ round: `#${round}`, matches: [{ kickoff_at: kickoff }], order: 0 });
 
 describe("competition round placement", () => {
+  it("orders the admin Round labels numerically with postponed fixtures last within their own round", () => {
+    const rounds = [
+      { round: "Round 5", matches: [{ kickoff_at: null }], order: 0 },
+      { round: "Round 10", matches: [{ kickoff_at: "2026-11-29T14:00:00Z" }], order: 1 },
+      { round: "Round 1", matches: [{ kickoff_at: "2026-08-25T15:45:00Z" }], order: 2 },
+      { round: "Round 7", matches: [{ kickoff_at: null }], order: 3 },
+    ].sort(compareCompetitionRounds);
+    expect(rounds.map((r) => r.round)).toEqual(["Round 1", "Round 5", "Round 7", "Round 10"]);
+  });
   it("keeps Round 5 after Round 1 when Round 5 contains a TBD fixture", () => {
     const rounds = [bucket(5, null), bucket(1, "2026-08-25T17:00:00Z")].sort(compareCompetitionRounds);
     expect(rounds.map((r) => r.round)).toEqual(["#1", "#5"]);

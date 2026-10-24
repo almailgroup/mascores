@@ -421,6 +421,13 @@
       "when": 1792664019691,
       "tag": "0059_add_profiles_time_format",
       "breakpoints": true
+    },
+    {
+      "idx": 60,
+      "version": "7",
+      "when": 1792883577607,
+      "tag": "0060_store_announced_fixture_dates",
+      "breakpoints": true
     }
   ]
 }

@@ -4,6 +4,10 @@ import { groupUpcomingCountries } from "./upcoming-countries";
 const now = Date.parse("2026-10-22T10:30:00Z");
 const fixture = { status: "scheduled", kickoff_at: "2026-10-23T15:00:00Z", competition: { name: "League", country: "Kuwait", country_code: "KW" } };
 describe("upcoming country matches", () => {
+  it("includes round 9 announced dates with unconfirmed kickoff times", () => {
+    const groups = groupUpcomingCountries([{ ...fixture, kickoff_at: null, kickoff_date: "2026-11-22" }], now);
+    expect(groups[0]?.matches).toHaveLength(1);
+  });
   it("shows only countries with future scheduled matches", () => {
     const groups = groupUpcomingCountries([fixture, { ...fixture, status: "ft", competition: { ...fixture.competition, country: "England" } }, { ...fixture, kickoff_at: "2026-10-21T15:00:00Z" }], now);
     expect(groups.map((group) => group.name)).toEqual(["Kuwait"]);

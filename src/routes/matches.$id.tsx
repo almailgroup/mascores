@@ -188,8 +188,8 @@ function MatchPage() {
     .map((row) => ({ number: row.shirt_number ? String(row.shirt_number) : "", name: tx(displayShortName(row.player?.short_name, row.player?.name)) ?? "" }));
   const shareData = {
     competition: [tx(match.competition?.name) ?? "", roundLabel(match.round_number, match.round) ? tx(roundLabel(match.round_number, match.round)) : ""].filter(Boolean).join(" · "),
-    kickoff: dates.kickoff(match.kickoff_at),
-    status: match.status === "live" ? formatClock(clock) : match.status === "scheduled" ? dates.kickoff(match.kickoff_at) : tx(STATUS_LABELS[match.status] ?? match.status) ?? match.status,
+    kickoff: dates.kickoff(match.kickoff_at, match.kickoff_date),
+    status: match.status === "live" ? formatClock(clock) : match.status === "scheduled" ? dates.kickoff(match.kickoff_at, match.kickoff_date) : tx(STATUS_LABELS[match.status] ?? match.status) ?? match.status,
     home: { name: tx(match.home?.name) ?? "TBD", logo_url: match.home?.logo_url ?? null },
     away: { name: tx(match.away?.name) ?? "TBD", logo_url: match.away?.logo_url ?? null },
     homeScore: ["scheduled", "postponed", "cancelled"].includes(match.status) ? "" : String(match.home_score ?? 0),
@@ -247,7 +247,7 @@ function MatchPage() {
                   {match.status === "live" ? num(formatClock(clock)) : tx(STATUS_LABELS[match.status] ?? match.status)}
                 </div>
               </>}
-            <div className="match-fading-detail mt-2 text-[0.65rem] font-semibold uppercase text-match-foreground/70">{num(dates.kickoff(match.kickoff_at))}</div>
+            <div className="match-fading-detail mt-2 text-[0.65rem] font-semibold uppercase text-match-foreground/70">{match.status === "postponed" ? tx("Postponed") : num(dates.kickoff(match.kickoff_at, match.kickoff_date))}</div>
           </div>
           <HeroTeam team={match.away} onFollow={followMatch} starSide="end" />
         </div>
@@ -337,7 +337,7 @@ function MatchPage() {
           <div className="overflow-hidden rounded-2xl border border-border bg-card">
             <div className="border-b border-border bg-muted/40 px-4 py-2.5 text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Match information")}</div>
             <dl className="grid gap-3 p-4 text-sm sm:grid-cols-2">
-              {([["Competition", tx(match.competition?.name)], ["Date & time", num(dates.kickoff(match.kickoff_at))], ["Stadium", tx(match.venue)], ["City", tx(match.city)], ["Referee", tx(match.referee)]] as [string, string | null | undefined][]).filter((item): item is [string, string] => !!item[1]).map(([k, v]) => (
+              {([["Competition", tx(match.competition?.name)], ["Date & time", num(dates.kickoff(match.kickoff_at, match.kickoff_date))], ["Stadium", tx(match.venue)], ["City", tx(match.city)], ["Referee", tx(match.referee)]] as [string, string | null | undefined][]).filter((item): item is [string, string] => !!item[1]).map(([k, v]) => (
                 <div key={k} className="min-w-0">
                   <dt className="flex items-center gap-1 text-[0.65rem] uppercase tracking-wide text-muted-foreground">{k === "Stadium" ? <MapPin className="h-3 w-3" /> : k === "Referee" ? <Users className="h-3 w-3" /> : null}{tx(k)}</dt>
                   <dd className="mt-0.5 break-words font-semibold">{v}</dd>
