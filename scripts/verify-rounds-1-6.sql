@@ -32,3 +32,12 @@ FROM (VALUES
   ('77f74163-fada-4663-9f4b-8ab2204fd5b5', 'cbf2ef48-029f-4ba3-aa7c-af1a6cf4314c', '22265e57-2c80-4728-b16d-77f0bb43cbc3')
 ) expected(match_id, home_coach_id, away_coach_id)
 JOIN public.matches m ON m.id = expected.match_id::uuid;
+
+-- Dated early-season reports confirm these round-2 coaches:
+-- https://www.arabtimesonline.com/news/marhoon-stars-as-kuwait-club-snatches-late-win-over-qadsia/
+-- https://www.ysscores.com/en/lineup/6018562/Qadsia-SC-vs-Kuwait-SC
+SELECT count(*) = 1 AND bool_and(
+  home_coach_id = '07f96baf-0828-49ef-a769-c893b1869da8'::uuid
+  AND away_coach_id = '3f62d234-64e2-413d-9d48-0cb5f045ae62'::uuid
+) AS round_two_qadsia_kuwait_coaches_correct
+FROM public.matches WHERE id = 'c6b00c0b-1e3f-4f7c-b0ce-ecbd419e4437';
