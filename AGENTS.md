@@ -52,4 +52,7 @@
 - Possible lineups are read-only projections from the latest completed, published same-season competition lineup; never insert projections as confirmed match participants.
 - Missing-player records use the match admin permission boundary and remain distinct from participating lineup rows.
 - Match clock formatting uses a shared connection timezone store with device fallback; local clock-format choices take precedence over stale profile hydration.
+- Refresh connection timezone on focus, visibility return and reconnection; ignore stale responses and clear old overrides when location metadata is unavailable.
+- Event navigation uses the deduplicated participant list: one participant opens directly, multiple participants open the portrait chooser.
+- Possible-lineup status travels with share data into the canvas export so projected lineups are never labelled as confirmed.
 - Batch social-link AI only proposes existing squad IDs and exact supplied URLs; review and merge links without replacing unrelated networks.
