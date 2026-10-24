@@ -3,6 +3,10 @@ from sofascore_stats import parse_stats, reconcile
 
 
 class SofascoreStatsTests(unittest.TestCase):
+    def test_section_heading_is_not_a_pass_statistic(self):
+        rows, _ = parse_stats('Match overview\n\n4\n\nOffsides\n\n1\n\nPasses\n\n28\n\nThrow-ins\n\n19\n\nAbout the match')
+        self.assertEqual([r['label'] for r in rows], ['Offsides', 'Throw-ins'])
+
     def test_explicit_statistics(self):
         rows, rejected = parse_stats('Match overview\n\n59%\n\nBall possession\n\n41%\n\n5\n\nCorner kicks\n\n3\n\nAbout the match')
         self.assertEqual([(r['label'], r['home'], r['away']) for r in rows], [('Ball possession', '59%', '41%'), ('Corner kicks', '5', '3')])

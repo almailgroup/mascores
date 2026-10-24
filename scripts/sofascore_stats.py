@@ -25,7 +25,9 @@ def parse_stats(markdown):
         return rows, rejected
     lines = [line.strip() for line in section.splitlines() if line.strip()]
     for i, label in enumerate(lines):
-        if label not in LABELS or i == 0 or i + 1 >= len(lines):
+        # "Passes" is also a section heading in these exports; adjacent
+        # numbers can belong to Offsides and Throw-ins, not pass counts.
+        if label not in LABELS or label == "Passes" or i == 0 or i + 1 >= len(lines):
             continue
         home, away = lines[i - 1], lines[i + 1]
         if not re.fullmatch(r"\d+(?:\.\d+)?%?", home) or not re.fullmatch(r"\d+(?:\.\d+)?%?", away):
