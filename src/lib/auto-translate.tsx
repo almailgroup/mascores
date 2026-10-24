@@ -1,4 +1,6 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import { getMatchTimezone, subscribeMatchTimezone } from "./match-timezone";
+import { getTimeFormat, subscribeTimeFormat } from "./time-format";
 import { useServerFn } from "@tanstack/react-start";
 import { translateContent, translationDictionary } from "./translate.functions";
 import { useI18n } from "./i18n";
@@ -204,6 +206,8 @@ export function useCompact() {
 
 /** Locale-aware date formatting bound to the active language. */
 export function useDates() {
+  useSyncExternalStore(subscribeTimeFormat, getTimeFormat, () => "12");
+  useSyncExternalStore(subscribeMatchTimezone, getMatchTimezone, () => undefined);
   const { lang } = useI18n();
   const locale = lang === "ar" ? "ar-EG" : "en-GB";
   return {

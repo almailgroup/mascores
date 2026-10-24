@@ -9,6 +9,10 @@ import {
   type ErrorComponentProps,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { connectionTimezone } from "@/lib/connection-timezone.functions";
+import { setMatchTimezone } from "@/lib/match-timezone";
+import { initTimeFormat } from "@/lib/time-format";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -165,6 +169,14 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const detectTimezone = useServerFn(connectionTimezone);
+  useEffect(() => {
+    initTimeFormat();
+    const detect = () => { void detectTimezone().then(setMatchTimezone).catch(() => undefined); };
+    detect();
+    window.addEventListener("focus", detect);
+    return () => window.removeEventListener("focus", detect);
+  }, [detectTimezone]);
 
   useEffect(() => {
     // No-op on the web; inside the iOS shell this asks for notification
