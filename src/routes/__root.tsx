@@ -172,10 +172,14 @@ function RootComponent() {
   const detectTimezone = useServerFn(connectionTimezone);
   useEffect(() => {
     initTimeFormat();
-    const detect = () => { void detectTimezone().then(setMatchTimezone).catch(() => undefined); };
+    let request = 0;
+    const detect = () => { const current = ++request; void detectTimezone().then(zone => { if(current === request)setMatchTimezone(zone); }).catch(() => { if(current === request)setMatchTimezone(null); }); };
+    const visible = () => { if(document.visibilityState === "visible")detect(); };
     detect();
     window.addEventListener("focus", detect);
-    return () => window.removeEventListener("focus", detect);
+    window.addEventListener("online", detect);
+    document.addEventListener("visibilitychange", visible);
+    return () => { request++; window.removeEventListener("focus", detect); window.removeEventListener("online", detect); document.removeEventListener("visibilitychange", visible); };
   }, [detectTimezone]);
 
   useEffect(() => {

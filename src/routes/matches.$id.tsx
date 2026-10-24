@@ -1,11 +1,12 @@
 import { possibleLineupWindow } from "@/lib/possible-lineup";
+import { eventPlayers } from "@/lib/event-players";
 import { MatchMissingPlayers } from "@/components/match-missing-players";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import lineupLogo from "@/assets/logo-mark-v2.png.asset.json";
 import { LineupPortraits, PlayerAvatar } from "@/components/player-avatar";
 import { TeamCrest } from "@/components/team-crest";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { AppShell, BackButton, EmptyState, LoadingSkeleton, SwipeTabs } from "@/components/app-shell";
@@ -95,6 +96,7 @@ function TeamHeadline({ team }: { team: Team | null }) {
 
 
 function MatchPage() {
+  const navigate = useNavigate();
   const tx = useTx();
   const num = useNum();
   const dates = useDates();
@@ -118,7 +120,7 @@ function MatchPage() {
     queryKey: ["match-events", id],
     queryFn: async () => {
       const { data } = await supabase.from("match_events")
-        .select("*, player:player_id(id,name,name_ar,shirt_number,photo_url), team:team_id(id,name), sub_out:sub_out_player_id(id,name), assister:assist_player_id(id,name,photo_url)")
+        .select("*, player:player_id(id,name,name_ar,shirt_number,photo_url), team:team_id(id,name), sub_out:sub_out_player_id(id,name,photo_url), assister:assist_player_id(id,name,photo_url)")
         .eq("match_id", id).order("minute").order("extra");
       return (data ?? []) as unknown as (MatchEvent & { player: Player | null; team: Team | null; sub_out: { id: string; name: string } | null; assister?: { id: string; name: string; photo_url: string | null } | null })[];
     },
@@ -241,7 +243,7 @@ function MatchPage() {
 
   return (
     <AppShell>
-      <Dialog open={!!selectedEvent} onOpenChange={open=>{if(!open)setSelectedEvent(null);}}><DialogContent><DialogHeader><DialogTitle>{tx(selectedEvent ? eventLabel(selectedEvent.type) : "Player")}</DialogTitle></DialogHeader>{selectedEvent && [{p:selectedEvent.player,label:/sub/i.test(selectedEvent.type)?"In":eventLabel(selectedEvent.type)},{p:selectedEvent.assister,label:"Assist"},{p:selectedEvent.sub_out,label:"Out"}].map(({p,label})=>p && <Link key={`${label}-${p.id}`} to="/players/$id" params={{id:p.id}} className="flex items-center justify-between border-b border-border py-3"><span className="font-semibold">{tx(p.name)}</span><span className="text-xs text-muted-foreground">{tx(label)}</span></Link>)}</DialogContent></Dialog>
+      <Dialog open={!!selectedEvent} onOpenChange={open=>{if(!open)setSelectedEvent(null);}}><DialogContent className="max-w-sm overflow-hidden rounded-lg p-0"><DialogHeader className="border-b border-border px-5 pb-4 pt-5"><DialogTitle className="flex items-center gap-3 text-base"><EventArt type={selectedEvent?.type ?? "goal"} className="h-6 w-6" />{tx(selectedEvent ? eventLabel(selectedEvent.type) : "Player")}<span className="ms-auto pe-6 text-xs font-medium tabular-nums text-muted-foreground">{selectedEvent?.minute != null ? `${num(selectedEvent.minute)}′` : ""}</span></DialogTitle></DialogHeader><div className="divide-y divide-border px-2 pb-2">{selectedEvent && eventPlayers(selectedEvent).map(({player,role})=><Link key={player.id} to="/players/$id" params={{id:player.id}} onClick={()=>setSelectedEvent(null)} className="flex min-h-24 items-center gap-4 rounded-md px-3 py-4 transition-colors hover:bg-muted active:bg-muted"><PlayerAvatar src={player.photo_url} name={player.name} className="h-14 w-14 shrink-0" /><span className="min-w-0 flex-1"><span className={`mb-1 block text-[0.7rem] font-semibold ${role === "Out" ? "text-destructive" : role === "In" ? "text-success" : "text-muted-foreground"}`}>{tx(role === "Scorer" ? "Goal" : role)}</span><span className="block text-base font-bold leading-snug">{tx(player.name)}</span></span><ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" /></Link>)}</div></DialogContent></Dialog>
       <div ref={heroRef} dir="ltr" className="match-hero sports-header -mx-4 mb-4 overflow-hidden px-4 pb-0 text-match-foreground sm:-mx-6 sm:px-6">
         <SportsHeaderBackground start={homeAccent?.color} end={awayAccent?.color} />
         <div className="relative flex items-center justify-between px-1 pb-1">
@@ -330,7 +332,7 @@ function MatchPage() {
                   {tx(entry.label)}{entry.score ? <span className="tabular-nums">{num(entry.score)}</span> : null}
                 </li>
               ) : (
-                <li key={entry.event.id}><Button variant="ghost" onClick={() => entry.event.player && setSelectedEvent(entry.event)} className={`h-auto w-full justify-start rounded-none relative flex items-center gap-3 px-4 py-2.5 ${entry.event.player ? "active:bg-muted/60 hover:bg-muted/40" : ""} ${entry.side === "away" ? "flex-row-reverse text-end" : ""}`}>
+                <li key={entry.event.id}><Button variant="ghost" onClick={() => { const choices=eventPlayers(entry.event); if(choices.length===1)void navigate({to:"/players/$id",params:{id:choices[0].player.id}}); else if(choices.length>1)setSelectedEvent(entry.event); }} className={`h-auto w-full justify-start rounded-none relative flex items-center gap-3 px-4 py-2.5 ${entry.event.player ? "active:bg-muted/60 hover:bg-muted/40" : ""} ${entry.side === "away" ? "flex-row-reverse text-end" : ""}`}>
                   <span className="w-9 shrink-0 font-mono text-[0.7rem] text-muted-foreground">{entry.event.minute != null ? num(entry.event.minute) : "-"}{entry.event.extra ? `+${num(entry.event.extra)}` : ""}'</span>
                   <EventIcon type={entry.event.type} />
                   <span className="min-w-0 flex-1">
@@ -463,6 +465,7 @@ function MatchPage() {
         // The shareable card mirrors what is on screen: formation, pitch, coach and bench.
         const lineupShare = {
           ...shareData,
+          possibleLineup: isPossible,
           lineups: (["home", "away"] as const).map((clubSide) => {
             const club = clubSide === "home" ? match.home : match.away;
             const shape = (clubSide === "home" ? match.home_formation : match.away_formation) ?? "4-3-3";
