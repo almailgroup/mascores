@@ -120,7 +120,7 @@ function MatchPage() {
     queryKey: ["match-events", id],
     queryFn: async () => {
       const { data } = await supabase.from("match_events")
-        .select("*, player:player_id(id,name,name_ar,shirt_number,photo_url), team:team_id(id,name), sub_out:sub_out_player_id(id,name), assister:assist_player_id(id,name,photo_url)")
+        .select("*, player:player_id(id,name,name_ar,shirt_number,photo_url), team:team_id(id,name), sub_out:sub_out_player_id(id,name,photo_url), assister:assist_player_id(id,name,photo_url)")
         .eq("match_id", id).order("minute").order("extra");
       return (data ?? []) as unknown as (MatchEvent & { player: Player | null; team: Team | null; sub_out: { id: string; name: string } | null; assister?: { id: string; name: string; photo_url: string | null } | null })[];
     },

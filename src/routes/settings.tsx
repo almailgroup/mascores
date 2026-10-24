@@ -22,6 +22,7 @@ import { BlockedAccounts } from "@/components/blocked-accounts";
 import { SocialActivityButton } from "@/components/social-activity";
 import { NotificationSoundPreview } from "@/components/notification-sound-preview";
 import { canPreviewNotificationSounds } from "@/lib/sound-preview-access";
+import { formatKickoff } from "@/lib/db";
 
 
 export const Route = createFileRoute("/settings")({
@@ -422,7 +423,7 @@ function TicketHistory({ open }: { open: boolean }) {
           : { home: tk.match?.home?.name || "TBD", away: tk.match?.away?.name || "TBD", comp: tk.match?.competition?.name ?? null, venue: tk.match?.venue ?? null, kickoff: tk.match?.kickoff_at ?? null };
         const used = tk.status === "used";
         const expired = !used && !!info.kickoff && new Date(info.kickoff).getTime() < Date.now();
-        const when = info.kickoff ? new Date(info.kickoff).toLocaleString(lang === "ar" ? "ar" : "en", { dateStyle: "medium", timeStyle: "short" }) : "";
+        const when = info.kickoff ? formatKickoff(info.kickoff, lang === "ar" ? "ar" : "en") : "";
         return (
           <div key={tk.id} className={`flex items-center gap-3 rounded-2xl border p-3 ${used || expired ? "border-border bg-muted/40" : "border-primary/40 bg-card"}`}>
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><TicketIcon className="h-4 w-4" /></span>

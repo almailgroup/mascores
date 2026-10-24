@@ -13,6 +13,7 @@ import { useI18n } from "@/lib/i18n";
 import { useCompact, useTx } from "@/lib/auto-translate";
 import { generatedCover, voiceProfiles, liveFor, roomCover, type VoiceHost, type VoiceRoom } from "@/lib/voice";
 import { suspensionMessage, useMySuspension } from "@/lib/suspension";
+import { formatKickoff } from "@/lib/db";
 
 export const Route = createFileRoute("/voice/")({
   head: () => ({
@@ -302,7 +303,7 @@ function CreateRoom({ onClose, onCreated, matchId = null }: { onClose: () => voi
               <option value="">{tx("No match")}</option>
               {(matches.data ?? []).map((m) => (
                 <option key={m.id} value={m.id}>
-                  {(m.home?.name ?? "?") + " v " + (m.away?.name ?? "?")}{m.kickoff_at ? ` — ${new Date(m.kickoff_at).toLocaleDateString()}` : ""}
+                  {(m.home?.name ?? "?") + " v " + (m.away?.name ?? "?")}{m.kickoff_at ? ` — ${formatKickoff(m.kickoff_at)}` : ""}
                 </option>
               ))}
             </select>
