@@ -1229,6 +1229,7 @@ export type Database = {
           home_team_id: string | null
           id: string
           kickoff_at: string | null
+          kickoff_date: string | null
           lineup_mode: string
           lineups_published: boolean
           live_minute: number | null
@@ -1266,6 +1267,7 @@ export type Database = {
           home_team_id?: string | null
           id?: string
           kickoff_at?: string | null
+          kickoff_date?: string | null
           lineup_mode?: string
           lineups_published?: boolean
           live_minute?: number | null
@@ -1303,6 +1305,7 @@ export type Database = {
           home_team_id?: string | null
           id?: string
           kickoff_at?: string | null
+          kickoff_date?: string | null
           lineup_mode?: string
           lineups_published?: boolean
           live_minute?: number | null

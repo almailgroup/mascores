@@ -1,0 +1,2 @@
+ALTER TABLE public.matches ADD COLUMN IF NOT EXISTS kickoff_date date;
+COMMENT ON COLUMN public.matches.kickoff_date IS 'Announced fixture date in venue local calendar when kickoff time is not yet confirmed; kickoff_at stays NULL until the time is known.';
