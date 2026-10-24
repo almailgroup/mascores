@@ -2,7 +2,7 @@
 
 - [x] Check source benches: mfsoccer rounds 1–6 contains starters and came-on substitutions only, not full match-day reserves.
 - [x] Import 667 confirmed mfsoccer displayed reserves across all 64 completed round 1–6 match sides; preserve starters/substitutions, attribute calculated benches in notes, and verify Al Qadsia’s bench on-screen.
-- [ ] Resolve eight bench identities (31 omitted appearances): Vinicius, Hamoud Hazmi Al-Suhali, Meshal Al Habs, Abdulaziz Salah, Fahad Sayyaf, Meshal Roumi, Rashed Farraj and Khaled Eid — blocked by missing or conflicting profile identities; never match solely by shirt number.
+- [x] Add all eight resolved bench players’ 31 omitted round 1–6 appearances using the six user-confirmed aliases and the newly created Meshal Al Habs / Abdulaziz Salah profiles; verified 704 starters unchanged, 986 reserves/substitutes, no future lineups, and Vinicius on the round-3 match bench. Audit: scripts/mfsoccer-bench-resolved.json.
 - [x] Correct four wrong-side historical coach assignments and fill confirmed round-2 Qadsia/Kuwait coaches; database checks pass and Kuwait round-3 coach verified on-screen.
 - [ ] Complete historical coach verification — 11 completed matches still lack coach slots; blocked by missing dated match reports, and other preserved coach snapshots remain not independently verified.
 
