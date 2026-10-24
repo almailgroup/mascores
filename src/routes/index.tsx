@@ -501,7 +501,8 @@ function UpcomingCountries() {
     queryFn: async () => {
       const { data, error } = await supabase.from("matches")
         .select("*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url,country,country_code)")
-        .eq("status", "scheduled").gte("kickoff_at", new Date().toISOString()).order("kickoff_at");
+        .eq("status", "scheduled")
+        .or(`kickoff_at.gte.${new Date().toISOString()},and(kickoff_at.is.null,kickoff_date.gte.${matchDateKey(new Date())})`).order("kickoff_at");
       if (error) throw error;
       return (data ?? []) as unknown as MatchWithTeams[];
     },
