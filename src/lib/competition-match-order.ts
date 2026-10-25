@@ -22,3 +22,18 @@ export function compareCompetitionRounds(a: RoundBucket, b: RoundBucket) {
   if (dateA !== dateB) return dateA < dateB ? -1 : 1;
   return 0;
 }
+
+/**
+ * Newest-first ordering for one club's fixture list. Numbered rounds of the same
+ * competition stay in sequence even when a fixture is TBD or postponed (no time).
+ */
+export function compareTeamFixtures(a: TeamFixture, b: TeamFixture) {
+  if (a.competition_id && a.competition_id === b.competition_id
+    && a.round_number != null && b.round_number != null && a.round_number !== b.round_number) {
+    return b.round_number - a.round_number;
+  }
+  const timeA = fixtureTime(a);
+  const timeB = fixtureTime(b);
+  if (timeA === timeB) return 0;
+  return timeB - timeA;
+}
