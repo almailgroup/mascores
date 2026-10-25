@@ -43,7 +43,7 @@ def fixture(stage, number, date, home, away, score=None, status="ft", penalties=
         raise ValueError("Never invent upcoming results")
     if status == "pen" and (penalties is None or score[0] != score[1] or penalties[0] == penalties[1]):
         raise ValueError("Penalty decision needs tied match and shootout winner")
-    return dict(round=stage, round_number=number, kickoff_date=date, kickoff_at=None,
+    return dict(round=stage, stage_order=number, round_number=None, kickoff_date=date, kickoff_at=None,
                 home_team_id=TEAMS[home], away_team_id=TEAMS[away], status=status,
                 home_score=score[0] if score else None, away_score=score[1] if score else None,
                 home_pen=penalties[0] if penalties else None, away_pen=penalties[1] if penalties else None,
