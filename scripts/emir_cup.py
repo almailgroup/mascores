@@ -67,6 +67,12 @@ def audit():
         fixture("Quarter-finals", 4, "2026-11-26", "Qadsia", "Fahaheel", status="scheduled"),
         fixture("Quarter-finals", 4, "2026-11-26", "Arabi", "Khaitan", status="scheduled"),
     ]
+    verified_times = ["13:30", "13:35", "13:45", "16:45", "13:45", "16:45", "16:45", "13:45", "16:45", "18:30"]
+    for row, time in zip(fixtures, verified_times):
+        row["kickoff_at"] = f"{row['kickoff_date']}T{time}:00Z"
+        row["kickoff_source"] = ("https://www.q8news.com/692210/" if row["stage_order"] < 3 else
+                                 "https://www.today-predictions.com/fixture/al-qadsia-vs-burgan-27-february-2026-1521475" if row["home_team_id"] == TEAMS["Qadsia"] else
+                                 "https://www.q8news.com/691185/")
     return dict(competition_id=COMPETITION_ID, season=SEASON, checked_on="2026-10-25",
                 sources=[RESULT_SOURCE, SCHEDULE_SOURCE], teams=TEAMS, fixtures=fixtures,
                 unresolved_bracket=[
