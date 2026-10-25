@@ -274,9 +274,9 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
         {!hideLive && (
           <Button variant="ghost" size="sm" aria-pressed={status === "live"}
             onClick={() => setStatus(status === "live" ? null : "live")}
-            className={`h-9 shrink-0 gap-1.5 rounded-md border px-3 text-xs font-semibold shadow-sm transition ${status === "live" ? "border-destructive bg-destructive/10 text-destructive" : "border-border bg-card text-foreground hover:border-destructive/50"}`}
+            className={`h-9 shrink-0 gap-1.5 rounded-md px-3 text-xs font-semibold transition ${status === "live" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:text-destructive-foreground" : "bg-transparent text-foreground hover:bg-muted"}`}
           >
-            <span className="size-1.5 rounded-full bg-destructive" />
+            <span className={`size-1.5 rounded-full ${status === "live" ? "bg-destructive-foreground" : "bg-destructive"}`} />
             {t("board.live")}{liveCount > 0 ? ` (${liveCount})` : ""}
           </Button>
         )}
