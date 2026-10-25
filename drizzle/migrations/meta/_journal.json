@@ -435,6 +435,13 @@
       "when": 1792884499215,
       "tag": "0061_match_missing_players",
       "breakpoints": true
+    },
+    {
+      "idx": 62,
+      "version": "7",
+      "when": 1792958581500,
+      "tag": "0062_competition_video_thumbnail",
+      "breakpoints": true
     }
   ]
 }
