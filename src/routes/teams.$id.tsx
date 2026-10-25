@@ -629,7 +629,7 @@ function TeamMatches({ data, teamId, nextId }: { data: MatchWithTeams[]; teamId:
   const [showToday, setShowToday] = useState(false);
   const resetPosition = useRef(0);
   const timestamp = (m: MatchWithTeams) => m.kickoff_at ? new Date(m.kickoff_at).getTime() : 0;
-  const ordered = [...data].sort((a, b) => timestamp(b) - timestamp(a));
+  const ordered = [...data].sort(compareTeamFixtures);
   const targetId = data.find((m) => ["live", "ht"].includes(m.status))?.id ?? nextId ?? ordered.find((m) => timestamp(m) <= Date.now())?.id ?? ordered[0]?.id;
   const goToNext = () => {
     const target = Array.from(top.current?.querySelectorAll<HTMLElement>("[data-fixture-id]") ?? []).find((node) => node.dataset.fixtureId === targetId);
