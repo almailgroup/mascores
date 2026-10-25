@@ -89,3 +89,4 @@
 - [x] Compact match events like reference; remove "Substitution: team" subtext
 - [x] Share images footer: "Powered by Mansour Almail"
 - [x] Transfer history redesign with tappable team links
+- [ ] Refresh Khaleeji 27 Team of the Round for the latest completed round (user request, Oct 25)
