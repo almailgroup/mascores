@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Fix overflowing match-event layout and remove event-type/team captions under player names.
+
 - [x] Replace blue penalty-winner text with neutral text; browser checked.
 - [ ] Import verified Sofascore Arabian Gulf Cup into the existing Khaleeji 27 competition and AFC Champions League Two match details, lineups, events and statistics; preserve existing identities, clearly distinguish estimated ratings, audit all changes and verify real pages.
 
