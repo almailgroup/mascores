@@ -806,7 +806,7 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
           {match.lineups_published ? "Lineups are live on the match page." : "Lineups stay hidden until you confirm them."}
         </span>
         {match.lineups_published
-          ? <button className={btnGhost} onClick={() => publish(false)}>Unpublish</button>
+          ? <span className="flex gap-2"><button className={btnPrimary} onClick={async () => { const { error } = await supabase.rpc("admin_send_lineups_push", { _match: match.id }); if (error) toast.error(error.message); else toast.success("Confirmed lineups notification sent"); }}>Send lineups notification</button><button className={btnGhost} onClick={() => publish(false)}>Unpublish</button></span>
           : <button className={btnPrimary} onClick={() => publish(true)}><Check className="h-3.5 w-3.5" /> Confirm lineups</button>}
       </div>
     </div>
