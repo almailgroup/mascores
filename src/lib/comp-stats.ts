@@ -75,7 +75,7 @@ export async function fetchCompetitionStats(competitionId: string, season: strin
     all<{ match_id: string; type: string; team_id: string | null; player_id: string | null; assist_player_id: string | null; sub_out_player_id: string | null }>("match_events", "match_id,type,team_id,player_id,assist_player_id,sub_out_player_id"),
     all<{ match_id: string; player_id: string; rating: number }>("player_ratings", "match_id,player_id,rating"),
     all<{ match_id: string; team_id: string; player_id: string; is_starting: boolean }>("match_lineups", "match_id,team_id,player_id,is_starting"),
-    all<{ match_id: string; label: string; home_value: number | null; away_value: number | null }>("match_stats", "match_id,label,home_value,away_value"),
+    all<{ match_id: string; label: string; home_value: string | null; away_value: string | null }>("match_stats", "match_id,label,home_value,away_value"),
   ]);
 
   const playerIds = new Set<string>();
