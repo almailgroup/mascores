@@ -249,7 +249,7 @@ function Stat({ label, value, icon }: { label: string; value: string; icon?: Rea
   );
 }
 
-const STATUS_SHORT: Record<string, string> = { finished: "FT", live: "LIVE", scheduled: "", postponed: "PST", cancelled: "CAN", awarded: "AWD", interrupted: "INT" };
+const STATUS_SHORT: Record<string, string> = { ft: "FT", aet: "AET", pen: "PEN", awarded: "AWD", postponed: "PST", cancelled: "CAN", interrupted: "INT" };
 
 function PlayerMatches({ data, playerId, playerTeamId }: { data: PlayerMatchData; playerId: string; playerTeamId: string | null }) {
   const tx = useTx();
