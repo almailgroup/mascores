@@ -1,7 +1,10 @@
 # Roadmap
 
-- [ ] Replace blue penalty-winner text with neutral text.
-- [ ] Import verified Sofascore Gulf Cup and AFC Champions League Two match details, lineups, events and statistics; preserve existing identities, clearly distinguish estimated ratings, audit all changes and verify real pages.
+- [x] Fix overflowing match-event layout and remove event-type/team captions under player names; checked real Iraq–Oman and Kuwait–Al Khaldiya pages at 402px with no horizontal overflow.
+
+- [x] Replace blue penalty-winner text with neutral text; browser checked.
+- [x] Import 15 verified fixtures into existing Khaleeji 27 plus Kuwait–Al Khaldiya in AFC Champions League Two, 539 existing-player lineup rows, verified events and 395 independent estimated ratings; preserve identities and alert settings. Audit: scripts/sofascore-cups-import.json.
+- [ ] Complete remaining AFC source fixtures, unmatched lineup identities and detailed cup statistics — blocked by unavailable source responses or absent existing player identities; do not invent profiles or statistics.
 
 - [x] Honor Crown Prince Cup hidden standings in club standings selectors and match pages; browser verified only AFC CL2 and Zain Premier League appear for Kuwait SC.
 
