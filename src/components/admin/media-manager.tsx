@@ -7,12 +7,23 @@ import { Field, inputCls, btnPrimary, btnDanger } from "./ui";
 
 type MediaItem = Database["public"]["Tables"]["media_items"]["Row"];
 const SOURCES = ["youtube", "instagram", "facebook", "tiktok", "upload", "website"];
+const KINDS = ["Full Match", "Highlights", "Live Stream", "Goals", "Extended Highlights", "Press Conference", "Interviews", "Behind the Scenes", "Fans", "Custom"];
 
 export function MediaManager({ ownerType, ownerId }: { ownerType: string; ownerId: string }) {
   const qc = useQueryClient();
   const key = ["admin", "media", ownerType, ownerId];
   const [source, setSource] = useState("youtube");
   const [title, setTitle] = useState("");
+  const [kind, setKind] = useState("Full Match");
+  const matchInfo = useQuery({ queryKey: ["admin", "media-match", ownerId], enabled: ownerType === "match", queryFn: async () =>
+    (await supabase.from("matches").select("home_score,away_score,home:teams!matches_home_team_id_fkey(name),away:teams!matches_away_team_id_fkey(name)").eq("id", ownerId).maybeSingle()).data as { home_score: number | null; away_score: number | null; home: { name: string } | null; away: { name: string } | null } | null });
+  const autoTitle = () => {
+    const m = matchInfo.data;
+    const label = kind === "Custom" ? title.trim() : kind;
+    if (!m) return label || null;
+    const score = m.home_score != null && m.away_score != null ? `${m.home_score}-${m.away_score}` : "vs";
+    return `${label} | ${m.home?.name ?? "TBD"} ${score} ${m.away?.name ?? "TBD"}`;
+  };
   const [url, setUrl] = useState("");
   const q = useQuery({
     queryKey: key,
@@ -24,7 +35,7 @@ export function MediaManager({ ownerType, ownerId }: { ownerType: string; ownerI
 
   const add = async () => {
     if (!url.trim()) return;
-    await supabase.from("media_items").insert({ owner_type: ownerType, owner_id: ownerId, source, title: title.trim() || null, url: url.trim(), sort_order: q.data?.length ?? 0 } as never);
+    await supabase.from("media_items").insert({ owner_type: ownerType, owner_id: ownerId, source, title: ownerType === "match" ? autoTitle() : title.trim() || null, url: url.trim(), sort_order: q.data?.length ?? 0 } as never);
     setTitle(""); setUrl("");
     qc.invalidateQueries({ queryKey: key });
   };
@@ -43,8 +54,11 @@ export function MediaManager({ ownerType, ownerId }: { ownerType: string; ownerI
       </div>
       <div className="grid gap-2 rounded-lg border border-border bg-background/50 p-3 sm:grid-cols-3">
         <Field label="Platform"><select className={inputCls} value={source} onChange={(e) => setSource(e.target.value)}>{SOURCES.map((item) => <option key={item}>{item}</option>)}</select></Field>
-        <Field label="Title"><input className={inputCls} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Optional title" /></Field>
+        {ownerType === "match"
+          ? <Field label="Type"><select className={inputCls} value={kind} onChange={(e) => setKind(e.target.value)}>{KINDS.map((k) => <option key={k}>{k}</option>)}</select>{kind === "Custom" && <input className={`${inputCls} mt-2`} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Custom label" />}</Field>
+          : <Field label="Title"><input className={inputCls} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Optional title" /></Field>}
         <Field label="Link"><input className={inputCls} value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://…" /></Field>
+        {ownerType === "match" && <div className="text-xs text-muted-foreground sm:col-span-3">Saved as: <b>{autoTitle()}</b></div>}
         <div className="sm:col-span-3"><button className={btnPrimary} onClick={add}><Plus className="h-3.5 w-3.5" /> Add media</button></div>
       </div>
     </div>
