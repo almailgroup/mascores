@@ -7,8 +7,6 @@ import { FlagIcon } from "@/components/flag";
 import { MatchNotificationButton } from "@/hooks/use-favorites";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
 import type { Match, Team } from "@/lib/db";
-import { matchClockSeconds } from "@/lib/db";
-import { useEffect, useState } from "react";
 
 export type MatchWithTeams = Match & {
   home: Team | null;
@@ -107,14 +105,6 @@ export function MatchRow({ m, highlightTeamId }: { m: MatchWithTeams; highlightT
   const dates = useDates();
   const started = ["live", "ht", "ft", "aet", "pen", "awarded"].includes(m.status);
   const isLive = ["live", "ht"].includes(m.status);
-  const [, tick] = useState(0);
-  useEffect(() => {
-    if (!m.timer_running) return;
-    const interval = window.setInterval(() => tick((value) => value + 1), 1000);
-    return () => window.clearInterval(interval);
-  }, [m.timer_running]);
-  const seconds = matchClockSeconds(m);
-  const minute = Math.max(m.live_minute ?? 0, Math.floor(seconds / 60) + (seconds % 60 > 0 ? 1 : 0));
   const specialStatus = ["postponed", "cancelled", "interrupted"].includes(m.status);
   const finished = ["ft", "aet", "pen", "awarded"].includes(m.status);
   const highlightedScore = highlightTeamId === m.home_team_id ? [m.home_score, m.away_score] : highlightTeamId === m.away_team_id ? [m.away_score, m.home_score] : null;
@@ -128,17 +118,25 @@ export function MatchRow({ m, highlightTeamId }: { m: MatchWithTeams; highlightT
       {started && <span className="shrink-0 text-[0.8rem] font-bold tabular-nums">{num(score ?? 0)}</span>}
     </div>
   );
+  const shortDate = m.kickoff_at
+    ? num(dates.date(m.kickoff_at, { day: "2-digit", month: "2-digit", year: "2-digit" }))
+    : m.kickoff_date ? num(dates.date(`${m.kickoff_date}T12:00:00Z`, { day: "2-digit", month: "2-digit", year: "2-digit" })) : "—";
+  const timeOnly = m.kickoff_at ? num(dates.time(m.kickoff_at)) : "";
   return (
     <Link data-fixture-id={m.id} to="/matches/$id" params={{ id: m.id }} className="flex items-center gap-2.5 px-3.5 py-2 hover:bg-accent">
-      <div className="w-[4.5rem] shrink-0 break-words text-center text-[0.65rem] leading-tight text-muted-foreground">
+      <div className="w-[3.6rem] shrink-0 text-center text-[0.65rem] leading-tight text-muted-foreground">
         {isLive ? (
-           <span className="font-bold text-primary">{m.status === "live" ? `${num(minute)}'` : "HT"}</span>
+          <span className="font-bold text-primary">{m.status === "live" ? "LIVE" : "HT"}</span>
         ) : specialStatus ? (
           <span className="block font-semibold">{tx(m.status.charAt(0).toUpperCase() + m.status.slice(1))}</span>
         ) : (
           <>
-            <div className="tabular-nums">{num(dates.kickoff(m.kickoff_at, m.kickoff_date))}</div>
-            {started && <div className="font-semibold uppercase">{m.status === "ft" ? "FT" : m.status.toUpperCase()}</div>}
+            <div className="tabular-nums">{shortDate}</div>
+            {started
+              ? <div className="font-semibold uppercase">{m.status === "ft" ? "FT" : m.status.toUpperCase()}</div>
+              : timeOnly
+                ? <div className="tabular-nums">{timeOnly}</div>
+                : <div className="font-semibold uppercase">TBD</div>}
           </>
         )}
       </div>

@@ -68,6 +68,18 @@ export function formatKickoff(iso: string | null | undefined, locale?: string, a
   return d.toLocaleString(locale, { timeZone: getMatchTimezone(), weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit", hour12: getTimeFormat() === "12" });
 }
 
+/** Compact numeric date for narrow match-list columns, e.g. 31/10/26. */
+export function formatShortDate(iso: string | null | undefined, locale?: string): string {
+  if (!iso) return "";
+  return new Date(iso).toLocaleDateString(locale, { timeZone: getMatchTimezone(), day: "2-digit", month: "2-digit", year: "2-digit" });
+}
+
+/** Kickoff time only, e.g. "6:00 PM", honouring the clock format and connection timezone. */
+export function formatKickoffTime(iso: string | null | undefined, locale?: string): string {
+  if (!iso) return "";
+  return new Date(iso).toLocaleTimeString(locale, { timeZone: getMatchTimezone(), hour: "numeric", minute: "2-digit", hour12: getTimeFormat() === "12" });
+}
+
 /** Shared event presentation so admin and public views always agree. */
 export const EVENT_META: Record<string, { label: string; icon: string }> = {
   goal: { label: "Goal", icon: "⚽" },

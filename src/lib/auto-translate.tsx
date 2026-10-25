@@ -4,7 +4,7 @@ import { getTimeFormat, subscribeTimeFormat } from "./time-format";
 import { useServerFn } from "@tanstack/react-start";
 import { translateContent, translationDictionary } from "./translate.functions";
 import { useI18n } from "./i18n";
-import { formatDate, formatDob, formatKickoff } from "./db";
+import { formatDate, formatDob, formatKickoff, formatKickoffTime } from "./db";
 import { UI_AR } from "./ui-phrases";
 
 type Tx = <T extends string | null | undefined>(value: T) => T;
@@ -213,6 +213,7 @@ export function useDates() {
   return {
     locale,
     kickoff: (iso: string | null | undefined, announcedDate?: string | null) => formatKickoff(iso, locale, announcedDate),
+    time: (iso: string | null | undefined) => formatKickoffTime(iso, locale),
     dob: (iso: string | null | undefined) => formatDob(iso, locale),
     date: (iso: string | null | undefined, opts?: Intl.DateTimeFormatOptions) => formatDate(iso, locale, opts),
   };
