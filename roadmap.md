@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Find Arabic/English YouTube highlights for completed Zain Premier League matches; verify exact pairing/date/result before adding existing-match media links, preserving unrelated media.
+
 - [x] Import 269 verified Sofascore statistic rows across 30 completed Zain Premier League matches in rounds 1–6 (123 updated, 146 added); all imported values verified, protected result/event/lineup/rating snapshots unchanged, five parser tests pass, and Kazma–Sulaibikhat Stats tab checked. Audit: scripts/sofascore-stats-import.json.
 - [ ] Fill remaining Sofascore statistics gaps — Al Jahra–Al Arabi (round 2) and Kuwait–Sulaibikhat (round 5) pages expose no statistics; partial rows, three 0%/0% possession pairs and Salmiya–Jahra's invalid 194 corners were omitted; blocked by missing or invalid source values. Existing unrelated statistics remain unchanged.
 
