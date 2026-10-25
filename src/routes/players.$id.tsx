@@ -297,10 +297,22 @@ function PlayerMatches({ data, playerId, playerTeamId }: { data: PlayerMatchData
               const isHome = playerTeamId && m.home_team_id === playerTeamId;
               const isAway = playerTeamId && m.away_team_id === playerTeamId;
               return (
-                <Link key={m.id} to="/matches/$id" params={{ id: m.id }} className="flex items-center gap-2 px-3 py-2 hover:bg-accent">
-                  <div className="w-12 shrink-0 text-[0.6rem] leading-tight text-muted-foreground">
-                    <div>{m.kickoff_at ? num(dates.date(m.kickoff_at)) : "—"}</div>
-                    <div className="font-semibold">{tx(STATUS_SHORT[m.status] ?? "")}</div>
+                <Link key={m.id} to="/matches/$id" params={{ id: m.id }} className="flex items-center gap-2.5 px-3 py-2 hover:bg-accent">
+                  <div className="w-11 shrink-0 text-center text-[0.6rem] leading-tight text-muted-foreground">
+                    {["live", "ht"].includes(m.status) ? (
+                      <span className="font-bold text-primary">{m.status === "live" ? "LIVE" : "HT"}</span>
+                    ) : ["postponed", "cancelled", "interrupted"].includes(m.status) ? (
+                      <span className="block font-semibold">{tx(STATUS_SHORT[m.status] ?? "")}</span>
+                    ) : (
+                      <>
+                        <div className="tabular-nums">{m.kickoff_at ? num(dates.date(m.kickoff_at, { day: "2-digit", month: "2-digit", year: "2-digit" })) : "—"}</div>
+                        {["ft", "aet", "pen", "awarded"].includes(m.status)
+                          ? <div className="font-semibold uppercase">{STATUS_SHORT[m.status]}</div>
+                          : m.kickoff_at
+                            ? <div className="tabular-nums">{num(dates.time(m.kickoff_at))}</div>
+                            : null}
+                      </>
+                    )}
                   </div>
                   <div className="min-w-0 flex-1 space-y-1">
                     <TeamLine team={m.home} dim={!!isAway} />
