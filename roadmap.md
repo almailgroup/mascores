@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Import the interrupted Kuwait Emir Cup season: verified earlier results, qualification stage and remaining knockout fixtures; preserve existing clubs and avoid invented results/dates; verify competition and bracket in the app.
+
 - [x] Import all 147 published Sportscorner 2026/2027 youth fixtures: U19 35 results + 7 date-only upcoming (rounds 1–6), U17 49 results + 56 upcoming (rounds 1–15). Reuse youth clubs, add Tadamon U17, match 15 participating U17 clubs to senior identities/badges, preserve 14 existing U19 fixture IDs, verify every imported field and computed standings, and check both league pages plus Kuwait U17 first-team link. No historical pushes queued; five import tests pass. Source league statistics provide no lineups, scorers, assists, discipline or ratings; these are not invented. Audit: scripts/sportscorner-youth-import.json.
 
 - [x] Search Arabic/English YouTube highlights and add 24 verified links; preserve four existing links, all match data and full broadcasts. Kuwait–Tadamon highlight verified visibly on the match page; audit in scripts/zain-highlights-import.json.
