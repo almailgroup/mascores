@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Import verified Sportscorner current-season Zain U19 and Kuwait U17 fixtures/results and available match details; add U17 clubs linked to senior clubs with shared badges, verify standings and real league pages.
+
 - [x] Search Arabic/English YouTube highlights and add 24 verified links; preserve four existing links, all match data and full broadcasts. Kuwait–Tadamon highlight verified visibly on the match page; audit in scripts/zain-highlights-import.json.
 - [x] Re-searched Kazma–Sulaibikhat, Salmiya–Jahra and Sahel–Nasr (round 6) in Arabic and English on October 25; no exact verified YouTube highlight found, so no links added. Arabi–Sulaibikhat round 3 is excluded because the user confirmed no stream.
 - [ ] Add the three round-6 highlights when exact videos become available — blocked by no verified upload; never substitute older games or news reports.
