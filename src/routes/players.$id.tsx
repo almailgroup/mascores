@@ -1,4 +1,3 @@
-import { ratingClass } from "@/lib/db";
 import { TeamCrest } from "@/components/team-crest";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
@@ -9,7 +8,7 @@ import { SeasonMenu } from "@/components/season-menu";
 import { useLogoAccent } from "@/lib/logo-accent";
 import { MediaGallery } from "@/components/media-gallery";
 import { AppShell, BackButton, EmptyState, LoadingSkeleton, SwipeTabs } from "@/components/app-shell";
-import { supabase, formatKickoff, formatHeight, formatDob, type Player, type Team, type Match, type Transfer } from "@/lib/db";
+import { ratingClass, supabase, formatKickoff, formatHeight, formatDob, type Player, type Team, type Match, type Transfer } from "@/lib/db";
 import { FavoriteButton } from "@/hooks/use-favorites";
 import { EventIcon } from "@/components/event-icon";
 import { useHeightUnit } from "@/lib/units";
