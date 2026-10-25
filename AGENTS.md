@@ -62,4 +62,4 @@
 - Youth historical imports use explicit senior-club identity maps plus age groups, an audited source snapshot and idempotent competition/season/round/team-pair matching; unknown kickoff times remain date-only and historical updates mute then restore alerts to avoid old-result pushes.
 - Cup imports reuse existing clubs and retain the interrupted season; unresolved teams belong in knockout placeholders, never dummy club profiles, and stage-wide date windows stay in notes until individual fixture dates are confirmed.
 
-- Shared match-result helpers decide shootout winners and standings eligibility across competition and match pages, keeping knockout results consistent.
+- Shared match-result helpers decide shootout winners and standings eligibility across competition, match and club pages, keeping hidden cup tables and results consistent.

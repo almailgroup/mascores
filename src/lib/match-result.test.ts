@@ -12,6 +12,6 @@ describe("cup results", () => {
     expect(hasStandings({ format: "league" })).toBe(true);
   });
   it("honors hidden standings on match pages too", () => {
-    expect(hasStandings({ format: "league", hidden_tabs: ["standings"] })).toBe(false);
+    expect(hasStandings({ format: "cup", hidden_tabs: ["standings"] })).toBe(false);
   });
 });
