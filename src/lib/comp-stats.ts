@@ -61,11 +61,21 @@ export async function fetchCompetitionStats(competitionId: string, season: strin
   const ids = matches.map((m) => m.id);
   if (ids.length === 0) return { players: [], teams: [], matches: 0 };
 
+  // The API caps each response at 1000 rows, so page through every table to avoid silently truncated totals.
+  const all = async <T,>(table: string, cols: string): Promise<{ data: T[] }> => {
+    const out: T[] = [];
+    for (let from = 0; ; from += 1000) {
+      const { data } = await (supabase.from(table as never) as any).select(cols).in("match_id", ids).order("id").range(from, from + 999);
+      out.push(...((data ?? []) as T[]));
+      if (!data || data.length < 1000) break;
+    }
+    return { data: out };
+  };
   const [events, ratings, lineups, stats] = await Promise.all([
-    supabase.from("match_events").select("match_id,type,team_id,player_id,assist_player_id,sub_out_player_id").in("match_id", ids),
-    supabase.from("player_ratings").select("match_id,player_id,rating").in("match_id", ids),
-    supabase.from("match_lineups").select("match_id,team_id,player_id,is_starting").in("match_id", ids),
-    supabase.from("match_stats").select("match_id,label,home_value,away_value").in("match_id", ids),
+    all<{ match_id: string; type: string; team_id: string | null; player_id: string | null; assist_player_id: string | null; sub_out_player_id: string | null }>("match_events", "match_id,type,team_id,player_id,assist_player_id,sub_out_player_id"),
+    all<{ match_id: string; player_id: string; rating: number }>("player_ratings", "match_id,player_id,rating"),
+    all<{ match_id: string; team_id: string; player_id: string; is_starting: boolean }>("match_lineups", "match_id,team_id,player_id,is_starting"),
+    all<{ match_id: string; label: string; home_value: string | null; away_value: string | null }>("match_stats", "match_id,label,home_value,away_value"),
   ]);
 
   const playerIds = new Set<string>();

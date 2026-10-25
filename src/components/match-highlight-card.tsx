@@ -5,54 +5,52 @@ import { useTx } from "@/lib/auto-translate";
 
 type Side = { name?: string | null; logo?: string | null; photo?: string | null };
 
-/** Cinematic highlight poster: featured player per team facing each other, score plate at the bottom. */
+/** "Split duel" highlight poster: dark stadium night, each player inside a slanted team panel, score badge on the seam. */
 export function MatchHighlightCard({ href, home, away, score, leagueLogo }: { href: string; home: Side; away: Side; score: string; leagueLogo?: string | null }) {
   const tx = useTx();
-  const player = (side: Side, align: "l" | "r") => (
-    <div className={`absolute bottom-0 h-[92%] w-[52%] ${align === "l" ? "left-0" : "right-0"}`}>
+  const [h, a] = score.includes("-") ? score.split("-") : [score, ""];
+  const panel = (side: Side, left: boolean) => (
+    <div className="absolute inset-y-0 w-[56%] overflow-hidden"
+      style={{ [left ? "left" : "right"]: 0, clipPath: left ? "polygon(0 0,100% 0,82% 100%,0 100%)" : "polygon(18% 0,100% 0,100% 100%,0 100%)" }}>
+      <div className={`absolute inset-0 ${left ? "bg-[linear-gradient(135deg,color-mix(in_oklab,var(--primary)_70%,black),color-mix(in_oklab,var(--primary)_25%,black))]" : "bg-[linear-gradient(225deg,color-mix(in_oklab,var(--destructive)_60%,black),color-mix(in_oklab,var(--destructive)_20%,black))]"}`} />
+      {side.logo && <img src={side.logo} alt="" className={`absolute top-1/2 h-[120%] -translate-y-1/2 object-contain opacity-[0.13] ${left ? "-left-[15%]" : "-right-[15%]"}`} />}
+      <div className="absolute inset-0 opacity-20 [background:repeating-linear-gradient(0deg,transparent_0_3px,black_3px_4px)]" />
       {side.photo ? (
         <img src={portraitSource(side.photo) ?? side.photo} alt={side.name ?? ""} draggable={false}
-          className={`h-full w-full object-cover object-top drop-shadow-2xl ${align === "l" ? "[mask-image:linear-gradient(to_right,black_60%,transparent)]" : "[mask-image:linear-gradient(to_left,black_60%,transparent)]"}`} />
+          className={`absolute bottom-0 h-[95%] w-auto max-w-none object-contain object-bottom transition duration-500 group-hover:scale-105 ${left ? "left-[4%]" : "right-[4%]"} [mask-image:linear-gradient(to_top,transparent,black_30%)]`} />
       ) : (
-        <div className="grid h-full place-items-center"><TeamCrest name={side.name} logo={side.logo} className="h-24 w-24 opacity-40" /></div>
+        <TeamCrest name={side.name} logo={side.logo} className={`absolute top-1/2 h-24 w-24 -translate-y-1/2 ${left ? "left-[18%]" : "right-[18%]"}`} />
       )}
     </div>
   );
   return (
     <a href={href} target="_blank" rel="noreferrer"
-      className="group relative block aspect-[16/10] overflow-hidden rounded-3xl border border-border bg-card shadow-lg">
-      {/* backdrop */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,color-mix(in_oklab,var(--primary)_55%,transparent),transparent_70%),linear-gradient(160deg,color-mix(in_oklab,var(--primary)_25%,var(--background)),var(--background))]" />
-      <div className="absolute inset-0 opacity-[0.12] [background:repeating-linear-gradient(115deg,var(--foreground)_0_2px,transparent_2px_22px)]" />
-      {home.logo && <img src={home.logo} alt="" className="absolute -left-6 top-4 h-40 w-40 object-contain opacity-15 blur-[1px]" />}
-      {away.logo && <img src={away.logo} alt="" className="absolute -right-6 top-4 h-40 w-40 object-contain opacity-15 blur-[1px]" />}
+      className="group relative block aspect-[16/10] overflow-hidden rounded-3xl bg-[oklch(0.16_0.03_260)] shadow-xl ring-1 ring-border">
+      {panel(home, true)}
+      {panel(away, false)}
+      {/* seam glow */}
+      <div className="pointer-events-none absolute inset-y-0 left-1/2 w-1 -translate-x-1/2 skew-x-[-10deg] bg-[oklch(0.98_0_0)] opacity-80 blur-[1px]" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-[oklch(0.1_0.02_260)] to-transparent" />
 
-      {player(home, "l")}
-      {player(away, "r")}
-
-      <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-background via-background/70 to-transparent" />
-
-      {/* top bar */}
       <div className="absolute inset-x-3 top-3 flex items-center justify-between">
-        <span className="flex items-center gap-1.5 rounded-full bg-primary px-3 py-1 text-[0.65rem] font-black uppercase tracking-widest text-primary-foreground shadow">
-          <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground" />{tx("Highlights")}
-        </span>
-        {leagueLogo && <img src={leagueLogo} alt="" className="h-8 w-8 rounded-full bg-background/70 object-contain p-1 backdrop-blur" />}
+        {leagueLogo ? <img src={leagueLogo} alt="" className="h-8 w-8 rounded-full bg-[oklch(0.98_0_0)] object-contain p-1 shadow" /> : <span />}
+        <span className="rounded-md bg-[oklch(0.98_0_0)] px-2 py-0.5 text-[0.6rem] font-black uppercase tracking-[0.25em] text-[oklch(0.16_0.03_260)]">{tx("Highlights")}</span>
       </div>
 
-      {/* play */}
-      <span className="absolute left-1/2 top-[40%] grid h-14 w-14 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-primary text-primary-foreground shadow-xl ring-4 ring-primary/30 transition group-hover:scale-110">
+      {/* score medallion on the seam */}
+      <div dir="ltr" className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-2">
+        <TeamCrest name={home.name} logo={home.logo} className="h-10 w-10 drop-shadow-lg" />
+        <div className="flex items-stretch overflow-hidden rounded-xl text-3xl font-black tabular-nums leading-none shadow-2xl">
+          <span className="bg-primary px-3 py-2 text-primary-foreground">{h}</span>
+          {a !== "" && <span className="bg-[oklch(0.98_0_0)] px-3 py-2 text-[oklch(0.16_0.03_260)]">{a}</span>}
+        </div>
+        <TeamCrest name={away.name} logo={away.logo} className="h-10 w-10 drop-shadow-lg" />
+      </div>
+
+      <span className="absolute left-1/2 top-[42%] grid h-14 w-14 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-[oklch(0.98_0_0)] text-[oklch(0.16_0.03_260)] shadow-2xl transition group-hover:scale-110">
+        <span className="absolute inset-0 animate-ping rounded-full bg-[oklch(0.98_0_0)] opacity-20" />
         <Play className="ms-0.5 h-6 w-6 fill-current" />
       </span>
-
-      {/* score plate */}
-      <div dir="ltr" className="absolute inset-x-0 bottom-3 flex justify-center">
-        <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-background/85 px-4 py-2 shadow-lg backdrop-blur">
-          <TeamCrest name={home.name} logo={home.logo} className="h-9 w-9" />
-          <span className="text-3xl font-black leading-none tracking-tight tabular-nums text-foreground">{score}</span>
-          <TeamCrest name={away.name} logo={away.logo} className="h-9 w-9" />
-        </div>
-      </div>
     </a>
   );
 }
