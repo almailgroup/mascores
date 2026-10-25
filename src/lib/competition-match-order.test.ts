@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { compareCompetitionRounds, compareTeamFixtures, fixtureTime } from "./competition-match-order";
+import { compareCompetitionRounds, compareTeamFixtures, fixtureTime, sortTeamFixtures } from "./competition-match-order";
 
 const bucket = (round: number, kickoff: string | null) => ({ round: `#${round}`, matches: [{ kickoff_at: kickoff }], order: 0 });
 
@@ -35,12 +35,11 @@ describe("club fixture ordering", () => {
   const fx = (round: number, kickoff: string | null, date: string | null = null) =>
     ({ competition_id: "league", round_number: round, kickoff_at: kickoff, kickoff_date: date });
   it("keeps a TBD round 7 after round 6 and before round 8 in a newest-first club list", () => {
-    const list = [fx(6, null, "2026-11-30"), fx(8, "2026-12-14T17:00:00Z"), fx(7, null), fx(5, "2026-11-20T17:00:00Z")]
-      .sort(compareTeamFixtures);
+    const list = sortTeamFixtures([fx(6, null, "2026-11-30"), fx(8, "2026-12-14T17:00:00Z"), fx(7, null), fx(5, "2026-11-20T17:00:00Z")]);
     expect(list.map((m) => m.round_number)).toEqual([8, 7, 6, 5]);
   });
   it("keeps a postponed fixture in its own round instead of sinking to the bottom", () => {
-    const list = [fx(7, null), fx(6, "2026-11-30T17:00:00Z"), fx(1, "2026-08-25T15:45:00Z")].sort(compareTeamFixtures);
+    const list = sortTeamFixtures([fx(7, null), fx(6, "2026-11-30T17:00:00Z"), fx(1, "2026-08-25T15:45:00Z")]);
     expect(list.map((m) => m.round_number)).toEqual([7, 6, 1]);
   });
   it("still orders different competitions by date with undated fixtures last", () => {
@@ -49,5 +48,23 @@ describe("club fixture ordering", () => {
       { competition_id: "league", round_number: 6, kickoff_at: "2026-11-30T17:00:00Z" },
     ].sort(compareTeamFixtures);
     expect(list[0].competition_id).toBe("league");
+  });
+  it("places October 19 Sulaibikhat above October 14 Khaldiya regardless of input order", () => {
+    const fixtures = [
+      { ...fx(2, "2026-10-14T18:15:00Z"), competition_id: "afc", opponent: "Khaldiya" },
+      { ...fx(5, "2026-10-19T14:40:00Z"), opponent: "Sulaibikhat" },
+      { ...fx(6, "2026-10-23T16:50:00Z"), opponent: "Tadamon" },
+      { ...fx(7, null), opponent: "Kazma" },
+      { ...fx(8, "2026-11-08T16:40:00Z"), opponent: "Sahel" },
+      { ...fx(3, "2026-10-28T13:45:00Z"), competition_id: "afc", opponent: "Nasaf" },
+    ];
+    const expected = ["Sahel", "Kazma", "Nasaf", "Tadamon", "Sulaibikhat", "Khaldiya"];
+    expect(sortTeamFixtures(fixtures).map((m) => m.opponent)).toEqual(expected);
+    expect(sortTeamFixtures([...fixtures].reverse()).map((m) => m.opponent)).toEqual(expected);
+    expect(fixtures.find((m) => m.opponent === "Kazma")?.kickoff_at).toBeNull();
+  });
+  it("does not let round numbers override actual dates for dated fixtures", () => {
+    expect(sortTeamFixtures([fx(7, "2026-12-20T17:00:00Z"), fx(8, "2026-11-08T17:00:00Z")])
+      .map((m) => m.round_number)).toEqual([7, 8]);
   });
 });
