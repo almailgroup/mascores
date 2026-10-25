@@ -2349,9 +2349,29 @@
       "is_starting": false
     }
   ],
-  "unresolved_ids": [
-    975185,
-    1580347,
-    2794729
-  ]
+  "unresolved_ids": [],
+  "unresolved_resolution": {
+    "975185": {
+      "resolved_to": "existing profile Abdulaziz Naji (id 970c7288-392b-4067-a224-308d7e734530)",
+      "full_name": "Abdulaziz Naji Mahran",
+      "dob": "2001-08-19 (matches profile dob)",
+      "club": "Al Fahaheel SC (shirt 60 in club and national matches, confirmed by app lineup data Aug-Oct 2026)",
+      "sources": ["https://www.national-football-teams.com/player/81130/Abdulaziz_Naji_Mahran.html", "https://www.fotmob.com/players/1263256/abdulaziz-mahran"]
+    },
+    "2794729": {
+      "resolved_to": "existing profile Abdullah Al Qarzaei (id 4811d6c3-c972-4194-bc8b-a4e2b18a052a)",
+      "full_name": "Abdullah Khalifah Abdullah Khalifah Al Qarzaei",
+      "dob": "2008-09 (profile 2008-09-15; research sources say 18 Sep 2008)",
+      "club": "Kuwait SC from 10 July 2026 (Al-Arabi SC in 2025/26)",
+      "sources": ["https://www.11v11.com/players/abdullah-al-qarzaei-280667/", "https://fbref.com/en/players/ce589892/Abdullah-Khalifah", "https://www.soccerway.com/player/al-qarzaei-abdullah/0O09TsrS/"]
+    },
+    "1580347": {
+      "resolved_to": "new profile Saqr Al Harbi",
+      "full_name": "Saqr Ebrahim Hussein Al Harbi",
+      "dob": "2001-04-02",
+      "club": "Ahli Sanaa FC (Yemen)",
+      "position": "Forward per Transfermarkt/WorldFootball; disputed (defender per FBref)",
+      "sources": ["http://www.transfermarkt.us/saqr-al-harbi/profil/spieler/950699", "https://www.worldfootball.net/person/pe1133645/saqr-al-harbi/"]
+    }
+  }
 }
