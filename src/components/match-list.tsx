@@ -143,7 +143,7 @@ export function MatchRow({ m, highlightTeamId }: { m: MatchWithTeams; highlightT
       <div className="min-w-0 flex-1 space-y-1 border-s border-border ps-2.5">
         {line(m.home, m.home_score, "home", m.home_pen)}
         {line(m.away, m.away_score, "away", m.away_pen)}
-        {m.status === "pen" && winner && <div className="text-[0.65rem] font-medium text-primary">{tx(winner === "home" ? m.home?.name : m.away?.name)} · {tx("Won on penalties")}</div>}
+        {m.status === "pen" && winner && <div className="text-[0.65rem] font-medium text-muted-foreground">{tx(winner === "home" ? m.home?.name : m.away?.name)} · {tx("Won on penalties")}</div>}
       </div>
        <div className="flex shrink-0 items-center gap-1">
          {finished && outcome ? <span className={`grid h-6 w-6 place-items-center rounded-full text-[0.6rem] font-black ${outcome === "W" ? "bg-emerald-500/15 text-emerald-500" : outcome === "L" ? "bg-destructive/15 text-destructive" : "bg-muted text-muted-foreground"}`}>{outcome}</span> : <MatchNotificationButton matchId={m.id} competitionId={m.competition_id} teamIds={[m.home_team_id, m.away_team_id]} />}
