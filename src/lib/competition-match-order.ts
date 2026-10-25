@@ -1,5 +1,6 @@
 import { scheduleTime } from "./fixture-schedule";
 type Fixture = { kickoff_at: string | null; kickoff_date?: string | null };
+type TeamFixture = Fixture & { competition_id?: string | null; round_number?: number | null };
 type RoundBucket = { round: string; matches: Fixture[]; order: number };
 
 function numberedRound(label: string) {
