@@ -45,6 +45,7 @@
 
 - Home match-calendar helpers centralize local-day keys and upcoming start boundaries so calendar markers and date filters agree across timezones.
 - Competition round ordering uses the shared comparison helper so missing or rescheduled kickoffs never move numbered rounds out of sequence.
+- Club match lists use one chronological sort key across competitions; undated fixtures receive list-only anchors from adjacent same-season rounds to preserve placement without inventing kickoff dates or inconsistent pairwise comparisons.
 - Announced date-only fixtures store kickoff_date with NULL kickoff_at; use shared schedule formatting and ordering so unconfirmed times never become real kickoff instants or reminders.
 - Shared card renderers finalize through one canvas export footer so every saved/shared image has consistent branding without obscuring content.
 - Edge functions must not import from src/; deploys bundle only supabase/functions, so a shared import silently keeps the old sender live.

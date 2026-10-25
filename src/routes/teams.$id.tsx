@@ -14,7 +14,7 @@ import { SocialLinksSection } from "@/components/social-links";
 import { LinkedNews } from "@/components/linked-news";
 import { ArrowRight, Landmark, CalendarClock, Crown, Trophy, Users, Phone, Mail, Globe } from "lucide-react";
 import { MatchGroups, MatchRow, type MatchWithTeams } from "@/components/match-list";
-import { compareTeamFixtures } from "@/lib/competition-match-order";
+import { sortTeamFixtures } from "@/lib/competition-match-order";
 import { type NationalPlayer, fetchNationalSquad } from "@/lib/national";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
 import { TeamStats, type TeamComp } from "@/components/team-stats";
@@ -630,7 +630,7 @@ function TeamMatches({ data, teamId, nextId }: { data: MatchWithTeams[]; teamId:
   const [showToday, setShowToday] = useState(false);
   const resetPosition = useRef(0);
   const timestamp = (m: MatchWithTeams) => m.kickoff_at ? new Date(m.kickoff_at).getTime() : 0;
-  const ordered = [...data].sort(compareTeamFixtures);
+  const ordered = sortTeamFixtures(data);
   const targetId = data.find((m) => ["live", "ht"].includes(m.status))?.id ?? nextId ?? ordered.find((m) => timestamp(m) <= Date.now())?.id ?? ordered[0]?.id;
   const goToNext = () => {
     const target = Array.from(top.current?.querySelectorAll<HTMLElement>("[data-fixture-id]") ?? []).find((node) => node.dataset.fixtureId === targetId);
