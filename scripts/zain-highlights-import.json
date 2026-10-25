@@ -31,9 +31,14 @@
     "https://www.youtube.com/watch?v=uCETuaZtioA"
   ],
   "unresolved": [
-    "Round 3: Al Arabi SC 3–3 Sulaibikhat FC",
     "Round 6: Kazma SC 2–1 Sulaibikhat FC",
     "Round 6: Al Salmiya SC 1–0 Al Jahra SC",
     "Round 6: Al Sahel SC 0–3 Al Nasr SC"
+  ],
+  "unavailable": [
+    {
+      "match": "Round 3: Al Arabi SC 3–3 Sulaibikhat FC",
+      "reason": "User confirmed no stream was available; excluded from further highlight searches."
+    }
   ]
 }
