@@ -15,3 +15,8 @@ export function compareGroupLabels(a: string | null, b: string | null, nullsFirs
 export function sortGroupEntries<T>(entries: [string | null, T][], nullsFirst = true) {
   return [...entries].sort(([a], [b]) => compareGroupLabels(a, b, nullsFirst));
 }
+
+/** Group membership belongs to the group stage, not subsequent cup ties. */
+export function isKnockoutRound(round: string | null | undefined) {
+  return /(?:semi[ -]?final|quarter[ -]?final|^final$|round of \d+|qualification|qualif|knockout|play[ -]?off|نهائي|إقصائي|تأهيل)/i.test(round?.trim() ?? "");
+}

@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Separate match date from team names, suppress group labels in knockout rounds, and create verified missing cup players with actual club and national-team links.
+
 - [x] Fix overflowing match-event layout and remove event-type/team captions under player names; checked real Iraq–Oman and Kuwait–Al Khaldiya pages at 402px with no horizontal overflow.
 
 - [x] Replace blue penalty-winner text with neutral text; browser checked.
