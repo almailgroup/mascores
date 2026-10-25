@@ -194,26 +194,27 @@ function PlayerPage() {
 
            <h2 className="mb-2 mt-6 text-xs font-bold uppercase text-muted-foreground">{tx("Transfer history")}</h2>
           {transfers.data && transfers.data.length > 0 ? (
-            <div className="overflow-hidden rounded-lg border border-border bg-card">
+            <div className="overflow-hidden rounded-2xl border border-border bg-card">
               {transfers.data.map((r) => {
                 const from = transferClubs.data?.find((team) => team.name === r.from_club);
                 const to = transferClubs.data?.find((team) => team.name === r.to_club);
-                 return <div key={r.id} className="grid grid-cols-[2rem_minmax(0,1fr)] items-start gap-2.5 border-b border-border p-2.5 last:border-b-0">
-                   <TeamCrest name={to?.name ?? r.to_club ?? r.from_club} logo={to?.logo_url ?? r.to_club_logo_url ?? from?.logo_url ?? r.from_club_logo_url ?? null} className="h-8 w-8" />
-                   <div className="min-w-0">
-                     <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[0.75rem] font-semibold leading-snug">
-                       <span className="break-words">{tx(r.from_club) ?? tx("Free agent")}</span>
-                       <ArrowRight className="h-3 w-3 shrink-0 text-muted-foreground" />
-                       <span className="break-words">{tx(r.to_club) ?? tx("Free agent")}</span>
-                     </div>
-                     <div className="mt-0.5 flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-[0.65rem] text-muted-foreground">
-                      <span>{tx(r.transfer_type)}</span>
-                      {r.season && <span>{num(r.season)}</span>}
-                      <span className="font-bold text-foreground">{r.fee ? tx(r.fee) : tx("Free")}</span>
-                      {r.moved_on && <span className="flex items-center gap-1"><CalendarDays className="h-3 w-3" />{num(dates.date(r.moved_on))}</span>}
-                    </div>
-                  </div>
-                </div>;
+                 const loanish = /loan/i.test(r.transfer_type ?? "");
+                 const price = r.fee ? tx(r.fee) : loanish ? "-" : tx("Free");
+                 const row = <>
+                   <TeamCrest name={to?.name ?? r.to_club} logo={to?.logo_url ?? r.to_club_logo_url ?? null} className="h-10 w-10 shrink-0" />
+                   <div className="min-w-0 flex-1">
+                     <div className="truncate text-sm font-semibold">{tx(r.to_club) ?? tx("Free agent")}</div>
+                     <div className="mt-0.5 text-xs text-muted-foreground">{r.moved_on ? num(dates.date(r.moved_on)) : r.season ? num(r.season) : ""}</div>
+                   </div>
+                   <div className="min-w-0 shrink-0 text-end">
+                     <div className={`text-sm font-semibold ${price === "-" ? "text-muted-foreground" : "text-success"}`}>{price}</div>
+                     <div className="mt-0.5 max-w-[9rem] truncate text-xs text-muted-foreground">{r.transfer_type && !/^(transfer|permanent)$/i.test(r.transfer_type) ? <span className="text-success">{tx(r.transfer_type)}</span> : r.from_club ? `${tx("from")}: ${tx(r.from_club)}` : ""}</div>
+                   </div>
+                 </>;
+                 const cls = "flex items-center gap-3 border-b border-border px-3 py-3 last:border-b-0";
+                 return to && !to.is_temporary
+                   ? <Link key={r.id} to="/teams/$id" params={{ id: to.id }} className={`${cls} transition hover:bg-accent`}>{row}</Link>
+                   : <div key={r.id} className={cls}>{row}</div>;
               })}
             </div>
           ) : <EmptyState title={tx("No transfers recorded")} />}
