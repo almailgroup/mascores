@@ -350,7 +350,7 @@ function ResultOnly({ match }: { match: Match }) {
 
 /* ---------------- Lineups ---------------- */
 
-const FORMATIONS = ["4-4-2", "4-3-3", "4-2-3-1", "3-5-2", "3-4-3", "5-3-2", "4-1-4-1", "4-5-1"];
+const FORMATIONS = ["4-4-2", "4-3-3", "4-2-3-1", "3-5-2", "3-4-3", "5-3-2", "5-2-3", "4-1-4-1", "4-5-1"];
 
 /** Slot keys for a formation, goalkeeper first then each outfield line. */
 function formationSlots(formation: string | null | undefined): string[] {
