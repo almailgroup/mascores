@@ -20,9 +20,17 @@ export function CompetitionRoundTeam({ competitionId, season }: { competitionId:
   const rounds = useQuery({
     queryKey: ["competition-round-team", competitionId, season],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("competition_round_teams", { _competition_id: competitionId, _season: season ?? undefined });
+      const [{ data, error }, whole] = await Promise.all([
+        supabase.rpc("competition_round_teams", { _competition_id: competitionId, _season: season ?? undefined }),
+        supabase.rpc("competition_season_team", { _competition_id: competitionId, _season: season ?? undefined }),
+      ]);
       if (error) throw error;
-      return (Array.isArray(data) ? data : []) as unknown as RoundTeam[];
+      const list = ((Array.isArray(data) ? data : []) as unknown as RoundTeam[]).slice();
+      // Latest round first (Final … Round 1 at the bottom); an unreleased round without a time stays on top.
+      const time = (r: RoundTeam) => r.available_at ? new Date(r.available_at).getTime() : Number.POSITIVE_INFINITY;
+      list.sort((a, b) => time(b) - time(a) || (b.round_number ?? 0) - (a.round_number ?? 0));
+      const comp = whole.data as unknown as RoundTeam | null;
+      return comp && Array.isArray(comp.players) && comp.players.length === 11 ? [comp, ...list] : list;
     },
   });
   // Refresh precisely at the next availability deadline while the page is open, not with a recurring job.
