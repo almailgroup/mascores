@@ -164,7 +164,7 @@ function SearchPage() {
               <div key={item.key} className="flex items-center gap-3 border-b border-border/60 px-3 py-2.5 last:border-0">
                 <Link to={item.to as never} params={item.params as never} className="flex min-w-0 flex-1 items-center gap-3">
                   {item.logo
-                    ? <img src={item.logo} alt="" className="h-9 w-9 shrink-0 rounded-full object-contain" />
+                    ? <img src={item.logo} alt="" className={`h-9 w-9 shrink-0 ${item.kind === "players" || item.kind === "coaches" ? "rounded-full object-cover" : "object-contain"}`} />
                     : <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-muted text-[0.7rem] font-black">{item.label.slice(0, 1).toUpperCase()}</span>}
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-bold">{tx(item.label)}</span>
