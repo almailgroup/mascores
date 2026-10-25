@@ -10,6 +10,7 @@ import { createFixtureDraftsWithAlmail } from "@/lib/almail-ai.functions";
 import { readAiImages } from "@/lib/image-files";
 import { TeamCrest } from "@/components/team-crest";
 import { useAdminAbility } from "@/lib/admin-ability";
+import { AfcSyncButton, AFC_CL2_SLUG } from "./afc-sync-panel";
 import { requestReview } from "@/lib/review";
 import { compareCompetitionRounds, fixtureTime } from "@/lib/competition-match-order";
 
@@ -27,6 +28,11 @@ export function MatchesPanel({ competitionId, season = null, friendly = false }:
   const { needsApproval, isOwner } = useAdminAbility();
   const [reviewNote, setReviewNote] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "scheduled" | "live" | "finished" | "needs_result">("all");
+
+  const compSlugQ = useQuery({
+    queryKey: ["admin", "comp-slug", competitionId],
+    queryFn: async () => (await supabase.from("competitions").select("slug").eq("id", competitionId).maybeSingle()).data?.slug ?? null,
+  });
 
   const teamsQ = useQuery({
     queryKey: ["admin", "teams", competitionId, season],
@@ -138,6 +144,7 @@ export function MatchesPanel({ competitionId, season = null, friendly = false }:
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-base font-bold">Matches <span className="text-xs font-medium text-muted-foreground">({allMatches.length})</span></h3>
           <div className="flex flex-wrap gap-2">
+            {compSlugQ.data === AFC_CL2_SLUG && <AfcSyncButton competitionId={competitionId} onSynced={() => qc.invalidateQueries({ queryKey: ["admin", "matches", competitionId] })} />}
             {isOwner && <button className={btnGhost} onClick={() => setAiOpen(true)}><Sparkles className="h-3.5 w-3.5" /> Almail AI</button>}
             <button className={btnPrimary} onClick={() => { setForm({ status: "scheduled" }); setOpen(true); }}><Plus className="h-3.5 w-3.5" /> Add match</button>
           </div>

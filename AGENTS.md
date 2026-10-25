@@ -57,3 +57,4 @@
 - Event navigation uses the deduplicated participant list: one participant opens directly, multiple participants open the portrait chooser.
 - Possible-lineup status travels with share data into the canvas export so projected lineups are never labelled as confirmed.
 - Batch social-link AI only proposes existing squad IDs and exact supplied URLs; review and merge links without replacing unrelated networks.
+- AFC Champions League Two syncs through an admin-triggered preview/confirm server function using the free API-Football plan's yesterday–tomorrow window; it links events only to existing squad players and never creates or edits player profiles.
