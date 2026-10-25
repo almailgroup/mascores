@@ -362,8 +362,8 @@ function MatchPage() {
               away={{ name: match.away?.name, logo: match.away?.logo_url, photo: pick(match.away_team_id) }} />;
           })() : null}
       </div>}
-      {tab === "details" && <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
-        {hasStarted && !match.result_only && <div className="overflow-hidden rounded-2xl border border-border bg-card">
+      {tab === "details" && <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-2 lg:items-start">
+        {hasStarted && !match.result_only && <div className="min-w-0 overflow-hidden rounded-2xl border border-border bg-card">
           <div className="border-b border-border bg-muted/40 px-4 py-2.5 text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Timeline")}</div>
           {events.data && events.data.length > 0 ? (
             <ul className="divide-y divide-border">
@@ -372,14 +372,14 @@ function MatchPage() {
                   {tx(entry.label)}{entry.score ? <span className="tabular-nums">{num(entry.score)}</span> : null}
                 </li>
               ) : (
-                <li key={entry.event.id}><Button variant="ghost" onClick={() => { const choices=eventPlayers(entry.event); if(choices.length===1)void navigate({to:"/players/$id",params:{id:choices[0].player.id}}); else if(choices.length>1)setSelectedEvent(entry.event); }} className={`h-auto w-full justify-start rounded-none relative flex items-center gap-2.5 px-4 py-2 ${entry.event.player ? "active:bg-muted/60 hover:bg-muted/40" : ""} ${entry.side === "away" ? "flex-row-reverse text-end" : ""}`}>
-                  <span className="w-9 shrink-0 font-mono text-[0.7rem] text-muted-foreground">{entry.event.minute != null ? num(entry.event.minute) : "-"}{entry.event.extra ? `+${num(entry.event.extra)}` : ""}'</span>
+                <li key={entry.event.id} className="min-w-0"><Button variant="ghost" onClick={() => { const choices=eventPlayers(entry.event); if(choices.length===1)void navigate({to:"/players/$id",params:{id:choices[0].player.id}}); else if(choices.length>1)setSelectedEvent(entry.event); }} className={`relative flex h-auto w-full min-w-0 items-center justify-start gap-2.5 whitespace-normal rounded-none px-3 py-2 ${entry.event.player ? "active:bg-muted/60 hover:bg-muted/40" : ""} ${entry.side === "away" ? "flex-row-reverse text-end" : "text-start"}`}>
+                  <span className="w-11 shrink-0 whitespace-nowrap font-mono text-[0.7rem] text-muted-foreground">{entry.event.minute != null ? num(entry.event.minute) : "-"}{entry.event.extra ? `+${num(entry.event.extra)}` : ""}'</span>
                   <EventIcon type={entry.event.type} />
                   <span className="min-w-0 flex-1">
                     {entry.event.player ? (
-                      <span className={`flex min-w-0 items-baseline gap-1.5 ${entry.side === "away" ? "flex-row-reverse" : ""}`}>
-                        <span className="truncate text-sm font-semibold">{tx(displayShortName(entry.event.player.short_name, entry.event.player.name))}</span>
-                        {(() => { const other = (entry.event.assister ?? entry.event.sub_out) as { name: string; short_name?: string | null } | null | undefined; return other ? <span className="truncate text-sm text-muted-foreground">{tx(displayShortName(other.short_name, other.name))}</span> : null; })()}
+                      <span className="block min-w-0">
+                        <span className="block truncate text-sm font-semibold">{tx(displayShortName(entry.event.player.short_name, entry.event.player.name))}</span>
+                        {(() => { const other = (entry.event.assister ?? entry.event.sub_out) as { name: string; short_name?: string | null } | null | undefined; return other ? <span className="block truncate text-xs text-muted-foreground">{tx(displayShortName(other.short_name, other.name))}</span> : null; })()}
                       </span>
                     ) : entry.event.description ? (
                       <>
@@ -388,7 +388,6 @@ function MatchPage() {
                     ) : (
                       <span className="block truncate text-sm font-semibold">
                         {tx(eventLabel(entry.event.type))}
-                        {entry.event.team ? <span className="ml-1 text-[0.7rem] font-medium text-muted-foreground">· {tx(entry.event.team.name)}</span> : null}
                       </span>
                     )}
                   </span>
