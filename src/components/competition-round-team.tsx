@@ -20,17 +20,22 @@ export function CompetitionRoundTeam({ competitionId, season }: { competitionId:
   const rounds = useQuery({
     queryKey: ["competition-round-team", competitionId, season],
     queryFn: async () => {
-      const [{ data, error }, whole] = await Promise.all([
+      let pending = supabase.from("matches").select("id", { count: "exact", head: true }).eq("competition_id", competitionId).not("status", "in", "(ft,aet,pen,awarded,cancelled)");
+      if (season) pending = pending.eq("season", season);
+      const [{ data, error }, whole, open] = await Promise.all([
         supabase.rpc("competition_round_teams", { _competition_id: competitionId, _season: season ?? undefined }),
         supabase.rpc("competition_season_team", { _competition_id: competitionId, _season: season ?? undefined }),
+        pending,
       ]);
       if (error) throw error;
       const list = ((Array.isArray(data) ? data : []) as unknown as RoundTeam[]).slice();
       // Latest round first (Final … Round 1 at the bottom); an unreleased round without a time stays on top.
       const time = (r: RoundTeam) => r.available_at ? new Date(r.available_at).getTime() : Number.POSITIVE_INFINITY;
       list.sort((a, b) => time(b) - time(a) || (b.round_number ?? 0) - (a.round_number ?? 0));
+      // Team of the Competition only appears once every match of the season is finished.
+      const finished = !open.error && (open.count ?? 1) === 0;
       const comp = whole.data as unknown as RoundTeam | null;
-      return comp && Array.isArray(comp.players) && comp.players.length === 11 ? [comp, ...list] : list;
+      return finished && comp && Array.isArray(comp.players) && comp.players.length === 11 ? [comp, ...list] : list;
     },
   });
   // Refresh precisely at the next availability deadline while the page is open, not with a recurring job.
