@@ -380,6 +380,18 @@ function MatchPage() {
         </div>}
 
         <div className="space-y-4">
+          {match.highlight_url && (() => {
+            const pick = (teamId: string | null) => {
+              const scorer = events.data?.find((e) => e.team_id === teamId && ["goal", "penalty_goal"].includes(e.type) && e.player?.photo_url)?.player?.photo_url;
+              if (scorer) return scorer;
+              const rows = (lineups.data ?? []).filter((l) => l.team_id === teamId && l.player?.photo_url) as { player?: { photo_url?: string | null; position?: string | null } | null }[];
+              return (rows.find((l) => /forward|striker|wing|fw/i.test(l.player?.position ?? "")) ?? rows[0])?.player?.photo_url ?? null;
+            };
+            return <MatchHighlightCard href={match.highlight_url} leagueLogo={match.competition?.logo_url}
+              score={match.home_score != null && match.away_score != null ? `${match.home_score}-${match.away_score}` : "VS"}
+              home={{ name: match.home?.name, logo: match.home?.logo_url, photo: pick(match.home_team_id) }}
+              away={{ name: match.away?.name, logo: match.away?.logo_url, photo: pick(match.away_team_id) }} />;
+          })()}
           {match.status === "scheduled" && <MatchPrediction matchId={id} homeLogo={match.home?.logo_url} awayLogo={match.away?.logo_url} fallback={prediction.data ?? null} />}
 
           <div className="overflow-hidden rounded-2xl border border-border bg-card">
@@ -413,18 +425,6 @@ function MatchPage() {
               </div>
             </div>
 
-          {match.highlight_url && (() => {
-            const pick = (teamId: string | null) => {
-              const scorer = events.data?.find((e) => e.team_id === teamId && ["goal", "penalty_goal"].includes(e.type) && e.player?.photo_url)?.player?.photo_url;
-              if (scorer) return scorer;
-              const rows = (lineups.data ?? []).filter((l) => l.team_id === teamId && l.player?.photo_url) as { player?: { photo_url?: string | null; position?: string | null } | null }[];
-              return (rows.find((l) => /forward|striker|wing|fw/i.test(l.player?.position ?? "")) ?? rows[0])?.player?.photo_url ?? null;
-            };
-            return <MatchHighlightCard href={match.highlight_url} leagueLogo={match.competition?.logo_url}
-              score={match.home_score != null && match.away_score != null ? `${match.home_score}-${match.away_score}` : "VS"}
-              home={{ name: match.home?.name, logo: match.home?.logo_url, photo: pick(match.home_team_id) }}
-              away={{ name: match.away?.name, logo: match.away?.logo_url, photo: pick(match.away_team_id) }} />;
-          })()}
           <MatchVoice matchId={id} />
           <Link to="/matches/$id/chat" params={{ id }} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4 font-semibold transition hover:border-primary">
             <MessageCircle className="h-5 w-5 shrink-0 text-primary" />
