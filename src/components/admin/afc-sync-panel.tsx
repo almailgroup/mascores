@@ -43,7 +43,7 @@ export function AfcSyncButton({ competitionId, onSynced }: { competitionId: stri
       </button>
       <Modal open={open} onClose={() => { setOpen(false); setAuto(false); }} title="Sync AFC Champions League Two" wide>
         <div className="grid gap-3 text-sm">
-          <p className="text-muted-foreground">Updates scores, status, minute, kickoff times and events. Your players, photos and names are never changed — events link to existing players only.</p>
+          <p className="text-muted-foreground">Reads AFC matches from yesterday, today and tomorrow (the free plan limit) and updates scores, status, minute, kickoff times and events. Your players, photos and names are never changed — events link to existing players only.</p>
           {busy && <p className="font-semibold">Checking…</p>}
           {error && <p className="rounded-xl bg-destructive/10 px-3 py-2 font-semibold text-destructive">{error}</p>}
           {result && (
