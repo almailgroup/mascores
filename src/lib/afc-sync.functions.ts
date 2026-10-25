@@ -58,9 +58,15 @@ export const syncAfcChampionsLeagueTwo = createServerFn({ method: "POST" })
     const { data: teams } = teamIds.length ? await db.from("teams").select("id, name").in("id", teamIds) : { data: [] };
     const teamName = new Map((teams ?? []).map((t) => [t.id, t.name]));
 
-    const season = new Date().getUTCMonth() >= 6 ? new Date().getUTCFullYear() : new Date().getUTCFullYear() - 1;
-    const fixtures = await api<ApiFixture>(`/fixtures?league=${AFC_CL2_LEAGUE}&season=${season}`, key);
-    let remaining = fixtures.remaining;
+    // The free plan only exposes yesterday, today and tomorrow, so read those three days (3 requests).
+    const fixtures = { data: [] as ApiFixture[] };
+    let remaining: number | null = null;
+    for (const offset of [-1, 0, 1]) {
+      const day = new Date(Date.now() + offset * 86400000).toISOString().slice(0, 10);
+      const res = await api<ApiFixture & { league: { id: number } }>(`/fixtures?date=${day}`, key);
+      fixtures.data.push(...res.data.filter((f) => f.league?.id === AFC_CL2_LEAGUE));
+      remaining = res.remaining;
+    }
 
     const results: SyncChange[] = [];
     const unmatchedFixtures: string[] = [];
@@ -151,7 +157,7 @@ export const syncAfcChampionsLeagueTwo = createServerFn({ method: "POST" })
       if (data.apply) {
         if (Object.keys(patch).length) {
           if (finished && !match.status.match(/ft|aet|pen/)) patch.completed_at = new Date().toISOString();
-          const { error: upErr } = await db.from("matches").update(patch).eq("id", match.id);
+          const { error: upErr } = await db.from("matches").update(patch as never).eq("id", match.id);
           if (upErr) throw new Error(`Could not update ${label}.`);
         }
         if (inserts.length) {
