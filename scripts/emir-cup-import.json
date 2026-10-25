@@ -29,7 +29,8 @@
   "fixtures": [
     {
       "round": "Qualification round 1",
-      "round_number": 1,
+      "stage_order": 1,
+      "round_number": null,
       "kickoff_date": "2026-01-26",
       "kickoff_at": null,
       "home_team_id": "707810f5-70e9-4906-87e5-6288089afb79",
@@ -43,7 +44,8 @@
     },
     {
       "round": "Qualification round 2",
-      "round_number": 2,
+      "stage_order": 2,
+      "round_number": null,
       "kickoff_date": "2026-01-31",
       "kickoff_at": null,
       "home_team_id": "5ef202eb-daf0-49a1-b6dd-3c63e40df5de",
@@ -57,7 +59,8 @@
     },
     {
       "round": "Round of 16",
-      "round_number": 3,
+      "stage_order": 3,
+      "round_number": null,
       "kickoff_date": "2026-02-12",
       "kickoff_at": null,
       "home_team_id": "073cfa17-037f-4b8b-a79a-aeb5dbee9a40",
@@ -71,7 +74,8 @@
     },
     {
       "round": "Round of 16",
-      "round_number": 3,
+      "stage_order": 3,
+      "round_number": null,
       "kickoff_date": "2026-02-12",
       "kickoff_at": null,
       "home_team_id": "2986f4c3-8906-483b-b021-dae5ddf46c2a",
@@ -85,7 +89,8 @@
     },
     {
       "round": "Round of 16",
-      "round_number": 3,
+      "stage_order": 3,
+      "round_number": null,
       "kickoff_date": "2026-02-13",
       "kickoff_at": null,
       "home_team_id": "666d9085-19bc-476a-a70a-e778d088eb23",
@@ -99,7 +104,8 @@
     },
     {
       "round": "Round of 16",
-      "round_number": 3,
+      "stage_order": 3,
+      "round_number": null,
       "kickoff_date": "2026-02-13",
       "kickoff_at": null,
       "home_team_id": "a7166bc6-b129-47bb-bc4e-e085b1a2dfcd",
@@ -113,7 +119,8 @@
     },
     {
       "round": "Round of 16",
-      "round_number": 3,
+      "stage_order": 3,
+      "round_number": null,
       "kickoff_date": "2026-02-14",
       "kickoff_at": null,
       "home_team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
@@ -127,7 +134,8 @@
     },
     {
       "round": "Round of 16",
-      "round_number": 3,
+      "stage_order": 3,
+      "round_number": null,
       "kickoff_date": "2026-02-15",
       "kickoff_at": null,
       "home_team_id": "539cc6fb-d79a-449b-be23-1271355bd727",
@@ -141,7 +149,8 @@
     },
     {
       "round": "Round of 16",
-      "round_number": 3,
+      "stage_order": 3,
+      "round_number": null,
       "kickoff_date": "2026-02-15",
       "kickoff_at": null,
       "home_team_id": "598d82e7-8002-4423-9468-d58ec371907c",
@@ -155,7 +164,8 @@
     },
     {
       "round": "Round of 16",
-      "round_number": 3,
+      "stage_order": 3,
+      "round_number": null,
       "kickoff_date": "2026-02-27",
       "kickoff_at": null,
       "home_team_id": "8d6cb3fe-6e3d-4cdc-af60-ea9de938d174",
@@ -169,7 +179,8 @@
     },
     {
       "round": "Quarter-finals",
-      "round_number": 4,
+      "stage_order": 4,
+      "round_number": null,
       "kickoff_date": "2026-02-27",
       "kickoff_at": null,
       "home_team_id": "539cc6fb-d79a-449b-be23-1271355bd727",
@@ -183,7 +194,8 @@
     },
     {
       "round": "Quarter-finals",
-      "round_number": 4,
+      "stage_order": 4,
+      "round_number": null,
       "kickoff_date": "2026-11-25",
       "kickoff_at": null,
       "home_team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
@@ -197,7 +209,8 @@
     },
     {
       "round": "Quarter-finals",
-      "round_number": 4,
+      "stage_order": 4,
+      "round_number": null,
       "kickoff_date": "2026-11-26",
       "kickoff_at": null,
       "home_team_id": "8d6cb3fe-6e3d-4cdc-af60-ea9de938d174",
@@ -211,7 +224,8 @@
     },
     {
       "round": "Quarter-finals",
-      "round_number": 4,
+      "stage_order": 4,
+      "round_number": null,
       "kickoff_date": "2026-11-26",
       "kickoff_at": null,
       "home_team_id": "598d82e7-8002-4423-9468-d58ec371907c",
