@@ -1,4 +1,5 @@
 import { possibleLineupWindow } from "@/lib/possible-lineup";
+import { hasStandings, matchWinner } from "@/lib/match-result";
 import { eventPlayers } from "@/lib/event-players";
 import { MatchMissingPlayers } from "@/components/match-missing-players";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -112,9 +113,9 @@ function MatchPage() {
     queryKey: ["match", id],
     queryFn: async () => {
       const { data } = await supabase.from("matches")
-        .select("*, home:home_team_id(id,name,logo_url,is_national), away:away_team_id(id,name,logo_url,is_national), competition:competition_id(id,name,name_ar,slug,logo_url,sport,country,country_code,format,video_thumbnail_url)")
+        .select("*, home:home_team_id(id,name,logo_url,is_national), away:away_team_id(id,name,logo_url,is_national), competition:competition_id(id,name,name_ar,slug,logo_url,sport,country,country_code,format,hidden_tabs,video_thumbnail_url)")
         .eq("id", id).maybeSingle();
-      return data as (Match & { home: Team | null; away: Team | null; competition: { id: string; name: string; name_ar: string | null; slug: string; logo_url: string | null; sport: string; country: string | null; country_code: string | null; format?: string | null; video_thumbnail_url?: string | null } | null }) | null;
+      return data as (Match & { home: Team | null; away: Team | null; competition: { id: string; name: string; name_ar: string | null; slug: string; logo_url: string | null; sport: string; country: string | null; country_code: string | null; format?: string | null; hidden_tabs?: string[] | null; video_thumbnail_url?: string | null } | null }) | null;
     },
   });
   const heroRef = useCollapsingHeader(`${id}:${m.isLoading}`, 180);
@@ -207,7 +208,9 @@ function MatchPage() {
   const isPossible = mainAdmin.data === true && !match.lineups_published && possibleLineupWindow(match.status,match.kickoff_at,match.kickoff_date) && (possible.data?.rows.length ?? 0) > 0;
   const displayLineups = isPossible ? possible.data?.rows ?? [] : lineups.data ?? [];
   const lineupsVisible = (match.lineups_published && (lineups.data?.length ?? 0) > 0) || isPossible;
-  const tabs: ("details" | "lineups" | "stats" | "standings" | "previous" | "media")[] = ["details", ...(lineupsVisible ? ["lineups" as const] : []), "stats", ...(match.competition?.format === "friendly" ? [] : ["standings" as const]), "previous", "media"];
+  const tabs: ("details" | "lineups" | "stats" | "standings" | "previous" | "media")[] = ["details", ...(lineupsVisible ? ["lineups" as const] : []), "stats", ...(hasStandings(match.competition) ? ["standings" as const] : []), "previous", "media"];
+  const winner = match.status === "pen" ? matchWinner(match) : null;
+  const penaltyWinner = winner === "home" ? match.home : winner === "away" ? match.away : null;
   const clock = matchClockSeconds(match);
 
   const scorerList = (teamId: string | null | undefined) => (events.data ?? [])
@@ -278,7 +281,7 @@ function MatchPage() {
         </div>
 
         <div className="match-hero-body">
-        <div className="match-score-row grid grid-cols-[minmax(0,1fr)_minmax(5.5rem,auto)_minmax(0,1fr)] items-center gap-3 px-1 sm:px-4">
+        <div className="match-score-row grid grid-cols-[minmax(0,1fr)_6.5rem_minmax(0,1fr)] items-center gap-3 px-1 sm:px-4">
           <HeroTeam team={match.home} onFollow={followMatch} starSide="start" />
           <div className="min-w-[5.5rem] text-center">
             {["scheduled", "postponed", "cancelled"].includes(match.status)
@@ -296,10 +299,12 @@ function MatchPage() {
                   {match.status === "live" ? num(formatClock(clock)) : tx(STATUS_LABELS[match.status] ?? match.status)}
                 </div>
               </>}
-            <div className="match-fading-detail mt-2 text-[0.65rem] font-semibold uppercase text-match-foreground/70">{match.status === "postponed" ? tx("Postponed") : num(dates.kickoff(match.kickoff_at, match.kickoff_date))}</div>
           </div>
           <HeroTeam team={match.away} onFollow={followMatch} starSide="end" />
         </div>
+
+        {penaltyWinner && <div className="match-fading-detail px-2 text-center text-xs font-bold text-match-foreground">{tx(penaltyWinner.name)} · {tx("Won on penalties")}</div>}
+        <div className="match-fading-detail px-2 text-center text-[0.65rem] font-semibold uppercase text-match-foreground/70">{match.status === "postponed" ? tx("Postponed") : num(dates.kickoff(match.kickoff_at, match.kickoff_date))}</div>
 
         <div className="match-fading-detail mt-3 grid grid-cols-2 gap-8 px-5 text-center">
           <div className="min-w-0">
@@ -647,7 +652,7 @@ function MatchPage() {
       </div></LineupPortraits>}
       {tab === "stats" && <MatchStatsPanel rows={stats.data ?? []} home={match.home} away={match.away} />}
       {tab === "previous" && <PreviousMatches home={match.home} away={match.away} currentId={match.id} />}
-      {tab === "standings" && <MatchStandings competitionId={match.competition_id} season={match.season} liveTeamIds={isLive ? [match.home_team_id, match.away_team_id].filter(Boolean) as string[] : []} highlightIds={[match.home_team_id, match.away_team_id].filter(Boolean) as string[]} />}
+      {tab === "standings" && hasStandings(match.competition) && <MatchStandings competitionId={match.competition_id} season={match.season} liveTeamIds={isLive ? [match.home_team_id, match.away_team_id].filter(Boolean) as string[] : []} highlightIds={[match.home_team_id, match.away_team_id].filter(Boolean) as string[]} />}
       {tab === "media" && <div><h3 className="mb-3 font-bold">{tx("Videos & media")}</h3><div className="grid gap-2">{media.data?.map((item) => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="overflow-hidden rounded-xl border border-border bg-card hover:border-primary">{<MatchVideoThumb background={match.competition?.video_thumbnail_url} leagueLogo={match.competition?.logo_url} homeLogo={match.home?.logo_url} awayLogo={match.away?.logo_url} score={match.home_score != null && match.away_score != null ? `${match.home_score} - ${match.away_score}` : "VS"} />}<div className="p-4"><div className="text-xs font-bold uppercase text-primary">{item.source}</div><div className="mt-1 font-semibold">{tx(item.title) || tx("Open media")}</div></div></a>)}{media.data?.length === 0 && <p className="text-sm text-muted-foreground">{tx("No media posted.")}</p>}</div></div>}
       </div>
     </AppShell>

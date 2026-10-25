@@ -1,3 +1,4 @@
+import { hasStandings } from "@/lib/match-result";
 import { TeamCrest } from "@/components/team-crest";
 import { useAuth } from "@/hooks/use-auth";
 import { useSignInAction } from "@/lib/sign-in-action";
@@ -169,7 +170,7 @@ function CompetitionPage() {
   const hidden = new Set((c.hidden_tabs ?? []) as string[]);
   const base: CompTab[] = friendly
     ? ["overview", "matches", "media", "news"]
-    : ["overview", "matches", "standings", ...(c.has_knockout ? (["knockout"] as CompTab[]) : []), "stats", "teams", "awards", "media", "news"];
+    : ["overview", "matches", ...(hasStandings(c) ? ["standings" as CompTab] : []), ...(c.has_knockout ? (["knockout"] as CompTab[]) : []), "stats", "teams", "awards", "media", "news"];
   const tabs = base.filter((item) => item === "overview" || item === "matches" || !hidden.has(item));
 
   const activeTab: CompTab = tabs.includes(tab) ? tab : "overview";

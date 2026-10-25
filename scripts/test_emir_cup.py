@@ -12,7 +12,9 @@ class EmirCupTests(unittest.TestCase):
         self.assertEqual([(r["home_score"], r["away_score"]) for r in rows], [(2, 1), (5, 1)])
 
     def test_unknown_times_never_become_real_kickoffs(self):
-        self.assertTrue(all(r["kickoff_at"] is None for r in audit()["fixtures"]))
+        self.assertIsNone(audit()["fixtures"][10]["kickoff_at"])
+        self.assertEqual(audit()["fixtures"][5]["kickoff_at"], "2026-02-13T16:45:00Z")
+        self.assertEqual(audit()["fixtures"][1]["kickoff_at"], "2026-01-31T13:35:00Z")
         upcoming = [r for r in audit()["fixtures"] if r["status"] == "scheduled"]
         self.assertEqual([r["kickoff_date"] for r in upcoming], ["2026-11-25", "2026-11-26", "2026-11-26"])
         self.assertTrue(all(r["home_score"] is None and r["away_score"] is None for r in upcoming))

@@ -7,6 +7,7 @@ import { FlagIcon } from "@/components/flag";
 import { MatchNotificationButton } from "@/hooks/use-favorites";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
 import type { Match, Team } from "@/lib/db";
+import { matchWinner } from "@/lib/match-result";
 
 export type MatchWithTeams = Match & {
   home: Team | null;
@@ -107,15 +108,14 @@ export function MatchRow({ m, highlightTeamId }: { m: MatchWithTeams; highlightT
   const isLive = ["live", "ht"].includes(m.status);
   const specialStatus = ["postponed", "cancelled", "interrupted"].includes(m.status);
   const finished = ["ft", "aet", "pen", "awarded"].includes(m.status);
-  const highlightedScore = highlightTeamId === m.home_team_id ? [m.home_score, m.away_score] : highlightTeamId === m.away_team_id ? [m.away_score, m.home_score] : null;
-  const outcome = highlightedScore && highlightedScore[0] != null && highlightedScore[1] != null
-    ? highlightedScore[0] > highlightedScore[1] ? "W" : highlightedScore[0] < highlightedScore[1] ? "L" : "D"
-    : null;
-  const line = (team: Team | null | undefined, score: number | null) => (
+  const winner = matchWinner(m);
+  const highlightedSide = highlightTeamId === m.home_team_id ? "home" : highlightTeamId === m.away_team_id ? "away" : null;
+  const outcome = highlightedSide ? winner ? winner === highlightedSide ? "W" : "L" : "D" : null;
+  const line = (team: Team | null | undefined, score: number | null, _side: "home" | "away", pens: number | null) => (
     <div className="flex min-w-0 items-center gap-1.5">
       <TeamCrest name={team?.name} logo={team?.logo_url} className="h-4.5 w-4.5 shrink-0" />
       <span className={`min-w-0 flex-1 truncate text-[0.8rem] ${highlightTeamId && team?.id === highlightTeamId ? "font-bold" : "font-medium"}`}>{tx(team?.name) ?? "TBD"}</span>
-      {started && <span className="shrink-0 text-[0.8rem] font-bold tabular-nums">{num(score ?? 0)}</span>}
+      {started && <span className="shrink-0 text-[0.8rem] font-bold tabular-nums">{num(score ?? 0)}{m.status === "pen" && pens != null && <span className="ms-1 text-[0.7rem] text-muted-foreground">({num(pens)})</span>}</span>}
     </div>
   );
   const shortDate = m.kickoff_at
@@ -141,8 +141,9 @@ export function MatchRow({ m, highlightTeamId }: { m: MatchWithTeams; highlightT
         )}
       </div>
       <div className="min-w-0 flex-1 space-y-1 border-s border-border ps-2.5">
-        {line(m.home, m.home_score)}
-        {line(m.away, m.away_score)}
+        {line(m.home, m.home_score, "home", m.home_pen)}
+        {line(m.away, m.away_score, "away", m.away_pen)}
+        {m.status === "pen" && winner && <div className="text-[0.65rem] font-medium text-muted-foreground">{tx(winner === "home" ? m.home?.name : m.away?.name)} · {tx("Won on penalties")}</div>}
       </div>
        <div className="flex shrink-0 items-center gap-1">
          {finished && outcome ? <span className={`grid h-6 w-6 place-items-center rounded-full text-[0.6rem] font-black ${outcome === "W" ? "bg-emerald-500/15 text-emerald-500" : outcome === "L" ? "bg-destructive/15 text-destructive" : "bg-muted text-muted-foreground"}`}>{outcome}</span> : <MatchNotificationButton matchId={m.id} competitionId={m.competition_id} teamIds={[m.home_team_id, m.away_team_id]} />}
