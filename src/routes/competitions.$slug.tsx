@@ -522,7 +522,7 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
         <div className="mt-3"><DurationBar startsOn={c.starts_on} endsOn={c.ends_on} /></div>
       </section>
 
-      {!friendly && !hidden.has("round team") && <CompetitionRoundTeam competitionId={c.id} season={season ?? c.season ?? null} />}
+      {!friendly && !(c.hidden_tabs ?? []).includes("round team") && <CompetitionRoundTeam competitionId={c.id} season={season ?? c.season ?? null} />}
       {/* Key numbers strip — plain neutral cards. */}
       <section className="overflow-hidden rounded-2xl border border-border bg-card p-3 shadow-sm sm:p-4">
         <div className={`grid gap-2 ${friendly ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6"}`}>
