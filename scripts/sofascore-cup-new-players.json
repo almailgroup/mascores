@@ -262,6 +262,22 @@
       "club_status": "source_reported_current"
     },
     {
+      "source_id": 1396639,
+      "id": "4f2b693c-7ab2-4bf7-b827-029fb4be56e9",
+      "name": "Ayoub Al Oui",
+      "team_id": "3893f867-4112-40d9-a433-852c78f748f5",
+      "national_team_id": "c6c817b2-8f2c-499c-b02a-34f7736579df",
+      "nationality": "Qatar",
+      "position": "Defender",
+      "existing": true,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/ayoub-al-oui/1396639",
+        "https://www.sofascore.com/football/match/qatar-united-arab-emirates/CUbsRVb#id:16875502",
+        "https://www.sofascore.com/football/match/saudi-arabia-qatar/RVbsJWb#id:17227761"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
       "source_id": 154958,
       "id": "3d6753cf-6687-5b34-84e4-d1b0d8ea8576",
       "name": "Saša Ivković",
@@ -573,13 +589,13 @@
     },
     {
       "source_id": 2018795,
-      "id": "208b562e-3dfe-5469-a7b5-9461e48c511d",
+      "id": "0fd8f32d-3811-4d1a-bdb0-187cceed5b63",
       "name": "Omar Mansoor Omar Zaid Ahmed",
       "team_id": "f90f8a44-8611-4205-bd7e-e4a74281bbc6",
       "national_team_id": "30d428e9-3d5a-4ce6-8908-b227f9cf119c",
       "nationality": "Yemen",
       "position": "Midfielder",
-      "existing": false,
+      "existing": true,
       "source_urls": [
         "https://www.transfermarkt.com/omar-al-golan/profil/spieler/950679",
         "https://www.sofascore.com/football/match/bahrain-yemen/wUbsldc"
@@ -1527,6 +1543,14 @@
     {
       "match_id": "db7d7f9f-e0f5-40c5-8755-1a395d27ee9a",
       "team_id": "c6c817b2-8f2c-499c-b02a-34f7736579df",
+      "player_id": "4f2b693c-7ab2-4bf7-b827-029fb4be56e9",
+      "position_code": "L1-1",
+      "shirt_number": 13,
+      "is_starting": true
+    },
+    {
+      "match_id": "db7d7f9f-e0f5-40c5-8755-1a395d27ee9a",
+      "team_id": "c6c817b2-8f2c-499c-b02a-34f7736579df",
       "player_id": "feb12651-4787-4d88-9627-5b53b25c681f",
       "position_code": "L3-1",
       "shirt_number": 17,
@@ -1611,6 +1635,14 @@
       "position_code": null,
       "shirt_number": 22,
       "is_starting": false
+    },
+    {
+      "match_id": "9fb42466-d64b-4939-bdca-14498729c270",
+      "team_id": "c6c817b2-8f2c-499c-b02a-34f7736579df",
+      "player_id": "4f2b693c-7ab2-4bf7-b827-029fb4be56e9",
+      "position_code": "L1-1",
+      "shirt_number": 13,
+      "is_starting": true
     },
     {
       "match_id": "9fb42466-d64b-4939-bdca-14498729c270",
@@ -1823,7 +1855,7 @@
     {
       "match_id": "8cbb8d7b-ecdf-4625-8066-2cb072edacc7",
       "team_id": "30d428e9-3d5a-4ce6-8908-b227f9cf119c",
-      "player_id": "208b562e-3dfe-5469-a7b5-9461e48c511d",
+      "player_id": "0fd8f32d-3811-4d1a-bdb0-187cceed5b63",
       "position_code": "L2-1",
       "shirt_number": 16,
       "is_starting": true
@@ -2127,7 +2159,7 @@
     {
       "match_id": "81a9960f-6f2e-44c0-90aa-6bc25aa679a2",
       "team_id": "30d428e9-3d5a-4ce6-8908-b227f9cf119c",
-      "player_id": "208b562e-3dfe-5469-a7b5-9461e48c511d",
+      "player_id": "0fd8f32d-3811-4d1a-bdb0-187cceed5b63",
       "position_code": null,
       "shirt_number": 16,
       "is_starting": false
@@ -2143,9 +2175,17 @@
     {
       "match_id": "ffb0775b-4cac-449d-9545-1033a5793f22",
       "team_id": "30d428e9-3d5a-4ce6-8908-b227f9cf119c",
-      "player_id": "208b562e-3dfe-5469-a7b5-9461e48c511d",
+      "player_id": "0fd8f32d-3811-4d1a-bdb0-187cceed5b63",
       "position_code": "L2-3",
       "shirt_number": 16,
+      "is_starting": true
+    },
+    {
+      "match_id": "ffb0775b-4cac-449d-9545-1033a5793f22",
+      "team_id": "c6c817b2-8f2c-499c-b02a-34f7736579df",
+      "player_id": "4f2b693c-7ab2-4bf7-b827-029fb4be56e9",
+      "position_code": "L1-1",
+      "shirt_number": 13,
       "is_starting": true
     },
     {
@@ -2171,6 +2211,14 @@
       "position_code": null,
       "shirt_number": 17,
       "is_starting": false
+    },
+    {
+      "match_id": "11997c60-15ea-45ae-a4f9-511cf5231157",
+      "team_id": "c6c817b2-8f2c-499c-b02a-34f7736579df",
+      "player_id": "4f2b693c-7ab2-4bf7-b827-029fb4be56e9",
+      "position_code": "L1-1",
+      "shirt_number": 13,
+      "is_starting": true
     },
     {
       "match_id": "11997c60-15ea-45ae-a4f9-511cf5231157",
@@ -2304,7 +2352,6 @@
   "unresolved_ids": [
     975185,
     1580347,
-    2794729,
-    1396639
+    2794729
   ]
 }
