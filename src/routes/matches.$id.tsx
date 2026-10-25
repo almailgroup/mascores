@@ -142,9 +142,16 @@ function MatchPage() {
       });
     },
   });
+  // Possible lineups are an owner-only preview until the club confirms its eleven.
+  const mainAdmin = useQuery({ queryKey: ["main-admin"], queryFn: async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return false;
+    const { data, error } = await supabase.rpc("is_main_admin", { _uid: user.id });
+    return !error && data === true;
+  } });
   const possible = useQuery({
     queryKey: ["possible-lineups", id, m.data?.competition_id, m.data?.kickoff_at, m.data?.kickoff_date],
-    enabled: !!m.data && !m.data.lineups_published && possibleLineupWindow(m.data.status, m.data.kickoff_at, m.data.kickoff_date),
+    enabled: mainAdmin.data === true && !!m.data && !m.data.lineups_published && possibleLineupWindow(m.data.status, m.data.kickoff_at, m.data.kickoff_date),
     queryFn: async () => {
       const match = m.data; if (!match?.season) return { rows: [] as (Lineup & { player: Player | null })[], formations: {} as Record<string,string> };
       const season = match.season;
@@ -195,7 +202,7 @@ function MatchPage() {
   const match = m.data;
   const isLive = ["live", "ht"].includes(match.status);
   const hasStarted = !["scheduled", "postponed", "cancelled"].includes(match.status);
-  const isPossible = !match.lineups_published && possibleLineupWindow(match.status,match.kickoff_at,match.kickoff_date) && (possible.data?.rows.length ?? 0) > 0;
+  const isPossible = mainAdmin.data === true && !match.lineups_published && possibleLineupWindow(match.status,match.kickoff_at,match.kickoff_date) && (possible.data?.rows.length ?? 0) > 0;
   const displayLineups = isPossible ? possible.data?.rows ?? [] : lineups.data ?? [];
   const lineupsVisible = (match.lineups_published && (lineups.data?.length ?? 0) > 0) || isPossible;
   const tabs: ("details" | "lineups" | "stats" | "standings" | "previous" | "media")[] = ["details", ...(lineupsVisible ? ["lineups" as const] : []), "stats", ...(match.competition?.format === "friendly" ? [] : ["standings" as const]), "previous", "media"];
