@@ -442,6 +442,13 @@
       "when": 1792958581500,
       "tag": "0062_competition_video_thumbnail",
       "breakpoints": true
+    },
+    {
+      "idx": 63,
+      "version": "7",
+      "when": 1792958671170,
+      "tag": "0063_admin_send_lineups_push",
+      "breakpoints": true
     }
   ]
 }

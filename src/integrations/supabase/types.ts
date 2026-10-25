@@ -3528,6 +3528,7 @@ export type Database = {
           title_en: string
         }[]
       }
+      admin_send_lineups_push: { Args: { _match: string }; Returns: undefined }
       admin_send_push: {
         Args: {
           _audience_type: string
