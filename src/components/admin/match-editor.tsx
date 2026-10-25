@@ -350,7 +350,7 @@ function ResultOnly({ match }: { match: Match }) {
 
 /* ---------------- Lineups ---------------- */
 
-const FORMATIONS = ["4-4-2", "4-3-3", "4-2-3-1", "3-5-2", "3-4-3", "5-3-2", "4-1-4-1", "4-5-1"];
+const FORMATIONS = ["4-4-2", "4-3-3", "4-2-3-1", "3-5-2", "3-4-3", "5-3-2", "5-2-3", "4-1-4-1", "4-5-1"];
 
 /** Slot keys for a formation, goalkeeper first then each outfield line. */
 function formationSlots(formation: string | null | undefined): string[] {
@@ -806,7 +806,7 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
           {match.lineups_published ? "Lineups are live on the match page." : "Lineups stay hidden until you confirm them."}
         </span>
         {match.lineups_published
-          ? <button className={btnGhost} onClick={() => publish(false)}>Unpublish</button>
+          ? <span className="flex gap-2"><button className={btnPrimary} onClick={async () => { const { error } = await supabase.rpc("admin_send_lineups_push", { _match: match.id }); if (error) toast.error(error.message); else toast.success("Confirmed lineups notification sent"); }}>Send lineups notification</button><button className={btnGhost} onClick={() => publish(false)}>Unpublish</button></span>
           : <button className={btnPrimary} onClick={() => publish(true)}><Check className="h-3.5 w-3.5" /> Confirm lineups</button>}
       </div>
     </div>

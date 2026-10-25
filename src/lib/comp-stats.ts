@@ -62,9 +62,9 @@ export async function fetchCompetitionStats(competitionId: string, season: strin
   if (ids.length === 0) return { players: [], teams: [], matches: 0 };
 
   const [events, ratings, lineups, stats] = await Promise.all([
-    supabase.from("match_events").select("match_id,type,team_id,player_id,assist_player_id").in("match_id", ids),
+    supabase.from("match_events").select("match_id,type,team_id,player_id,assist_player_id,sub_out_player_id").in("match_id", ids),
     supabase.from("player_ratings").select("match_id,player_id,rating").in("match_id", ids),
-    supabase.from("match_lineups").select("match_id,team_id,player_id").in("match_id", ids),
+    supabase.from("match_lineups").select("match_id,team_id,player_id,is_starting").in("match_id", ids),
     supabase.from("match_stats").select("match_id,label,home_value,away_value").in("match_id", ids),
   ]);
 
@@ -104,10 +104,14 @@ export async function fetchCompetitionStats(competitionId: string, season: strin
   for (const row of events.data ?? []) if (row.player_id && row.team_id && !playerTeam.has(row.player_id)) playerTeam.set(row.player_id, row.team_id);
 
   const appearances = new Map<string, Set<string>>();
-  for (const row of lineups.data ?? []) {
-    if (!appearances.has(row.player_id)) appearances.set(row.player_id, new Set());
-    appearances.get(row.player_id)!.add(row.match_id);
-  }
+  // Only starters and substitutes who actually came on count as a match played; unused bench rows do not.
+  const played = (playerId: string | null | undefined, matchId: string) => {
+    if (!playerId) return;
+    if (!appearances.has(playerId)) appearances.set(playerId, new Set());
+    appearances.get(playerId)!.add(matchId);
+  };
+  for (const row of lineups.data ?? []) if (row.is_starting) played(row.player_id, row.match_id);
+  for (const e of events.data ?? []) if (/sub/.test(e.type)) { played(e.player_id, e.match_id); played(e.sub_out_player_id, e.match_id); }
 
   const goals = new Map<string, number>();
   const assists = new Map<string, number>();

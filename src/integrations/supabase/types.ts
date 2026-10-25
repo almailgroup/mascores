@@ -535,6 +535,7 @@ export type Database = {
           starts_on: string | null
           title_holder_team_id: string | null
           updated_at: string
+          video_thumbnail_url: string | null
           youth_competition_ids: string[]
         }
         Insert: {
@@ -569,6 +570,7 @@ export type Database = {
           starts_on?: string | null
           title_holder_team_id?: string | null
           updated_at?: string
+          video_thumbnail_url?: string | null
           youth_competition_ids?: string[]
         }
         Update: {
@@ -603,6 +605,7 @@ export type Database = {
           starts_on?: string | null
           title_holder_team_id?: string | null
           updated_at?: string
+          video_thumbnail_url?: string | null
           youth_competition_ids?: string[]
         }
         Relationships: [
@@ -3525,6 +3528,7 @@ export type Database = {
           title_en: string
         }[]
       }
+      admin_send_lineups_push: { Args: { _match: string }; Returns: undefined }
       admin_send_push: {
         Args: {
           _audience_type: string

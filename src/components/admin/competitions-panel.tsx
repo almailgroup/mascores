@@ -227,6 +227,11 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
             </Field>
           </div>
           <div className="sm:col-span-2">
+            <Field label="Video thumbnail background — match logos and score are added automatically">
+              <ImageInput value={form.video_thumbnail_url ?? null} onChange={(v) => setForm({ ...form, video_thumbnail_url: v })} onFile={async (f) => { const url = await uploadMedia("competition-logos", f); if (url) setForm({ ...form, video_thumbnail_url: url }); }} />
+            </Field>
+          </div>
+          <div className="sm:col-span-2">
             <Field label="Description"><textarea rows={3} className={inputCls} value={form.description ?? ""} onChange={(e) => setForm({ ...form, description: e.target.value })} /></Field>
           </div>
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.featured ?? false} onChange={(e) => setForm({ ...form, featured: e.target.checked })} /> Featured</label>
