@@ -21,6 +21,11 @@ class CupImportTests(unittest.TestCase):
         self.assertEqual(len(self.audit["ratings"]), 395)
         self.assertTrue(all("independent event-based estimates" in m["notes"] for m in self.audit["matches"]))
 
+    def test_shootout_is_separate_from_match_score(self):
+        match = next(m for m in self.audit["matches"] if m["id"] == "9fb42466-d64b-4939-bdca-14498729c270")
+        self.assertEqual((match["home_score"], match["away_score"]), (0, 0))
+        self.assertEqual((match["home_pen"], match["away_pen"]), (3, 2))
+
 
 if __name__ == "__main__":
     unittest.main()

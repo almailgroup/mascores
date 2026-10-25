@@ -63,3 +63,4 @@
 - Cup imports reuse existing clubs and retain the interrupted season; unresolved teams belong in knockout placeholders, never dummy club profiles, and stage-wide date windows stay in notes until individual fixture dates are confirmed.
 
 - Shared match-result helpers decide shootout winners and standings eligibility across competition, match and club pages, keeping hidden cup tables and results consistent.
+- Shared group-stage helpers suppress inherited standings groups for knockout rounds; national squad links remain separate from players' actual club membership.
