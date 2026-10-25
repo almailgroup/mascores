@@ -59,3 +59,4 @@
 - Possible-lineup status travels with share data into the canvas export so projected lineups are never labelled as confirmed.
 - Batch social-link AI only proposes existing squad IDs and exact supplied URLs; review and merge links without replacing unrelated networks.
 - AFC Champions League Two syncs through an admin-triggered preview/confirm server function using the free API-Football plan's yesterday–tomorrow window; it links events only to existing squad players and never creates or edits player profiles.
+- Youth historical imports use explicit senior-club identity maps plus age groups, an audited source snapshot and idempotent competition/season/round/team-pair matching; unknown kickoff times remain date-only and historical updates mute then restore alerts to avoid old-result pushes.
