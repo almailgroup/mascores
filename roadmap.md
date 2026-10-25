@@ -58,3 +58,15 @@
 - [x] Upcoming toggle: re-tapping Upcoming keeps upcoming matches; day/calendar views bring it back.
 - [x] Filter sections: Club | Head to head tabs with + vs + slot picker and equal boxes; head-to-head notice kept.
 - [x] Filter default browse shows grouped sections: Zain Premier League, Kuwait national teams, Zain First Division, Zain U19 League, Kuwait U17 League; search spans all teams.
+
+## Oct 25 requests
+- [ ] League video thumbnail template in league settings; auto match thumbnail with logos + score
+- [ ] Add 5-2-3 formation
+- [ ] Fix player matches-played in competition statistics
+- [ ] Match media: type picker (custom, full match, live stream, ...) with auto title "Type | Home score Away"; label Zain PL media as Full Match
+- [ ] Possible lineups visible only to main admin
+- [ ] Confirmed-lineups notification + admin send button
+- [ ] Favorites: selecting a club shows its matches
+- [ ] Header scorers: group same player's minutes, max 3 rows then "+N goals"
+- [ ] Compact match events like reference; remove "Substitution: team" subtext
+- [ ] Share images footer: "Powered by Mansour Almail"
