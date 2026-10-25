@@ -1,6 +1,5 @@
 import { Play } from "lucide-react";
 import { TeamCrest } from "@/components/team-crest";
-import { portraitSource } from "@/lib/portrait-source";
 import { useTx } from "@/lib/auto-translate";
 
 type Side = { name?: string | null; logo?: string | null; photo?: string | null };
@@ -16,8 +15,8 @@ export function MatchHighlightCard({ href, home, away, score, leagueLogo }: { hr
       {side.logo && <img src={side.logo} alt="" className={`absolute top-1/2 h-[120%] -translate-y-1/2 object-contain opacity-[0.13] ${left ? "-left-[15%]" : "-right-[15%]"}`} />}
       <div className="absolute inset-0 opacity-20 [background:repeating-linear-gradient(0deg,transparent_0_3px,black_3px_4px)]" />
       {side.photo ? (
-        <img src={portraitSource(side.photo) ?? side.photo} alt={side.name ?? ""} draggable={false}
-          className={`absolute bottom-0 h-[95%] w-auto max-w-none object-contain object-bottom transition duration-500 group-hover:scale-105 ${left ? "left-[4%]" : "right-[4%]"} [mask-image:linear-gradient(to_top,transparent,black_30%)]`} />
+        <img src={side.photo} alt={side.name ?? ""} draggable={false}
+          className={`absolute bottom-0 h-[95%] w-auto max-w-none object-contain object-bottom transition duration-500 group-hover:scale-105 ${left ? "left-[4%]" : "right-[4%]"}`} />
       ) : (
         <TeamCrest name={side.name} logo={side.logo} className={`absolute top-1/2 h-24 w-24 -translate-y-1/2 ${left ? "left-[18%]" : "right-[18%]"}`} />
       )}
@@ -25,12 +24,12 @@ export function MatchHighlightCard({ href, home, away, score, leagueLogo }: { hr
   );
   return (
     <a href={href} target="_blank" rel="noreferrer"
-      className="group relative block aspect-[16/10] overflow-hidden rounded-3xl bg-[oklch(0.16_0.03_260)] shadow-xl ring-1 ring-border">
+      style={{ imageRendering: "auto" }} className="group relative block aspect-[16/10] overflow-hidden rounded-3xl bg-[oklch(0.16_0.03_260)] shadow-xl ring-1 ring-border">
       {panel(home, true)}
       {panel(away, false)}
       {/* seam glow */}
       <div className="pointer-events-none absolute inset-y-0 left-1/2 w-1 -translate-x-1/2 skew-x-[-10deg] bg-[oklch(0.98_0_0)] opacity-80 blur-[1px]" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-[oklch(0.1_0.02_260)] to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-[oklch(0.1_0.02_260)]/70 to-transparent" />
 
       <div className="absolute inset-x-3 top-3 flex items-center justify-between">
         {leagueLogo ? <img src={leagueLogo} alt="" className="h-8 w-8 rounded-full bg-[oklch(0.98_0_0)] object-contain p-1 shadow" /> : <span />}
@@ -41,8 +40,8 @@ export function MatchHighlightCard({ href, home, away, score, leagueLogo }: { hr
       <div dir="ltr" className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-2">
         <TeamCrest name={home.name} logo={home.logo} className="h-10 w-10 drop-shadow-lg" />
         <div className="flex items-stretch overflow-hidden rounded-xl text-3xl font-black tabular-nums leading-none shadow-2xl">
-          <span className="bg-primary px-3 py-2 text-primary-foreground">{h}</span>
-          {a !== "" && <span className="bg-[oklch(0.98_0_0)] px-3 py-2 text-[oklch(0.16_0.03_260)]">{a}</span>}
+          <span className="grid min-w-[2.75rem] place-items-center bg-primary px-2 py-2 text-primary-foreground">{h.trim()}</span>
+          {a !== "" && <span className="grid min-w-[2.75rem] place-items-center bg-[oklch(0.98_0_0)] px-2 py-2 text-[oklch(0.16_0.03_260)]">{a.trim()}</span>}
         </div>
         <TeamCrest name={away.name} logo={away.logo} className="h-10 w-10 drop-shadow-lg" />
       </div>
