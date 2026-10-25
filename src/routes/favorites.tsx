@@ -26,12 +26,16 @@ export const Route = createFileRoute("/favorites")({
 function FavoritesPage() {
   const tx = useTx();
   const { favorites, ready } = useFavorites();
+  const [club, setClub] = useState<string | null>(null);
   const [view, setView] = useState<"matches" | "clubs" | "competitions" | "players">("matches");
   const matches = useQuery({
-    enabled: ready && favorites.match.length > 0,
-    queryKey: ["favorites-page-matches", favorites.match.join(",")],
+    enabled: ready && (favorites.match.length > 0 || favorites.team.length > 0),
+    queryKey: ["favorites-page-matches", favorites.match.join(","), favorites.team.join(",")],
     queryFn: async () => {
-      const { data } = await supabase.from("matches").select("*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url,country,country_code)").in("id", favorites.match).order("kickoff_at");
+      // Starred matches plus every fixture of a favourite club.
+      const sel = "*, home:home_team_id(id,name,logo_url,short_name), away:away_team_id(id,name,logo_url,short_name), competition:competition_id(slug,name,logo_url,country,country_code)";
+      const ors = [favorites.match.length ? `id.in.(${favorites.match.join(",")})` : "", favorites.team.length ? `home_team_id.in.(${favorites.team.join(",")})` : "", favorites.team.length ? `away_team_id.in.(${favorites.team.join(",")})` : ""].filter(Boolean).join(",");
+      const { data } = await supabase.from("matches").select(sel).or(ors).order("kickoff_at").limit(300);
       return (data ?? []) as unknown as MatchWithTeams[];
     },
   });
@@ -58,7 +62,11 @@ function FavoritesPage() {
         </Button>
       ))}
     </div>
-    {view === "matches" && (matches.isLoading ? <LoadingSkeleton /> : matches.data?.length ? <MatchGroups data={matches.data} /> : empty("No favorite matches yet"))}
+    {view === "matches" && teams.data && teams.data.length > 0 && <div data-no-gesture className="mb-4 flex gap-2 overflow-x-auto pb-1">
+      <Button variant={club ? "outline" : "default"} size="sm" className="shrink-0 rounded-full" onClick={() => setClub(null)}>{tx("All")}</Button>
+      {teams.data.map((team) => <Button key={team.id} variant={club === team.id ? "default" : "outline"} size="sm" className="shrink-0 gap-1.5 rounded-full" onClick={() => setClub(club === team.id ? null : team.id)}><TeamCrest name={team.name} logo={team.logo_url} className="h-4 w-4" />{tx(team.name)}</Button>)}
+    </div>}
+    {view === "matches" && (() => { const list = (matches.data ?? []).filter((m) => !club || m.home_team_id === club || m.away_team_id === club); return matches.isLoading ? <LoadingSkeleton /> : list.length ? <MatchGroups data={list} /> : empty("No favorite matches yet"); })()}
     {view === "clubs" && (teams.isLoading ? <LoadingSkeleton /> : <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
       {teams.data?.map((team) => <Link key={team.id} to="/teams/$id" params={{ id: team.id }} className={row}><TeamCrest name={team.name} logo={team.logo_url} className="h-10 w-10" /><span className="min-w-0 flex-1 truncate font-semibold">{tx(team.name)}</span></Link>)}
       {!teams.data?.length && empty("No favorite teams yet")}
