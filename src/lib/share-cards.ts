@@ -37,12 +37,12 @@ async function toBlob(canvas: HTMLCanvasElement): Promise<Blob | null> {
   // A dedicated footer keeps every export branded without covering photos or names.
   const output = document.createElement("canvas");
   output.width = canvas.width;
-  output.height = canvas.height + 196;
+  output.height = canvas.height + 240;
   const ctx = output.getContext("2d");
   if (!ctx) return null;
   ctx.drawImage(canvas, 0, 0);
   ctx.fillStyle = "#0b1020";
-  ctx.fillRect(0, canvas.height, output.width, 196);
+  ctx.fillRect(0, canvas.height, output.width, 240);
   ctx.fillStyle = "rgba(255,255,255,0.2)";
   ctx.fillRect(60, canvas.height + 10, output.width - 120, 1);
   const mark = await loadImage(logoMark.url);
@@ -54,9 +54,12 @@ async function toBlob(canvas: HTMLCanvasElement): Promise<Blob | null> {
   ctx.font = `500 28px ${FONT}`;
   ctx.fillText("mascores.live", 60, canvas.height + 108);
   ctx.fillText("Instagram · @mascoreslive", 60, canvas.height + 148);
+  ctx.fillStyle = "rgba(255,255,255,0.12)";
+  ctx.fillRect(60, canvas.height + 178, output.width - 120, 1);
+  ctx.textAlign = "center";
   ctx.font = `600 24px ${FONT}`;
   ctx.fillStyle = "rgba(255,255,255,0.7)";
-  ctx.fillText("Powered by Mansour Almail", 60, canvas.height + 172);
+  ctx.fillText("Powered by Mansour Almail", output.width / 2, canvas.height + 216);
   return new Promise((resolve) => output.toBlob((blob) => resolve(blob), "image/png", 0.95));
 }
 
