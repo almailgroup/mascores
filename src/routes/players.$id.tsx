@@ -1,3 +1,4 @@
+import { ratingClass } from "@/lib/db";
 import { TeamCrest } from "@/components/team-crest";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
@@ -290,8 +291,8 @@ function PlayerMatches({ data, playerId, playerTeamId }: { data: PlayerMatchData
               const evs = data.events.filter((e) => e.match_id === m.id);
               const goals = evs.filter((e) => e.player_id === playerId && (e.type === "goal" || e.type === "penalty_goal")).length;
               const assists = evs.filter((e) => e.assist_player_id === playerId).length;
-              const yellow = evs.some((e) => e.player_id === playerId && e.type === "yellow_card");
-              const red = evs.some((e) => e.player_id === playerId && (e.type === "red_card" || e.type === "second_yellow"));
+              const yellow = evs.some((e) => e.player_id === playerId && (e.type === "yellow" || e.type === "yellow_card"));
+              const red = evs.some((e) => e.player_id === playerId && (e.type === "red" || e.type === "red_card" || e.type === "second_yellow"));
               const rating = data.ratings[m.id];
               const isHome = playerTeamId && m.home_team_id === playerTeamId;
               const isAway = playerTeamId && m.away_team_id === playerTeamId;
@@ -315,8 +316,8 @@ function PlayerMatches({ data, playerId, playerTeamId }: { data: PlayerMatchData
                     <div className={isAway ? "text-muted-foreground" : ""}>{m.home_score != null ? num(String(m.home_score)) : ""}</div>
                     <div className={isHome ? "text-muted-foreground" : ""}>{m.away_score != null ? num(String(m.away_score)) : ""}</div>
                   </div>
-                  <div className="w-8 shrink-0 text-right text-[0.65rem] font-semibold text-muted-foreground">
-                    {rating != null ? num(rating.toFixed(1)) : tx("N/A")}
+                  <div className="flex w-10 shrink-0 justify-end text-[0.7rem] font-bold">
+                    {rating != null ? <span className={`${ratingClass(rating)} min-w-[2.25rem] text-center`}>{num(rating.toFixed(1))}</span> : <span className="font-semibold text-muted-foreground">{tx("N/A")}</span>}
                   </div>
                 </Link>
               );

@@ -197,9 +197,11 @@ function MatchStatsEditor({ match, teams }: { match: Match; teams: Team[] }) {
       <div className="grid gap-2">
         {statsQ.data?.map((item) => (
           <div key={item.id} className="grid grid-cols-[1fr_2fr_1fr_auto] items-center gap-2 rounded-lg border border-border p-2 text-sm">
-            <span className="text-center font-bold">{item.home_value}</span>
+            <input key={`h-${item.home_value}`} defaultValue={item.home_value ?? ""} aria-label={`${item.label} home`} className="w-full rounded-md border border-border bg-background px-1 py-1 text-center text-base font-bold"
+              onBlur={async (e) => { if (e.target.value === (item.home_value ?? "")) return; await supabase.from("match_stats").update({ home_value: e.target.value }).eq("id", item.id); qc.invalidateQueries({ queryKey: ["admin", "match-stats", match.id] }); }} />
             <span className="text-center text-muted-foreground">{item.label}</span>
-            <span className="text-center font-bold">{item.away_value}</span>
+            <input key={`a-${item.away_value}`} defaultValue={item.away_value ?? ""} aria-label={`${item.label} away`} className="w-full rounded-md border border-border bg-background px-1 py-1 text-center text-base font-bold"
+              onBlur={async (e) => { if (e.target.value === (item.away_value ?? "")) return; await supabase.from("match_stats").update({ away_value: e.target.value }).eq("id", item.id); qc.invalidateQueries({ queryKey: ["admin", "match-stats", match.id] }); }} />
             <button className="text-destructive" onClick={async () => { await supabase.from("match_stats").delete().eq("id", item.id); qc.invalidateQueries({ queryKey: ["admin", "match-stats", match.id] }); }}><Trash2 className="h-4 w-4" /></button>
           </div>
         ))}
