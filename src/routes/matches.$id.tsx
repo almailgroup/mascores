@@ -358,7 +358,7 @@ function MatchPage() {
                     {entry.event.player ? (
                       <span className={`flex min-w-0 items-baseline gap-1.5 ${entry.side === "away" ? "flex-row-reverse" : ""}`}>
                         <span className="truncate text-sm font-semibold">{tx(displayShortName(entry.event.player.short_name, entry.event.player.name))}</span>
-                        {(entry.event.assister || entry.event.sub_out) && <span className="truncate text-sm text-muted-foreground">{tx(displayShortName((entry.event.assister ?? entry.event.sub_out) as { short_name?: string | null; name: string } & object && ((entry.event.assister ?? entry.event.sub_out) as { short_name?: string | null }).short_name, (entry.event.assister ?? entry.event.sub_out)!.name))}</span>}
+                        {(() => { const other = (entry.event.assister ?? entry.event.sub_out) as { name: string; short_name?: string | null } | null | undefined; return other ? <span className="truncate text-sm text-muted-foreground">{tx(displayShortName(other.short_name, other.name))}</span> : null; })()}
                       </span>
                     ) : entry.event.description ? (
                       <>
