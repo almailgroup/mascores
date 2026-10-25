@@ -1,5 +1,8 @@
 # Roadmap
 
+- [ ] Replace blue penalty-winner text with neutral text.
+- [ ] Import verified Sofascore Gulf Cup and AFC Champions League Two match details, lineups, events and statistics; preserve existing identities, clearly distinguish estimated ratings, audit all changes and verify real pages.
+
 - [x] Honor Crown Prince Cup hidden standings in club standings selectors and match pages; browser verified only AFC CL2 and Zain Premier League appear for Kuwait SC.
 
 - [x] Fix cup penalty winners in lists/details, separate date/status from club names, respect hidden standings, and add ten verified kickoff times; phone browser verified Kazma–Khaitan 1–1 (1–3 pens), winner and 19:45 Kuwait kickoff. Four result-rule tests and six import tests pass.
