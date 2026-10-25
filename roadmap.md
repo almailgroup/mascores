@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Import verified Sportscorner current-season Zain U19 and Kuwait U17 fixtures/results and available match details; add U17 clubs linked to senior clubs with shared badges, verify standings and real league pages.
+- [x] Import all 147 published Sportscorner 2026/2027 youth fixtures: U19 35 results + 7 date-only upcoming (rounds 1–6), U17 49 results + 56 upcoming (rounds 1–15). Reuse youth clubs, add Tadamon U17, match 15 participating U17 clubs to senior identities/badges, preserve 14 existing U19 fixture IDs, verify every imported field and computed standings, and check both league pages plus Kuwait U17 first-team link. No historical pushes queued; five import tests pass. Source league statistics provide no lineups, scorers, assists, discipline or ratings; these are not invented. Audit: scripts/sportscorner-youth-import.json.
 
 - [x] Search Arabic/English YouTube highlights and add 24 verified links; preserve four existing links, all match data and full broadcasts. Kuwait–Tadamon highlight verified visibly on the match page; audit in scripts/zain-highlights-import.json.
 - [x] Re-searched Kazma–Sulaibikhat, Salmiya–Jahra and Sahel–Nasr (round 6) in Arabic and English on October 25; no exact verified YouTube highlight found, so no links added. Arabi–Sulaibikhat round 3 is excluded because the user confirmed no stream.
