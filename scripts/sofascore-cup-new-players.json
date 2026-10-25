@@ -2349,9 +2349,83 @@
       "is_starting": false
     }
   ],
-  "unresolved_ids": [
-    975185,
-    1580347,
-    2794729
-  ]
+  "unresolved_ids": [],
+  "unresolved_resolution": {
+    "975185": {
+      "resolved_to": "existing profile Abdulaziz Naji (id 970c7288-392b-4067-a224-308d7e734530)",
+      "full_name": "Abdulaziz Naji Mahran",
+      "dob": "2001-08-19 (matches profile dob)",
+      "club": "Al Fahaheel SC (shirt 60 in club and national matches, confirmed by app lineup data Aug-Oct 2026)",
+      "sources": [
+        "https://www.national-football-teams.com/player/81130/Abdulaziz_Naji_Mahran.html",
+        "https://www.fotmob.com/players/1263256/abdulaziz-mahran"
+      ]
+    },
+    "2794729": {
+      "resolved_to": "existing profile Abdullah Al Qarzaei (id 4811d6c3-c972-4194-bc8b-a4e2b18a052a)",
+      "full_name": "Abdullah Khalifah Abdullah Khalifah Al Qarzaei",
+      "dob": "2008-09 (profile 2008-09-15; research sources say 18 Sep 2008)",
+      "club": "Kuwait SC from 10 July 2026 (Al-Arabi SC in 2025/26)",
+      "sources": [
+        "https://www.11v11.com/players/abdullah-al-qarzaei-280667/",
+        "https://fbref.com/en/players/ce589892/Abdullah-Khalifah",
+        "https://www.soccerway.com/player/al-qarzaei-abdullah/0O09TsrS/"
+      ]
+    },
+    "1580347": {
+      "resolved_to": "new profile Saqr Al Harbi",
+      "full_name": "Saqr Ebrahim Hussein Al Harbi",
+      "dob": "2001-04-02",
+      "club": "Ahli Sanaa FC (Yemen)",
+      "position": "Forward per Transfermarkt/WorldFootball; disputed (defender per FBref)",
+      "sources": [
+        "http://www.transfermarkt.us/saqr-al-harbi/profil/spieler/950699",
+        "https://www.worldfootball.net/person/pe1133645/saqr-al-harbi/"
+      ]
+    }
+  },
+  "clubs_resolution": {
+    "90991413": {
+      "player": "Sayed Dhiya Saeed",
+      "club": "Al Ahli Club (Bahrain)",
+      "note": "transferred from Al Khaldiya on 2026-10-04",
+      "source": "https://www.transfermarkt.com/sayed-dhiya-saeed/transfers/spieler/207126"
+    },
+    "b19369d2-2371-0fad-49e1-d2047da0fe03": {
+      "player": "Mohammed Abdul Qayoom",
+      "club": "Al Najma SC (Bahrain)",
+      "source": "https://www.national-football-teams.com/player/80197/Mohammed_Abdul_Qayoom.html"
+    },
+    "38b71474-5622-17f2-1ddb-3ccc964a8c08": {
+      "player": "Mohamed Abdelrahim Mohamed Elgharably",
+      "club": "Al Khaldiya FC",
+      "source": "https://statshub.com/player/mohamed-abdelrahim-mohamed-elgharably/2833999"
+    },
+    "4a856216-48ac-81c6-2439-b86957c2ad31": {
+      "player": "Omar Salem",
+      "club": "A'Ali SC (Bahrain), loan from Muharraq",
+      "source": "https://www.transfermarkt.com/omar-salem-rajab/profil/spieler/892956"
+    },
+    "71ef7d85-1797-1662-1b90-08f15c315f8e": {
+      "player": "Hamed Al Shanqity",
+      "club": "Al Kholood FC (loan from Al-Ittihad)",
+      "source": "https://www.transfermarkt.com/hamed-al-shanqity/transfers/spieler/1060899"
+    },
+    "c9f47fad-c63f-3a84-e036-880fa7f73270": {
+      "player": "Erik",
+      "club": "Al Ain FC (UAE)",
+      "source": "https://www.transfermarkt.com/erik/leistungsdatendetails/spieler/680551/saison/2026/wettbewerb/UAE1"
+    },
+    "a8f8c6ce-ec51-51ea-8734-a91aed4a6c7e": {
+      "player": "Fahad Mohamed",
+      "club": "Baniyas Club (UAE), goalkeeper",
+      "source": "https://www.transfermarkt.com/fahad-mohamed/profil/spieler/358758"
+    },
+    "9cf43046-d51b-02ee-8ccc-550dcafdf65f": {
+      "player": "Mohammed Al Najjar",
+      "club": "Wahda Sanaa FC (Yemen)",
+      "note": "disputed: ScoutBase lists Al-Wehda Aden; National Football Teams and Ballwhizz list Al-Wahda Sana'a",
+      "source": "https://www.national-football-teams.com/player/95002/Mohammed_Al_Najjar.html"
+    }
+  }
 }
