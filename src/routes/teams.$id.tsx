@@ -14,6 +14,7 @@ import { SocialLinksSection } from "@/components/social-links";
 import { LinkedNews } from "@/components/linked-news";
 import { ArrowRight, Landmark, CalendarClock, Crown, Trophy, Users, Phone, Mail, Globe } from "lucide-react";
 import { MatchGroups, MatchRow, type MatchWithTeams } from "@/components/match-list";
+import { compareTeamFixtures } from "@/lib/competition-match-order";
 import { type NationalPlayer, fetchNationalSquad } from "@/lib/national";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
 import { TeamStats, type TeamComp } from "@/components/team-stats";
