@@ -35,5 +35,8 @@ export function compareTeamFixtures(a: TeamFixture, b: TeamFixture) {
   const timeA = fixtureTime(a);
   const timeB = fixtureTime(b);
   if (timeA === timeB) return 0;
+  // Undated fixtures (Infinity) sink to the bottom of a newest-first list.
+  if (!Number.isFinite(timeA)) return 1;
+  if (!Number.isFinite(timeB)) return -1;
   return timeB - timeA;
 }
