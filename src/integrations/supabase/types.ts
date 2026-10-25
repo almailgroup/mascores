@@ -3564,6 +3564,10 @@ export type Database = {
         Args: { _competition_id: string; _season?: string }
         Returns: Json
       }
+      competition_season_team: {
+        Args: { _competition_id: string; _season?: string }
+        Returns: Json
+      }
       display_voice_badge: { Args: { _user: string }; Returns: string }
       end_inactive_voice_rooms: { Args: never; Returns: undefined }
       enqueue_match_push: {
