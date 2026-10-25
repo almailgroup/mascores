@@ -4,7 +4,7 @@ import { getTimeFormat, subscribeTimeFormat } from "./time-format";
 import { useServerFn } from "@tanstack/react-start";
 import { translateContent, translationDictionary } from "./translate.functions";
 import { useI18n } from "./i18n";
-import { formatDate, formatDob, formatKickoff } from "./db";
+import { formatDate, formatDob, formatKickoff, formatKickoffTime } from "./db";
 import { UI_AR } from "./ui-phrases";
 
 type Tx = <T extends string | null | undefined>(value: T) => T;
