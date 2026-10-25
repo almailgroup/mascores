@@ -70,3 +70,4 @@
 - [x] Header scorers: group same player's minutes, max 3 rows then "+N goals"
 - [x] Compact match events like reference; remove "Substitution: team" subtext
 - [x] Share images footer: "Powered by Mansour Almail"
+- [x] Transfer history redesign with tappable team links
