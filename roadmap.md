@@ -1,8 +1,9 @@
 # Roadmap
 
-- [ ] Honor Crown Prince Cup hidden standings in club standings selectors and match pages.
+- [x] Honor Crown Prince Cup hidden standings in club standings selectors and match pages; browser verified only AFC CL2 and Zain Premier League appear for Kuwait SC.
 
-- [ ] Fix cup penalty winners in lists/details, separate date/status from club names, remove knockout standings, and verify announced kickoff times.
+- [x] Fix cup penalty winners in lists/details, separate date/status from club names, respect hidden standings, and add ten verified kickoff times; phone browser verified Kazma–Khaitan 1–1 (1–3 pens), winner and 19:45 Kuwait kickoff. Four result-rule tests and six import tests pass.
+- [ ] Add four remaining Emir Cup kickoff times (Kuwait–Nasr February 27; Salmiya–Tadamon November 25; Qadsia–Fahaheel and Arabi–Khaitan November 26) — blocked by no verifiable exact time in sources searched; retain date-only records, never infer.
 
 - [x] Import the interrupted 2025/2026 Kuwait Emir Cup: 11 earlier results (two qualifiers, eight round-of-16 games and one quarter-final), three announced November quarter-finals, 18 existing clubs and 17 bracket ties through the final. Verified competition Matches/Knockout and opening a qualifier in the app; six tests pass, zero historical alerts queued. Semifinal stage scheduled December 4–5 without confirmed individual tie dates; final date, kickoff times, unresolved participants and player details not invented. Audit: scripts/emir-cup-import.json.
 
