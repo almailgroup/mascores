@@ -215,6 +215,18 @@ function MatchPage() {
       minute: `${event.minute ?? ""}${event.extra ? `+${event.extra}` : ""}'${event.type === "own_goal" ? " (OG)" : event.type === "penalty" ? " (P)" : ""}`,
       type: event.type,
     }));
+  // Header shows one row per player (minutes joined), at most three rows, then "+N goals".
+  const groupScorers = (list: ReturnType<typeof scorerList>) => {
+    const rows: { name: string; minute: string; type: string; count: number }[] = [];
+    for (const s of list) {
+      const kind = /red|yellow/.test(s.type) ? "card" : "goal";
+      const hit = rows.find((r) => r.name === s.name && (/red|yellow/.test(r.type) ? "card" : "goal") === kind);
+      if (hit) { hit.minute = `${hit.minute}, ${s.minute}`; hit.count++; } else rows.push({ ...s, count: 1 });
+    }
+    const shown = rows.slice(0, 3);
+    const more = rows.slice(3).filter((r) => !/red|yellow/.test(r.type)).reduce((n, r) => n + r.count, 0);
+    return { shown, more };
+  };
   const homeScorers = scorerList(match.home_team_id);
   const awayScorers = scorerList(match.away_team_id);
   const starters = (teamId: string | null | undefined) => (lineups.data ?? [])
@@ -298,8 +310,8 @@ function MatchPage() {
 
         {(homeScorers.length > 0 || awayScorers.length > 0) && (
           <div className="match-fading-detail mt-3 grid grid-cols-2 items-start gap-8 px-4 text-[0.72rem] text-match-foreground/85">
-            <div className="space-y-1.5 text-end">{homeScorers.map((scorer, index) => <div key={index} className="flex min-w-0 items-center justify-end gap-1.5"><span className="truncate" dir={lang === "ar" ? "rtl" : "ltr"}>{scorer.name} {num(scorer.minute)}</span><EventIcon type={scorer.type} /></div>)}</div>
-            <div className="space-y-1.5 text-start">{awayScorers.map((scorer, index) => <div key={index} className="flex min-w-0 items-center gap-1.5"><EventIcon type={scorer.type} /><span className="truncate" dir={lang === "ar" ? "rtl" : "ltr"}>{scorer.name} {num(scorer.minute)}</span></div>)}</div>
+            <div className="space-y-1.5 text-end">{groupScorers(homeScorers).shown.map((scorer, index) => <div key={index} className="flex min-w-0 items-center justify-end gap-1.5"><span className="truncate" dir={lang === "ar" ? "rtl" : "ltr"}>{scorer.name} {num(scorer.minute)}</span><EventIcon type={scorer.type} /></div>)}{groupScorers(homeScorers).more > 0 && <div className="pe-5">+{num(groupScorers(homeScorers).more)} {lang === "ar" ? "أهداف" : "goals"}</div>}</div>
+            <div className="space-y-1.5 text-start">{groupScorers(awayScorers).shown.map((scorer, index) => <div key={index} className="flex min-w-0 items-center gap-1.5"><EventIcon type={scorer.type} /><span className="truncate" dir={lang === "ar" ? "rtl" : "ltr"}>{scorer.name} {num(scorer.minute)}</span></div>)}{groupScorers(awayScorers).more > 0 && <div className="ps-5">+{num(groupScorers(awayScorers).more)} {lang === "ar" ? "أهداف" : "goals"}</div>}</div>
           </div>
         )}
 
