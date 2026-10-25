@@ -7,8 +7,6 @@ import { FlagIcon } from "@/components/flag";
 import { MatchNotificationButton } from "@/hooks/use-favorites";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
 import type { Match, Team } from "@/lib/db";
-import { matchClockSeconds } from "@/lib/db";
-import { useEffect, useState } from "react";
 
 export type MatchWithTeams = Match & {
   home: Team | null;
