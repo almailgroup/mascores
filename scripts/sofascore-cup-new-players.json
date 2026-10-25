@@ -1,0 +1,2357 @@
+{
+  "players": [
+    {
+      "source_id": 1140803,
+      "id": "15760ed1-04bb-53f0-e550-c108440b909c",
+      "name": "Abdelhak Assal",
+      "team_id": "d54fe0d8-0edd-4c13-bb60-b5fe69a64078",
+      "national_team_id": null,
+      "nationality": null,
+      "position": "Defender",
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/match/al-khaldiya-al-kuwait-sc/AansGHYc"
+      ],
+      "club_status": "verified_match_club"
+    },
+    {
+      "source_id": 925588,
+      "id": "006327e1-8b07-0de5-8aa2-5ae9382ad810",
+      "name": "Sayed Hashim Issa",
+      "team_id": "b91e803c-7d8e-4d6c-91e7-6ab7b9a10001",
+      "national_team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "nationality": "Bahrain",
+      "position": "Forward",
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/sayed-hashim-issa/925588",
+        "https://www.sofascore.com/football/match/bahrain-qatar/RVbsldc"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 933767,
+      "id": "37d5cebe-cf57-5ad5-47be-910891b9aafc",
+      "name": "Amine Benadi",
+      "team_id": "9807aa6b-7eec-4c6d-899f-17c1cd1d4bdd",
+      "national_team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "nationality": "Bahrain",
+      "position": "Defender",
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/benadi-amine/933767",
+        "https://www.sofascore.com/football/match/bahrain-yemen/wUbsldc"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 971532,
+      "id": "f3173f35-4189-99db-672d-841fdeb81c71",
+      "name": "Hamad Al Shamsan",
+      "team_id": "b91e803c-7d8e-4d6c-91e7-6ab7b9a10002",
+      "national_team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "nationality": "Bahrain",
+      "position": "Defender",
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/hamad-al-shamsan/971532",
+        "https://www.sofascore.com/football/match/bahrain-united-arab-emirates/CUbsldc#id:16875499",
+        "https://www.sofascore.com/football/match/bahrain-qatar/RVbsldc"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 972354,
+      "id": "90991413-e531-49ef-86e0-db48a2f89456",
+      "name": "Sayed Dhiya Saeed",
+      "team_id": null,
+      "national_team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "nationality": "Bahrain",
+      "position": "Midfielder",
+      "existing": true,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/sayed-dhiya-saeed/972354",
+        "https://www.sofascore.com/football/match/bahrain-united-arab-emirates/CUbsldc#id:16875499"
+      ],
+      "club_status": "unverified"
+    },
+    {
+      "source_id": 1014355,
+      "id": "d782a448-c0ca-8dc2-731a-97c5bf3e3804",
+      "name": "Hasan Ali Al Karani",
+      "team_id": "9807aa6b-7eec-4c6d-899f-17c1cd1d4bdd",
+      "national_team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "nationality": "Bahrain",
+      "position": "Midfielder",
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/hasan-ali-al-karani/1014355",
+        "https://www.sofascore.com/football/match/bahrain-united-arab-emirates/CUbsldc#id:16875499"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 1014363,
+      "id": "af7a703e-3144-e5a9-1b72-250470aa322e",
+      "name": "Abbas Al Asfoor",
+      "team_id": "b91e803c-7d8e-4d6c-91e7-6ab7b9a10002",
+      "national_team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "nationality": "Bahrain",
+      "position": "Midfielder",
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/abbas-al-asfoor/1014363",
+        "https://www.sofascore.com/football/match/bahrain-yemen/wUbsldc",
+        "https://www.sofascore.com/football/match/bahrain-qatar/RVbsldc"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 1154498,
+      "id": "bec3e1dc-722e-151b-6b1a-73089a61aa60",
+      "name": "Husain Abdulkarim",
+      "team_id": "9807aa6b-7eec-4c6d-899f-17c1cd1d4bdd",
+      "national_team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "nationality": "Bahrain",
+      "position": "Forward",
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/hussein-abdulkarim/1154498",
+        "https://www.sofascore.com/football/match/bahrain-yemen/wUbsldc"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 1215342,
+      "id": "91dbef6d-09c7-d6e2-879b-176e5f77568d",
+      "name": "Jasim Al Shaikh",
+      "team_id": "b91e803c-7d8e-4d6c-91e7-6ab7b9a10002",
+      "national_team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "nationality": "Bahrain",
+      "position": "Midfielder",
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/jasim-al-shaikh/1215342",
+        "https://www.sofascore.com/football/match/bahrain-united-arab-emirates/CUbsldc#id:16875499",
+        "https://www.sofascore.com/football/match/bahrain-yemen/wUbsldc"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 1632868,
+      "id": "b19369d2-2371-0fad-49e1-d2047da0fe03",
+      "name": "Mohammed Abdul Qayoom",
+      "team_id": null,
+      "national_team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "nationality": "Bahrain",
+      "position": "Midfielder",
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/match/bahrain-united-arab-emirates/CUbsldc#id:16875499",
+        "https://www.sofascore.com/football/match/bahrain-yemen/wUbsldc"
+      ],
+      "club_status": "unverified"
+    },
+    {
+      "source_id": 2643110,
+      "id": "80f49acd-eb3e-dd66-b855-a2c0dcba8f4d",
+      "name": "Ahmed Khalid Rabeea Husain Ali",
+      "team_id": "9807aa6b-7eec-4c6d-899f-17c1cd1d4bdd",
+      "national_team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "nationality": "Bahrain",
+      "position": "Defender",
+      "existing": false,
+      "source_urls": [
+        "https://www.espn.com/soccer/player/_/id/321464/ahmed-ali",
+        "https://www.sofascore.com/football/match/bahrain-united-arab-emirates/CUbsldc#id:16875499"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 2782001,
+      "id": "38b71474-5622-17f2-1ddb-3ccc964a8c08",
+      "name": "Mohamed Abdelrahim Mohamed Elgharably",
+      "team_id": null,
+      "national_team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "nationality": "Bahrain",
+      "position": null,
+      "existing": false,
+      "source_urls": [],
+      "club_status": "unverified"
+    },
+    {
+      "source_id": 2791409,
+      "id": "7356cac8-e52a-e786-b91e-fe95379a6ca8",
+      "name": "Ali Hammoud Ali Al Dosari",
+      "team_id": "b91e803c-7d8e-4d6c-91e7-6ab7b9a10003",
+      "national_team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "nationality": "Bahrain",
+      "position": "Midfielder",
+      "existing": false,
+      "source_urls": [
+        "https://it.besoccer.com/giocatore/a-ali-al-dosari-3567029",
+        "https://www.sofascore.com/football/match/bahrain-united-arab-emirates/CUbsldc#id:16875499",
+        "https://www.sofascore.com/football/match/bahrain-yemen/wUbsldc"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 1163994,
+      "id": "37df724b-2d78-1514-9792-7790e63ce549",
+      "name": "Hasan Abdulkareem",
+      "team_id": "b91e803c-7d8e-4d6c-91e7-6ab7b9a10004",
+      "national_team_id": "c924f997-11c5-48d7-a905-bd1a45b269a2",
+      "nationality": "Iraq",
+      "position": "Midfielder",
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/hasan-sayyid/1163994",
+        "https://www.sofascore.com/football/match/oman-iraq/rVbsMVb#id:16875492",
+        "https://www.sofascore.com/football/match/saudi-arabia-iraq/rVbsJWb#id:16875500"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 2019350,
+      "id": "e3819082-d9ad-1167-c6bd-19705411ae0b",
+      "name": "Abdulsalam Al Shukaili",
+      "team_id": "04e13017-e861-4ab3-b404-49516cd43e4b",
+      "national_team_id": "44887540-58a4-40e1-b34d-48460b3aa821",
+      "nationality": "Oman",
+      "position": "Forward",
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/abdulsalam-al-shukaili/2019350",
+        "https://www.sofascore.com/football/match/kuwait-oman/MVbsthc",
+        "https://www.sofascore.com/football/match/kuwait-oman/MVbsthc#id:16875501",
+        "https://www.sofascore.com/football/match/oman-united-arab-emirates/CUbsMVb#id:17227759"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 303826,
+      "id": "713115fd-e291-4f52-a7ae-5a6cfc461041",
+      "name": "Karim Boudiaf",
+      "team_id": "939579a4-48d9-4ab1-97e6-ae69c3a73d2d",
+      "national_team_id": "c6c817b2-8f2c-499c-b02a-34f7736579df",
+      "nationality": "Qatar",
+      "position": "Midfielder",
+      "existing": true,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/karim-boudiaf/303826",
+        "https://www.sofascore.com/football/match/qatar-united-arab-emirates/CUbsRVb#id:16875502",
+        "https://www.sofascore.com/football/match/saudi-arabia-qatar/RVbsJWb#id:17227761",
+        "https://www.sofascore.com/football/match/bahrain-qatar/RVbsldc"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 936542,
+      "id": "feb12651-4787-4d88-9627-5b53b25c681f",
+      "name": "Ahmed Al Ganehi",
+      "team_id": "3893f867-4112-40d9-a433-852c78f748f5",
+      "national_team_id": "c6c817b2-8f2c-499c-b02a-34f7736579df",
+      "nationality": "Qatar",
+      "position": "Midfielder",
+      "existing": true,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/ahmed-al-ganehi/936542",
+        "https://www.sofascore.com/football/match/saudi-arabia-qatar/RVbsJWb#id:17227761",
+        "https://www.sofascore.com/football/match/bahrain-qatar/RVbsldc"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 1396639,
+      "id": "4f2b693c-7ab2-4bf7-b827-029fb4be56e9",
+      "name": "Ayoub Al Oui",
+      "team_id": "3893f867-4112-40d9-a433-852c78f748f5",
+      "national_team_id": "c6c817b2-8f2c-499c-b02a-34f7736579df",
+      "nationality": "Qatar",
+      "position": "Defender",
+      "existing": true,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/ayoub-al-oui/1396639",
+        "https://www.sofascore.com/football/match/qatar-united-arab-emirates/CUbsRVb#id:16875502",
+        "https://www.sofascore.com/football/match/saudi-arabia-qatar/RVbsJWb#id:17227761"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 154958,
+      "id": "ba2d4bbb-3dba-ba75-7042-c7e945975237",
+      "name": "Saša Ivković",
+      "team_id": "b91e803c-7d8e-4d6c-91e7-6ab7b9a10005",
+      "national_team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "nationality": "United Arab Emirates",
+      "position": null,
+      "existing": false,
+      "source_urls": [
+        "https://www.alwaslsc.ae/en-gb/news-details/AlWasl-sign-defender-Sasa-Ivkovic"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 792341,
+      "id": "dde6f35f-91b1-fed8-4542-9bbf7ada3283",
+      "name": "Nicolás Giménez",
+      "team_id": "b91e803c-7d8e-4d6c-91e7-6ab7b9a10005",
+      "national_team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "nationality": "United Arab Emirates",
+      "position": "Midfielder",
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/nicolas-gimenez/792341",
+        "https://www.sofascore.com/football/match/bahrain-united-arab-emirates/CUbsldc#id:16875499",
+        "https://www.sofascore.com/football/match/oman-united-arab-emirates/CUbsMVb#id:17227759",
+        "https://www.sofascore.com/football/match/united-arab-emirates-yemen/wUbsCUb#id:16875495",
+        "https://www.sofascore.com/football/match/saudi-arabia-united-arab-emirates/CUbsJWb#id:17251617"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 871942,
+      "id": "9359e56b-f4e4-7e7b-a157-82effe97e607",
+      "name": "Khaled Aldhanhani",
+      "team_id": "b91e803c-7d8e-4d6c-91e7-6ab7b9a10006",
+      "national_team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "nationality": "United Arab Emirates",
+      "position": "Defender",
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/khaled-aldhanhani/871942",
+        "https://www.sofascore.com/football/match/qatar-united-arab-emirates/CUbsRVb#id:16875502"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 889354,
+      "id": "4d3f87ca-1989-ef44-183a-87fc90d9b8ac",
+      "name": "Luan Pereira",
+      "team_id": "b91e803c-7d8e-4d6c-91e7-6ab7b9a10006",
+      "national_team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "nationality": "United Arab Emirates",
+      "position": "Midfielder",
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/luan-pereira/889354",
+        "https://www.sofascore.com/football/match/bahrain-united-arab-emirates/CUbsldc#id:16875499",
+        "https://www.sofascore.com/football/match/oman-united-arab-emirates/CUbsMVb#id:17227759",
+        "https://www.sofascore.com/football/match/qatar-united-arab-emirates/CUbsRVb#id:16875502",
+        "https://www.sofascore.com/football/match/united-arab-emirates-yemen/wUbsCUb#id:16875495",
+        "https://www.sofascore.com/football/match/saudi-arabia-united-arab-emirates/CUbsJWb#id:17251617"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 900058,
+      "id": "97114d17-5fb8-5f69-ce1c-018131207644",
+      "name": "Ali Saleh",
+      "team_id": "b91e803c-7d8e-4d6c-91e7-6ab7b9a10005",
+      "national_team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "nationality": "United Arab Emirates",
+      "position": "Midfielder",
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/ali-saleh/900058",
+        "https://www.sofascore.com/football/match/bahrain-united-arab-emirates/CUbsldc#id:16875499",
+        "https://www.sofascore.com/football/match/oman-united-arab-emirates/CUbsMVb#id:17227759",
+        "https://www.sofascore.com/football/match/qatar-united-arab-emirates/CUbsRVb#id:16875502",
+        "https://www.sofascore.com/football/match/united-arab-emirates-yemen/wUbsCUb#id:16875495",
+        "https://www.sofascore.com/football/match/saudi-arabia-united-arab-emirates/CUbsJWb#id:17251617"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 967313,
+      "id": "9f2ddd84-767b-d68c-c696-64a588a00d26",
+      "name": "Alaeddine Zouhir",
+      "team_id": "b8d1a59f-91f5-4875-9429-1b9200c03dc6",
+      "national_team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "nationality": "United Arab Emirates",
+      "position": "Defender",
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/alaeddine-zouhir/967313",
+        "https://www.sofascore.com/football/match/united-arab-emirates-yemen/wUbsCUb#id:16875495"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 979202,
+      "id": "b19557dd-e68e-43d9-c959-92b3718cda0b",
+      "name": "Ruben Amaral",
+      "team_id": "b4f2b8a1-6992-4acc-bb81-8466d392a037",
+      "national_team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "nationality": "United Arab Emirates",
+      "position": null,
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/ruben-amaral/979202"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 980762,
+      "id": "cf8b7752-5b45-1dc3-bd8c-a8ee79066376",
+      "name": "Yuri César",
+      "team_id": "b91e803c-7d8e-4d6c-91e7-6ab7b9a10007",
+      "national_team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "nationality": "United Arab Emirates",
+      "position": "Midfielder",
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/yuri-cesar/980762",
+        "https://www.sofascore.com/football/match/bahrain-united-arab-emirates/CUbsldc#id:16875499",
+        "https://www.sofascore.com/football/match/united-arab-emirates-yemen/wUbsCUb#id:16875495"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 998131,
+      "id": "b8647091-1209-d821-6b6a-5cbdc5fcd56f",
+      "name": "Marcus Meloni",
+      "team_id": "b4f2b8a1-6992-4acc-bb81-8466d392a037",
+      "national_team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "nationality": "United Arab Emirates",
+      "position": "Defender",
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/marcus-meloni/998131",
+        "https://www.sofascore.com/football/match/bahrain-united-arab-emirates/CUbsldc#id:16875499",
+        "https://www.sofascore.com/football/match/united-arab-emirates-yemen/wUbsCUb#id:16875495",
+        "https://www.sofascore.com/football/match/saudi-arabia-united-arab-emirates/CUbsJWb#id:17251617"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 1004769,
+      "id": "7eb9bf90-5072-1e12-48a0-3f095929a58b",
+      "name": "Bruno Oliveira",
+      "team_id": "b4f2b8a1-6992-4acc-bb81-8466d392a037",
+      "national_team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "nationality": "United Arab Emirates",
+      "position": "Midfielder",
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/team/al-jazira/8090",
+        "https://www.sofascore.com/football/match/bahrain-united-arab-emirates/CUbsldc#id:16875499",
+        "https://www.sofascore.com/football/match/oman-united-arab-emirates/CUbsMVb#id:17227759",
+        "https://www.sofascore.com/football/match/qatar-united-arab-emirates/CUbsRVb#id:16875502",
+        "https://www.sofascore.com/football/match/united-arab-emirates-yemen/wUbsCUb#id:16875495",
+        "https://www.sofascore.com/football/match/saudi-arabia-united-arab-emirates/CUbsJWb#id:17251617"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 1004848,
+      "id": "f94201ad-711e-d249-68bb-4ed17b7b95aa",
+      "name": "Isam Faiz",
+      "team_id": "b91e803c-7d8e-4d6c-91e7-6ab7b9a10008",
+      "national_team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "nationality": "United Arab Emirates",
+      "position": "Midfielder",
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/isam-faiz/1004848",
+        "https://www.sofascore.com/football/match/bahrain-united-arab-emirates/CUbsldc#id:16875499",
+        "https://www.sofascore.com/football/match/united-arab-emirates-yemen/wUbsCUb#id:16875495",
+        "https://www.sofascore.com/football/match/saudi-arabia-united-arab-emirates/CUbsJWb#id:17251617"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 1009658,
+      "id": "c1ac9a05-cdfb-b1b4-784f-00c65b1e0369",
+      "name": "Harib Suhail",
+      "team_id": "b91e803c-7d8e-4d6c-91e7-6ab7b9a10006",
+      "national_team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "nationality": "United Arab Emirates",
+      "position": "Midfielder",
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/hareb-abdullah-suhail/1009658",
+        "https://www.sofascore.com/football/match/qatar-united-arab-emirates/CUbsRVb#id:16875502",
+        "https://www.sofascore.com/football/match/united-arab-emirates-yemen/wUbsCUb#id:16875495"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 1015268,
+      "id": "61489811-037e-97ab-3191-24d7e7f42161",
+      "name": "Guilherme Bala",
+      "team_id": "b91e803c-7d8e-4d6c-91e7-6ab7b9a10007",
+      "national_team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "nationality": "United Arab Emirates",
+      "position": "Midfielder",
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/team/shabab-al-ahli-dubai/264111",
+        "https://www.sofascore.com/football/match/bahrain-united-arab-emirates/CUbsldc#id:16875499",
+        "https://www.sofascore.com/football/match/oman-united-arab-emirates/CUbsMVb#id:17227759",
+        "https://www.sofascore.com/football/match/qatar-united-arab-emirates/CUbsRVb#id:16875502",
+        "https://www.sofascore.com/football/match/saudi-arabia-united-arab-emirates/CUbsJWb#id:17251617"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 1017140,
+      "id": "e80e3383-4538-4a4a-9ab5-af5cfce5dc10",
+      "name": "Lucas Pimenta",
+      "team_id": "b8d1a59f-91f5-4875-9429-1b9200c03dc6",
+      "national_team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "nationality": "United Arab Emirates",
+      "position": null,
+      "existing": true,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/lucas-pimenta/1017140"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 1083420,
+      "id": "4cc22676-b140-642c-99fb-617b8beb0edf",
+      "name": "Sultan Adil",
+      "team_id": "b91e803c-7d8e-4d6c-91e7-6ab7b9a10007",
+      "national_team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "nationality": "United Arab Emirates",
+      "position": "Forward",
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/sultan-adil/1083420",
+        "https://www.sofascore.com/football/match/oman-united-arab-emirates/CUbsMVb#id:17227759",
+        "https://www.sofascore.com/football/match/qatar-united-arab-emirates/CUbsRVb#id:16875502",
+        "https://www.sofascore.com/football/match/saudi-arabia-united-arab-emirates/CUbsJWb#id:17251617"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 1168243,
+      "id": "c7636c43-bbdd-5d08-b376-ff220272f67d",
+      "name": "Mamadou Coulibaly",
+      "team_id": "b4f2b8a1-6992-4acc-bb81-8466d392a037",
+      "national_team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "nationality": "United Arab Emirates",
+      "position": "Midfielder",
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/team/al-jazira/8090",
+        "https://www.sofascore.com/football/match/oman-united-arab-emirates/CUbsMVb#id:17227759",
+        "https://www.sofascore.com/football/match/saudi-arabia-united-arab-emirates/CUbsJWb#id:17251617"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 1438692,
+      "id": "434a4481-59f8-e493-adba-6013d8259a90",
+      "name": "Richard Akonnor",
+      "team_id": "b4f2b8a1-6992-4acc-bb81-8466d392a037",
+      "national_team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "nationality": "United Arab Emirates",
+      "position": "Defender",
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/team/al-jazira/8090",
+        "https://www.sofascore.com/football/match/bahrain-united-arab-emirates/CUbsldc#id:16875499",
+        "https://www.sofascore.com/football/match/oman-united-arab-emirates/CUbsMVb#id:17227759",
+        "https://www.sofascore.com/football/match/united-arab-emirates-yemen/wUbsCUb#id:16875495",
+        "https://www.sofascore.com/football/match/saudi-arabia-united-arab-emirates/CUbsJWb#id:17251617"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 1845150,
+      "id": "bdb22f76-9083-40e9-b4b0-9589e8cfff47",
+      "name": "Abdulla Hamad",
+      "team_id": "b8d1a59f-91f5-4875-9429-1b9200c03dc6",
+      "national_team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "nationality": "United Arab Emirates",
+      "position": null,
+      "existing": true,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/abdulla-hamad/1845150"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 1857307,
+      "id": "b1c21206-aa6b-1f3f-1b90-acd824371a6f",
+      "name": "Hamad Abdullah Almeqbaali",
+      "team_id": "b91e803c-7d8e-4d6c-91e7-6ab7b9a10007",
+      "national_team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "nationality": "United Arab Emirates",
+      "position": null,
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/hamad-abdullah-almeqbaali/1857307"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 2018795,
+      "id": "0fd8f32d-3811-4d1a-bdb0-187cceed5b63",
+      "name": "Omar Mansoor Omar Zaid Ahmed",
+      "team_id": "f90f8a44-8611-4205-bd7e-e4a74281bbc6",
+      "national_team_id": "30d428e9-3d5a-4ce6-8908-b227f9cf119c",
+      "nationality": "Yemen",
+      "position": "Midfielder",
+      "existing": true,
+      "source_urls": [
+        "https://www.transfermarkt.com/omar-al-golan/profil/spieler/950679",
+        "https://www.sofascore.com/football/match/bahrain-yemen/wUbsldc"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 927456,
+      "id": "5c3489b0-71eb-9d2f-1a0c-e61a387d617f",
+      "name": "Fabrice Onana",
+      "team_id": "d54fe0d8-0edd-4c13-bb60-b5fe69a64078",
+      "national_team_id": null,
+      "nationality": null,
+      "position": "Midfielder",
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/match/al-khaldiya-al-kuwait-sc/AansGHYc"
+      ],
+      "club_status": "verified_match_club"
+    },
+    {
+      "source_id": 2290850,
+      "id": "cbb81144-8cb5-8f0d-4a16-229b1410f2b0",
+      "name": "Othman Al Haj",
+      "team_id": "d54fe0d8-0edd-4c13-bb60-b5fe69a64078",
+      "national_team_id": null,
+      "nationality": null,
+      "position": null,
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/othman-al-haj/2290850"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 1154497,
+      "id": "9bb356e3-626c-386a-b57d-f64607507ca3",
+      "name": "Ibrahim Al Khatal",
+      "team_id": "b91e803c-7d8e-4d6c-91e7-6ab7b9a10009",
+      "national_team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "nationality": "Bahrain",
+      "position": "Forward",
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/ibrahim-al-khatal/1154497",
+        "https://www.sofascore.com/football/match/bahrain-qatar/RVbsldc"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 1157451,
+      "id": "4a856216-48ac-81c6-2439-b86957c2ad31",
+      "name": "Omar Salem",
+      "team_id": null,
+      "national_team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "nationality": "Bahrain",
+      "position": null,
+      "existing": false,
+      "source_urls": [],
+      "club_status": "unverified"
+    },
+    {
+      "source_id": 1170856,
+      "id": "9625b7ab-a67c-b9dc-4dc7-c733fae1d7f2",
+      "name": "Omar Saber",
+      "team_id": "b91e803c-7d8e-4d6c-91e7-6ab7b9a10010",
+      "national_team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "nationality": "Bahrain",
+      "position": null,
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/omar-saber/1170856"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 1534561,
+      "id": "8536faf6-a400-bf00-30dd-15a260768a85",
+      "name": "Vincent Emmanuel",
+      "team_id": "b91e803c-7d8e-4d6c-91e7-6ab7b9a10010",
+      "national_team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "nationality": "Bahrain",
+      "position": "Defender",
+      "existing": false,
+      "source_urls": [
+        "https://www.transfermarkt.com/vincent-emmanuel/profil/spieler/1123720",
+        "https://www.sofascore.com/football/match/bahrain-yemen/wUbsldc",
+        "https://www.sofascore.com/football/match/bahrain-qatar/RVbsldc"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 1473244,
+      "id": "1e539221-b52f-7180-f302-c87e3ce0962a",
+      "name": "Mustafa Qabeel",
+      "team_id": "b91e803c-7d8e-4d6c-91e7-6ab7b9a10011",
+      "national_team_id": "c924f997-11c5-48d7-a905-bd1a45b269a2",
+      "nationality": "Iraq",
+      "position": null,
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/mustafa-qabeel-mustafa/1473244"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 1478188,
+      "id": "b10ffda3-c958-95cd-d412-e46a0bff00be",
+      "name": "Hussein Hassan",
+      "team_id": "b91e803c-7d8e-4d6c-91e7-6ab7b9a10012",
+      "national_team_id": "c924f997-11c5-48d7-a905-bd1a45b269a2",
+      "nationality": "Iraq",
+      "position": null,
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/hussein-hassan/1478188"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 1015427,
+      "id": "837e0eda-cf13-c371-231d-481dedeae3a6",
+      "name": "Abdulrahman Al Ghassani",
+      "team_id": "b91e803c-7d8e-4d6c-91e7-6ab7b9a10013",
+      "national_team_id": "44887540-58a4-40e1-b34d-48460b3aa821",
+      "nationality": "Oman",
+      "position": null,
+      "existing": false,
+      "source_urls": [
+        "https://www.transfermarkt.com/abdulrahman-al-ghassani/profil/spieler/717857"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 1410214,
+      "id": "8d151107-71e5-fbd8-4d11-fe16dd7d911f",
+      "name": "Musab Al Mamari",
+      "team_id": "a35fe3aa-7412-4c02-ace1-4e21e0e466de",
+      "national_team_id": "44887540-58a4-40e1-b34d-48460b3aa821",
+      "nationality": "Oman",
+      "position": "Midfielder",
+      "existing": false,
+      "source_urls": [
+        "https://www.transfermarkt.com/musab-al-mamari/profil/spieler/1061888",
+        "https://www.sofascore.com/football/match/oman-united-arab-emirates/CUbsMVb#id:17227759",
+        "https://www.sofascore.com/football/match/saudi-arabia-oman/MVbsJWb#id:16875497"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 1943756,
+      "id": "dfcccba1-fe64-4a81-5d36-dce294f5838b",
+      "name": "Yaser Al Balushi",
+      "team_id": "a35fe3aa-7412-4c02-ace1-4e21e0e466de",
+      "national_team_id": "44887540-58a4-40e1-b34d-48460b3aa821",
+      "nationality": "Oman",
+      "position": null,
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/yaser-al-balushi/1943756"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 2787637,
+      "id": "0e359e6c-ed1a-9309-3e82-59b781066741",
+      "name": "Abdullah Saif Ali Al Mamari",
+      "team_id": "b91e803c-7d8e-4d6c-91e7-6ab7b9a10014",
+      "national_team_id": "44887540-58a4-40e1-b34d-48460b3aa821",
+      "nationality": "Oman",
+      "position": null,
+      "existing": false,
+      "source_urls": [
+        "https://es.besoccer.com/jugador/a-al-mamari-3460664"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 832426,
+      "id": "f27d5348-8718-dd32-2b84-769b2b50f484",
+      "name": "Shehab Ellethy",
+      "team_id": "cf260c17-bbd3-4315-a5c3-5c71592514bc",
+      "national_team_id": "c6c817b2-8f2c-499c-b02a-34f7736579df",
+      "nationality": "Qatar",
+      "position": null,
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/shehab-ellethy/832426"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 788258,
+      "id": "dc931c87-6c91-bcb4-a7f7-1b8bf9a4458a",
+      "name": "Mukhtar Ali",
+      "team_id": "d2d7eea2-829a-4c25-ab58-6ef58e1423c3",
+      "national_team_id": "18da094d-7bfa-4077-932c-28123cfd0912",
+      "nationality": "Saudi Arabia",
+      "position": "Midfielder",
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/player/ali-mukhtar/788258",
+        "https://www.sofascore.com/football/match/saudi-arabia-qatar/RVbsJWb#id:17227761"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 925459,
+      "id": "c304d3ad-abfd-4348-80f7-ea0be7f58f49",
+      "name": "Abdulquddus Atiah",
+      "team_id": "b91e803c-7d8e-4d6c-91e7-6ab7b9a10015",
+      "national_team_id": "18da094d-7bfa-4077-932c-28123cfd0912",
+      "nationality": "Saudi Arabia",
+      "position": null,
+      "existing": false,
+      "source_urls": [
+        "https://en.wikipedia.org/wiki/Abdulquddus_Atiah"
+      ],
+      "club_status": "source_reported_current"
+    },
+    {
+      "source_id": 1857290,
+      "id": "71ef7d85-1797-1662-1b90-08f15c315f8e",
+      "name": "Hamed Al Shanqity",
+      "team_id": null,
+      "national_team_id": "18da094d-7bfa-4077-932c-28123cfd0912",
+      "nationality": "Saudi Arabia",
+      "position": null,
+      "existing": false,
+      "source_urls": [],
+      "club_status": "unverified"
+    },
+    {
+      "source_id": 988850,
+      "id": "c9f47fad-c63f-3a84-e036-880fa7f73270",
+      "name": "Erik",
+      "team_id": null,
+      "national_team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "nationality": "United Arab Emirates",
+      "position": "Defender",
+      "existing": false,
+      "source_urls": [
+        "https://www.sofascore.com/football/match/qatar-united-arab-emirates/CUbsRVb#id:16875502"
+      ],
+      "club_status": "unverified"
+    },
+    {
+      "source_id": 1111445,
+      "id": "a8f8c6ce-ec51-51ea-8734-a91aed4a6c7e",
+      "name": "Fahad Mohamed",
+      "team_id": null,
+      "national_team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "nationality": "United Arab Emirates",
+      "position": null,
+      "existing": false,
+      "source_urls": [],
+      "club_status": "unverified"
+    },
+    {
+      "source_id": 1461240,
+      "id": "9cf43046-d51b-02ee-8ccc-550dcafdf65f",
+      "name": "Mohammed Al Najjar",
+      "team_id": null,
+      "national_team_id": "30d428e9-3d5a-4ce6-8908-b227f9cf119c",
+      "nationality": "Yemen",
+      "position": null,
+      "existing": false,
+      "source_urls": [],
+      "club_status": "unverified"
+    }
+  ],
+  "lineups": [
+    {
+      "match_id": "6d286212-49a3-4330-89c2-0c64533f214f",
+      "team_id": "18da094d-7bfa-4077-932c-28123cfd0912",
+      "player_id": "71ef7d85-1797-1662-1b90-08f15c315f8e",
+      "position_code": null,
+      "shirt_number": 22,
+      "is_starting": false
+    },
+    {
+      "match_id": "e36f1b4d-36ce-4ff0-86dc-6995c1775a5f",
+      "team_id": "d54fe0d8-0edd-4c13-bb60-b5fe69a64078",
+      "player_id": "15760ed1-04bb-53f0-e550-c108440b909c",
+      "position_code": "L1-3",
+      "shirt_number": 23,
+      "is_starting": true
+    },
+    {
+      "match_id": "e36f1b4d-36ce-4ff0-86dc-6995c1775a5f",
+      "team_id": "d54fe0d8-0edd-4c13-bb60-b5fe69a64078",
+      "player_id": "5c3489b0-71eb-9d2f-1a0c-e61a387d617f",
+      "position_code": null,
+      "shirt_number": 66,
+      "is_starting": false
+    },
+    {
+      "match_id": "e36f1b4d-36ce-4ff0-86dc-6995c1775a5f",
+      "team_id": "d54fe0d8-0edd-4c13-bb60-b5fe69a64078",
+      "player_id": "cbb81144-8cb5-8f0d-4a16-229b1410f2b0",
+      "position_code": null,
+      "shirt_number": 11,
+      "is_starting": false
+    },
+    {
+      "match_id": "481a5674-c1fa-42e7-bba6-6b179c404e77",
+      "team_id": "44887540-58a4-40e1-b34d-48460b3aa821",
+      "player_id": "e3819082-d9ad-1167-c6bd-19705411ae0b",
+      "position_code": "L4-1",
+      "shirt_number": 11,
+      "is_starting": true
+    },
+    {
+      "match_id": "481a5674-c1fa-42e7-bba6-6b179c404e77",
+      "team_id": "44887540-58a4-40e1-b34d-48460b3aa821",
+      "player_id": "8d151107-71e5-fbd8-4d11-fe16dd7d911f",
+      "position_code": null,
+      "shirt_number": 19,
+      "is_starting": false
+    },
+    {
+      "match_id": "fc804d2d-384c-425d-932f-5f22d62b0a30",
+      "team_id": "c924f997-11c5-48d7-a905-bd1a45b269a2",
+      "player_id": "37df724b-2d78-1514-9792-7790e63ce549",
+      "position_code": null,
+      "shirt_number": 10,
+      "is_starting": false
+    },
+    {
+      "match_id": "fc804d2d-384c-425d-932f-5f22d62b0a30",
+      "team_id": "c924f997-11c5-48d7-a905-bd1a45b269a2",
+      "player_id": "1e539221-b52f-7180-f302-c87e3ce0962a",
+      "position_code": null,
+      "shirt_number": 9,
+      "is_starting": false
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "f3173f35-4189-99db-672d-841fdeb81c71",
+      "position_code": "L1-1",
+      "shirt_number": 5,
+      "is_starting": true
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "37d5cebe-cf57-5ad5-47be-910891b9aafc",
+      "position_code": "L1-2",
+      "shirt_number": 2,
+      "is_starting": true
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "90991413-e531-49ef-86e0-db48a2f89456",
+      "position_code": "L2-3",
+      "shirt_number": 4,
+      "is_starting": true
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "d782a448-c0ca-8dc2-731a-97c5bf3e3804",
+      "position_code": null,
+      "shirt_number": 25,
+      "is_starting": false
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "b19369d2-2371-0fad-49e1-d2047da0fe03",
+      "position_code": null,
+      "shirt_number": 19,
+      "is_starting": false
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "7356cac8-e52a-e786-b91e-fe95379a6ca8",
+      "position_code": null,
+      "shirt_number": 26,
+      "is_starting": false
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "80f49acd-eb3e-dd66-b855-a2c0dcba8f4d",
+      "position_code": null,
+      "shirt_number": 17,
+      "is_starting": false
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "91dbef6d-09c7-d6e2-879b-176e5f77568d",
+      "position_code": null,
+      "shirt_number": 15,
+      "is_starting": false
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "38b71474-5622-17f2-1ddb-3ccc964a8c08",
+      "position_code": null,
+      "shirt_number": 24,
+      "is_starting": false
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "8536faf6-a400-bf00-30dd-15a260768a85",
+      "position_code": null,
+      "shirt_number": 14,
+      "is_starting": false
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "9625b7ab-a67c-b9dc-4dc7-c733fae1d7f2",
+      "position_code": null,
+      "shirt_number": 21,
+      "is_starting": false
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "bec3e1dc-722e-151b-6b1a-73089a61aa60",
+      "position_code": null,
+      "shirt_number": 18,
+      "is_starting": false
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "006327e1-8b07-0de5-8aa2-5ae9382ad810",
+      "position_code": null,
+      "shirt_number": 9,
+      "is_starting": false
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "b8647091-1209-d821-6b6a-5cbdc5fcd56f",
+      "position_code": "L1-1",
+      "shirt_number": 16,
+      "is_starting": true
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "9f2ddd84-767b-d68c-c696-64a588a00d26",
+      "position_code": "L1-2",
+      "shirt_number": 5,
+      "is_starting": true
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "e80e3383-4538-4a4a-9ab5-af5cfce5dc10",
+      "position_code": "L1-3",
+      "shirt_number": 3,
+      "is_starting": true
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "b19557dd-e68e-43d9-c959-92b3718cda0b",
+      "position_code": "L1-4",
+      "shirt_number": 2,
+      "is_starting": true
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "c7636c43-bbdd-5d08-b376-ff220272f67d",
+      "position_code": "L2-1",
+      "shirt_number": 24,
+      "is_starting": true
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "f94201ad-711e-d249-68bb-4ed17b7b95aa",
+      "position_code": "L2-2",
+      "shirt_number": 21,
+      "is_starting": true
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "cf8b7752-5b45-1dc3-bd8c-a8ee79066376",
+      "position_code": "L3-1",
+      "shirt_number": 15,
+      "is_starting": true
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "dde6f35f-91b1-fed8-4542-9bbf7ada3283",
+      "position_code": "L3-2",
+      "shirt_number": 8,
+      "is_starting": true
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "434a4481-59f8-e493-adba-6013d8259a90",
+      "position_code": "L3-3",
+      "shirt_number": 6,
+      "is_starting": true
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "7eb9bf90-5072-1e12-48a0-3f095929a58b",
+      "position_code": null,
+      "shirt_number": 11,
+      "is_starting": false
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "97114d17-5fb8-5f69-ce1c-018131207644",
+      "position_code": null,
+      "shirt_number": 7,
+      "is_starting": false
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "61489811-037e-97ab-3191-24d7e7f42161",
+      "position_code": null,
+      "shirt_number": 20,
+      "is_starting": false
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "4d3f87ca-1989-ef44-183a-87fc90d9b8ac",
+      "position_code": null,
+      "shirt_number": 18,
+      "is_starting": false
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "a8f8c6ce-ec51-51ea-8734-a91aed4a6c7e",
+      "position_code": null,
+      "shirt_number": 22,
+      "is_starting": false
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "b1c21206-aa6b-1f3f-1b90-acd824371a6f",
+      "position_code": null,
+      "shirt_number": 1,
+      "is_starting": false
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "9359e56b-f4e4-7e7b-a157-82effe97e607",
+      "position_code": null,
+      "shirt_number": 19,
+      "is_starting": false
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "ba2d4bbb-3dba-ba75-7042-c7e945975237",
+      "position_code": null,
+      "shirt_number": 4,
+      "is_starting": false
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "c1ac9a05-cdfb-b1b4-784f-00c65b1e0369",
+      "position_code": null,
+      "shirt_number": 9,
+      "is_starting": false
+    },
+    {
+      "match_id": "05799955-8ef5-4cde-b282-7d11eacf1ec9",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "bdb22f76-9083-40e9-b4b0-9589e8cfff47",
+      "position_code": null,
+      "shirt_number": 14,
+      "is_starting": false
+    },
+    {
+      "match_id": "543396ab-aeda-4c4a-a4a8-84104e77d38d",
+      "team_id": "c924f997-11c5-48d7-a905-bd1a45b269a2",
+      "player_id": "37df724b-2d78-1514-9792-7790e63ce549",
+      "position_code": "L2-1",
+      "shirt_number": 10,
+      "is_starting": true
+    },
+    {
+      "match_id": "543396ab-aeda-4c4a-a4a8-84104e77d38d",
+      "team_id": "c924f997-11c5-48d7-a905-bd1a45b269a2",
+      "player_id": "b10ffda3-c958-95cd-d412-e46a0bff00be",
+      "position_code": null,
+      "shirt_number": 22,
+      "is_starting": false
+    },
+    {
+      "match_id": "543396ab-aeda-4c4a-a4a8-84104e77d38d",
+      "team_id": "44887540-58a4-40e1-b34d-48460b3aa821",
+      "player_id": "837e0eda-cf13-c371-231d-481dedeae3a6",
+      "position_code": null,
+      "shirt_number": 11,
+      "is_starting": false
+    },
+    {
+      "match_id": "543396ab-aeda-4c4a-a4a8-84104e77d38d",
+      "team_id": "44887540-58a4-40e1-b34d-48460b3aa821",
+      "player_id": "dfcccba1-fe64-4a81-5d36-dce294f5838b",
+      "position_code": null,
+      "shirt_number": 20,
+      "is_starting": false
+    },
+    {
+      "match_id": "ff26743c-152f-4996-b4c6-04ffae7b7e06",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "b8647091-1209-d821-6b6a-5cbdc5fcd56f",
+      "position_code": "L1-1",
+      "shirt_number": 16,
+      "is_starting": true
+    },
+    {
+      "match_id": "ff26743c-152f-4996-b4c6-04ffae7b7e06",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "9f2ddd84-767b-d68c-c696-64a588a00d26",
+      "position_code": "L1-2",
+      "shirt_number": 5,
+      "is_starting": true
+    },
+    {
+      "match_id": "ff26743c-152f-4996-b4c6-04ffae7b7e06",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "e80e3383-4538-4a4a-9ab5-af5cfce5dc10",
+      "position_code": "L1-3",
+      "shirt_number": 3,
+      "is_starting": true
+    },
+    {
+      "match_id": "ff26743c-152f-4996-b4c6-04ffae7b7e06",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "b19557dd-e68e-43d9-c959-92b3718cda0b",
+      "position_code": "L1-4",
+      "shirt_number": 2,
+      "is_starting": true
+    },
+    {
+      "match_id": "ff26743c-152f-4996-b4c6-04ffae7b7e06",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "c7636c43-bbdd-5d08-b376-ff220272f67d",
+      "position_code": "L2-1",
+      "shirt_number": 24,
+      "is_starting": true
+    },
+    {
+      "match_id": "ff26743c-152f-4996-b4c6-04ffae7b7e06",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "f94201ad-711e-d249-68bb-4ed17b7b95aa",
+      "position_code": "L2-2",
+      "shirt_number": 21,
+      "is_starting": true
+    },
+    {
+      "match_id": "ff26743c-152f-4996-b4c6-04ffae7b7e06",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "4d3f87ca-1989-ef44-183a-87fc90d9b8ac",
+      "position_code": "L3-1",
+      "shirt_number": 18,
+      "is_starting": true
+    },
+    {
+      "match_id": "ff26743c-152f-4996-b4c6-04ffae7b7e06",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "dde6f35f-91b1-fed8-4542-9bbf7ada3283",
+      "position_code": "L3-2",
+      "shirt_number": 8,
+      "is_starting": true
+    },
+    {
+      "match_id": "ff26743c-152f-4996-b4c6-04ffae7b7e06",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "61489811-037e-97ab-3191-24d7e7f42161",
+      "position_code": "L3-3",
+      "shirt_number": 20,
+      "is_starting": true
+    },
+    {
+      "match_id": "ff26743c-152f-4996-b4c6-04ffae7b7e06",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "7eb9bf90-5072-1e12-48a0-3f095929a58b",
+      "position_code": null,
+      "shirt_number": 11,
+      "is_starting": false
+    },
+    {
+      "match_id": "ff26743c-152f-4996-b4c6-04ffae7b7e06",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "434a4481-59f8-e493-adba-6013d8259a90",
+      "position_code": null,
+      "shirt_number": 6,
+      "is_starting": false
+    },
+    {
+      "match_id": "ff26743c-152f-4996-b4c6-04ffae7b7e06",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "97114d17-5fb8-5f69-ce1c-018131207644",
+      "position_code": null,
+      "shirt_number": 7,
+      "is_starting": false
+    },
+    {
+      "match_id": "ff26743c-152f-4996-b4c6-04ffae7b7e06",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "4cc22676-b140-642c-99fb-617b8beb0edf",
+      "position_code": null,
+      "shirt_number": 23,
+      "is_starting": false
+    },
+    {
+      "match_id": "ff26743c-152f-4996-b4c6-04ffae7b7e06",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "a8f8c6ce-ec51-51ea-8734-a91aed4a6c7e",
+      "position_code": null,
+      "shirt_number": 22,
+      "is_starting": false
+    },
+    {
+      "match_id": "ff26743c-152f-4996-b4c6-04ffae7b7e06",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "b1c21206-aa6b-1f3f-1b90-acd824371a6f",
+      "position_code": null,
+      "shirt_number": 1,
+      "is_starting": false
+    },
+    {
+      "match_id": "ff26743c-152f-4996-b4c6-04ffae7b7e06",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "c9f47fad-c63f-3a84-e036-880fa7f73270",
+      "position_code": null,
+      "shirt_number": 13,
+      "is_starting": false
+    },
+    {
+      "match_id": "ff26743c-152f-4996-b4c6-04ffae7b7e06",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "ba2d4bbb-3dba-ba75-7042-c7e945975237",
+      "position_code": null,
+      "shirt_number": 4,
+      "is_starting": false
+    },
+    {
+      "match_id": "ff26743c-152f-4996-b4c6-04ffae7b7e06",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "9359e56b-f4e4-7e7b-a157-82effe97e607",
+      "position_code": null,
+      "shirt_number": 19,
+      "is_starting": false
+    },
+    {
+      "match_id": "ff26743c-152f-4996-b4c6-04ffae7b7e06",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "bdb22f76-9083-40e9-b4b0-9589e8cfff47",
+      "position_code": null,
+      "shirt_number": 14,
+      "is_starting": false
+    },
+    {
+      "match_id": "ff26743c-152f-4996-b4c6-04ffae7b7e06",
+      "team_id": "44887540-58a4-40e1-b34d-48460b3aa821",
+      "player_id": "e3819082-d9ad-1167-c6bd-19705411ae0b",
+      "position_code": "L3-2",
+      "shirt_number": 11,
+      "is_starting": true
+    },
+    {
+      "match_id": "ff26743c-152f-4996-b4c6-04ffae7b7e06",
+      "team_id": "44887540-58a4-40e1-b34d-48460b3aa821",
+      "player_id": "8d151107-71e5-fbd8-4d11-fe16dd7d911f",
+      "position_code": null,
+      "shirt_number": 19,
+      "is_starting": false
+    },
+    {
+      "match_id": "db7d7f9f-e0f5-40c5-8755-1a395d27ee9a",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "b1c21206-aa6b-1f3f-1b90-acd824371a6f",
+      "position_code": "GK",
+      "shirt_number": 1,
+      "is_starting": true
+    },
+    {
+      "match_id": "db7d7f9f-e0f5-40c5-8755-1a395d27ee9a",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "9359e56b-f4e4-7e7b-a157-82effe97e607",
+      "position_code": "L1-1",
+      "shirt_number": 19,
+      "is_starting": true
+    },
+    {
+      "match_id": "db7d7f9f-e0f5-40c5-8755-1a395d27ee9a",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "ba2d4bbb-3dba-ba75-7042-c7e945975237",
+      "position_code": "L1-3",
+      "shirt_number": 4,
+      "is_starting": true
+    },
+    {
+      "match_id": "db7d7f9f-e0f5-40c5-8755-1a395d27ee9a",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "434a4481-59f8-e493-adba-6013d8259a90",
+      "position_code": "L1-4",
+      "shirt_number": 6,
+      "is_starting": true
+    },
+    {
+      "match_id": "db7d7f9f-e0f5-40c5-8755-1a395d27ee9a",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "bdb22f76-9083-40e9-b4b0-9589e8cfff47",
+      "position_code": "L2-1",
+      "shirt_number": 14,
+      "is_starting": true
+    },
+    {
+      "match_id": "db7d7f9f-e0f5-40c5-8755-1a395d27ee9a",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "4d3f87ca-1989-ef44-183a-87fc90d9b8ac",
+      "position_code": "L2-2",
+      "shirt_number": 18,
+      "is_starting": true
+    },
+    {
+      "match_id": "db7d7f9f-e0f5-40c5-8755-1a395d27ee9a",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "c1ac9a05-cdfb-b1b4-784f-00c65b1e0369",
+      "position_code": "L3-1",
+      "shirt_number": 9,
+      "is_starting": true
+    },
+    {
+      "match_id": "db7d7f9f-e0f5-40c5-8755-1a395d27ee9a",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "97114d17-5fb8-5f69-ce1c-018131207644",
+      "position_code": "L3-3",
+      "shirt_number": 7,
+      "is_starting": true
+    },
+    {
+      "match_id": "db7d7f9f-e0f5-40c5-8755-1a395d27ee9a",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "4cc22676-b140-642c-99fb-617b8beb0edf",
+      "position_code": "L4-1",
+      "shirt_number": 23,
+      "is_starting": true
+    },
+    {
+      "match_id": "db7d7f9f-e0f5-40c5-8755-1a395d27ee9a",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "61489811-037e-97ab-3191-24d7e7f42161",
+      "position_code": null,
+      "shirt_number": 20,
+      "is_starting": false
+    },
+    {
+      "match_id": "db7d7f9f-e0f5-40c5-8755-1a395d27ee9a",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "7eb9bf90-5072-1e12-48a0-3f095929a58b",
+      "position_code": null,
+      "shirt_number": 11,
+      "is_starting": false
+    },
+    {
+      "match_id": "db7d7f9f-e0f5-40c5-8755-1a395d27ee9a",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "c9f47fad-c63f-3a84-e036-880fa7f73270",
+      "position_code": null,
+      "shirt_number": 13,
+      "is_starting": false
+    },
+    {
+      "match_id": "db7d7f9f-e0f5-40c5-8755-1a395d27ee9a",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "a8f8c6ce-ec51-51ea-8734-a91aed4a6c7e",
+      "position_code": null,
+      "shirt_number": 22,
+      "is_starting": false
+    },
+    {
+      "match_id": "db7d7f9f-e0f5-40c5-8755-1a395d27ee9a",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "b8647091-1209-d821-6b6a-5cbdc5fcd56f",
+      "position_code": null,
+      "shirt_number": 16,
+      "is_starting": false
+    },
+    {
+      "match_id": "db7d7f9f-e0f5-40c5-8755-1a395d27ee9a",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "9f2ddd84-767b-d68c-c696-64a588a00d26",
+      "position_code": null,
+      "shirt_number": 5,
+      "is_starting": false
+    },
+    {
+      "match_id": "db7d7f9f-e0f5-40c5-8755-1a395d27ee9a",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "e80e3383-4538-4a4a-9ab5-af5cfce5dc10",
+      "position_code": null,
+      "shirt_number": 3,
+      "is_starting": false
+    },
+    {
+      "match_id": "db7d7f9f-e0f5-40c5-8755-1a395d27ee9a",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "c7636c43-bbdd-5d08-b376-ff220272f67d",
+      "position_code": null,
+      "shirt_number": 24,
+      "is_starting": false
+    },
+    {
+      "match_id": "db7d7f9f-e0f5-40c5-8755-1a395d27ee9a",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "f94201ad-711e-d249-68bb-4ed17b7b95aa",
+      "position_code": null,
+      "shirt_number": 21,
+      "is_starting": false
+    },
+    {
+      "match_id": "db7d7f9f-e0f5-40c5-8755-1a395d27ee9a",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "dde6f35f-91b1-fed8-4542-9bbf7ada3283",
+      "position_code": null,
+      "shirt_number": 8,
+      "is_starting": false
+    },
+    {
+      "match_id": "db7d7f9f-e0f5-40c5-8755-1a395d27ee9a",
+      "team_id": "c6c817b2-8f2c-499c-b02a-34f7736579df",
+      "player_id": "4f2b693c-7ab2-4bf7-b827-029fb4be56e9",
+      "position_code": "L1-1",
+      "shirt_number": 13,
+      "is_starting": true
+    },
+    {
+      "match_id": "db7d7f9f-e0f5-40c5-8755-1a395d27ee9a",
+      "team_id": "c6c817b2-8f2c-499c-b02a-34f7736579df",
+      "player_id": "feb12651-4787-4d88-9627-5b53b25c681f",
+      "position_code": "L3-1",
+      "shirt_number": 17,
+      "is_starting": true
+    },
+    {
+      "match_id": "db7d7f9f-e0f5-40c5-8755-1a395d27ee9a",
+      "team_id": "c6c817b2-8f2c-499c-b02a-34f7736579df",
+      "player_id": "713115fd-e291-4f52-a7ae-5a6cfc461041",
+      "position_code": null,
+      "shirt_number": 12,
+      "is_starting": false
+    },
+    {
+      "match_id": "db7d7f9f-e0f5-40c5-8755-1a395d27ee9a",
+      "team_id": "c6c817b2-8f2c-499c-b02a-34f7736579df",
+      "player_id": "f27d5348-8718-dd32-2b84-769b2b50f484",
+      "position_code": null,
+      "shirt_number": 22,
+      "is_starting": false
+    },
+    {
+      "match_id": "b2a37090-12c6-4156-a99f-d1990a05139e",
+      "team_id": "18da094d-7bfa-4077-932c-28123cfd0912",
+      "player_id": "c304d3ad-abfd-4348-80f7-ea0be7f58f49",
+      "position_code": null,
+      "shirt_number": 27,
+      "is_starting": false
+    },
+    {
+      "match_id": "b2a37090-12c6-4156-a99f-d1990a05139e",
+      "team_id": "18da094d-7bfa-4077-932c-28123cfd0912",
+      "player_id": "71ef7d85-1797-1662-1b90-08f15c315f8e",
+      "position_code": null,
+      "shirt_number": 22,
+      "is_starting": false
+    },
+    {
+      "match_id": "b2a37090-12c6-4156-a99f-d1990a05139e",
+      "team_id": "18da094d-7bfa-4077-932c-28123cfd0912",
+      "player_id": "dc931c87-6c91-bcb4-a7f7-1b8bf9a4458a",
+      "position_code": null,
+      "shirt_number": 10,
+      "is_starting": false
+    },
+    {
+      "match_id": "b2a37090-12c6-4156-a99f-d1990a05139e",
+      "team_id": "c924f997-11c5-48d7-a905-bd1a45b269a2",
+      "player_id": "37df724b-2d78-1514-9792-7790e63ce549",
+      "position_code": "L2-1",
+      "shirt_number": 10,
+      "is_starting": true
+    },
+    {
+      "match_id": "b2a37090-12c6-4156-a99f-d1990a05139e",
+      "team_id": "c924f997-11c5-48d7-a905-bd1a45b269a2",
+      "player_id": "1e539221-b52f-7180-f302-c87e3ce0962a",
+      "position_code": null,
+      "shirt_number": 9,
+      "is_starting": false
+    },
+    {
+      "match_id": "9fb42466-d64b-4939-bdca-14498729c270",
+      "team_id": "18da094d-7bfa-4077-932c-28123cfd0912",
+      "player_id": "dc931c87-6c91-bcb4-a7f7-1b8bf9a4458a",
+      "position_code": null,
+      "shirt_number": 10,
+      "is_starting": false
+    },
+    {
+      "match_id": "9fb42466-d64b-4939-bdca-14498729c270",
+      "team_id": "18da094d-7bfa-4077-932c-28123cfd0912",
+      "player_id": "c304d3ad-abfd-4348-80f7-ea0be7f58f49",
+      "position_code": null,
+      "shirt_number": 27,
+      "is_starting": false
+    },
+    {
+      "match_id": "9fb42466-d64b-4939-bdca-14498729c270",
+      "team_id": "18da094d-7bfa-4077-932c-28123cfd0912",
+      "player_id": "71ef7d85-1797-1662-1b90-08f15c315f8e",
+      "position_code": null,
+      "shirt_number": 22,
+      "is_starting": false
+    },
+    {
+      "match_id": "9fb42466-d64b-4939-bdca-14498729c270",
+      "team_id": "c6c817b2-8f2c-499c-b02a-34f7736579df",
+      "player_id": "4f2b693c-7ab2-4bf7-b827-029fb4be56e9",
+      "position_code": "L1-1",
+      "shirt_number": 13,
+      "is_starting": true
+    },
+    {
+      "match_id": "9fb42466-d64b-4939-bdca-14498729c270",
+      "team_id": "c6c817b2-8f2c-499c-b02a-34f7736579df",
+      "player_id": "713115fd-e291-4f52-a7ae-5a6cfc461041",
+      "position_code": "L2-1",
+      "shirt_number": 12,
+      "is_starting": true
+    },
+    {
+      "match_id": "9fb42466-d64b-4939-bdca-14498729c270",
+      "team_id": "c6c817b2-8f2c-499c-b02a-34f7736579df",
+      "player_id": "feb12651-4787-4d88-9627-5b53b25c681f",
+      "position_code": null,
+      "shirt_number": 17,
+      "is_starting": false
+    },
+    {
+      "match_id": "9fb42466-d64b-4939-bdca-14498729c270",
+      "team_id": "c6c817b2-8f2c-499c-b02a-34f7736579df",
+      "player_id": "f27d5348-8718-dd32-2b84-769b2b50f484",
+      "position_code": null,
+      "shirt_number": 22,
+      "is_starting": false
+    },
+    {
+      "match_id": "48024d50-be6c-4171-9611-6274d258ac10",
+      "team_id": "44887540-58a4-40e1-b34d-48460b3aa821",
+      "player_id": "8d151107-71e5-fbd8-4d11-fe16dd7d911f",
+      "position_code": null,
+      "shirt_number": 19,
+      "is_starting": false
+    },
+    {
+      "match_id": "48024d50-be6c-4171-9611-6274d258ac10",
+      "team_id": "44887540-58a4-40e1-b34d-48460b3aa821",
+      "player_id": "0e359e6c-ed1a-9309-3e82-59b781066741",
+      "position_code": null,
+      "shirt_number": 4,
+      "is_starting": false
+    },
+    {
+      "match_id": "48024d50-be6c-4171-9611-6274d258ac10",
+      "team_id": "44887540-58a4-40e1-b34d-48460b3aa821",
+      "player_id": "e3819082-d9ad-1167-c6bd-19705411ae0b",
+      "position_code": null,
+      "shirt_number": 11,
+      "is_starting": false
+    },
+    {
+      "match_id": "48024d50-be6c-4171-9611-6274d258ac10",
+      "team_id": "18da094d-7bfa-4077-932c-28123cfd0912",
+      "player_id": "71ef7d85-1797-1662-1b90-08f15c315f8e",
+      "position_code": null,
+      "shirt_number": 22,
+      "is_starting": false
+    },
+    {
+      "match_id": "8cbb8d7b-ecdf-4625-8066-2cb072edacc7",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "b8647091-1209-d821-6b6a-5cbdc5fcd56f",
+      "position_code": "L1-1",
+      "shirt_number": 16,
+      "is_starting": true
+    },
+    {
+      "match_id": "8cbb8d7b-ecdf-4625-8066-2cb072edacc7",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "9f2ddd84-767b-d68c-c696-64a588a00d26",
+      "position_code": "L1-2",
+      "shirt_number": 5,
+      "is_starting": true
+    },
+    {
+      "match_id": "8cbb8d7b-ecdf-4625-8066-2cb072edacc7",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "e80e3383-4538-4a4a-9ab5-af5cfce5dc10",
+      "position_code": "L1-3",
+      "shirt_number": 3,
+      "is_starting": true
+    },
+    {
+      "match_id": "8cbb8d7b-ecdf-4625-8066-2cb072edacc7",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "b19557dd-e68e-43d9-c959-92b3718cda0b",
+      "position_code": "L1-4",
+      "shirt_number": 2,
+      "is_starting": true
+    },
+    {
+      "match_id": "8cbb8d7b-ecdf-4625-8066-2cb072edacc7",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "c7636c43-bbdd-5d08-b376-ff220272f67d",
+      "position_code": "L2-1",
+      "shirt_number": 24,
+      "is_starting": true
+    },
+    {
+      "match_id": "8cbb8d7b-ecdf-4625-8066-2cb072edacc7",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "f94201ad-711e-d249-68bb-4ed17b7b95aa",
+      "position_code": "L2-2",
+      "shirt_number": 21,
+      "is_starting": true
+    },
+    {
+      "match_id": "8cbb8d7b-ecdf-4625-8066-2cb072edacc7",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "cf8b7752-5b45-1dc3-bd8c-a8ee79066376",
+      "position_code": "L3-1",
+      "shirt_number": 15,
+      "is_starting": true
+    },
+    {
+      "match_id": "8cbb8d7b-ecdf-4625-8066-2cb072edacc7",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "dde6f35f-91b1-fed8-4542-9bbf7ada3283",
+      "position_code": "L3-2",
+      "shirt_number": 8,
+      "is_starting": true
+    },
+    {
+      "match_id": "8cbb8d7b-ecdf-4625-8066-2cb072edacc7",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "4d3f87ca-1989-ef44-183a-87fc90d9b8ac",
+      "position_code": "L3-3",
+      "shirt_number": 18,
+      "is_starting": true
+    },
+    {
+      "match_id": "8cbb8d7b-ecdf-4625-8066-2cb072edacc7",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "7eb9bf90-5072-1e12-48a0-3f095929a58b",
+      "position_code": "L4-1",
+      "shirt_number": 11,
+      "is_starting": true
+    },
+    {
+      "match_id": "8cbb8d7b-ecdf-4625-8066-2cb072edacc7",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "97114d17-5fb8-5f69-ce1c-018131207644",
+      "position_code": null,
+      "shirt_number": 7,
+      "is_starting": false
+    },
+    {
+      "match_id": "8cbb8d7b-ecdf-4625-8066-2cb072edacc7",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "434a4481-59f8-e493-adba-6013d8259a90",
+      "position_code": null,
+      "shirt_number": 6,
+      "is_starting": false
+    },
+    {
+      "match_id": "8cbb8d7b-ecdf-4625-8066-2cb072edacc7",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "c1ac9a05-cdfb-b1b4-784f-00c65b1e0369",
+      "position_code": null,
+      "shirt_number": 9,
+      "is_starting": false
+    },
+    {
+      "match_id": "8cbb8d7b-ecdf-4625-8066-2cb072edacc7",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "a8f8c6ce-ec51-51ea-8734-a91aed4a6c7e",
+      "position_code": null,
+      "shirt_number": 22,
+      "is_starting": false
+    },
+    {
+      "match_id": "8cbb8d7b-ecdf-4625-8066-2cb072edacc7",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "b1c21206-aa6b-1f3f-1b90-acd824371a6f",
+      "position_code": null,
+      "shirt_number": 1,
+      "is_starting": false
+    },
+    {
+      "match_id": "8cbb8d7b-ecdf-4625-8066-2cb072edacc7",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "9359e56b-f4e4-7e7b-a157-82effe97e607",
+      "position_code": null,
+      "shirt_number": 19,
+      "is_starting": false
+    },
+    {
+      "match_id": "8cbb8d7b-ecdf-4625-8066-2cb072edacc7",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "ba2d4bbb-3dba-ba75-7042-c7e945975237",
+      "position_code": null,
+      "shirt_number": 4,
+      "is_starting": false
+    },
+    {
+      "match_id": "8cbb8d7b-ecdf-4625-8066-2cb072edacc7",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "bdb22f76-9083-40e9-b4b0-9589e8cfff47",
+      "position_code": null,
+      "shirt_number": 14,
+      "is_starting": false
+    },
+    {
+      "match_id": "8cbb8d7b-ecdf-4625-8066-2cb072edacc7",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "4cc22676-b140-642c-99fb-617b8beb0edf",
+      "position_code": null,
+      "shirt_number": 23,
+      "is_starting": false
+    },
+    {
+      "match_id": "8cbb8d7b-ecdf-4625-8066-2cb072edacc7",
+      "team_id": "30d428e9-3d5a-4ce6-8908-b227f9cf119c",
+      "player_id": "0fd8f32d-3811-4d1a-bdb0-187cceed5b63",
+      "position_code": "L2-1",
+      "shirt_number": 16,
+      "is_starting": true
+    },
+    {
+      "match_id": "8cbb8d7b-ecdf-4625-8066-2cb072edacc7",
+      "team_id": "30d428e9-3d5a-4ce6-8908-b227f9cf119c",
+      "player_id": "9cf43046-d51b-02ee-8ccc-550dcafdf65f",
+      "position_code": null,
+      "shirt_number": 10,
+      "is_starting": false
+    },
+    {
+      "match_id": "7dfc4e5f-edaf-5e0b-adf9-aa037ab541d8",
+      "team_id": "18da094d-7bfa-4077-932c-28123cfd0912",
+      "player_id": "c304d3ad-abfd-4348-80f7-ea0be7f58f49",
+      "position_code": null,
+      "shirt_number": 27,
+      "is_starting": false
+    },
+    {
+      "match_id": "7dfc4e5f-edaf-5e0b-adf9-aa037ab541d8",
+      "team_id": "18da094d-7bfa-4077-932c-28123cfd0912",
+      "player_id": "71ef7d85-1797-1662-1b90-08f15c315f8e",
+      "position_code": null,
+      "shirt_number": 22,
+      "is_starting": false
+    },
+    {
+      "match_id": "7dfc4e5f-edaf-5e0b-adf9-aa037ab541d8",
+      "team_id": "18da094d-7bfa-4077-932c-28123cfd0912",
+      "player_id": "dc931c87-6c91-bcb4-a7f7-1b8bf9a4458a",
+      "position_code": null,
+      "shirt_number": 10,
+      "is_starting": false
+    },
+    {
+      "match_id": "7dfc4e5f-edaf-5e0b-adf9-aa037ab541d8",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "b8647091-1209-d821-6b6a-5cbdc5fcd56f",
+      "position_code": "L1-1",
+      "shirt_number": 16,
+      "is_starting": true
+    },
+    {
+      "match_id": "7dfc4e5f-edaf-5e0b-adf9-aa037ab541d8",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "9f2ddd84-767b-d68c-c696-64a588a00d26",
+      "position_code": "L1-2",
+      "shirt_number": 5,
+      "is_starting": true
+    },
+    {
+      "match_id": "7dfc4e5f-edaf-5e0b-adf9-aa037ab541d8",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "e80e3383-4538-4a4a-9ab5-af5cfce5dc10",
+      "position_code": "L1-3",
+      "shirt_number": 3,
+      "is_starting": true
+    },
+    {
+      "match_id": "7dfc4e5f-edaf-5e0b-adf9-aa037ab541d8",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "b19557dd-e68e-43d9-c959-92b3718cda0b",
+      "position_code": "L1-4",
+      "shirt_number": 2,
+      "is_starting": true
+    },
+    {
+      "match_id": "7dfc4e5f-edaf-5e0b-adf9-aa037ab541d8",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "c7636c43-bbdd-5d08-b376-ff220272f67d",
+      "position_code": "L2-1",
+      "shirt_number": 24,
+      "is_starting": true
+    },
+    {
+      "match_id": "7dfc4e5f-edaf-5e0b-adf9-aa037ab541d8",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "f94201ad-711e-d249-68bb-4ed17b7b95aa",
+      "position_code": "L2-2",
+      "shirt_number": 21,
+      "is_starting": true
+    },
+    {
+      "match_id": "7dfc4e5f-edaf-5e0b-adf9-aa037ab541d8",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "7eb9bf90-5072-1e12-48a0-3f095929a58b",
+      "position_code": "L3-1",
+      "shirt_number": 11,
+      "is_starting": true
+    },
+    {
+      "match_id": "7dfc4e5f-edaf-5e0b-adf9-aa037ab541d8",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "dde6f35f-91b1-fed8-4542-9bbf7ada3283",
+      "position_code": "L3-2",
+      "shirt_number": 8,
+      "is_starting": true
+    },
+    {
+      "match_id": "7dfc4e5f-edaf-5e0b-adf9-aa037ab541d8",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "61489811-037e-97ab-3191-24d7e7f42161",
+      "position_code": "L3-3",
+      "shirt_number": 20,
+      "is_starting": true
+    },
+    {
+      "match_id": "7dfc4e5f-edaf-5e0b-adf9-aa037ab541d8",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "434a4481-59f8-e493-adba-6013d8259a90",
+      "position_code": null,
+      "shirt_number": 6,
+      "is_starting": false
+    },
+    {
+      "match_id": "7dfc4e5f-edaf-5e0b-adf9-aa037ab541d8",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "97114d17-5fb8-5f69-ce1c-018131207644",
+      "position_code": null,
+      "shirt_number": 7,
+      "is_starting": false
+    },
+    {
+      "match_id": "7dfc4e5f-edaf-5e0b-adf9-aa037ab541d8",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "4cc22676-b140-642c-99fb-617b8beb0edf",
+      "position_code": null,
+      "shirt_number": 23,
+      "is_starting": false
+    },
+    {
+      "match_id": "7dfc4e5f-edaf-5e0b-adf9-aa037ab541d8",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "4d3f87ca-1989-ef44-183a-87fc90d9b8ac",
+      "position_code": null,
+      "shirt_number": 18,
+      "is_starting": false
+    },
+    {
+      "match_id": "7dfc4e5f-edaf-5e0b-adf9-aa037ab541d8",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "b1c21206-aa6b-1f3f-1b90-acd824371a6f",
+      "position_code": null,
+      "shirt_number": 1,
+      "is_starting": false
+    },
+    {
+      "match_id": "7dfc4e5f-edaf-5e0b-adf9-aa037ab541d8",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "a8f8c6ce-ec51-51ea-8734-a91aed4a6c7e",
+      "position_code": null,
+      "shirt_number": 22,
+      "is_starting": false
+    },
+    {
+      "match_id": "7dfc4e5f-edaf-5e0b-adf9-aa037ab541d8",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "ba2d4bbb-3dba-ba75-7042-c7e945975237",
+      "position_code": null,
+      "shirt_number": 4,
+      "is_starting": false
+    },
+    {
+      "match_id": "7dfc4e5f-edaf-5e0b-adf9-aa037ab541d8",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "9359e56b-f4e4-7e7b-a157-82effe97e607",
+      "position_code": null,
+      "shirt_number": 19,
+      "is_starting": false
+    },
+    {
+      "match_id": "7dfc4e5f-edaf-5e0b-adf9-aa037ab541d8",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "bdb22f76-9083-40e9-b4b0-9589e8cfff47",
+      "position_code": null,
+      "shirt_number": 14,
+      "is_starting": false
+    },
+    {
+      "match_id": "7dfc4e5f-edaf-5e0b-adf9-aa037ab541d8",
+      "team_id": "e06e9326-d05d-49f5-870e-8904723d885d",
+      "player_id": "c1ac9a05-cdfb-b1b4-784f-00c65b1e0369",
+      "position_code": null,
+      "shirt_number": 9,
+      "is_starting": false
+    },
+    {
+      "match_id": "81a9960f-6f2e-44c0-90aa-6bc25aa679a2",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "38b71474-5622-17f2-1ddb-3ccc964a8c08",
+      "position_code": "GK",
+      "shirt_number": 24,
+      "is_starting": true
+    },
+    {
+      "match_id": "81a9960f-6f2e-44c0-90aa-6bc25aa679a2",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "80f49acd-eb3e-dd66-b855-a2c0dcba8f4d",
+      "position_code": "L1-1",
+      "shirt_number": 17,
+      "is_starting": true
+    },
+    {
+      "match_id": "81a9960f-6f2e-44c0-90aa-6bc25aa679a2",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "37d5cebe-cf57-5ad5-47be-910891b9aafc",
+      "position_code": "L1-3",
+      "shirt_number": 2,
+      "is_starting": true
+    },
+    {
+      "match_id": "81a9960f-6f2e-44c0-90aa-6bc25aa679a2",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "d782a448-c0ca-8dc2-731a-97c5bf3e3804",
+      "position_code": "L1-4",
+      "shirt_number": 25,
+      "is_starting": true
+    },
+    {
+      "match_id": "81a9960f-6f2e-44c0-90aa-6bc25aa679a2",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "af7a703e-3144-e5a9-1b72-250470aa322e",
+      "position_code": "L2-1",
+      "shirt_number": 6,
+      "is_starting": true
+    },
+    {
+      "match_id": "81a9960f-6f2e-44c0-90aa-6bc25aa679a2",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "7356cac8-e52a-e786-b91e-fe95379a6ca8",
+      "position_code": "L3-1",
+      "shirt_number": 26,
+      "is_starting": true
+    },
+    {
+      "match_id": "81a9960f-6f2e-44c0-90aa-6bc25aa679a2",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "91dbef6d-09c7-d6e2-879b-176e5f77568d",
+      "position_code": "L3-2",
+      "shirt_number": 15,
+      "is_starting": true
+    },
+    {
+      "match_id": "81a9960f-6f2e-44c0-90aa-6bc25aa679a2",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "b19369d2-2371-0fad-49e1-d2047da0fe03",
+      "position_code": "L3-3",
+      "shirt_number": 19,
+      "is_starting": true
+    },
+    {
+      "match_id": "81a9960f-6f2e-44c0-90aa-6bc25aa679a2",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "006327e1-8b07-0de5-8aa2-5ae9382ad810",
+      "position_code": "L3-4",
+      "shirt_number": 9,
+      "is_starting": true
+    },
+    {
+      "match_id": "81a9960f-6f2e-44c0-90aa-6bc25aa679a2",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "bec3e1dc-722e-151b-6b1a-73089a61aa60",
+      "position_code": "L4-1",
+      "shirt_number": 18,
+      "is_starting": true
+    },
+    {
+      "match_id": "81a9960f-6f2e-44c0-90aa-6bc25aa679a2",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "8536faf6-a400-bf00-30dd-15a260768a85",
+      "position_code": null,
+      "shirt_number": 14,
+      "is_starting": false
+    },
+    {
+      "match_id": "81a9960f-6f2e-44c0-90aa-6bc25aa679a2",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "4a856216-48ac-81c6-2439-b86957c2ad31",
+      "position_code": null,
+      "shirt_number": 1,
+      "is_starting": false
+    },
+    {
+      "match_id": "81a9960f-6f2e-44c0-90aa-6bc25aa679a2",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "9625b7ab-a67c-b9dc-4dc7-c733fae1d7f2",
+      "position_code": null,
+      "shirt_number": 21,
+      "is_starting": false
+    },
+    {
+      "match_id": "81a9960f-6f2e-44c0-90aa-6bc25aa679a2",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "90991413-e531-49ef-86e0-db48a2f89456",
+      "position_code": null,
+      "shirt_number": 4,
+      "is_starting": false
+    },
+    {
+      "match_id": "81a9960f-6f2e-44c0-90aa-6bc25aa679a2",
+      "team_id": "30d428e9-3d5a-4ce6-8908-b227f9cf119c",
+      "player_id": "0fd8f32d-3811-4d1a-bdb0-187cceed5b63",
+      "position_code": null,
+      "shirt_number": 16,
+      "is_starting": false
+    },
+    {
+      "match_id": "81a9960f-6f2e-44c0-90aa-6bc25aa679a2",
+      "team_id": "30d428e9-3d5a-4ce6-8908-b227f9cf119c",
+      "player_id": "9cf43046-d51b-02ee-8ccc-550dcafdf65f",
+      "position_code": null,
+      "shirt_number": 10,
+      "is_starting": false
+    },
+    {
+      "match_id": "ffb0775b-4cac-449d-9545-1033a5793f22",
+      "team_id": "30d428e9-3d5a-4ce6-8908-b227f9cf119c",
+      "player_id": "0fd8f32d-3811-4d1a-bdb0-187cceed5b63",
+      "position_code": "L2-3",
+      "shirt_number": 16,
+      "is_starting": true
+    },
+    {
+      "match_id": "ffb0775b-4cac-449d-9545-1033a5793f22",
+      "team_id": "c6c817b2-8f2c-499c-b02a-34f7736579df",
+      "player_id": "4f2b693c-7ab2-4bf7-b827-029fb4be56e9",
+      "position_code": "L1-1",
+      "shirt_number": 13,
+      "is_starting": true
+    },
+    {
+      "match_id": "ffb0775b-4cac-449d-9545-1033a5793f22",
+      "team_id": "c6c817b2-8f2c-499c-b02a-34f7736579df",
+      "player_id": "713115fd-e291-4f52-a7ae-5a6cfc461041",
+      "position_code": "L2-2",
+      "shirt_number": 12,
+      "is_starting": true
+    },
+    {
+      "match_id": "ffb0775b-4cac-449d-9545-1033a5793f22",
+      "team_id": "c6c817b2-8f2c-499c-b02a-34f7736579df",
+      "player_id": "f27d5348-8718-dd32-2b84-769b2b50f484",
+      "position_code": null,
+      "shirt_number": 22,
+      "is_starting": false
+    },
+    {
+      "match_id": "ffb0775b-4cac-449d-9545-1033a5793f22",
+      "team_id": "c6c817b2-8f2c-499c-b02a-34f7736579df",
+      "player_id": "feb12651-4787-4d88-9627-5b53b25c681f",
+      "position_code": null,
+      "shirt_number": 17,
+      "is_starting": false
+    },
+    {
+      "match_id": "11997c60-15ea-45ae-a4f9-511cf5231157",
+      "team_id": "c6c817b2-8f2c-499c-b02a-34f7736579df",
+      "player_id": "4f2b693c-7ab2-4bf7-b827-029fb4be56e9",
+      "position_code": "L1-1",
+      "shirt_number": 13,
+      "is_starting": true
+    },
+    {
+      "match_id": "11997c60-15ea-45ae-a4f9-511cf5231157",
+      "team_id": "c6c817b2-8f2c-499c-b02a-34f7736579df",
+      "player_id": "713115fd-e291-4f52-a7ae-5a6cfc461041",
+      "position_code": "L2-1",
+      "shirt_number": 12,
+      "is_starting": true
+    },
+    {
+      "match_id": "11997c60-15ea-45ae-a4f9-511cf5231157",
+      "team_id": "c6c817b2-8f2c-499c-b02a-34f7736579df",
+      "player_id": "feb12651-4787-4d88-9627-5b53b25c681f",
+      "position_code": "L3-1",
+      "shirt_number": 17,
+      "is_starting": true
+    },
+    {
+      "match_id": "11997c60-15ea-45ae-a4f9-511cf5231157",
+      "team_id": "c6c817b2-8f2c-499c-b02a-34f7736579df",
+      "player_id": "f27d5348-8718-dd32-2b84-769b2b50f484",
+      "position_code": null,
+      "shirt_number": 22,
+      "is_starting": false
+    },
+    {
+      "match_id": "11997c60-15ea-45ae-a4f9-511cf5231157",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "f3173f35-4189-99db-672d-841fdeb81c71",
+      "position_code": "L1-1",
+      "shirt_number": 5,
+      "is_starting": true
+    },
+    {
+      "match_id": "11997c60-15ea-45ae-a4f9-511cf5231157",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "37d5cebe-cf57-5ad5-47be-910891b9aafc",
+      "position_code": "L1-2",
+      "shirt_number": 2,
+      "is_starting": true
+    },
+    {
+      "match_id": "11997c60-15ea-45ae-a4f9-511cf5231157",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "90991413-e531-49ef-86e0-db48a2f89456",
+      "position_code": "L2-1",
+      "shirt_number": 4,
+      "is_starting": true
+    },
+    {
+      "match_id": "11997c60-15ea-45ae-a4f9-511cf5231157",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "8536faf6-a400-bf00-30dd-15a260768a85",
+      "position_code": null,
+      "shirt_number": 14,
+      "is_starting": false
+    },
+    {
+      "match_id": "11997c60-15ea-45ae-a4f9-511cf5231157",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "af7a703e-3144-e5a9-1b72-250470aa322e",
+      "position_code": null,
+      "shirt_number": 6,
+      "is_starting": false
+    },
+    {
+      "match_id": "11997c60-15ea-45ae-a4f9-511cf5231157",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "9bb356e3-626c-386a-b57d-f64607507ca3",
+      "position_code": null,
+      "shirt_number": 11,
+      "is_starting": false
+    },
+    {
+      "match_id": "11997c60-15ea-45ae-a4f9-511cf5231157",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "006327e1-8b07-0de5-8aa2-5ae9382ad810",
+      "position_code": null,
+      "shirt_number": 9,
+      "is_starting": false
+    },
+    {
+      "match_id": "11997c60-15ea-45ae-a4f9-511cf5231157",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "38b71474-5622-17f2-1ddb-3ccc964a8c08",
+      "position_code": null,
+      "shirt_number": 24,
+      "is_starting": false
+    },
+    {
+      "match_id": "11997c60-15ea-45ae-a4f9-511cf5231157",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "4a856216-48ac-81c6-2439-b86957c2ad31",
+      "position_code": null,
+      "shirt_number": 1,
+      "is_starting": false
+    },
+    {
+      "match_id": "11997c60-15ea-45ae-a4f9-511cf5231157",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "d782a448-c0ca-8dc2-731a-97c5bf3e3804",
+      "position_code": null,
+      "shirt_number": 25,
+      "is_starting": false
+    },
+    {
+      "match_id": "11997c60-15ea-45ae-a4f9-511cf5231157",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "91dbef6d-09c7-d6e2-879b-176e5f77568d",
+      "position_code": null,
+      "shirt_number": 15,
+      "is_starting": false
+    },
+    {
+      "match_id": "11997c60-15ea-45ae-a4f9-511cf5231157",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "9625b7ab-a67c-b9dc-4dc7-c733fae1d7f2",
+      "position_code": null,
+      "shirt_number": 21,
+      "is_starting": false
+    },
+    {
+      "match_id": "11997c60-15ea-45ae-a4f9-511cf5231157",
+      "team_id": "91a3d70a-4152-44f2-bd21-54c94698e9ca",
+      "player_id": "b19369d2-2371-0fad-49e1-d2047da0fe03",
+      "position_code": null,
+      "shirt_number": 19,
+      "is_starting": false
+    }
+  ],
+  "unresolved_ids": [
+    975185,
+    1580347,
+    2794729
+  ]
+}

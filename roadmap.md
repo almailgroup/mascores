@@ -1,5 +1,8 @@
 # Roadmap
 
+- [x] Separate match date from team names; suppress knockout group labels; create 50 verified profiles and reuse seven existing profiles, filling 185 match lineup entries. Forty-three new profiles have verified clubs and national links stay separate. Phone verification confirms complete Qatar XI and opening Abdelhak Assal's Al Khaldiya-linked profile.
+- [ ] Resolve seven new profiles' current clubs and three ambiguous source identities — blocked by missing/conflicting current-club or identity evidence; retain verified national links and do not guess clubs. Audit: scripts/sofascore-cup-new-players.json.
+
 - [x] Fix overflowing match-event layout and remove event-type/team captions under player names; checked real Iraq–Oman and Kuwait–Al Khaldiya pages at 402px with no horizontal overflow.
 
 - [x] Replace blue penalty-winner text with neutral text; browser checked.

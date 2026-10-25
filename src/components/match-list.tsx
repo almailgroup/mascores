@@ -8,6 +8,7 @@ import { MatchNotificationButton } from "@/hooks/use-favorites";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
 import type { Match, Team } from "@/lib/db";
 import { matchWinner } from "@/lib/match-result";
+import { isKnockoutRound } from "@/lib/group-order";
 
 export type MatchWithTeams = Match & {
   home: Team | null;
@@ -37,6 +38,7 @@ export function useMatchGroupLabels(data: MatchWithTeams[]) {
   });
   const map = q.data ?? {};
   return (m: MatchWithTeams) => {
+    if (isKnockoutRound(m.round)) return null;
     const season = m.season ?? "";
     for (const teamId of [m.home_team_id, m.away_team_id]) {
       if (!teamId) continue;
