@@ -107,14 +107,6 @@ export function MatchRow({ m, highlightTeamId }: { m: MatchWithTeams; highlightT
   const dates = useDates();
   const started = ["live", "ht", "ft", "aet", "pen", "awarded"].includes(m.status);
   const isLive = ["live", "ht"].includes(m.status);
-  const [, tick] = useState(0);
-  useEffect(() => {
-    if (!m.timer_running) return;
-    const interval = window.setInterval(() => tick((value) => value + 1), 1000);
-    return () => window.clearInterval(interval);
-  }, [m.timer_running]);
-  const seconds = matchClockSeconds(m);
-  const minute = Math.max(m.live_minute ?? 0, Math.floor(seconds / 60) + (seconds % 60 > 0 ? 1 : 0));
   const specialStatus = ["postponed", "cancelled", "interrupted"].includes(m.status);
   const finished = ["ft", "aet", "pen", "awarded"].includes(m.status);
   const highlightedScore = highlightTeamId === m.home_team_id ? [m.home_score, m.away_score] : highlightTeamId === m.away_team_id ? [m.away_score, m.home_score] : null;
