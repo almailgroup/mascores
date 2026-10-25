@@ -1,7 +1,8 @@
 # Roadmap
 
 - [x] Search Arabic/English YouTube highlights and add 24 verified links; preserve four existing links, all match data and full broadcasts. Kuwait–Tadamon highlight verified visibly on the match page; audit in scripts/zain-highlights-import.json.
-- [ ] Re-search three remaining highlight gaps — Kazma–Sulaibikhat, Salmiya–Jahra and Sahel–Nasr (round 6) in Arabic and English, adding only exact verified matches. Arabi–Sulaibikhat (round 3) is excluded: the user confirmed there was no stream. Do not substitute older games, other sports, or news reports.
+- [x] Re-searched Kazma–Sulaibikhat, Salmiya–Jahra and Sahel–Nasr (round 6) in Arabic and English on October 25; no exact verified YouTube highlight found, so no links added. Arabi–Sulaibikhat round 3 is excluded because the user confirmed no stream.
+- [ ] Add the three round-6 highlights when exact videos become available — blocked by no verified upload; never substitute older games or news reports.
 
 - [x] Import 269 verified Sofascore statistic rows across 30 completed Zain Premier League matches in rounds 1–6 (123 updated, 146 added); all imported values verified, protected result/event/lineup/rating snapshots unchanged, five parser tests pass, and Kazma–Sulaibikhat Stats tab checked. Audit: scripts/sofascore-stats-import.json.
 - [ ] Fill remaining Sofascore statistics gaps — Al Jahra–Al Arabi (round 2) and Kuwait–Sulaibikhat (round 5) pages expose no statistics; partial rows, three 0%/0% possession pairs and Salmiya–Jahra's invalid 194 corners were omitted; blocked by missing or invalid source values. Existing unrelated statistics remain unchanged.
