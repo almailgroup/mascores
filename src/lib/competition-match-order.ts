@@ -1,5 +1,6 @@
 import { scheduleTime } from "./fixture-schedule";
 type Fixture = { kickoff_at: string | null; kickoff_date?: string | null };
+type TeamFixture = Fixture & { competition_id?: string | null; round_number?: number | null };
 type RoundBucket = { round: string; matches: Fixture[]; order: number };
 
 function numberedRound(label: string) {
@@ -20,4 +21,22 @@ export function compareCompetitionRounds(a: RoundBucket, b: RoundBucket) {
   const dateB = Math.min(...b.matches.map(fixtureTime));
   if (dateA !== dateB) return dateA < dateB ? -1 : 1;
   return 0;
+}
+
+/**
+ * Newest-first ordering for one club's fixture list. Numbered rounds of the same
+ * competition stay in sequence even when a fixture is TBD or postponed (no time).
+ */
+export function compareTeamFixtures(a: TeamFixture, b: TeamFixture) {
+  if (a.competition_id && a.competition_id === b.competition_id
+    && a.round_number != null && b.round_number != null && a.round_number !== b.round_number) {
+    return b.round_number - a.round_number;
+  }
+  const timeA = fixtureTime(a);
+  const timeB = fixtureTime(b);
+  if (timeA === timeB) return 0;
+  // Undated fixtures (Infinity) sink to the bottom of a newest-first list.
+  if (!Number.isFinite(timeA)) return 1;
+  if (!Number.isFinite(timeB)) return -1;
+  return timeB - timeA;
 }
