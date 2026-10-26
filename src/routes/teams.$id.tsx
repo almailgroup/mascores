@@ -14,6 +14,8 @@ import { SocialLinksSection } from "@/components/social-links";
 import { LinkedNews } from "@/components/linked-news";
 import { ArrowRight, Landmark, CalendarClock, Crown, Trophy, Users, Phone, Mail, Globe } from "lucide-react";
 import { MatchGroups, MatchRow, type MatchWithTeams } from "@/components/match-list";
+import { sortTeamFixtures } from "@/lib/competition-match-order";
+import { hasStandings } from "@/lib/match-result";
 import { type NationalPlayer, fetchNationalSquad } from "@/lib/national";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
 import { TeamStats, type TeamComp } from "@/components/team-stats";
@@ -30,9 +32,9 @@ import { useAuth } from "@/hooks/use-auth";
 export const Route = createFileRoute("/teams/$id")({
   head: () => ({
     meta: [
-      { title: "Club — MA Scores" },
+      { title: "Club — MaScores" },
       { name: "description", content: "Club profile: matches, standings, squad, statistics, media and transfers." },
-      { property: "og:title", content: "Club — MA Scores" },
+      { property: "og:title", content: "Club — MaScores" },
       { property: "og:description", content: "Club profile: matches, standings, squad, statistics, media and transfers." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -60,7 +62,7 @@ function TeamPage() {
   }});
   const { t: tr } = useI18n();
   const [tab, setTab] = useState<Tab>("info");
-  useRealtime(["teams", "players", "matches", "standings_rows", "transfers"]);
+  useRealtime(["teams", "players", "matches", "competitions", "standings_rows", "transfers"]);
 
   const team = useQuery({ queryKey: ["team", id], queryFn: async () => {
     const { data } = await supabase.from("teams").select("*").eq("id", id).maybeSingle();
@@ -85,10 +87,10 @@ function TeamPage() {
     const compIds = [...new Set((mine ?? []).map((r) => r.competition_id))];
     if (compIds.length === 0) return [];
     const { data } = await supabase.from("standings_rows")
-      .select("*, competition:competition_id(name,slug,logo_url,season,seasons), team:team_id(id,name,logo_url,short_name)")
+      .select("*, competition:competition_id(name,slug,logo_url,season,seasons,format,hidden_tabs), team:team_id(id,name,logo_url,short_name)")
       .in("competition_id", compIds)
       .order("sort_order");
-    return (data ?? []) as unknown as TeamStandingRow[];
+    return ((data ?? []) as unknown as TeamStandingRow[]).filter(row => hasStandings(row.competition));
   }});
   const positionLabels = useQuery({
     enabled: !!rows.data?.length,
@@ -453,7 +455,7 @@ function RecentForm({ matches, teamId }: { matches: MatchWithTeams[]; teamId: st
 
 
 type TeamStandingRow = StandingRow & {
-  competition: { name: string; slug: string; logo_url: string | null; season: string | null; seasons: string[] } | null;
+  competition: { name: string; slug: string; logo_url: string | null; season: string | null; seasons: string[]; format: string | null; hidden_tabs: string[] | null } | null;
   team: { id: string; name: string; logo_url: string | null; short_name: string | null } | null;
 };
 
@@ -629,7 +631,7 @@ function TeamMatches({ data, teamId, nextId }: { data: MatchWithTeams[]; teamId:
   const [showToday, setShowToday] = useState(false);
   const resetPosition = useRef(0);
   const timestamp = (m: MatchWithTeams) => m.kickoff_at ? new Date(m.kickoff_at).getTime() : 0;
-  const ordered = [...data].sort((a, b) => timestamp(b) - timestamp(a));
+  const ordered = sortTeamFixtures(data);
   const targetId = data.find((m) => ["live", "ht"].includes(m.status))?.id ?? nextId ?? ordered.find((m) => timestamp(m) <= Date.now())?.id ?? ordered[0]?.id;
   const goToNext = () => {
     const target = Array.from(top.current?.querySelectorAll<HTMLElement>("[data-fixture-id]") ?? []).find((node) => node.dataset.fixtureId === targetId);

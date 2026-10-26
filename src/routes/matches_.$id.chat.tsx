@@ -7,9 +7,9 @@ import { MessageCircle } from "lucide-react";
 export const Route = createFileRoute("/matches_/$id/chat")({
   head: () => ({
     meta: [
-      { title: "Match chat — MA Scores" },
+      { title: "Match chat — MaScores" },
       { name: "description", content: "Join the live match chat with other supporters." },
-      { property: "og:title", content: "Match chat — MA Scores" },
+      { property: "og:title", content: "Match chat — MaScores" },
       { property: "og:description", content: "Join the live match chat with other supporters." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

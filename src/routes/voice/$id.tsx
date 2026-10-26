@@ -19,9 +19,9 @@ import { VoiceReactions, useVoiceReactions } from "@/components/voice-reactions"
 export const Route = createFileRoute("/voice/$id")({
   head: () => ({
     meta: [
-      { title: "Voice room — MA Scores" },
+      { title: "Voice room — MaScores" },
       { name: "description", content: "Live football voice room: listen to the conversation, raise your hand to speak and follow the host." },
-      { property: "og:title", content: "Voice room — MA Scores" },
+      { property: "og:title", content: "Voice room — MaScores" },
       { property: "og:description", content: "Live football talk with fans and hosts." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

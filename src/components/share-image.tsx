@@ -76,12 +76,12 @@ export function ShareCardButton({ render, title, label: buttonLabel, iconOnly = 
         setNotice(label(`This installed app${build} doesn't include the camera-roll saver. Delete it, install the newest TestFlight build, then tap Save again.`, `هذه النسخة المثبتة${build} لا تحتوي على ميزة الحفظ في ألبوم الكاميرا. احذف التطبيق وثبّت أحدث نسخة من TestFlight ثم اضغط حفظ مجددًا.`));
       } else if (result === "unsupported") {
         setHoldToSave(true);
-        setNotice(label("This browser can’t save to Photos. Open MA Scores on your iPhone to save it to your camera roll.", "هذا المتصفح لا يدعم الحفظ في الصور. افتح MA Scores على جهازك لحفظها في ألبوم الكاميرا."));
+        setNotice(label("This browser can’t save to Photos. Open MaScores on your iPhone to save it to your camera roll.", "هذا المتصفح لا يدعم الحفظ في الصور. افتح MaScores على جهازك لحفظها في ألبوم الكاميرا."));
       }
     } catch (error) {
       const msg = error instanceof Error ? error.message : "";
-      setNotice(/Allow MA Scores/i.test(msg)
-        ? label("Allow MA Scores to add photos: iPhone Settings → MA Scores → Photos → Add Photos Only.", "اسمح لـ MA Scores بإضافة الصور: الإعدادات ← MA Scores ← الصور ← إضافة الصور فقط.")
+      setNotice(/Allow MaScores/i.test(msg)
+        ? label("Allow MaScores to add photos: iPhone Settings → MaScores → Photos → Add Photos Only.", "اسمح لـ MaScores بإضافة الصور: الإعدادات ← MaScores ← الصور ← إضافة الصور فقط.")
         : label("Couldn’t save the photo. Please try again.", "تعذّر حفظ الصورة. حاول مرة أخرى."));
     } finally { setSaving(false); }
   };

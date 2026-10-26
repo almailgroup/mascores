@@ -1,23 +1,23 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ShieldCheck, Database, Eye, Lock, Mail, UserX, FileText, RefreshCcw } from "lucide-react";
-import { AppShell } from "@/components/app-shell";
+import { AppShell, BackButton } from "@/components/app-shell";
 import { BrandLogo } from "@/components/brand-logo";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/privacypolicy")({
   head: () => ({
     meta: [
-      { title: "Privacy Policy — MA Scores" },
+      { title: "Privacy Policy — MaScores" },
       {
         name: "description",
         content:
-          "How MA Scores collects, uses, and protects your information. Read our full privacy policy.",
+          "How MaScores collects, uses, and protects your information. Read our full privacy policy.",
       },
-      { property: "og:title", content: "Privacy Policy — MA Scores" },
+      { property: "og:title", content: "Privacy Policy — MaScores" },
       {
         property: "og:description",
         content:
-          "How MA Scores collects, uses, and protects your information. Read our full privacy policy.",
+          "How MaScores collects, uses, and protects your information. Read our full privacy policy.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -84,6 +84,7 @@ function PrivacyPolicyPage() {
 
   return (
     <AppShell>
+      <BackButton iconOnly className="mb-3" />
       <div className="mx-auto max-w-3xl pb-16">
         {/* Hero */}
         <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-8 sm:p-10">
@@ -98,8 +99,8 @@ function PrivacyPolicyPage() {
             </div>
             <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
               {t(
-                "Your trust matters more than anything we build. This page explains, in plain language, what information MA Scores keeps and why.",
-                "ثقتك أهم من أي شيء نبنيه. توضح هذه الصفحة بلغة بسيطة ما المعلومات التي يحتفظ بها MA Scores ولماذا.",
+                "Your trust matters more than anything we build. This page explains, in plain language, what information MaScores keeps and why.",
+                "ثقتك أهم من أي شيء نبنيه. توضح هذه الصفحة بلغة بسيطة ما المعلومات التي يحتفظ بها MaScores ولماذا.",
               )}
             </p>
             <p className="mt-3 text-xs text-muted-foreground">
@@ -136,10 +137,10 @@ function PrivacyPolicyPage() {
             )}
           </p>
           <a
-            href="mailto:mansouralmailscores@gmail.com"
+            href="mailto:info@mascores.live"
             className="mt-4 inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground transition hover:opacity-90"
           >
-            <Mail className="h-4 w-4" /> mansouralmailscores@gmail.com
+            <Mail className="h-4 w-4" /> info@mascores.live
           </a>
         </section>
       </div>

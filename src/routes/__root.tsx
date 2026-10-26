@@ -9,12 +9,17 @@ import {
   type ErrorComponentProps,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { connectionTimezone } from "@/lib/connection-timezone.functions";
+import { setMatchTimezone } from "@/lib/match-timezone";
+import { initTimeFormat } from "@/lib/time-format";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { ThemeProvider } from "../components/theme-provider";
 import { onNativeNotificationTap } from "../lib/native-notify";
 import { initNativePush, syncPushToken, clearPushToken } from "../lib/native-push";
+import { syncBellsWithPermission } from "../lib/notification-permission";
 import { supabase } from "../integrations/supabase/client";
 import { I18nProvider, useI18n } from "../lib/i18n";
 import { CurrencyProvider } from "../lib/currency";
@@ -98,15 +103,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "apple-mobile-web-app-title", content: "MAS" },
       { name: "mobile-web-app-capable", content: "yes" },
-      { title: "MA Scores — Live Football Scores" },
+      { title: "MaScores — Live Football Scores" },
       {
         name: "description",
         content:
           "Live scores, match centers, lineups, and coverage of the best leagues of the world.",
       },
-      { name: "author", content: "MA Scores" },
+      { name: "author", content: "MaScores" },
       { name: "theme-color", content: "#0a1628" },
-      { property: "og:title", content: "MA Scores — Live Football Scores" },
+      { property: "og:title", content: "MaScores — Live Football Scores" },
       {
         property: "og:description",
         content:
@@ -114,7 +119,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "MA Scores — Live Football Scores" },
+      { name: "twitter:title", content: "MaScores — Live Football Scores" },
       { name: "twitter:description", content: "Live scores, match centers, lineups, and coverage of the best leagues of the world." },
     ],
     links: [
@@ -164,6 +169,18 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const detectTimezone = useServerFn(connectionTimezone);
+  useEffect(() => {
+    initTimeFormat();
+    let request = 0;
+    const detect = () => { const current = ++request; void detectTimezone().then(zone => { if(current === request)setMatchTimezone(zone); }).catch(() => { if(current === request)setMatchTimezone(null); }); };
+    const visible = () => { if(document.visibilityState === "visible")detect(); };
+    detect();
+    window.addEventListener("focus", detect);
+    window.addEventListener("online", detect);
+    document.addEventListener("visibilitychange", visible);
+    return () => { request++; window.removeEventListener("focus", detect); window.removeEventListener("online", detect); document.removeEventListener("visibilitychange", visible); };
+  }, [detectTimezone]);
 
   useEffect(() => {
     // No-op on the web; inside the iOS shell this asks for notification
@@ -171,11 +188,15 @@ function RootComponent() {
     // carries the path to open, so a full navigation is the simplest handoff.
     void initNativePush((path) => window.location.assign(path));
     void onNativeNotificationTap((path) => window.location.assign(path));
+    // Notifications switched off in iPhone Settings turn every bell off on return.
+    void syncBellsWithPermission();
+    const onVisible = () => { if (document.visibilityState === "visible") void syncBellsWithPermission(); };
+    document.addEventListener("visibilitychange", onVisible);
 
     // The phone may register with Apple before the user signs in, so link the
     // device token to the account on sign-in and detach it on sign-out.
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN") void syncPushToken();
+      if (event === "SIGNED_IN") { void syncPushToken(); void syncBellsWithPermission(); }
       if (event === "SIGNED_OUT") void clearPushToken();
     });
 
@@ -187,7 +208,7 @@ function RootComponent() {
         window.history.replaceState(window.history.state, "", window.location.pathname + window.location.search);
       });
     }
-    return () => sub.subscription.unsubscribe();
+    return () => { sub.subscription.unsubscribe(); document.removeEventListener("visibilitychange", onVisible); };
   }, []);
 
   useEffect(() => {

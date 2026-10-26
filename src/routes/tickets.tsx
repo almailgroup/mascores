@@ -16,9 +16,9 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/tickets")({
   head: () => ({
     meta: [
-      { title: "Match tickets — MA Scores" },
+      { title: "Match tickets — MaScores" },
       { name: "description", content: "Browse tickets for upcoming football matches, see prices and stands, and keep your QR ticket ready for the gate." },
-      { property: "og:title", content: "Match tickets — MA Scores" },
+      { property: "og:title", content: "Match tickets — MaScores" },
       { property: "og:description", content: "Tickets for upcoming matches with instant QR entry passes." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

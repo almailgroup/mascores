@@ -195,7 +195,7 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
           {/* Choose which sections people see, switch a knockout bracket on, and correct the follower number. */}
           <div className="sm:col-span-2"><Field label="Sections to hide on the public page">
             <div className="flex flex-wrap gap-2">
-              {["standings", "knockout", "stats", "teams", "awards", "media", "news"].map((section) => {
+              {["standings", "knockout", "stats", "teams", "awards", "media", "news", "round team"].map((section) => {
                 const hidden = (form.hidden_tabs ?? []).includes(section);
                 return <button type="button" key={section} onClick={() => setForm({ ...form, hidden_tabs: hidden ? (form.hidden_tabs ?? []).filter((item) => item !== section) : [...(form.hidden_tabs ?? []), section] })}
                   className={`rounded-full border px-3 py-1 text-xs font-semibold capitalize ${hidden ? "border-destructive bg-destructive/10 text-destructive" : "border-border"}`}>
@@ -224,6 +224,11 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
           <div className="sm:col-span-2">
             <Field label="Logo (dark mode) — optional">
               <ImageInput value={form.logo_url_dark ?? null} onChange={(v) => setForm({ ...form, logo_url_dark: v })} onFile={async (f) => { const url = await uploadMedia("competition-logos", f); if (url) setForm({ ...form, logo_url_dark: url }); }} />
+            </Field>
+          </div>
+          <div className="sm:col-span-2">
+            <Field label="Video thumbnail background — match logos and score are added automatically">
+              <ImageInput value={form.video_thumbnail_url ?? null} onChange={(v) => setForm({ ...form, video_thumbnail_url: v })} onFile={async (f) => { const url = await uploadMedia("competition-logos", f); if (url) setForm({ ...form, video_thumbnail_url: url }); }} />
             </Field>
           </div>
           <div className="sm:col-span-2">

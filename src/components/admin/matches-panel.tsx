@@ -10,12 +10,17 @@ import { createFixtureDraftsWithAlmail } from "@/lib/almail-ai.functions";
 import { readAiImages } from "@/lib/image-files";
 import { TeamCrest } from "@/components/team-crest";
 import { useAdminAbility } from "@/lib/admin-ability";
+import { AfcSyncButton, AFC_CL2_SLUG } from "./afc-sync-panel";
 import { requestReview } from "@/lib/review";
+import { compareCompetitionRounds, fixtureTime } from "@/lib/competition-match-order";
 
 export function MatchesPanel({ competitionId, season = null, friendly = false }: { competitionId: string; season?: string | null; friendly?: boolean }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<Partial<Match>>({ status: "scheduled" });
+  // League rounds use a number; qualifiers use a numbered qualification round; knockouts use a named stage.
+  const [stage, setStage] = useState<"league" | "qualification" | "knockout">("league");
+  const [knockout, setKnockout] = useState("Round of 16");
   const [editingMatch, setEditingMatch] = useState<Match | null>(null);
   const [resultOf, setResultOf] = useState<Match | null>(null);
   const [aiOpen, setAiOpen] = useState(false);
@@ -23,6 +28,11 @@ export function MatchesPanel({ competitionId, season = null, friendly = false }:
   const { needsApproval, isOwner } = useAdminAbility();
   const [reviewNote, setReviewNote] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "scheduled" | "live" | "finished" | "needs_result">("all");
+
+  const compSlugQ = useQuery({
+    queryKey: ["admin", "comp-slug", competitionId],
+    queryFn: async () => (await supabase.from("competitions").select("slug").eq("id", competitionId).maybeSingle()).data?.slug ?? null,
+  });
 
   const teamsQ = useQuery({
     queryKey: ["admin", "teams", competitionId, season],
@@ -41,7 +51,7 @@ export function MatchesPanel({ competitionId, season = null, friendly = false }:
     queryFn: async () => {
       let query = supabase.from("matches").select("*").eq("competition_id", competitionId);
       if (season) query = query.eq("season", season);
-      const { data } = await query.order("kickoff_at", { nullsFirst: true });
+      const { data } = await query.order("kickoff_at", { nullsFirst: false });
       return (data ?? []) as Match[];
     },
   });
@@ -72,9 +82,17 @@ export function MatchesPanel({ competitionId, season = null, friendly = false }:
     for (const m of matches) {
       const k = friendly ? "All matches" : (roundLabel(m.round_number, m.round) ?? "Unassigned round");
       if (!map.has(k)) map.set(k, []);
-      map.get(k)!.push(m);
+      const bucket = map.get(k);
+      if (bucket) bucket.push(m);
     }
-    return [...map.entries()];
+    return [...map.entries()]
+      .map(([round, list], order) => ({ round, matches: [...list].sort((a, b) => {
+        const timeA = fixtureTime(a);
+        const timeB = fixtureTime(b);
+        return timeA === timeB ? 0 : timeA < timeB ? -1 : 1;
+      }), order }))
+      .sort(compareCompetitionRounds)
+      .map(({ round, matches }) => [round, matches] as const);
   }, [matches, friendly]);
 
   const create = async () => {
@@ -85,8 +103,11 @@ export function MatchesPanel({ competitionId, season = null, friendly = false }:
       home_team_id: form.home_team_id,
       away_team_id: form.away_team_id,
       kickoff_at: form.kickoff_at ?? null,
-      round_number: friendly ? null : (form.round_number ?? null),
-      round: !friendly && form.round_number != null ? `Round ${form.round_number}` : null,
+      round_number: friendly || stage !== "league" ? null : (form.round_number ?? null),
+      round: friendly ? null
+        : stage === "knockout" ? knockout
+        : stage === "qualification" ? `Qualification round ${form.round_number ?? 1}`
+        : form.round_number != null ? `Round ${form.round_number}` : null,
       venue: form.venue ?? null,
       city: form.city ?? null,
       status: "scheduled",
@@ -123,6 +144,7 @@ export function MatchesPanel({ competitionId, season = null, friendly = false }:
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-base font-bold">Matches <span className="text-xs font-medium text-muted-foreground">({allMatches.length})</span></h3>
           <div className="flex flex-wrap gap-2">
+            {compSlugQ.data === AFC_CL2_SLUG && <AfcSyncButton competitionId={competitionId} onSynced={() => qc.invalidateQueries({ queryKey: ["admin", "matches", competitionId] })} />}
             {isOwner && <button className={btnGhost} onClick={() => setAiOpen(true)}><Sparkles className="h-3.5 w-3.5" /> Almail AI</button>}
             <button className={btnPrimary} onClick={() => { setForm({ status: "scheduled" }); setOpen(true); }}><Plus className="h-3.5 w-3.5" /> Add match</button>
           </div>
@@ -167,7 +189,7 @@ export function MatchesPanel({ competitionId, season = null, friendly = false }:
                         <span className="min-w-0 flex-1 truncate">{teamName(m.away_team_id)}</span>
                         {m.away_score != null && <span className="shrink-0 tabular-nums">{m.away_score}</span>}
                       </div>
-                      <div className="truncate text-[0.65rem] text-muted-foreground">{formatKickoff(m.kickoff_at)}{m.venue ? ` · ${m.venue}` : ""}</div>
+                      <div className="truncate text-[0.65rem] text-muted-foreground">{m.status === "postponed" ? "Postponed" : formatKickoff(m.kickoff_at, undefined, m.kickoff_date)}{m.venue ? ` · ${m.venue}` : ""}</div>
                     </div>
                   </div>
 
@@ -203,7 +225,19 @@ export function MatchesPanel({ competitionId, season = null, friendly = false }:
               value={form.kickoff_at ? new Date(new Date(form.kickoff_at).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ""}
               onChange={(e) => setForm({ ...form, kickoff_at: e.target.value ? new Date(e.target.value).toISOString() : null })} />
           </Field>
-          {!friendly && <Field label="Round number"><input type="number" min={1} inputMode="numeric" className={inputCls} placeholder="1" value={form.round_number ?? ""} onChange={(e) => setForm({ ...form, round_number: e.target.value ? Number(e.target.value) : null })} /></Field>}
+          {!friendly && <Field label="Stage">
+            <select className={inputCls} value={stage} onChange={(e) => setStage(e.target.value as typeof stage)}>
+              <option value="league">League / group round</option>
+              <option value="qualification">Qualification round</option>
+              <option value="knockout">Knockout</option>
+            </select>
+          </Field>}
+          {!friendly && stage === "knockout" && <Field label="Knockout round">
+            <select className={inputCls} value={knockout} onChange={(e) => setKnockout(e.target.value)}>
+              {["Round of 64", "Round of 32", "Round of 16", "Quarter-finals", "Semi-finals", "Third place", "Final"].map((r) => <option key={r} value={r}>{r}</option>)}
+            </select>
+          </Field>}
+          {!friendly && stage !== "knockout" && <Field label={stage === "qualification" ? "Qualification round number" : "Round number"}><input type="number" min={1} inputMode="numeric" className={inputCls} placeholder="1" value={form.round_number ?? ""} onChange={(e) => setForm({ ...form, round_number: e.target.value ? Number(e.target.value) : null })} /></Field>}
           <div className="sm:col-span-2">
             <Field label="Venue"><VenueSelect venue={form.venue} city={form.city} onChange={(v, c) => setForm({ ...form, venue: v, city: c })} /></Field>
           </div>

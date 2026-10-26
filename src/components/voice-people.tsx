@@ -9,7 +9,7 @@ import { toast } from "sonner";
 
 export function VoiceBadge({ badge }: { badge?: string | null }) {
   const { lang } = useI18n();
-  if(badge==='owner')return <span role="img" aria-label={lang==='ar'?'مالك MA Scores':'MA Scores owner'} title={lang==='ar'?'مالك MA Scores':'MA Scores owner'} className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-warning bg-foreground text-warning"><Crown className="h-3.5 w-3.5" strokeWidth={2.5}/></span>;
+  if(badge==='owner')return <span role="img" aria-label={lang==='ar'?'مالك MaScores':'MaScores owner'} title={lang==='ar'?'مالك MaScores':'MaScores owner'} className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-warning bg-foreground text-warning"><Crown className="h-3.5 w-3.5" strokeWidth={2.5}/></span>;
   return badge === "golden" || badge === "verified" ? <span role="img" aria-label={badge === "golden" ? (lang === "ar" ? "توثيق ذهبي" : "Golden verified") : (lang === "ar" ? "موثق" : "Verified")} className={`inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full shadow-sm ${badge === "golden" ? "bg-gradient-to-br from-warning via-warning to-warning/70 text-primary-foreground" : "bg-primary text-primary-foreground"}`}><Check className="h-3 w-3" strokeWidth={3} /></span> : null;
 }
 export function VoiceUserBadge({ userId }: { userId?: string }) {

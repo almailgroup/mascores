@@ -1,119 +1,92 @@
 # Roadmap
-- [x] Show Zain Premier League teams and Kuwait national team by default in Choose your teams; verified other-team search, selection saving and no repeated setup
-- [x] Remove drum-like layer from VAR goal/penalty/red-card sounds and gently raise quiet alerts; refresh owner previews and verify playback
-- [x] Use the whistle sound for full time notifications (fulltime*.caf replaced with the whistle recording; previews refreshed)
-- [x] Fix stadium edit popup above admin overlays; verified save/reopen on phone
-- [x] Confirm bans, strikes, activation, rejection, verification, approvals and lifting restrictions; verified cancelling news-request actions makes no writes
-- [x] Add recording comment replies, likes and targeted reports; verified saved interactions and report snapshots
-- [x] Improve recording description display and editor; verified save/reload and phone fit
-- [x] Restore calm match sounds, prevent duplicate foreground phone sounds, and correct period announcements; confirmed kickoff/halftime/reminder delivery records
-- [ ] Hear restored sounds on a real iPhone — requires an updated iPhone app build and device
-- [x] Show full news photo in shared images; verified Abdullah Fares share keeps his entire original photo
-- [x] Load lineup coaches with players and reveal club/national squad portraits together; verified real coach and player photos
-- [x] Fix profile photo cropping; verified drag, zoom, save and profile photo reload
-- [x] Move profile verification beside the top username only, above recording/follower/following counters; checked phone/desktop
-- [x] Add verification decision replies to the applicant inbox and a secure custom owner-only badge; checked approval/decline reply delivery and blocked owner assignment
-- [x] Add social reporting, reference-style share icons and uniform profile counters; verify submission, moderation, sharing and phone/desktop alignment in browser
-- [x] Open followers, following and Edit profile full-screen
-- [x] Redesign profiles with confirmed private/public account controls and follow requests
-- [x] Add recording likes, comments, sharing and reposts
-- [x] Add social activity inbox and configurable phone alerts
-- [x] Verify private/public audio access, recording interactions, full-screen views and saved preferences in browser
-- [ ] Verify follow-request acceptance and social phone delivery across two accounts — requires a second account and real phones
-- [x] Retry permission on bells and redirect signed-out favourite/alert actions to sign-in
-- [x] Check notification preview privacy and sender content (payload has real title/body; device setting remains unverified)
-- [x] Repair voice negotiation collisions and end rooms after ten minutes of host inactivity
-- [x] Default search to All; move people search, recommendations and history to Voice
-- [x] Add secure owner-admin voice-user verified/golden verification controls; save/reload verified
-- [ ] Validate simultaneous speaking and permission denial/re-enable on real iPhones — requires multiple devices
-- [x] Fix Mohammed Aman's Yemen flag and verify shared flags across countries
-- [x] Keep the club president crown black and white
-- [x] Update club followers immediately when starred and fix stuck star/notification controls
-- [x] Label national-squad players without clubs as Free agent and use club initials for missing club logos
-- [x] Place the custom president portrait row inside club details alongside the coach
-- [x] Modernize club statistics presentation without changing its calculations
-- [x] Show released rounds and only the current started round; explain one-hour availability and choose round-team formation from ratings
-- [x] Add club follower counts styled like competitions with admin overrides and replace club standings competition swiping with an in-app menu
-- [x] Fix Arabic Home filter overflow/scrolling, retain language when revisiting settings, and professionally present club presidents
-- [x] Polish liquid-glass season selectors and replace native Team of the Round picker with an in-app menu
-- [x] Add owner submission editing before approval and deletion at any status; separate cover/proof previews
-- [x] Modernize first-team/youth labels and fix ticket sheet/list clipping
-- [x] Restore descending club matches, next-fixture initial focus and scroll-triggered Today
-- [x] Verify submission permissions and phone-sized ticket/match flows
-- [x] Apply modern standings everywhere and restore qualification markers/labels
-- [x] Modernize season selectors and arrange Home logo/search/profile left-to-right
-- [x] Verify standings, season menus and header in the browser
-- [x] Modernize club standings without Home/Away filters
-- [x] Add club notification control next to the favourite star
-- [x] Prevent completed first-run setup from flashing on launch
-- [x] Keep club/competition refresh beneath the header as in the video
-- [x] Add automatic rating-based Team of the Round after completed rounds
-- [x] Add year-by-year title history above winners and competition settings editing
-- [x] Verify refresh, round eligibility and title-history save/read flows
-- [x] Match reference-style soft backgrounds across club, competition and match headers, with compact full-name competition layout
-- [x] Check header appearance, full-name fit and scrolling on phone and desktop
-- [x] Remove news/photo watermarks and restore original event artwork with theme contrast only
-- [x] Make club/competition headers collapse and move with the full page; match the reference match-header animation
-- [x] Verify headers and full-page pulling in the browser; original artwork restored, native iPhone verification remains pending
-- [x] Improve dark event icons and blue match accents; compact scrolling header and stadium only in details
-- [x] Rename Include players; symmetric branded language loading
-- [x] First-install team selection/skip, language choice and persistent completion
-- [x] Verify setup persistence, language switches, search and match collapse in browser
-- [x] Shorten competition background without crowding controls, show past club fixtures, move full headers during refresh
-- [x] Voice bottom tab, two-item More layout, public profile/settings entry before sign-in
-- [x] Verify these page, gesture and signed-out account flows in phone-sized browser; native iPhone verification remains below
-- [x] Fill More's remaining row with Tickets and add phone safe-area clearance to headerless pages
-- [x] Home-only main header, remove Search from More, stop ordinary scrolling from displacing bottom navigation
-- [x] Hide header on competitions/search, revise bottom tabs and animate MaScores search
-- [x] Finger-following cancellable back swipe and elastic page-displacing pull refresh
-- [x] Verify navigation, animated gestures and search on phone-sized preview
-- [x] Speed up player portraits and block photo drag/long-press menus
-- [x] Remove reporter AI, repair reporter photo/proof upload permission, fit admin news actions on iPhone
-- [x] Profile-left/logo-only header with long search; opt-in squad search
-- [x] Sticky club tabs, Today, upcoming-first matches and club-only standing groups
-- [x] Back/home hold, edge swipe back, pull refresh and stable notification press appearance
-- [x] Browser-check header, search, news actions and gestures; reporter form checked with mocked active status
-- [ ] Validate reporter upload end-to-end and native gestures on a real iPhone
-- [x] iOS sign-in Browser fallback + photo save timeout (in progress)
-- [x] Transfers: type labels cut off (e.g. "Loan return")
-- [x] Disable text selection/copy on iPhone app (keep on computer)
-- [x] Google/Apple sign-in: compact sheet with Cancel button (needs new TestFlight build)
-- [x] Kickoff reminders: saving errors, immediate phone scheduling, clear messages
-- [x] Camera-roll saving: show installed build in message, avoid duplicate app screen (needs new TestFlight build)
-- [x] Voice room: mic not working (iPhone needs new build)
-- [x] Voice room: emoji reaction shows as one emoji on my own avatar
-- [ ] Google 400 on iPhone, sign-in sheet size, mic 'cannot capture', save stuck, reminders not working (Oct 8)
-- [x] Compact match page sizing (Sofascore-style, ref IMG_3674)
-- [x] Remove border around country flags
-- [x] Player matches: competition filter uses in-app SeasonMenu
-- [x] Recycle bin for deleted data with restore
-- [ ] ACL2: fill Kuwait SC match details using existing Kuwait SC players (no new duplicates)
-- [x] Bilingual club search, 2nd main admin, merge section, popup player editor, remove/white bg
-- [x] Admin venue edit as popup with sticky Save/close header
-- [x] Voice section: more spacing, less cramped design
-- [x] Diagnose failing phone notifications (sender errored on the saved Apple key) and record delivery results
-- [x] Align club-follow and match-bell rules between app and sender
-- [x] Automatic 60/30/5-minute kick-off reminders for followed matches and clubs
-- [x] Owner news "send as notification" on publish/approve and custom notification sender
-- [ ] Re-enter the Apple push key (.p8) — waiting on the user
-- [x] Add a Settings switch for voice room live alerts
-- [x] Match highlights: 'send notification' option -> 'Highlights available' alert
-- [x] Voice: show usernames not codes; invite-code join with Enter; top-5 recommendations (golden, verified, followers) only on search focus; clearer badge; uncut profile names; save/delete on end room + edit saved title/photo
-- [x] Match: line-style momentum with only goal icons; lineup photos reveal together; logo watermark on lineups; new lineup share design with photos
-- [x] Admin phone layout: notifications panel/history, teams, venues, popups for list items and channels; notification history and Almail AI main-admin only
-- [x] Competition bell marks its matches; league followers get transfer alerts; hide temporary players from players list; keep historical coaches per match
-- [x] One-tap bells/stars and league bell lighting its match bells; show bench in lineup share picture
-- [x] Merge: "Not the same" pairs must never come back
-- [x] Removing a coach from a club releases him (no delete)
-- [x] Admin: nothing preselected on entry; each section opens as a popup; Countries fits the phone
-- [x] Lineup logo watermark light white
-- [x] Profile: followers/following popups with search, recordings count, edit-profile popup with public/private, verification request page, owner Verify section, replay public/private filter, removed My voice replays from settings
-- [x] Recording speeds 0.5x–3x
-- [x] Description when saving a recording; show live chat in recordings
-- [x] Owner (king) badge only for @mascores, not @school
-- [x] Settings: hide followers/following
-- [x] Free news reporting with civil ID + selfie
-- [x] Lineup share shows one team; nicer final-result share
-- [x] Desktop photo download (iPhone unchanged)
-- [x] Voice page Live | Recordings feed with dates
-- [x] Edit profile phone/email
+
+- [x] Separate match date from team names; suppress knockout group labels; create 50 verified profiles and reuse seven existing profiles, filling 185 match lineup entries. Forty-three new profiles have verified clubs and national links stay separate. Phone verification confirms complete Qatar XI and opening Abdelhak Assal's Al Khaldiya-linked profile.
+- [ ] Resolve seven new profiles' current clubs and three ambiguous source identities — blocked by missing/conflicting current-club or identity evidence; retain verified national links and do not guess clubs. Audit: scripts/sofascore-cup-new-players.json.
+
+- [x] Fix overflowing match-event layout and remove event-type/team captions under player names; checked real Iraq–Oman and Kuwait–Al Khaldiya pages at 402px with no horizontal overflow.
+
+- [x] Replace blue penalty-winner text with neutral text; browser checked.
+- [x] Import 15 verified fixtures into existing Khaleeji 27 plus Kuwait–Al Khaldiya in AFC Champions League Two, 539 existing-player lineup rows, verified events and 395 independent estimated ratings; preserve identities and alert settings. Audit: scripts/sofascore-cups-import.json.
+- [ ] Complete remaining AFC source fixtures, unmatched lineup identities and detailed cup statistics — blocked by unavailable source responses or absent existing player identities; do not invent profiles or statistics.
+
+- [x] Honor Crown Prince Cup hidden standings in club standings selectors and match pages; browser verified only AFC CL2 and Zain Premier League appear for Kuwait SC.
+
+- [x] Fix cup penalty winners in lists/details, separate date/status from club names, respect hidden standings, and add ten verified kickoff times; phone browser verified Kazma–Khaitan 1–1 (1–3 pens), winner and 19:45 Kuwait kickoff. Four result-rule tests and six import tests pass.
+- [ ] Add four remaining Emir Cup kickoff times (Kuwait–Nasr February 27; Salmiya–Tadamon November 25; Qadsia–Fahaheel and Arabi–Khaitan November 26) — blocked by no verifiable exact time in sources searched; retain date-only records, never infer.
+
+- [x] Import the interrupted 2025/2026 Kuwait Emir Cup: 11 earlier results (two qualifiers, eight round-of-16 games and one quarter-final), three announced November quarter-finals, 18 existing clubs and 17 bracket ties through the final. Verified competition Matches/Knockout and opening a qualifier in the app; six tests pass, zero historical alerts queued. Semifinal stage scheduled December 4–5 without confirmed individual tie dates; final date, kickoff times, unresolved participants and player details not invented. Audit: scripts/emir-cup-import.json.
+
+- [x] Import all 147 published Sportscorner 2026/2027 youth fixtures: U19 35 results + 7 date-only upcoming (rounds 1–6), U17 49 results + 56 upcoming (rounds 1–15). Reuse youth clubs, add Tadamon U17, match 15 participating U17 clubs to senior identities/badges, preserve 14 existing U19 fixture IDs, verify every imported field and computed standings, and check both league pages plus Kuwait U17 first-team link. No historical pushes queued; five import tests pass. Source league statistics provide no lineups, scorers, assists, discipline or ratings; these are not invented. Audit: scripts/sportscorner-youth-import.json.
+
+- [x] Search Arabic/English YouTube highlights and add 24 verified links; preserve four existing links, all match data and full broadcasts. Kuwait–Tadamon highlight verified visibly on the match page; audit in scripts/zain-highlights-import.json.
+- [x] Re-searched Kazma–Sulaibikhat, Salmiya–Jahra and Sahel–Nasr (round 6) in Arabic and English on October 25; no exact verified YouTube highlight found, so no links added. Arabi–Sulaibikhat round 3 is excluded because the user confirmed no stream.
+- [ ] Add the three round-6 highlights when exact videos become available — blocked by no verified upload; never substitute older games or news reports.
+
+- [x] Import 269 verified Sofascore statistic rows across 30 completed Zain Premier League matches in rounds 1–6 (123 updated, 146 added); all imported values verified, protected result/event/lineup/rating snapshots unchanged, five parser tests pass, and Kazma–Sulaibikhat Stats tab checked. Audit: scripts/sofascore-stats-import.json.
+- [ ] Fill remaining Sofascore statistics gaps — Al Jahra–Al Arabi (round 2) and Kuwait–Sulaibikhat (round 5) pages expose no statistics; partial rows, three 0%/0% possession pairs and Salmiya–Jahra's invalid 194 corners were omitted; blocked by missing or invalid source values. Existing unrelated statistics remain unchanged.
+
+- [x] Modernize multi-player event chooser and navigate single-player events directly; verified player destination with no dialog and portrait-based substitution chooser.
+- [x] Label possible-lineup exports explicitly; verified rendered canvas label and preview.
+- [x] Verify local match-time formatting across device timezones and connection timezone fallback: same fixture renders 17:30 Kuwait, 10:30 New York and 14:30 London. Simulated connection timezone updates Kuwait device display to 10:30; actual VPN exit detection remains blocked below.
+
+- [x] Possible lineups seven days before kickoff, missing-player reasons, richer event player dialogs and substitutions; checked an upcoming Al Arabi lineup and real event dialog.
+- [x] Preserve clock preference and adopt connection-location timezone when available; 24-hour preference verified after reopening Settings.
+- [ ] Verify VPN exit-location timezone on hosted requests — local preview supplies no connection-location metadata and no VPN session is available; device timezone is the fallback.
+- [x] Full standings GD and full-table image sharing; verified all 12 rows and all full columns in the generated image.
+- [x] Batch social links from admin messages for club squads; real AI request correctly matched a supplied sample URL to Zaid Qunbar, without saving the sample.
+- [x] Open all admin lineup/bench players for match rating and shirt-number editing; saved/reopened an unchanged bench kit number and verified its value.
+
+- [x] Fix admin numbered-round sorting with shared comparator; authenticated phone verification shows rounds 1–11 in sequence.
+- [x] Apply uploaded Zain Premier League rounds 7–11 photos to all 30 existing fixtures: correct sides/dates/stadiums, postpone Kuwait–Kazma with no invented date, and store rounds 9–11 as announced dates with Time TBD. Verified database counts, match detail, Home Upcoming and 15 tests.
+
+- [x] Keep TBD/postponed rounds in sequence, fit status-only postponed labels, and replace the player-match assist emoji with a shared symbol; four round-order tests pass and verified the real competition/player pages at phone size.
+
+- [x] Check source benches: mfsoccer rounds 1–6 contains starters and came-on substitutions only, not full match-day reserves.
+- [x] Import 667 confirmed mfsoccer displayed reserves across all 64 completed round 1–6 match sides; preserve starters/substitutions, attribute calculated benches in notes, and verify Al Qadsia’s bench on-screen.
+- [x] Add all eight resolved bench players’ 31 omitted round 1–6 appearances using the six user-confirmed aliases and the newly created Meshal Al Habs / Abdulaziz Salah profiles; verified 704 starters unchanged, 986 reserves/substitutes, no future lineups, and Vinicius on the round-3 match bench. Audit: scripts/mfsoccer-bench-resolved.json.
+- [x] Correct four wrong-side historical coach assignments and fill confirmed round-2 Qadsia/Kuwait coaches; database checks pass and Kuwait round-3 coach verified on-screen.
+- [ ] Complete historical coach verification — 11 completed matches still lack coach slots; blocked by missing dated match reports, and other preserved coach snapshots remain not independently verified.
+
+- [x] Import verified Zain Premier League rounds 1–6: results, referee/channel, lineups, events, stats, and transparent calculated ratings; resolve player identities and use Al names without hyphens.
+- [x] Verify imported totals and a real match in the app; source omits one incoming substitute, performance ratings, and detailed possession/shot statistics. Ratings are explicitly event-based estimates; upcoming fixtures retain no results.
+
+- [x] Goal icon on saved result images: white version that shows on dark background (rebuilt from original artwork after a corrupted render).
+- [x] Substitutes section redesign: came-on players from match events, minute on the left, shirt number badge top-left of the photo, green up-arrow badge, rating pill bottom-left, name in green with the replaced player's name in grey below; the lineup share card mirrors the same layout.
+- [x] Compact on-screen substitutes with short incoming/outgoing and bench names, and original substitution artwork instead of a generic arrow.
+- [x] Header: Voice icon next to the search bar; bottom tabs become Home/Competitions/News/Transfers/Tickets and the More sheet is removed.
+- [x] Settings: Profile and Notifications collapse into tap-to-open headers; add Privacy policy and Support links; add collapsible ticket history.
+- [x] Match times follow the device's timezone (e.g. US time when in the USA) instead of a fixed Kuwait time.
+- [x] Settings: add 12/24-hour time format option
+- [x] Privacy policy and Support pages: back button
+- [x] Home Competitions view: Competitions grid, then Live, Today (calendar), Favorites (simple list with See all); tabbed Matches/Clubs/Competitions/Players layout lives on the Favorites page.
+- [x] Bottom bar: Competitions tab replaced with Favorites (opens the Favorites page).
+- [x] Compact Home tabs and original Live/competition styling; full Favorites category labels and a star navigation icon.
+- [x] Replace Home Latest News with expandable countries that have upcoming matches, including World → Friendlies, in an original design.
+- [x] Stretch Matches/Competitions across the available width with a small central gap and make Live clearly clickable.
+- [x] Mark match dates in the calendar and add Upcoming beside Live, filtered from the selected date onward.
+- [x] Lower the account-deletion confirmation and verify its placement.
+- [x] Default Home to Upcoming; date selection switches to the picked day.
+- [x] Add consistent watermark, website, and Instagram to every shared image and verify exports.
+
+- [x] Fix the reported calendar lag/layout issue.
+
+- [x] Home board: Filter pill opens a full-screen team search (Zain Premier League clubs + Kuwait national team first); picking a team shows its matches on the board with a clearable chip.
+- [x] Fix: tapping the active bottom tab scrolls back to top (smooth); switching tabs starts the new page at the top.
+- [x] Filter rework: full-screen, Zain Premier League clubs + Kuwait national team by default, search reveals the rest, picked club filters the home board.
+- [x] Upcoming toggle: re-tapping Upcoming keeps upcoming matches; day/calendar views bring it back.
+- [x] Filter sections: Club | Head to head tabs with + vs + slot picker and equal boxes; head-to-head notice kept.
+- [x] Filter default browse shows grouped sections: Zain Premier League, Kuwait national teams, Zain First Division, Zain U19 League, Kuwait U17 League; search spans all teams.
+
+## Oct 25 requests
+- [x] League video thumbnail template in league settings; auto match thumbnail with logos + score
+- [x] Add 5-2-3 formation
+- [x] Fix player matches-played in competition statistics
+- [x] Match media: type picker (custom, full match, live stream, ...) with auto title "Type | Home score Away"; label Zain PL media as Full Match
+- [x] Possible lineups visible only to main admin
+- [x] Confirmed-lineups notification + admin send button
+- [x] Favorites: selecting a club shows its matches
+- [x] Header scorers: group same player's minutes, max 3 rows then "+N goals"
+- [x] Compact match events like reference; remove "Substitution: team" subtext
+- [x] Share images footer: "Powered by Mansour Almail"
+- [x] Transfer history redesign with tappable team links
+- [x] Refresh Khaleeji 27 Team of the Round (fixed release window: set realistic completion times)

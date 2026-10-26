@@ -13,13 +13,14 @@ import { useI18n } from "@/lib/i18n";
 import { useCompact, useTx } from "@/lib/auto-translate";
 import { generatedCover, voiceProfiles, liveFor, roomCover, type VoiceHost, type VoiceRoom } from "@/lib/voice";
 import { suspensionMessage, useMySuspension } from "@/lib/suspension";
+import { formatKickoff } from "@/lib/db";
 
 export const Route = createFileRoute("/voice/")({
   head: () => ({
     meta: [
-      { title: "Voice rooms — MA Scores" },
+      { title: "Voice rooms — MaScores" },
       { name: "description", content: "Join live football voice rooms, listen to fans and pundits, host your own room and follow the voices you like." },
-      { property: "og:title", content: "Voice rooms — MA Scores" },
+      { property: "og:title", content: "Voice rooms — MaScores" },
       { property: "og:description", content: "Live football talk rooms: listen, speak and follow your favourite hosts." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -302,7 +303,7 @@ function CreateRoom({ onClose, onCreated, matchId = null }: { onClose: () => voi
               <option value="">{tx("No match")}</option>
               {(matches.data ?? []).map((m) => (
                 <option key={m.id} value={m.id}>
-                  {(m.home?.name ?? "?") + " v " + (m.away?.name ?? "?")}{m.kickoff_at ? ` — ${new Date(m.kickoff_at).toLocaleDateString()}` : ""}
+                  {(m.home?.name ?? "?") + " v " + (m.away?.name ?? "?")}{m.kickoff_at ? ` — ${formatKickoff(m.kickoff_at)}` : ""}
                 </option>
               ))}
             </select>

@@ -12,9 +12,9 @@ import { CalendarDays, Users, MapPin, Trophy, FileSignature, LayoutGrid } from "
 export const Route = createFileRoute("/coaches/$id")({
   head: () => ({
     meta: [
-      { title: "Coach profile — MA Scores" },
-      { name: "description", content: "Coach profile with club, nationality and career details on MA Scores." },
-      { property: "og:title", content: "Coach profile — MA Scores" },
+      { title: "Coach profile — MaScores" },
+      { name: "description", content: "Coach profile with club, nationality and career details on MaScores." },
+      { property: "og:title", content: "Coach profile — MaScores" },
       { property: "og:description", content: "Coach profile with club, nationality and career details." },
       { property: "og:type", content: "profile" },
       { name: "twitter:card", content: "summary" },

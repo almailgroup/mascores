@@ -535,6 +535,7 @@ export type Database = {
           starts_on: string | null
           title_holder_team_id: string | null
           updated_at: string
+          video_thumbnail_url: string | null
           youth_competition_ids: string[]
         }
         Insert: {
@@ -569,6 +570,7 @@ export type Database = {
           starts_on?: string | null
           title_holder_team_id?: string | null
           updated_at?: string
+          video_thumbnail_url?: string | null
           youth_competition_ids?: string[]
         }
         Update: {
@@ -603,6 +605,7 @@ export type Database = {
           starts_on?: string | null
           title_holder_team_id?: string | null
           updated_at?: string
+          video_thumbnail_url?: string | null
           youth_competition_ids?: string[]
         }
         Relationships: [
@@ -1040,6 +1043,55 @@ export type Database = {
           },
         ]
       }
+      match_missing_players: {
+        Row: {
+          custom_reason: string | null
+          id: string
+          match_id: string
+          player_id: string
+          reason: string
+          team_id: string
+        }
+        Insert: {
+          custom_reason?: string | null
+          id?: string
+          match_id: string
+          player_id: string
+          reason?: string
+          team_id: string
+        }
+        Update: {
+          custom_reason?: string | null
+          id?: string
+          match_id?: string
+          player_id?: string
+          reason?: string
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_missing_players_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_missing_players_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_missing_players_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       match_momentum: {
         Row: {
           match_id: string
@@ -1229,6 +1281,7 @@ export type Database = {
           home_team_id: string | null
           id: string
           kickoff_at: string | null
+          kickoff_date: string | null
           lineup_mode: string
           lineups_published: boolean
           live_minute: number | null
@@ -1266,6 +1319,7 @@ export type Database = {
           home_team_id?: string | null
           id?: string
           kickoff_at?: string | null
+          kickoff_date?: string | null
           lineup_mode?: string
           lineups_published?: boolean
           live_minute?: number | null
@@ -1303,6 +1357,7 @@ export type Database = {
           home_team_id?: string | null
           id?: string
           kickoff_at?: string | null
+          kickoff_date?: string | null
           lineup_mode?: string
           lineups_published?: boolean
           live_minute?: number | null
@@ -1931,6 +1986,7 @@ export type Database = {
           match_notification_ids: string[]
           notification_preferences: Json
           theme: string
+          time_format: string
           updated_at: string
           username: string | null
           username_changed_at: string | null
@@ -1954,6 +2010,7 @@ export type Database = {
           match_notification_ids?: string[]
           notification_preferences?: Json
           theme?: string
+          time_format?: string
           updated_at?: string
           username?: string | null
           username_changed_at?: string | null
@@ -1977,6 +2034,7 @@ export type Database = {
           match_notification_ids?: string[]
           notification_preferences?: Json
           theme?: string
+          time_format?: string
           updated_at?: string
           username?: string | null
           username_changed_at?: string | null
@@ -3056,6 +3114,24 @@ export type Database = {
         }
         Relationships: []
       }
+      user_blocks: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       user_suspensions: {
         Row: {
           banned: boolean
@@ -3452,6 +3528,7 @@ export type Database = {
           title_en: string
         }[]
       }
+      admin_send_lineups_push: { Args: { _match: string }; Returns: undefined }
       admin_send_push: {
         Args: {
           _audience_type: string
@@ -3467,6 +3544,7 @@ export type Database = {
       }
       admin_unlock_allowed: { Args: { _uid: string }; Returns: boolean }
       ar_skeleton: { Args: { _t: string }; Returns: string }
+      block_user: { Args: { _target: string }; Returns: undefined }
       can_view_recording: { Args: { _id: string }; Returns: boolean }
       can_view_social_profile: { Args: { _host: string }; Returns: boolean }
       chat_author_profiles: {
@@ -3483,6 +3561,10 @@ export type Database = {
         Returns: number
       }
       competition_round_teams: {
+        Args: { _competition_id: string; _season?: string }
+        Returns: Json
+      }
+      competition_season_team: {
         Args: { _competition_id: string; _season?: string }
         Returns: Json
       }
@@ -3515,6 +3597,7 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _uid: string }; Returns: boolean }
+      is_blocked_between: { Args: { _a: string; _b: string }; Returns: boolean }
       is_main_admin: { Args: { _uid: string }; Returns: boolean }
       is_suspended: { Args: { _uid: string }; Returns: boolean }
       match_prediction_tally: {
@@ -3536,6 +3619,17 @@ export type Database = {
           b_id: string
           b_name: string
           score: number
+        }[]
+      }
+      mute_all_alerts: { Args: never; Returns: undefined }
+      my_blocked_users: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          blocked_at: string
+          display_name: string
+          id: string
+          username: string
         }[]
       }
       norm_search: { Args: { _t: string }; Returns: string }
@@ -3632,6 +3726,7 @@ export type Database = {
         }[]
       }
       social_profile: { Args: { _username: string }; Returns: Json }
+      unblock_user: { Args: { _target: string }; Returns: undefined }
       voice_delete_room: { Args: { _room_id: string }; Returns: undefined }
       voice_end_room: { Args: { _room_id: string }; Returns: undefined }
       voice_host_activity: { Args: { _room_id: string }; Returns: undefined }

@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Lock, LockOpen } from "lucide-react";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const ITEM_H = 32;
 
-function Column({ values, labels, value, onChange }: { values: number[]; labels: string[]; value: number; onChange: (v: number) => void }) {
+function Column({ values, labels, value, onChange, locked }: { values: number[]; labels: string[]; value: number; onChange: (v: number) => void; locked: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   const idx = Math.max(0, values.indexOf(value));
 
@@ -17,7 +18,7 @@ function Column({ values, labels, value, onChange }: { values: number[]; labels:
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onScroll = () => {
     const el = ref.current;
-    if (!el) return;
+    if (!el || locked) return;
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => {
       const i = Math.min(values.length - 1, Math.max(0, Math.round(el.scrollTop / ITEM_H)));
@@ -31,14 +32,14 @@ function Column({ values, labels, value, onChange }: { values: number[]; labels:
       <div
         ref={ref}
         onScroll={onScroll}
-        className="h-40 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className={`h-40 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${locked ? "overflow-hidden touch-pan-y opacity-70" : "overflow-y-auto"}`}
         style={{ paddingTop: ITEM_H * 2, paddingBottom: ITEM_H * 2 }}
       >
         {values.map((v, i) => (
           <div
             key={v}
             style={{ height: ITEM_H }}
-            onClick={() => onChange(v)}
+            onClick={() => { if (!locked) onChange(v); }}
             className={`flex cursor-pointer items-center justify-center text-sm tabular-nums transition-colors ${v === value ? "font-bold text-foreground" : "text-muted-foreground/60"}`}
           >
             {labels[i]}
@@ -53,6 +54,9 @@ function Column({ values, labels, value, onChange }: { values: number[]; labels:
 /** Scroll-wheel date picker. Value/onChange use "YYYY-MM-DD" (or null). Optional: stays empty until opened. */
 export function DateWheel({ value, onChange, minYear = 1930, placeholder = "Add date" }: { value: string | null | undefined; onChange: (v: string | null) => void; minYear?: number; placeholder?: string }) {
   const [open, setOpen] = useState(false);
+  // Wheels start locked so scrolling the page never changes the date by accident.
+  const [locked, setLocked] = useState(true);
+  const openPicker = () => { setOpen(true); setLocked(false); };
   const now = new Date();
   const parsed = value ? new Date(`${value}T00:00:00`) : null;
   const y = parsed ? parsed.getFullYear() : 2000;
@@ -76,18 +80,24 @@ export function DateWheel({ value, onChange, minYear = 1930, placeholder = "Add 
 
   return (
     !value && !open ? (
-      <button type="button" onClick={() => setOpen(true)}
-        className="flex h-10 w-full items-center rounded-xl border border-border bg-background px-3 text-sm text-muted-foreground hover:border-primary/50">
+      <div role="button" tabIndex={0} onPointerUp={openPicker} onClick={(e) => { e.preventDefault(); openPicker(); }}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openPicker(); } }}
+        className="flex h-10 w-full cursor-pointer items-center rounded-xl border border-border bg-background px-3 text-sm text-muted-foreground hover:border-primary/50">
         {placeholder}
-      </button>
+      </div>
     ) : (
-    <div className="rounded-xl border border-border bg-background p-2">
+    <div className="rounded-xl border border-border bg-background p-2" onClick={(e) => e.preventDefault()}>
       <div className="flex gap-1">
-        <Column values={days} labels={days.map(String)} value={d} onChange={(v) => emit(y, m, v)} />
-        <Column values={months} labels={MONTHS} value={m} onChange={(v) => emit(y, v, d)} />
-        <Column values={years} labels={years.map(String)} value={y} onChange={(v) => emit(v, m, d)} />
+        <Column values={days} labels={days.map(String)} value={d} onChange={(v) => emit(y, m, v)} locked={locked} />
+        <Column values={months} labels={MONTHS} value={m} onChange={(v) => emit(y, v, d)} locked={locked} />
+        <Column values={years} labels={years.map(String)} value={y} onChange={(v) => emit(v, m, d)} locked={locked} />
       </div>
       <div className="mt-1 flex items-center justify-between px-1">
+        <button type="button" onClick={() => setLocked((l) => !l)} aria-label={locked ? "Unlock date" : "Lock date"}
+          className={`flex items-center gap-1 rounded-full border px-2 py-1 text-[0.65rem] font-semibold ${locked ? "border-border text-muted-foreground" : "border-primary text-primary"}`}>
+          {locked ? <Lock className="h-3 w-3" /> : <LockOpen className="h-3 w-3" />}
+          {locked ? "Locked" : "Unlocked"}
+        </button>
         <span className="text-[0.65rem] text-muted-foreground">{value ?? "Not set"}</span>
         <button type="button" className="text-[0.65rem] text-muted-foreground hover:text-destructive" onClick={() => { onChange(null); setOpen(false); }}>Clear</button>
       </div>

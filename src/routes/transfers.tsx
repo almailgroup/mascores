@@ -12,9 +12,9 @@ import { useI18n } from "@/lib/i18n";
 export const Route = createFileRoute("/transfers")({
   head: () => ({
     meta: [
-      { title: "Transfers — MA Scores" },
+      { title: "Transfers — MaScores" },
       { name: "description", content: "Every player and coach move tracked across the competitions you follow." },
-      { property: "og:title", content: "Transfers — MA Scores" },
+      { property: "og:title", content: "Transfers — MaScores" },
       { property: "og:description", content: "Every player and coach move tracked across the competitions you follow." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

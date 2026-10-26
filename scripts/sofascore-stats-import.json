@@ -1,0 +1,3808 @@
+{
+  "source": "Sofascore public match pages",
+  "retrieved_at": "2026-10-24T23:57:53.673908+00:00",
+  "season": "2026/2027",
+  "matches": [
+    {
+      "match_id": "d3a560b2-8050-4f8c-a712-5cf1840c33ef",
+      "round": 1,
+      "home": "Al Fahaheel SC",
+      "away": "Al Qadsia SC",
+      "source_event_id": "16796332",
+      "source_url": "https://www.sofascore.com/football/match/al-fahaheel-sc-al-qadsia-sc/Fujsjdx#id:16796332",
+      "reversed": false,
+      "stats": [
+        {
+          "label": "Ball possession",
+          "home": "36%",
+          "away": "64%",
+          "order": 0
+        },
+        {
+          "label": "Corner kicks",
+          "home": "4",
+          "away": "6",
+          "order": 3
+        },
+        {
+          "label": "Free kicks",
+          "home": "5",
+          "away": "15",
+          "order": 12
+        },
+        {
+          "label": "Yellow cards",
+          "home": "3",
+          "away": "2",
+          "order": 6
+        },
+        {
+          "label": "Red cards",
+          "home": "0",
+          "away": "0",
+          "order": 7
+        },
+        {
+          "label": "Shots on target",
+          "home": "5",
+          "away": "7",
+          "order": 2
+        },
+        {
+          "label": "Offsides",
+          "home": "3",
+          "away": "6",
+          "order": 4
+        },
+        {
+          "label": "Throw-ins",
+          "home": "26",
+          "away": "25",
+          "order": 13
+        },
+        {
+          "label": "Goal kicks",
+          "home": "3",
+          "away": "4",
+          "order": 14
+        }
+      ],
+      "rejected": []
+    },
+    {
+      "match_id": "8e411019-b6b0-4441-a8ec-c3f672b1d694",
+      "round": 1,
+      "home": "Kuwait SC",
+      "away": "Al Arabi SC",
+      "source_event_id": "16796333",
+      "source_url": "https://www.sofascore.com/football/match/al-arabi-sc-kuwait-al-kuwait-sc/AansRro#id:16796333",
+      "reversed": false,
+      "stats": [
+        {
+          "label": "Ball possession",
+          "home": "50%",
+          "away": "50%",
+          "order": 0
+        },
+        {
+          "label": "Corner kicks",
+          "home": "5",
+          "away": "4",
+          "order": 3
+        },
+        {
+          "label": "Fouls",
+          "home": "12",
+          "away": "9",
+          "order": 5
+        },
+        {
+          "label": "Free kicks",
+          "home": "10",
+          "away": "15",
+          "order": 12
+        },
+        {
+          "label": "Yellow cards",
+          "home": "2",
+          "away": "2",
+          "order": 6
+        },
+        {
+          "label": "Red cards",
+          "home": "0",
+          "away": "0",
+          "order": 7
+        },
+        {
+          "label": "Shots on target",
+          "home": "5",
+          "away": "5",
+          "order": 2
+        },
+        {
+          "label": "Offsides",
+          "home": "3",
+          "away": "1",
+          "order": 4
+        },
+        {
+          "label": "Throw-ins",
+          "home": "18",
+          "away": "27",
+          "order": 13
+        },
+        {
+          "label": "Goal kicks",
+          "home": "7",
+          "away": "12",
+          "order": 14
+        }
+      ],
+      "rejected": []
+    },
+    {
+      "match_id": "c0971454-7a7e-4de8-abde-66dc5b95da1d",
+      "round": 1,
+      "home": "Kazma SC",
+      "away": "Al Tadamon SC",
+      "source_event_id": "16796334",
+      "source_url": "https://www.sofascore.com/football/match/tadhamon-sc-kazma-sc/enqsfdx#id:16796334",
+      "reversed": false,
+      "stats": [
+        {
+          "label": "Ball possession",
+          "home": "38%",
+          "away": "62%",
+          "order": 0
+        },
+        {
+          "label": "Corner kicks",
+          "home": "1",
+          "away": "7",
+          "order": 3
+        },
+        {
+          "label": "Yellow cards",
+          "home": "0",
+          "away": "2",
+          "order": 6
+        },
+        {
+          "label": "Red cards",
+          "home": "0",
+          "away": "0",
+          "order": 7
+        },
+        {
+          "label": "Shots on target",
+          "home": "2",
+          "away": "11",
+          "order": 2
+        },
+        {
+          "label": "Goal kicks",
+          "home": "2",
+          "away": "2",
+          "order": 14
+        }
+      ],
+      "rejected": []
+    },
+    {
+      "match_id": "194ea351-a279-4ea0-a4f9-470251759b67",
+      "round": 1,
+      "home": "Al Salmiya SC",
+      "away": "Al Nasr SC",
+      "source_event_id": "16796335",
+      "source_url": "https://www.sofascore.com/football/match/al-salmiya-sc-al-nasr-sc-kuwait/btjsldx#id:16796335",
+      "reversed": false,
+      "stats": [
+        {
+          "label": "Ball possession",
+          "home": "65%",
+          "away": "35%",
+          "order": 0
+        },
+        {
+          "label": "Corner kicks",
+          "home": "3",
+          "away": "1",
+          "order": 3
+        },
+        {
+          "label": "Fouls",
+          "home": "14",
+          "away": "10",
+          "order": 5
+        },
+        {
+          "label": "Free kicks",
+          "home": "11",
+          "away": "19",
+          "order": 12
+        },
+        {
+          "label": "Yellow cards",
+          "home": "2",
+          "away": "2",
+          "order": 6
+        },
+        {
+          "label": "Shots on target",
+          "home": "4",
+          "away": "5",
+          "order": 2
+        },
+        {
+          "label": "Offsides",
+          "home": "5",
+          "away": "1",
+          "order": 4
+        },
+        {
+          "label": "Throw-ins",
+          "home": "20",
+          "away": "15",
+          "order": 13
+        },
+        {
+          "label": "Goal kicks",
+          "home": "0",
+          "away": "0",
+          "order": 14
+        }
+      ],
+      "rejected": []
+    },
+    {
+      "match_id": "70d568bf-6879-46ba-b61e-10227b5f149b",
+      "round": 1,
+      "home": "Al Shabab SC",
+      "away": "Al Jahra SC",
+      "source_event_id": "16796336",
+      "source_url": "https://www.sofascore.com/football/match/al-shabab-sc-al-jahra-sc/VBwsudx#id:16796336",
+      "reversed": false,
+      "stats": [
+        {
+          "label": "Ball possession",
+          "home": "51%",
+          "away": "49%",
+          "order": 0
+        },
+        {
+          "label": "Corner kicks",
+          "home": "2",
+          "away": "1",
+          "order": 3
+        },
+        {
+          "label": "Free kicks",
+          "home": "11",
+          "away": "11",
+          "order": 12
+        },
+        {
+          "label": "Yellow cards",
+          "home": "4",
+          "away": "1",
+          "order": 6
+        },
+        {
+          "label": "Red cards",
+          "home": "0",
+          "away": "0",
+          "order": 7
+        },
+        {
+          "label": "Shots on target",
+          "home": "4",
+          "away": "4",
+          "order": 2
+        },
+        {
+          "label": "Offsides",
+          "home": "2",
+          "away": "2",
+          "order": 4
+        },
+        {
+          "label": "Throw-ins",
+          "home": "22",
+          "away": "19",
+          "order": 13
+        },
+        {
+          "label": "Goal kicks",
+          "home": "7",
+          "away": "6",
+          "order": 14
+        }
+      ],
+      "rejected": []
+    },
+    {
+      "match_id": "8404287f-ae23-46e5-b7dc-4ca3d789e1bb",
+      "round": 1,
+      "home": "Al Sahel SC",
+      "away": "Sulaibikhat FC",
+      "source_event_id": "16891206",
+      "source_url": "https://www.sofascore.com/football/match/al-sahel-sc-al-sulaibikhat-fc/pdxsrdx#id:16891206",
+      "reversed": false,
+      "stats": [
+        {
+          "label": "Ball possession",
+          "home": "45%",
+          "away": "55%",
+          "order": 0
+        },
+        {
+          "label": "Corner kicks",
+          "home": "2",
+          "away": "2",
+          "order": 3
+        },
+        {
+          "label": "Fouls",
+          "home": "16",
+          "away": "20",
+          "order": 5
+        },
+        {
+          "label": "Free kicks",
+          "home": "21",
+          "away": "17",
+          "order": 12
+        },
+        {
+          "label": "Yellow cards",
+          "home": "3",
+          "away": "3",
+          "order": 6
+        },
+        {
+          "label": "Shots on target",
+          "home": "3",
+          "away": "2",
+          "order": 2
+        },
+        {
+          "label": "Offsides",
+          "home": "0",
+          "away": "1",
+          "order": 4
+        },
+        {
+          "label": "Throw-ins",
+          "home": "32",
+          "away": "19",
+          "order": 13
+        },
+        {
+          "label": "Goal kicks",
+          "home": "0",
+          "away": "0",
+          "order": 14
+        }
+      ],
+      "rejected": []
+    },
+    {
+      "match_id": "5cf4f2e0-89d4-4941-a3aa-19c94279625f",
+      "round": 2,
+      "home": "Al Nasr SC",
+      "away": "Al Fahaheel SC",
+      "source_event_id": "16897350",
+      "source_url": "https://www.sofascore.com/football/match/al-fahaheel-sc-al-nasr-sc-kuwait/btjsjdx#id:16897350",
+      "reversed": false,
+      "stats": [
+        {
+          "label": "Ball possession",
+          "home": "42%",
+          "away": "58%",
+          "order": 0
+        },
+        {
+          "label": "Corner kicks",
+          "home": "4",
+          "away": "6",
+          "order": 3
+        },
+        {
+          "label": "Fouls",
+          "home": "8",
+          "away": "9",
+          "order": 5
+        },
+        {
+          "label": "Free kicks",
+          "home": "10",
+          "away": "8",
+          "order": 12
+        },
+        {
+          "label": "Yellow cards",
+          "home": "1",
+          "away": "3",
+          "order": 6
+        },
+        {
+          "label": "Red cards",
+          "home": "0",
+          "away": "0",
+          "order": 7
+        },
+        {
+          "label": "Shots on target",
+          "home": "8",
+          "away": "4",
+          "order": 2
+        },
+        {
+          "label": "Offsides",
+          "home": "0",
+          "away": "1",
+          "order": 4
+        },
+        {
+          "label": "Throw-ins",
+          "home": "20",
+          "away": "24",
+          "order": 13
+        },
+        {
+          "label": "Goal kicks",
+          "home": "18",
+          "away": "8",
+          "order": 14
+        }
+      ],
+      "rejected": []
+    },
+    {
+      "match_id": "deff7525-a79d-4d4b-9b28-81f6bf478222",
+      "round": 2,
+      "home": "Al Jahra SC",
+      "away": "Al Arabi SC",
+      "source_event_id": "16897370",
+      "source_url": "https://www.sofascore.com/football/match/al-jahra-sc-al-arabi-sc-kuwait/RrosVBw#id:16897370",
+      "reversed": false,
+      "stats": [],
+      "rejected": []
+    },
+    {
+      "match_id": "c6b00c0b-1e3f-4f7c-b0ce-ecbd419e4437",
+      "round": 2,
+      "home": "Al Qadsia SC",
+      "away": "Kuwait SC",
+      "source_event_id": "16897793",
+      "source_url": "https://www.sofascore.com/football/match/al-kuwait-sc-al-qadsia-sc/FujsAan#id:16897793",
+      "reversed": false,
+      "stats": [
+        {
+          "label": "Ball possession",
+          "home": "38%",
+          "away": "62%",
+          "order": 0
+        },
+        {
+          "label": "Corner kicks",
+          "home": "2",
+          "away": "9",
+          "order": 3
+        },
+        {
+          "label": "Fouls",
+          "home": "5",
+          "away": "8",
+          "order": 5
+        },
+        {
+          "label": "Free kicks",
+          "home": "10",
+          "away": "6",
+          "order": 12
+        },
+        {
+          "label": "Yellow cards",
+          "home": "0",
+          "away": "1",
+          "order": 6
+        },
+        {
+          "label": "Shots on target",
+          "home": "2",
+          "away": "5",
+          "order": 2
+        },
+        {
+          "label": "Offsides",
+          "home": "1",
+          "away": "2",
+          "order": 4
+        },
+        {
+          "label": "Throw-ins",
+          "home": "26",
+          "away": "23",
+          "order": 13
+        },
+        {
+          "label": "Goal kicks",
+          "home": "1",
+          "away": "0",
+          "order": 14
+        }
+      ],
+      "rejected": []
+    },
+    {
+      "match_id": "01e3b35c-9f47-4740-9482-31e111e0913c",
+      "round": 2,
+      "home": "Kazma SC",
+      "away": "Al Sahel SC",
+      "source_event_id": "16897794",
+      "source_url": "https://www.sofascore.com/football/match/al-sahel-sc-kazma-sc/enqsrdx#id:16897794",
+      "reversed": false,
+      "stats": [
+        {
+          "label": "Ball possession",
+          "home": "70%",
+          "away": "30%",
+          "order": 0
+        },
+        {
+          "label": "Corner kicks",
+          "home": "7",
+          "away": "5",
+          "order": 3
+        },
+        {
+          "label": "Fouls",
+          "home": "12",
+          "away": "11",
+          "order": 5
+        },
+        {
+          "label": "Free kicks",
+          "home": "12",
+          "away": "15",
+          "order": 12
+        },
+        {
+          "label": "Yellow cards",
+          "home": "4",
+          "away": "2",
+          "order": 6
+        },
+        {
+          "label": "Red cards",
+          "home": "1",
+          "away": "1",
+          "order": 7
+        },
+        {
+          "label": "Shots on target",
+          "home": "6",
+          "away": "0",
+          "order": 2
+        },
+        {
+          "label": "Throw-ins",
+          "home": "25",
+          "away": "27",
+          "order": 13
+        },
+        {
+          "label": "Goal kicks",
+          "home": "0",
+          "away": "0",
+          "order": 14
+        }
+      ],
+      "rejected": []
+    },
+    {
+      "match_id": "92a4b559-a469-4c37-b213-2c8f58c891de",
+      "round": 2,
+      "home": "Al Tadamon SC",
+      "away": "Al Salmiya SC",
+      "source_event_id": "16897795",
+      "source_url": "https://www.sofascore.com/football/match/al-salmiya-sc-tadhamon-sc/fdxsldx#id:16897795",
+      "reversed": false,
+      "stats": [
+        {
+          "label": "Ball possession",
+          "home": "49%",
+          "away": "51%",
+          "order": 0
+        },
+        {
+          "label": "Corner kicks",
+          "home": "10",
+          "away": "5",
+          "order": 3
+        },
+        {
+          "label": "Fouls",
+          "home": "14",
+          "away": "12",
+          "order": 5
+        },
+        {
+          "label": "Free kicks",
+          "home": "13",
+          "away": "18",
+          "order": 12
+        },
+        {
+          "label": "Yellow cards",
+          "home": "4",
+          "away": "1",
+          "order": 6
+        },
+        {
+          "label": "Red cards",
+          "home": "0",
+          "away": "0",
+          "order": 7
+        },
+        {
+          "label": "Shots on target",
+          "home": "7",
+          "away": "8",
+          "order": 2
+        },
+        {
+          "label": "Offsides",
+          "home": "4",
+          "away": "1",
+          "order": 4
+        },
+        {
+          "label": "Throw-ins",
+          "home": "27",
+          "away": "29",
+          "order": 13
+        },
+        {
+          "label": "Goal kicks",
+          "home": "5",
+          "away": "3",
+          "order": 14
+        }
+      ],
+      "rejected": []
+    },
+    {
+      "match_id": "fe5e221a-f89b-4ed4-a340-fb1060fa56da",
+      "round": 2,
+      "home": "Sulaibikhat FC",
+      "away": "Al Shabab SC",
+      "source_event_id": "16897796",
+      "source_url": "https://www.sofascore.com/football/match/al-shabab-sc-al-sulaibikhat-fc/pdxsudx#id:16897796",
+      "reversed": false,
+      "stats": [
+        {
+          "label": "Ball possession",
+          "home": "50%",
+          "away": "50%",
+          "order": 0
+        },
+        {
+          "label": "Corner kicks",
+          "home": "7",
+          "away": "5",
+          "order": 3
+        },
+        {
+          "label": "Fouls",
+          "home": "11",
+          "away": "10",
+          "order": 5
+        },
+        {
+          "label": "Free kicks",
+          "home": "12",
+          "away": "16",
+          "order": 12
+        },
+        {
+          "label": "Yellow cards",
+          "home": "0",
+          "away": "0",
+          "order": 6
+        },
+        {
+          "label": "Red cards",
+          "home": "1",
+          "away": "0",
+          "order": 7
+        },
+        {
+          "label": "Shots on target",
+          "home": "4",
+          "away": "7",
+          "order": 2
+        },
+        {
+          "label": "Offsides",
+          "home": "3",
+          "away": "2",
+          "order": 4
+        },
+        {
+          "label": "Throw-ins",
+          "home": "23",
+          "away": "13",
+          "order": 13
+        },
+        {
+          "label": "Goal kicks",
+          "home": "0",
+          "away": "0",
+          "order": 14
+        }
+      ],
+      "rejected": []
+    },
+    {
+      "match_id": "80cf1936-2b76-4356-819e-160c00083965",
+      "round": 3,
+      "home": "Al Shabab SC",
+      "away": "Kazma SC",
+      "source_event_id": "16897797",
+      "source_url": "https://www.sofascore.com/football/match/al-shabab-sc-kazma-sc/enqsudx#id:16897797",
+      "reversed": false,
+      "stats": [
+        {
+          "label": "Ball possession",
+          "home": "40%",
+          "away": "60%",
+          "order": 0
+        },
+        {
+          "label": "Corner kicks",
+          "home": "5",
+          "away": "2",
+          "order": 3
+        },
+        {
+          "label": "Yellow cards",
+          "home": "3",
+          "away": "1",
+          "order": 6
+        },
+        {
+          "label": "Shots on target",
+          "home": "3",
+          "away": "9",
+          "order": 2
+        },
+        {
+          "label": "Goal kicks",
+          "home": "10",
+          "away": "10",
+          "order": 14
+        }
+      ],
+      "rejected": []
+    },
+    {
+      "match_id": "b8776057-502e-4db2-8fff-97a11e5015a3",
+      "round": 3,
+      "home": "Al Fahaheel SC",
+      "away": "Al Tadamon SC",
+      "source_event_id": "16897798",
+      "source_url": "https://www.sofascore.com/football/match/al-fahaheel-sc-tadhamon-sc/fdxsjdx#id:16897798",
+      "reversed": false,
+      "stats": [
+        {
+          "label": "Ball possession",
+          "home": "50%",
+          "away": "50%",
+          "order": 0
+        },
+        {
+          "label": "Corner kicks",
+          "home": "7",
+          "away": "5",
+          "order": 3
+        },
+        {
+          "label": "Yellow cards",
+          "home": "0",
+          "away": "2",
+          "order": 6
+        },
+        {
+          "label": "Shots on target",
+          "home": "12",
+          "away": "3",
+          "order": 2
+        },
+        {
+          "label": "Goal kicks",
+          "home": "8",
+          "away": "14",
+          "order": 14
+        }
+      ],
+      "rejected": []
+    },
+    {
+      "match_id": "ce2eed68-4f81-4077-880b-37710eb60de7",
+      "round": 3,
+      "home": "Al Arabi SC",
+      "away": "Sulaibikhat FC",
+      "source_event_id": "16897799",
+      "source_url": "https://www.sofascore.com/football/match/al-sulaibikhat-fc-al-arabi-sc-kuwait/Rrospdx#id:16897799",
+      "reversed": false,
+      "stats": [
+        {
+          "label": "Ball possession",
+          "home": "63%",
+          "away": "37%",
+          "order": 0
+        },
+        {
+          "label": "Corner kicks",
+          "home": "11",
+          "away": "4",
+          "order": 3
+        },
+        {
+          "label": "Yellow cards",
+          "home": "2",
+          "away": "2",
+          "order": 6
+        },
+        {
+          "label": "Shots on target",
+          "home": "8",
+          "away": "5",
+          "order": 2
+        }
+      ],
+      "rejected": []
+    },
+    {
+      "match_id": "118f7b6f-04ab-4128-8145-eb9d47a294fb",
+      "round": 3,
+      "home": "Kuwait SC",
+      "away": "Al Jahra SC",
+      "source_event_id": "16897800",
+      "source_url": "https://www.sofascore.com/football/match/al-jahra-sc-al-kuwait-sc/AansVBw#id:16897800",
+      "reversed": false,
+      "stats": [
+        {
+          "label": "Corner kicks",
+          "home": "14",
+          "away": "2",
+          "order": 3
+        },
+        {
+          "label": "Fouls",
+          "home": "8",
+          "away": "8",
+          "order": 5
+        },
+        {
+          "label": "Free kicks",
+          "home": "8",
+          "away": "9",
+          "order": 12
+        },
+        {
+          "label": "Yellow cards",
+          "home": "0",
+          "away": "3",
+          "order": 6
+        },
+        {
+          "label": "Red cards",
+          "home": "0",
+          "away": "0",
+          "order": 7
+        },
+        {
+          "label": "Shots on target",
+          "home": "6",
+          "away": "0",
+          "order": 2
+        },
+        {
+          "label": "Offsides",
+          "home": "1",
+          "away": "0",
+          "order": 4
+        },
+        {
+          "label": "Throw-ins",
+          "home": "20",
+          "away": "22",
+          "order": 13
+        },
+        {
+          "label": "Goal kicks",
+          "home": "6",
+          "away": "13",
+          "order": 14
+        }
+      ],
+      "rejected": [
+        {
+          "label": "Ball possession",
+          "home": "0%",
+          "away": "0%"
+        }
+      ]
+    },
+    {
+      "match_id": "421ca45b-cf42-4e60-8a79-349cd5f26682",
+      "round": 3,
+      "home": "Al Salmiya SC",
+      "away": "Al Sahel SC",
+      "source_event_id": "16897801",
+      "source_url": "https://www.sofascore.com/football/match/al-sahel-sc-al-salmiya-sc/ldxsrdx#id:16897801",
+      "reversed": false,
+      "stats": [
+        {
+          "label": "Corner kicks",
+          "home": "8",
+          "away": "5",
+          "order": 3
+        },
+        {
+          "label": "Fouls",
+          "home": "9",
+          "away": "13",
+          "order": 5
+        },
+        {
+          "label": "Free kicks",
+          "home": "15",
+          "away": "11",
+          "order": 12
+        },
+        {
+          "label": "Yellow cards",
+          "home": "5",
+          "away": "6",
+          "order": 6
+        },
+        {
+          "label": "Red cards",
+          "home": "0",
+          "away": "0",
+          "order": 7
+        },
+        {
+          "label": "Shots on target",
+          "home": "9",
+          "away": "1",
+          "order": 2
+        },
+        {
+          "label": "Offsides",
+          "home": "3",
+          "away": "1",
+          "order": 4
+        },
+        {
+          "label": "Throw-ins",
+          "home": "18",
+          "away": "23",
+          "order": 13
+        },
+        {
+          "label": "Goal kicks",
+          "home": "8",
+          "away": "17",
+          "order": 14
+        }
+      ],
+      "rejected": [
+        {
+          "label": "Ball possession",
+          "home": "0%",
+          "away": "0%"
+        }
+      ]
+    },
+    {
+      "match_id": "2c260529-6487-4d64-adc7-4e4d36e2ff65",
+      "round": 3,
+      "home": "Al Qadsia SC",
+      "away": "Al Nasr SC",
+      "source_event_id": "16897802",
+      "source_url": "https://www.sofascore.com/football/match/al-qadsia-sc-al-nasr-sc-kuwait/btjsFuj#id:16897802",
+      "reversed": false,
+      "stats": [
+        {
+          "label": "Ball possession",
+          "home": "55%",
+          "away": "45%",
+          "order": 0
+        },
+        {
+          "label": "Corner kicks",
+          "home": "3",
+          "away": "7",
+          "order": 3
+        },
+        {
+          "label": "Fouls",
+          "home": "14",
+          "away": "11",
+          "order": 5
+        },
+        {
+          "label": "Free kicks",
+          "home": "12",
+          "away": "15",
+          "order": 12
+        },
+        {
+          "label": "Yellow cards",
+          "home": "0",
+          "away": "3",
+          "order": 6
+        },
+        {
+          "label": "Red cards",
+          "home": "0",
+          "away": "0",
+          "order": 7
+        },
+        {
+          "label": "Shots on target",
+          "home": "7",
+          "away": "4",
+          "order": 2
+        },
+        {
+          "label": "Offsides",
+          "home": "1",
+          "away": "1",
+          "order": 4
+        },
+        {
+          "label": "Throw-ins",
+          "home": "15",
+          "away": "16",
+          "order": 13
+        },
+        {
+          "label": "Goal kicks",
+          "home": "4",
+          "away": "12",
+          "order": 14
+        }
+      ],
+      "rejected": []
+    },
+    {
+      "match_id": "3344ce00-be7e-4a15-9a30-f017cc2dbc55",
+      "round": 4,
+      "home": "Sulaibikhat FC",
+      "away": "Al Jahra SC",
+      "source_event_id": "17248107",
+      "source_url": "https://www.sofascore.com/football/match/al-sulaibikhat-fc-al-jahra-sc/VBwspdx#id:17248107",
+      "reversed": false,
+      "stats": [
+        {
+          "label": "Ball possession",
+          "home": "46%",
+          "away": "54%",
+          "order": 0
+        },
+        {
+          "label": "Corner kicks",
+          "home": "8",
+          "away": "2",
+          "order": 3
+        },
+        {
+          "label": "Fouls",
+          "home": "23",
+          "away": "12",
+          "order": 5
+        },
+        {
+          "label": "Free kicks",
+          "home": "16",
+          "away": "27",
+          "order": 12
+        },
+        {
+          "label": "Yellow cards",
+          "home": "8",
+          "away": "4",
+          "order": 6
+        },
+        {
+          "label": "Red cards",
+          "home": "0",
+          "away": "0",
+          "order": 7
+        },
+        {
+          "label": "Shots on target",
+          "home": "2",
+          "away": "2",
+          "order": 2
+        },
+        {
+          "label": "Offsides",
+          "home": "3",
+          "away": "3",
+          "order": 4
+        },
+        {
+          "label": "Throw-ins",
+          "home": "21",
+          "away": "25",
+          "order": 13
+        },
+        {
+          "label": "Goal kicks",
+          "home": "5",
+          "away": "5",
+          "order": 14
+        }
+      ],
+      "rejected": []
+    },
+    {
+      "match_id": "81df673a-3958-4404-9020-1fcd43c5eb1e",
+      "round": 5,
+      "home": "Kuwait SC",
+      "away": "Sulaibikhat FC",
+      "source_event_id": "17248108",
+      "source_url": "https://www.sofascore.com/football/match/al-sulaibikhat-fc-al-kuwait-sc/Aanspdx#id:17248108",
+      "reversed": false,
+      "stats": [],
+      "rejected": []
+    },
+    {
+      "match_id": "a18044df-376f-4c7e-8f7e-45885e169b47",
+      "round": 5,
+      "home": "Al Jahra SC",
+      "away": "Kazma SC",
+      "source_event_id": "17248109",
+      "source_url": "https://www.sofascore.com/football/match/al-jahra-sc-kazma-sc/enqsVBw#id:17248109",
+      "reversed": false,
+      "stats": [
+        {
+          "label": "Ball possession",
+          "home": "37%",
+          "away": "63%",
+          "order": 0
+        },
+        {
+          "label": "Corner kicks",
+          "home": "0",
+          "away": "0",
+          "order": 3
+        },
+        {
+          "label": "Fouls",
+          "home": "14",
+          "away": "14",
+          "order": 5
+        },
+        {
+          "label": "Free kicks",
+          "home": "15",
+          "away": "14",
+          "order": 12
+        },
+        {
+          "label": "Yellow cards",
+          "home": "1",
+          "away": "2",
+          "order": 6
+        },
+        {
+          "label": "Red cards",
+          "home": "0",
+          "away": "0",
+          "order": 7
+        },
+        {
+          "label": "Shots on target",
+          "home": "0",
+          "away": "5",
+          "order": 2
+        },
+        {
+          "label": "Offsides",
+          "home": "0",
+          "away": "1",
+          "order": 4
+        },
+        {
+          "label": "Throw-ins",
+          "home": "19",
+          "away": "24",
+          "order": 13
+        },
+        {
+          "label": "Goal kicks",
+          "home": "0",
+          "away": "0",
+          "order": 14
+        }
+      ],
+      "rejected": []
+    },
+    {
+      "match_id": "77f74163-fada-4663-9f4b-8ab2204fd5b5",
+      "round": 5,
+      "home": "Al Nasr SC",
+      "away": "Al Tadamon SC",
+      "source_event_id": "17248111",
+      "source_url": "https://www.sofascore.com/football/match/tadhamon-sc-al-nasr-sc-kuwait/btjsfdx#id:17248111",
+      "reversed": false,
+      "stats": [
+        {
+          "label": "Ball possession",
+          "home": "58%",
+          "away": "42%",
+          "order": 0
+        },
+        {
+          "label": "Corner kicks",
+          "home": "2",
+          "away": "2",
+          "order": 3
+        },
+        {
+          "label": "Fouls",
+          "home": "7",
+          "away": "7",
+          "order": 5
+        },
+        {
+          "label": "Free kicks",
+          "home": "11",
+          "away": "9",
+          "order": 12
+        },
+        {
+          "label": "Yellow cards",
+          "home": "2",
+          "away": "2",
+          "order": 6
+        },
+        {
+          "label": "Red cards",
+          "home": "0",
+          "away": "0",
+          "order": 7
+        },
+        {
+          "label": "Shots on target",
+          "home": "5",
+          "away": "4",
+          "order": 2
+        },
+        {
+          "label": "Offsides",
+          "home": "1",
+          "away": "1",
+          "order": 4
+        },
+        {
+          "label": "Throw-ins",
+          "home": "22",
+          "away": "17",
+          "order": 13
+        },
+        {
+          "label": "Goal kicks",
+          "home": "19",
+          "away": "6",
+          "order": 14
+        }
+      ],
+      "rejected": []
+    },
+    {
+      "match_id": "8f63bc16-b0f0-48d9-99c9-bb3c2097c90d",
+      "round": 4,
+      "home": "Kazma SC",
+      "away": "Al Arabi SC",
+      "source_event_id": "17248112",
+      "source_url": "https://www.sofascore.com/football/match/kazma-sc-al-arabi-sc-kuwait/Rrosenq#id:17248112",
+      "reversed": false,
+      "stats": [
+        {
+          "label": "Ball possession",
+          "home": "42%",
+          "away": "58%",
+          "order": 0
+        },
+        {
+          "label": "Corner kicks",
+          "home": "3",
+          "away": "5",
+          "order": 3
+        },
+        {
+          "label": "Fouls",
+          "home": "16",
+          "away": "11",
+          "order": 5
+        },
+        {
+          "label": "Free kicks",
+          "home": "13",
+          "away": "17",
+          "order": 12
+        },
+        {
+          "label": "Yellow cards",
+          "home": "2",
+          "away": "1",
+          "order": 6
+        },
+        {
+          "label": "Red cards",
+          "home": "0",
+          "away": "0",
+          "order": 7
+        },
+        {
+          "label": "Shots on target",
+          "home": "4",
+          "away": "5",
+          "order": 2
+        },
+        {
+          "label": "Offsides",
+          "home": "1",
+          "away": "1",
+          "order": 4
+        },
+        {
+          "label": "Throw-ins",
+          "home": "13",
+          "away": "31",
+          "order": 13
+        },
+        {
+          "label": "Goal kicks",
+          "home": "11",
+          "away": "8",
+          "order": 14
+        }
+      ],
+      "rejected": []
+    },
+    {
+      "match_id": "a4992f2c-d33b-4fd2-9d52-2f092ffe0086",
+      "round": 4,
+      "home": "Al Nasr SC",
+      "away": "Kuwait SC",
+      "source_event_id": "17248113",
+      "source_url": "https://www.sofascore.com/football/match/al-kuwait-sc-al-nasr-sc-kuwait/btjsAan#id:17248113",
+      "reversed": false,
+      "stats": [
+        {
+          "label": "Corner kicks",
+          "home": "1",
+          "away": "3",
+          "order": 3
+        },
+        {
+          "label": "Fouls",
+          "home": "8",
+          "away": "10",
+          "order": 5
+        },
+        {
+          "label": "Free kicks",
+          "home": "11",
+          "away": "8",
+          "order": 12
+        },
+        {
+          "label": "Yellow cards",
+          "home": "1",
+          "away": "1",
+          "order": 6
+        },
+        {
+          "label": "Red cards",
+          "home": "0",
+          "away": "0",
+          "order": 7
+        },
+        {
+          "label": "Shots on target",
+          "home": "2",
+          "away": "11",
+          "order": 2
+        },
+        {
+          "label": "Offsides",
+          "home": "0",
+          "away": "0",
+          "order": 4
+        },
+        {
+          "label": "Throw-ins",
+          "home": "20",
+          "away": "18",
+          "order": 13
+        },
+        {
+          "label": "Goal kicks",
+          "home": "13",
+          "away": "7",
+          "order": 14
+        }
+      ],
+      "rejected": [
+        {
+          "label": "Ball possession",
+          "home": "0%",
+          "away": "0%"
+        }
+      ]
+    },
+    {
+      "match_id": "1e531d10-5834-4fb0-b2ba-6e021ed35af3",
+      "round": 4,
+      "home": "Al Salmiya SC",
+      "away": "Al Shabab SC",
+      "source_event_id": "17248115",
+      "source_url": "https://www.sofascore.com/football/match/al-shabab-sc-al-salmiya-sc/ldxsudx#id:17248115",
+      "reversed": false,
+      "stats": [
+        {
+          "label": "Ball possession",
+          "home": "66%",
+          "away": "34%",
+          "order": 0
+        },
+        {
+          "label": "Corner kicks",
+          "home": "11",
+          "away": "2",
+          "order": 3
+        },
+        {
+          "label": "Fouls",
+          "home": "9",
+          "away": "11",
+          "order": 5
+        },
+        {
+          "label": "Free kicks",
+          "home": "16",
+          "away": "12",
+          "order": 12
+        },
+        {
+          "label": "Yellow cards",
+          "home": "1",
+          "away": "2",
+          "order": 6
+        },
+        {
+          "label": "Red cards",
+          "home": "0",
+          "away": "0",
+          "order": 7
+        },
+        {
+          "label": "Shots on target",
+          "home": "6",
+          "away": "6",
+          "order": 2
+        },
+        {
+          "label": "Offsides",
+          "home": "2",
+          "away": "1",
+          "order": 4
+        },
+        {
+          "label": "Throw-ins",
+          "home": "21",
+          "away": "15",
+          "order": 13
+        },
+        {
+          "label": "Goal kicks",
+          "home": "5",
+          "away": "19",
+          "order": 14
+        }
+      ],
+      "rejected": []
+    },
+    {
+      "match_id": "475b45ff-6314-49b5-b788-0f22d11b03ec",
+      "round": 5,
+      "home": "Al Fahaheel SC",
+      "away": "Al Shabab SC",
+      "source_event_id": "17248116",
+      "source_url": "https://www.sofascore.com/football/match/al-shabab-sc-al-fahaheel-sc/jdxsudx#id:17248116",
+      "reversed": false,
+      "stats": [
+        {
+          "label": "Ball possession",
+          "home": "54%",
+          "away": "46%",
+          "order": 0
+        },
+        {
+          "label": "Corner kicks",
+          "home": "3",
+          "away": "2",
+          "order": 3
+        },
+        {
+          "label": "Fouls",
+          "home": "16",
+          "away": "6",
+          "order": 5
+        },
+        {
+          "label": "Free kicks",
+          "home": "7",
+          "away": "16",
+          "order": 12
+        },
+        {
+          "label": "Yellow cards",
+          "home": "0",
+          "away": "2",
+          "order": 6
+        },
+        {
+          "label": "Red cards",
+          "home": "0",
+          "away": "0",
+          "order": 7
+        },
+        {
+          "label": "Shots on target",
+          "home": "7",
+          "away": "7",
+          "order": 2
+        },
+        {
+          "label": "Offsides",
+          "home": "1",
+          "away": "1",
+          "order": 4
+        },
+        {
+          "label": "Throw-ins",
+          "home": "17",
+          "away": "15",
+          "order": 13
+        },
+        {
+          "label": "Goal kicks",
+          "home": "12",
+          "away": "10",
+          "order": 14
+        }
+      ],
+      "rejected": []
+    },
+    {
+      "match_id": "65865854-e0f0-499d-89df-c911c4051ccd",
+      "round": 4,
+      "home": "Al Sahel SC",
+      "away": "Al Fahaheel SC",
+      "source_event_id": "17248117",
+      "source_url": "https://www.sofascore.com/football/match/al-sahel-sc-al-fahaheel-sc/jdxsrdx#id:17248117",
+      "reversed": false,
+      "stats": [
+        {
+          "label": "Ball possession",
+          "home": "55%",
+          "away": "45%",
+          "order": 0
+        },
+        {
+          "label": "Corner kicks",
+          "home": "4",
+          "away": "4",
+          "order": 3
+        },
+        {
+          "label": "Fouls",
+          "home": "9",
+          "away": "8",
+          "order": 5
+        },
+        {
+          "label": "Free kicks",
+          "home": "9",
+          "away": "11",
+          "order": 12
+        },
+        {
+          "label": "Yellow cards",
+          "home": "2",
+          "away": "2",
+          "order": 6
+        },
+        {
+          "label": "Red cards",
+          "home": "0",
+          "away": "0",
+          "order": 7
+        },
+        {
+          "label": "Shots on target",
+          "home": "5",
+          "away": "9",
+          "order": 2
+        },
+        {
+          "label": "Offsides",
+          "home": "2",
+          "away": "3",
+          "order": 4
+        },
+        {
+          "label": "Throw-ins",
+          "home": "39",
+          "away": "15",
+          "order": 13
+        },
+        {
+          "label": "Goal kicks",
+          "home": "8",
+          "away": "5",
+          "order": 14
+        }
+      ],
+      "rejected": []
+    },
+    {
+      "match_id": "e120369a-d0e6-4931-a20b-97872b72eea4",
+      "round": 4,
+      "home": "Al Tadamon SC",
+      "away": "Al Qadsia SC",
+      "source_event_id": "17248118",
+      "source_url": "https://www.sofascore.com/football/match/tadhamon-sc-al-qadsia-sc/Fujsfdx#id:17248118",
+      "reversed": false,
+      "stats": [
+        {
+          "label": "Ball possession",
+          "home": "37%",
+          "away": "63%",
+          "order": 0
+        },
+        {
+          "label": "Corner kicks",
+          "home": "3",
+          "away": "3",
+          "order": 3
+        },
+        {
+          "label": "Fouls",
+          "home": "12",
+          "away": "13",
+          "order": 5
+        },
+        {
+          "label": "Free kicks",
+          "home": "18",
+          "away": "14",
+          "order": 12
+        },
+        {
+          "label": "Yellow cards",
+          "home": "2",
+          "away": "1",
+          "order": 6
+        },
+        {
+          "label": "Red cards",
+          "home": "0",
+          "away": "0",
+          "order": 7
+        },
+        {
+          "label": "Shots on target",
+          "home": "3",
+          "away": "5",
+          "order": 2
+        },
+        {
+          "label": "Offsides",
+          "home": "2",
+          "away": "3",
+          "order": 4
+        },
+        {
+          "label": "Throw-ins",
+          "home": "14",
+          "away": "18",
+          "order": 13
+        },
+        {
+          "label": "Goal kicks",
+          "home": "5",
+          "away": "4",
+          "order": 14
+        }
+      ],
+      "rejected": []
+    },
+    {
+      "match_id": "9cadefd0-2b60-4e64-9c75-17406c7da798",
+      "round": 6,
+      "home": "Kazma SC",
+      "away": "Sulaibikhat FC",
+      "source_event_id": "17248602",
+      "source_url": "https://www.sofascore.com/football/match/al-sulaibikhat-fc-kazma-sc/enqspdx#id:17248602",
+      "reversed": false,
+      "stats": [
+        {
+          "label": "Ball possession",
+          "home": "59%",
+          "away": "41%",
+          "order": 0
+        },
+        {
+          "label": "Corner kicks",
+          "home": "5",
+          "away": "3",
+          "order": 3
+        },
+        {
+          "label": "Fouls",
+          "home": "4",
+          "away": "17",
+          "order": 5
+        },
+        {
+          "label": "Free kicks",
+          "home": "19",
+          "away": "8",
+          "order": 12
+        },
+        {
+          "label": "Yellow cards",
+          "home": "0",
+          "away": "3",
+          "order": 6
+        },
+        {
+          "label": "Red cards",
+          "home": "0",
+          "away": "0",
+          "order": 7
+        },
+        {
+          "label": "Shots on target",
+          "home": "9",
+          "away": "2",
+          "order": 2
+        },
+        {
+          "label": "Offsides",
+          "home": "4",
+          "away": "1",
+          "order": 4
+        },
+        {
+          "label": "Throw-ins",
+          "home": "28",
+          "away": "19",
+          "order": 13
+        },
+        {
+          "label": "Goal kicks",
+          "home": "0",
+          "away": "0",
+          "order": 14
+        }
+      ],
+      "rejected": []
+    },
+    {
+      "match_id": "52b6eb8c-d6b3-4367-9dca-fd627a32b918",
+      "round": 6,
+      "home": "Al Sahel SC",
+      "away": "Al Nasr SC",
+      "source_event_id": "17248604",
+      "source_url": "https://www.sofascore.com/football/match/al-sahel-sc-al-nasr-sc-kuwait/btjsrdx#id:17248604",
+      "reversed": false,
+      "stats": [
+        {
+          "label": "Ball possession",
+          "home": "44%",
+          "away": "56%",
+          "order": 0
+        },
+        {
+          "label": "Corner kicks",
+          "home": "5",
+          "away": "4",
+          "order": 3
+        },
+        {
+          "label": "Fouls",
+          "home": "12",
+          "away": "12",
+          "order": 5
+        },
+        {
+          "label": "Free kicks",
+          "home": "12",
+          "away": "10",
+          "order": 12
+        },
+        {
+          "label": "Yellow cards",
+          "home": "2",
+          "away": "3",
+          "order": 6
+        },
+        {
+          "label": "Red cards",
+          "home": "1",
+          "away": "0",
+          "order": 7
+        },
+        {
+          "label": "Shots on target",
+          "home": "1",
+          "away": "3",
+          "order": 2
+        },
+        {
+          "label": "Offsides",
+          "home": "0",
+          "away": "1",
+          "order": 4
+        },
+        {
+          "label": "Throw-ins",
+          "home": "19",
+          "away": "21",
+          "order": 13
+        },
+        {
+          "label": "Goal kicks",
+          "home": "5",
+          "away": "7",
+          "order": 14
+        }
+      ],
+      "rejected": []
+    },
+    {
+      "match_id": "4fa706b3-87ee-4c8b-adcc-4aa7e73ca870",
+      "round": 6,
+      "home": "Al Tadamon SC",
+      "away": "Kuwait SC",
+      "source_event_id": "17248605",
+      "source_url": "https://www.sofascore.com/football/match/tadhamon-sc-al-kuwait-sc/Aansfdx#id:17248605",
+      "reversed": false,
+      "stats": [
+        {
+          "label": "Ball possession",
+          "home": "35%",
+          "away": "65%",
+          "order": 0
+        },
+        {
+          "label": "Corner kicks",
+          "home": "4",
+          "away": "5",
+          "order": 3
+        },
+        {
+          "label": "Free kicks",
+          "home": "11",
+          "away": "17",
+          "order": 12
+        },
+        {
+          "label": "Yellow cards",
+          "home": "2",
+          "away": "1",
+          "order": 6
+        },
+        {
+          "label": "Red cards",
+          "home": "0",
+          "away": "0",
+          "order": 7
+        },
+        {
+          "label": "Shots on target",
+          "home": "4",
+          "away": "8",
+          "order": 2
+        },
+        {
+          "label": "Offsides",
+          "home": "1",
+          "away": "2",
+          "order": 4
+        },
+        {
+          "label": "Throw-ins",
+          "home": "17",
+          "away": "23",
+          "order": 13
+        },
+        {
+          "label": "Goal kicks",
+          "home": "0",
+          "away": "0",
+          "order": 14
+        }
+      ],
+      "rejected": []
+    },
+    {
+      "match_id": "b400c084-5848-46ec-9c3f-286505b74dd1",
+      "round": 6,
+      "home": "Al Salmiya SC",
+      "away": "Al Jahra SC",
+      "source_event_id": "17248608",
+      "source_url": "https://www.sofascore.com/football/match/al-salmiya-sc-al-jahra-sc/VBwsldx#id:17248608",
+      "reversed": false,
+      "stats": [
+        {
+          "label": "Ball possession",
+          "home": "54%",
+          "away": "46%",
+          "order": 0
+        },
+        {
+          "label": "Fouls",
+          "home": "18",
+          "away": "11",
+          "order": 5
+        },
+        {
+          "label": "Free kicks",
+          "home": "13",
+          "away": "19",
+          "order": 12
+        },
+        {
+          "label": "Yellow cards",
+          "home": "3",
+          "away": "1",
+          "order": 6
+        },
+        {
+          "label": "Red cards",
+          "home": "0",
+          "away": "0",
+          "order": 7
+        },
+        {
+          "label": "Shots on target",
+          "home": "4",
+          "away": "3",
+          "order": 2
+        },
+        {
+          "label": "Offsides",
+          "home": "4",
+          "away": "2",
+          "order": 4
+        },
+        {
+          "label": "Throw-ins",
+          "home": "24",
+          "away": "29",
+          "order": 13
+        },
+        {
+          "label": "Goal kicks",
+          "home": "9",
+          "away": "5",
+          "order": 14
+        }
+      ],
+      "rejected": [
+        {
+          "label": "Corner kicks",
+          "home": "194",
+          "away": "8"
+        }
+      ]
+    }
+  ],
+  "statistics_before": [
+    {
+      "away_value": "50%",
+      "created_at": "2026-08-25 17:55:38.480483+00",
+      "home_value": "50%",
+      "id": "7b6e231a-8469-4ed0-8c87-a40aab5fd17c",
+      "label": "Ball possession",
+      "match_id": "8e411019-b6b0-4441-a8ec-c3f672b1d694",
+      "sort_order": 0
+    },
+    {
+      "away_value": "64%",
+      "created_at": "2026-08-25 22:22:30.683031+00",
+      "home_value": "36%",
+      "id": "495af9e7-3673-4dcf-a9c3-026bc4962c38",
+      "label": "Ball possession",
+      "match_id": "d3a560b2-8050-4f8c-a712-5cf1840c33ef",
+      "sort_order": 0
+    },
+    {
+      "away_value": "11",
+      "created_at": "2026-08-25 22:22:45.896541+00",
+      "home_value": "6",
+      "id": "a6cc2d62-1baf-4079-ae2b-214f155c8064",
+      "label": "Total shots",
+      "match_id": "d3a560b2-8050-4f8c-a712-5cf1840c33ef",
+      "sort_order": 1
+    },
+    {
+      "away_value": "7",
+      "created_at": "2026-08-25 22:22:57.665993+00",
+      "home_value": "5",
+      "id": "39a12022-282a-4e38-8dd5-f214dbf15bc5",
+      "label": "Shots on target",
+      "match_id": "d3a560b2-8050-4f8c-a712-5cf1840c33ef",
+      "sort_order": 2
+    },
+    {
+      "away_value": "6",
+      "created_at": "2026-08-25 22:23:13.424401+00",
+      "home_value": "4",
+      "id": "9c332c79-60fc-41d1-86c2-1612d6013abc",
+      "label": "Corner kicks",
+      "match_id": "d3a560b2-8050-4f8c-a712-5cf1840c33ef",
+      "sort_order": 3
+    },
+    {
+      "away_value": "6",
+      "created_at": "2026-08-25 22:23:32.526458+00",
+      "home_value": "3",
+      "id": "f7543b6b-5816-4971-884e-f6f8eb4d8e3c",
+      "label": "Offsides",
+      "match_id": "d3a560b2-8050-4f8c-a712-5cf1840c33ef",
+      "sort_order": 4
+    },
+    {
+      "away_value": "15",
+      "created_at": "2026-08-25 22:25:01.788161+00",
+      "home_value": "5",
+      "id": "a71479d1-0a73-4efc-ab9d-5bb6915f802c",
+      "label": "Fouls",
+      "match_id": "d3a560b2-8050-4f8c-a712-5cf1840c33ef",
+      "sort_order": 5
+    },
+    {
+      "away_value": "17",
+      "created_at": "2026-08-25 22:30:53.603925+00",
+      "home_value": "7",
+      "id": "fa128934-8a80-4fa7-ae2c-86c4053b1540",
+      "label": "Total shots",
+      "match_id": "8e411019-b6b0-4441-a8ec-c3f672b1d694",
+      "sort_order": 1
+    },
+    {
+      "away_value": "5",
+      "created_at": "2026-08-25 22:31:04.265312+00",
+      "home_value": "5",
+      "id": "5ebc8fb5-ad9e-4d76-abdc-acf52f3332fc",
+      "label": "Shots on target",
+      "match_id": "8e411019-b6b0-4441-a8ec-c3f672b1d694",
+      "sort_order": 2
+    },
+    {
+      "away_value": "9",
+      "created_at": "2026-08-25 22:31:20.281161+00",
+      "home_value": "12",
+      "id": "37c1dcb3-6f85-4174-ab3e-e3ad001c0c00",
+      "label": "Fouls",
+      "match_id": "8e411019-b6b0-4441-a8ec-c3f672b1d694",
+      "sort_order": 3
+    },
+    {
+      "away_value": "4",
+      "created_at": "2026-08-25 22:31:32.712826+00",
+      "home_value": "5",
+      "id": "e28e005a-8b13-4e40-ab7c-9fad5d7a7eea",
+      "label": "Corner kicks",
+      "match_id": "8e411019-b6b0-4441-a8ec-c3f672b1d694",
+      "sort_order": 4
+    },
+    {
+      "away_value": "1",
+      "created_at": "2026-08-25 22:31:53.165837+00",
+      "home_value": "3",
+      "id": "548e884b-1022-4554-b017-d64d7801dfb3",
+      "label": "Offsides",
+      "match_id": "8e411019-b6b0-4441-a8ec-c3f672b1d694",
+      "sort_order": 5
+    },
+    {
+      "away_value": "62%",
+      "created_at": "2026-08-29 05:27:40.795069+00",
+      "home_value": "38%",
+      "id": "cc85f7d8-85ce-4ece-b1d6-1c20a2f84c56",
+      "label": "Ball possession",
+      "match_id": "c0971454-7a7e-4de8-abde-66dc5b95da1d",
+      "sort_order": 0
+    },
+    {
+      "away_value": "3",
+      "created_at": "2026-08-29 05:27:55.381328+00",
+      "home_value": "21",
+      "id": "698b61e4-c0c8-4a81-a882-e5535479ef07",
+      "label": "Total shots",
+      "match_id": "c0971454-7a7e-4de8-abde-66dc5b95da1d",
+      "sort_order": 1
+    },
+    {
+      "away_value": "11",
+      "created_at": "2026-08-29 05:28:06.75622+00",
+      "home_value": "2",
+      "id": "b1372db3-9cf9-4958-ba4b-afab9f6f0f05",
+      "label": "Shots on target",
+      "match_id": "c0971454-7a7e-4de8-abde-66dc5b95da1d",
+      "sort_order": 2
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-08-29 05:28:19.363498+00",
+      "home_value": "1",
+      "id": "08e5120f-553c-490d-be13-afc4abc7e364",
+      "label": "Saves",
+      "match_id": "c0971454-7a7e-4de8-abde-66dc5b95da1d",
+      "sort_order": 3
+    },
+    {
+      "away_value": "7",
+      "created_at": "2026-08-29 05:28:35.103483+00",
+      "home_value": "10",
+      "id": "adb6f5df-193d-4d97-9616-ade350bde1ef",
+      "label": "Fouls",
+      "match_id": "c0971454-7a7e-4de8-abde-66dc5b95da1d",
+      "sort_order": 4
+    },
+    {
+      "away_value": "1",
+      "created_at": "2026-08-29 05:28:46.451773+00",
+      "home_value": "7",
+      "id": "87ba24d6-dc58-4e32-8b28-169684b58fe6",
+      "label": "Corner kicks",
+      "match_id": "c0971454-7a7e-4de8-abde-66dc5b95da1d",
+      "sort_order": 5
+    },
+    {
+      "away_value": "49%",
+      "created_at": "2026-08-29 23:40:43.485216+00",
+      "home_value": "51%",
+      "id": "77209e82-e979-4c0c-a868-74c990d98a60",
+      "label": "Ball possession",
+      "match_id": "70d568bf-6879-46ba-b61e-10227b5f149b",
+      "sort_order": 0
+    },
+    {
+      "away_value": "1",
+      "created_at": "2026-08-29 23:41:12.54608+00",
+      "home_value": "2",
+      "id": "6b688b1d-2b4e-4893-aff2-b80381abb782",
+      "label": "Saves",
+      "match_id": "70d568bf-6879-46ba-b61e-10227b5f149b",
+      "sort_order": 2
+    },
+    {
+      "away_value": "9",
+      "created_at": "2026-08-29 23:41:22.225896+00",
+      "home_value": "11",
+      "id": "bcd1dd16-6403-4df1-9b59-34494a9f4e0b",
+      "label": "Fouls",
+      "match_id": "70d568bf-6879-46ba-b61e-10227b5f149b",
+      "sort_order": 3
+    },
+    {
+      "away_value": "1",
+      "created_at": "2026-08-29 23:41:38.516262+00",
+      "home_value": "2",
+      "id": "9cf89c94-bfcf-492e-8bb2-161d9a9ae2b3",
+      "label": "Corner kicks",
+      "match_id": "70d568bf-6879-46ba-b61e-10227b5f149b",
+      "sort_order": 4
+    },
+    {
+      "away_value": "3",
+      "created_at": "2026-08-29 23:41:59.963972+00",
+      "home_value": "2",
+      "id": "4c595863-648a-4028-9e46-d54a44115078",
+      "label": "Offsides",
+      "match_id": "70d568bf-6879-46ba-b61e-10227b5f149b",
+      "sort_order": 5
+    },
+    {
+      "away_value": "1",
+      "created_at": "2026-08-29 23:42:12.093572+00",
+      "home_value": "3",
+      "id": "8fd63714-8286-4a1c-8074-ae20c66d9af1",
+      "label": "Tackles",
+      "match_id": "70d568bf-6879-46ba-b61e-10227b5f149b",
+      "sort_order": 6
+    },
+    {
+      "away_value": "35%",
+      "created_at": "2026-08-31 00:46:31.613781+00",
+      "home_value": "65%",
+      "id": "023a6085-8f4e-44be-ad4f-5136c2e6d0bb",
+      "label": "Ball possession",
+      "match_id": "194ea351-a279-4ea0-a4f9-470251759b67",
+      "sort_order": 0
+    },
+    {
+      "away_value": "1",
+      "created_at": "2026-08-31 00:46:42.334158+00",
+      "home_value": "3",
+      "id": "77221ef9-1508-46da-ad89-c36aba8938eb",
+      "label": "Corner kicks",
+      "match_id": "194ea351-a279-4ea0-a4f9-470251759b67",
+      "sort_order": 1
+    },
+    {
+      "away_value": "10",
+      "created_at": "2026-08-31 00:46:52.975134+00",
+      "home_value": "14",
+      "id": "ec46a7d8-2f46-412e-80ef-821938c5c77c",
+      "label": "Fouls",
+      "match_id": "194ea351-a279-4ea0-a4f9-470251759b67",
+      "sort_order": 2
+    },
+    {
+      "away_value": "5",
+      "created_at": "2026-08-31 00:47:19.47926+00",
+      "home_value": "4",
+      "id": "609f845f-9f37-4d10-8da0-cf3b7471c320",
+      "label": "Shots on target",
+      "match_id": "194ea351-a279-4ea0-a4f9-470251759b67",
+      "sort_order": 4
+    },
+    {
+      "away_value": "13",
+      "created_at": "2026-08-31 00:47:38.198846+00",
+      "home_value": "8",
+      "id": "c5932657-56cf-46b7-9322-f5d984f5aeb3",
+      "label": "Total shots",
+      "match_id": "194ea351-a279-4ea0-a4f9-470251759b67",
+      "sort_order": 5
+    },
+    {
+      "away_value": "55%",
+      "created_at": "2026-08-31 00:48:25.545431+00",
+      "home_value": "45%",
+      "id": "1a00523a-258e-40f0-90b1-0e7ae66fe520",
+      "label": "Ball possession",
+      "match_id": "8404287f-ae23-46e5-b7dc-4ca3d789e1bb",
+      "sort_order": 0
+    },
+    {
+      "away_value": "2",
+      "created_at": "2026-08-31 00:48:33.179618+00",
+      "home_value": "2",
+      "id": "7b02ce2c-4208-4337-885e-2b5e8836f32d",
+      "label": "Corner kicks",
+      "match_id": "8404287f-ae23-46e5-b7dc-4ca3d789e1bb",
+      "sort_order": 1
+    },
+    {
+      "away_value": "20",
+      "created_at": "2026-08-31 00:48:46.988771+00",
+      "home_value": "16",
+      "id": "d113f582-333d-48e1-ba78-7f9c2be26b80",
+      "label": "Fouls",
+      "match_id": "8404287f-ae23-46e5-b7dc-4ca3d789e1bb",
+      "sort_order": 2
+    },
+    {
+      "away_value": "2",
+      "created_at": "2026-08-31 00:49:10.525186+00",
+      "home_value": "3",
+      "id": "2844e756-2431-447c-bb7e-f976c133c8ea",
+      "label": "Shots on target",
+      "match_id": "8404287f-ae23-46e5-b7dc-4ca3d789e1bb",
+      "sort_order": 4
+    },
+    {
+      "away_value": "5",
+      "created_at": "2026-08-31 00:49:25.150512+00",
+      "home_value": "7",
+      "id": "00f2adbd-6213-4262-92e3-7448c93c6d34",
+      "label": "Total shots",
+      "match_id": "8404287f-ae23-46e5-b7dc-4ca3d789e1bb",
+      "sort_order": 5
+    },
+    {
+      "away_value": "1",
+      "created_at": "2026-08-31 00:49:34.018579+00",
+      "home_value": "0",
+      "id": "d1115454-9957-4a63-8087-a7325cc41637",
+      "label": "Offsides",
+      "match_id": "8404287f-ae23-46e5-b7dc-4ca3d789e1bb",
+      "sort_order": 6
+    },
+    {
+      "away_value": "4",
+      "created_at": "2026-08-29 23:40:54.936392+00",
+      "home_value": "4",
+      "id": "08991c0a-6dad-4cec-b770-f0c67280a45d",
+      "label": "Shots on target",
+      "match_id": "70d568bf-6879-46ba-b61e-10227b5f149b",
+      "sort_order": 1
+    },
+    {
+      "away_value": "7",
+      "created_at": "2026-08-31 00:51:50.030188+00",
+      "home_value": "8",
+      "id": "03a15b28-070f-48d3-a8f6-e31a7945ee6b",
+      "label": "Total shots",
+      "match_id": "70d568bf-6879-46ba-b61e-10227b5f149b",
+      "sort_order": 7
+    },
+    {
+      "away_value": "72%",
+      "created_at": "2026-08-31 01:44:42.423603+00",
+      "home_value": "28%",
+      "id": "5a7a295d-2143-46a2-949c-7713606db1c5",
+      "label": "Ball possession",
+      "match_id": "deff7525-a79d-4d4b-9b28-81f6bf478222",
+      "sort_order": 0
+    },
+    {
+      "away_value": "8",
+      "created_at": "2026-08-31 01:44:54.623513+00",
+      "home_value": "3",
+      "id": "1f9d4e37-3833-42b4-a2b8-0a860f1c6755",
+      "label": "Corner kicks",
+      "match_id": "deff7525-a79d-4d4b-9b28-81f6bf478222",
+      "sort_order": 1
+    },
+    {
+      "away_value": "10",
+      "created_at": "2026-08-31 01:45:06.256686+00",
+      "home_value": "8",
+      "id": "2e83f64e-c79b-4d97-ab69-d4fc20fb5415",
+      "label": "Fouls",
+      "match_id": "deff7525-a79d-4d4b-9b28-81f6bf478222",
+      "sort_order": 2
+    },
+    {
+      "away_value": "6",
+      "created_at": "2026-08-31 01:45:30.46379+00",
+      "home_value": "3",
+      "id": "681b50a5-e501-4a22-ad9d-583968fe68bd",
+      "label": "Shots on target",
+      "match_id": "deff7525-a79d-4d4b-9b28-81f6bf478222",
+      "sort_order": 4
+    },
+    {
+      "away_value": "11",
+      "created_at": "2026-08-31 01:45:42.034837+00",
+      "home_value": "8",
+      "id": "c5f8f735-ee6d-4e95-80c7-48cce485a39c",
+      "label": "Total shots",
+      "match_id": "deff7525-a79d-4d4b-9b28-81f6bf478222",
+      "sort_order": 5
+    },
+    {
+      "away_value": "2",
+      "created_at": "2026-08-31 01:45:53.14465+00",
+      "home_value": "0",
+      "id": "870c92fa-3da6-4a76-950f-e9a4a9a56df4",
+      "label": "Offsides",
+      "match_id": "deff7525-a79d-4d4b-9b28-81f6bf478222",
+      "sort_order": 6
+    },
+    {
+      "away_value": "58%",
+      "created_at": "2026-08-31 02:03:58.473622+00",
+      "home_value": "42%",
+      "id": "de15f877-5e1c-4ae7-a9a0-615d11eba5ef",
+      "label": "Ball possession",
+      "match_id": "5cf4f2e0-89d4-4941-a3aa-19c94279625f",
+      "sort_order": 0
+    },
+    {
+      "away_value": "6",
+      "created_at": "2026-08-31 02:04:06.411817+00",
+      "home_value": "4",
+      "id": "d95c311e-c5b0-4180-a7cc-e1465ec27702",
+      "label": "Corner kicks",
+      "match_id": "5cf4f2e0-89d4-4941-a3aa-19c94279625f",
+      "sort_order": 1
+    },
+    {
+      "away_value": "9",
+      "created_at": "2026-08-31 02:04:15.200143+00",
+      "home_value": "8",
+      "id": "357555c4-20a7-43da-a90f-79a471852127",
+      "label": "Fouls",
+      "match_id": "5cf4f2e0-89d4-4941-a3aa-19c94279625f",
+      "sort_order": 2
+    },
+    {
+      "away_value": "4",
+      "created_at": "2026-08-31 02:04:36.337119+00",
+      "home_value": "8",
+      "id": "bff58bd9-dc8e-4f5d-ab57-4c26283a1236",
+      "label": "Shots on target",
+      "match_id": "5cf4f2e0-89d4-4941-a3aa-19c94279625f",
+      "sort_order": 4
+    },
+    {
+      "away_value": "17",
+      "created_at": "2026-08-31 02:04:54.807922+00",
+      "home_value": "11",
+      "id": "8bcfab93-614b-4756-97ec-0ec04684addf",
+      "label": "Total shots",
+      "match_id": "5cf4f2e0-89d4-4941-a3aa-19c94279625f",
+      "sort_order": 5
+    },
+    {
+      "away_value": "1",
+      "created_at": "2026-08-31 02:05:06.327644+00",
+      "home_value": "0",
+      "id": "a9a12361-f486-43af-805d-07b667f2f011",
+      "label": "Offsides",
+      "match_id": "5cf4f2e0-89d4-4941-a3aa-19c94279625f",
+      "sort_order": 6
+    },
+    {
+      "away_value": "49%",
+      "created_at": "2026-08-31 22:20:06.156366+00",
+      "home_value": "51%",
+      "id": "5027d127-81a5-477f-8cf5-850da60bfb70",
+      "label": "Ball possession",
+      "match_id": "fe5e221a-f89b-4ed4-a340-fb1060fa56da",
+      "sort_order": 0
+    },
+    {
+      "away_value": "5",
+      "created_at": "2026-08-31 22:20:16.858699+00",
+      "home_value": "7",
+      "id": "5fc9753b-0d17-460e-bf13-edf5d6e389a6",
+      "label": "Corner kicks",
+      "match_id": "fe5e221a-f89b-4ed4-a340-fb1060fa56da",
+      "sort_order": 1
+    },
+    {
+      "away_value": "10",
+      "created_at": "2026-08-31 22:20:27.059038+00",
+      "home_value": "11",
+      "id": "77a537ac-dfee-4c74-a06f-7867232cf2d0",
+      "label": "Fouls",
+      "match_id": "fe5e221a-f89b-4ed4-a340-fb1060fa56da",
+      "sort_order": 2
+    },
+    {
+      "away_value": "7",
+      "created_at": "2026-08-31 22:20:58.86274+00",
+      "home_value": "4",
+      "id": "02439689-471d-43d6-852a-43c5b5e78086",
+      "label": "Shots on target",
+      "match_id": "fe5e221a-f89b-4ed4-a340-fb1060fa56da",
+      "sort_order": 5
+    },
+    {
+      "away_value": "12",
+      "created_at": "2026-08-31 22:21:13.132895+00",
+      "home_value": "7",
+      "id": "6aa62aff-e044-4f83-9715-36be2e6429c6",
+      "label": "Total shots",
+      "match_id": "fe5e221a-f89b-4ed4-a340-fb1060fa56da",
+      "sort_order": 6
+    },
+    {
+      "away_value": "2",
+      "created_at": "2026-08-31 22:21:25.245454+00",
+      "home_value": "3",
+      "id": "dc3a48d1-09c6-4a64-a8ca-d7483c600157",
+      "label": "Offsides",
+      "match_id": "fe5e221a-f89b-4ed4-a340-fb1060fa56da",
+      "sort_order": 7
+    },
+    {
+      "away_value": "62%",
+      "created_at": "2026-08-31 22:37:31.159118+00",
+      "home_value": "38%",
+      "id": "9e01d55d-bb92-4d2a-b3be-d151f556bb98",
+      "label": "Ball possession",
+      "match_id": "c6b00c0b-1e3f-4f7c-b0ce-ecbd419e4437",
+      "sort_order": 0
+    },
+    {
+      "away_value": "9",
+      "created_at": "2026-08-31 22:37:39.200643+00",
+      "home_value": "2",
+      "id": "1e2813b7-86dd-4246-8e4c-f1f40daefb60",
+      "label": "Corner kicks",
+      "match_id": "c6b00c0b-1e3f-4f7c-b0ce-ecbd419e4437",
+      "sort_order": 1
+    },
+    {
+      "away_value": "8",
+      "created_at": "2026-08-31 22:37:48.747692+00",
+      "home_value": "5",
+      "id": "df3f49fa-4983-4e54-a4bc-57820a1f810b",
+      "label": "Fouls",
+      "match_id": "c6b00c0b-1e3f-4f7c-b0ce-ecbd419e4437",
+      "sort_order": 2
+    },
+    {
+      "away_value": "5",
+      "created_at": "2026-08-31 22:38:11.124161+00",
+      "home_value": "2",
+      "id": "5d69d8e2-fc06-43bb-9446-9a64b4daaa25",
+      "label": "Shots on target",
+      "match_id": "c6b00c0b-1e3f-4f7c-b0ce-ecbd419e4437",
+      "sort_order": 4
+    },
+    {
+      "away_value": "12",
+      "created_at": "2026-08-31 22:38:23.080635+00",
+      "home_value": "3",
+      "id": "f4d595ed-cae2-49ca-a31b-448d0dd6b228",
+      "label": "Total shots",
+      "match_id": "c6b00c0b-1e3f-4f7c-b0ce-ecbd419e4437",
+      "sort_order": 5
+    },
+    {
+      "away_value": "2",
+      "created_at": "2026-08-31 22:38:31.111086+00",
+      "home_value": "1",
+      "id": "bbf3fb02-33b4-4b73-bb44-fd3b8041cd18",
+      "label": "Offsides",
+      "match_id": "c6b00c0b-1e3f-4f7c-b0ce-ecbd419e4437",
+      "sort_order": 6
+    },
+    {
+      "away_value": "30%",
+      "created_at": "2026-09-01 22:57:15.295946+00",
+      "home_value": "70%",
+      "id": "99ac8bdd-9778-4d58-acec-8223054b58bc",
+      "label": "Ball possession",
+      "match_id": "01e3b35c-9f47-4740-9482-31e111e0913c",
+      "sort_order": 0
+    },
+    {
+      "away_value": "5",
+      "created_at": "2026-09-01 22:57:23.82062+00",
+      "home_value": "7",
+      "id": "8401f504-458f-4e69-8e2e-1087b9e0b976",
+      "label": "Corner kicks",
+      "match_id": "01e3b35c-9f47-4740-9482-31e111e0913c",
+      "sort_order": 1
+    },
+    {
+      "away_value": "11",
+      "created_at": "2026-09-01 22:57:35.552322+00",
+      "home_value": "12",
+      "id": "509b2d3a-0679-411b-a973-ff72a995c795",
+      "label": "Fouls",
+      "match_id": "01e3b35c-9f47-4740-9482-31e111e0913c",
+      "sort_order": 2
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-09-01 22:58:08.376694+00",
+      "home_value": "6",
+      "id": "11cd79fb-76e3-4fdf-8124-771c547c7722",
+      "label": "Shots on target",
+      "match_id": "01e3b35c-9f47-4740-9482-31e111e0913c",
+      "sort_order": 5
+    },
+    {
+      "away_value": "1",
+      "created_at": "2026-09-01 22:58:20.995502+00",
+      "home_value": "16",
+      "id": "205de880-aa69-46b9-8041-eaccd7b07886",
+      "label": "Total shots",
+      "match_id": "01e3b35c-9f47-4740-9482-31e111e0913c",
+      "sort_order": 6
+    },
+    {
+      "away_value": "51%",
+      "created_at": "2026-09-01 23:10:35.263635+00",
+      "home_value": "49%",
+      "id": "6488b035-b0f9-4e84-be1c-0a0083ba4901",
+      "label": "Ball possession",
+      "match_id": "92a4b559-a469-4c37-b213-2c8f58c891de",
+      "sort_order": 0
+    },
+    {
+      "away_value": "5",
+      "created_at": "2026-09-01 23:10:43.549436+00",
+      "home_value": "10",
+      "id": "6fa594f0-3385-467e-8d96-774dc6671b10",
+      "label": "Corner kicks",
+      "match_id": "92a4b559-a469-4c37-b213-2c8f58c891de",
+      "sort_order": 1
+    },
+    {
+      "away_value": "12",
+      "created_at": "2026-09-01 23:11:24.654719+00",
+      "home_value": "14",
+      "id": "50e1cf02-dfc9-4839-8994-b137e3d1a51e",
+      "label": "Fouls",
+      "match_id": "92a4b559-a469-4c37-b213-2c8f58c891de",
+      "sort_order": 2
+    },
+    {
+      "away_value": "8",
+      "created_at": "2026-09-01 23:11:45.768998+00",
+      "home_value": "7",
+      "id": "5abe16a2-6813-4138-8f94-8cd35f26a988",
+      "label": "Shots on target",
+      "match_id": "92a4b559-a469-4c37-b213-2c8f58c891de",
+      "sort_order": 4
+    },
+    {
+      "away_value": "15",
+      "created_at": "2026-09-01 23:12:03.311184+00",
+      "home_value": "12",
+      "id": "88f2ef52-4ca2-4446-99f7-651db9153d32",
+      "label": "Total shots",
+      "match_id": "92a4b559-a469-4c37-b213-2c8f58c891de",
+      "sort_order": 5
+    },
+    {
+      "away_value": "1",
+      "created_at": "2026-09-01 23:12:14.040287+00",
+      "home_value": "4",
+      "id": "342a0704-93f0-4e3b-949f-c9df39b169d6",
+      "label": "Offsides",
+      "match_id": "92a4b559-a469-4c37-b213-2c8f58c891de",
+      "sort_order": 6
+    },
+    {
+      "away_value": "37%",
+      "created_at": "2026-09-05 06:52:46.659812+00",
+      "home_value": "63%",
+      "id": "87a0d2c9-b672-45a3-9b5f-a796c0b0132f",
+      "label": "Ball possession",
+      "match_id": "ce2eed68-4f81-4077-880b-37710eb60de7",
+      "sort_order": 0
+    },
+    {
+      "away_value": "4",
+      "created_at": "2026-09-05 06:53:13.850697+00",
+      "home_value": "11",
+      "id": "dbf68445-dbd3-4e40-8f87-37f2b3c717d8",
+      "label": "Corner kicks",
+      "match_id": "ce2eed68-4f81-4077-880b-37710eb60de7",
+      "sort_order": 1
+    },
+    {
+      "away_value": "2",
+      "created_at": "2026-09-05 06:53:26.417161+00",
+      "home_value": "2",
+      "id": "23c4952a-8753-43ac-b720-a716cef54f08",
+      "label": "Fouls",
+      "match_id": "ce2eed68-4f81-4077-880b-37710eb60de7",
+      "sort_order": 2
+    },
+    {
+      "away_value": "5",
+      "created_at": "2026-09-05 06:53:37.45387+00",
+      "home_value": "8",
+      "id": "0553cea7-cc23-465b-b132-b9c9fd68b13a",
+      "label": "Shots on target",
+      "match_id": "ce2eed68-4f81-4077-880b-37710eb60de7",
+      "sort_order": 3
+    },
+    {
+      "away_value": "5",
+      "created_at": "2026-09-05 06:53:52.018384+00",
+      "home_value": "11",
+      "id": "bd5fd968-efa2-4239-80b2-b5a6b14f11ce",
+      "label": "Total shots",
+      "match_id": "ce2eed68-4f81-4077-880b-37710eb60de7",
+      "sort_order": 4
+    },
+    {
+      "away_value": "45%",
+      "created_at": "2026-09-05 07:10:21.161874+00",
+      "home_value": "55%",
+      "id": "a7338699-a53b-4f66-868a-b77cf1009764",
+      "label": "Ball possession",
+      "match_id": "2c260529-6487-4d64-adc7-4e4d36e2ff65",
+      "sort_order": 0
+    },
+    {
+      "away_value": "7",
+      "created_at": "2026-09-05 07:10:29.148624+00",
+      "home_value": "3",
+      "id": "a342974f-9109-4510-949a-af522f0f26fa",
+      "label": "Corner kicks",
+      "match_id": "2c260529-6487-4d64-adc7-4e4d36e2ff65",
+      "sort_order": 1
+    },
+    {
+      "away_value": "11",
+      "created_at": "2026-09-05 07:10:41.104831+00",
+      "home_value": "14",
+      "id": "1ae45ff8-5613-4a20-9a7e-cabbf8fa688a",
+      "label": "Fouls",
+      "match_id": "2c260529-6487-4d64-adc7-4e4d36e2ff65",
+      "sort_order": 2
+    },
+    {
+      "away_value": "4",
+      "created_at": "2026-09-05 07:11:30.925097+00",
+      "home_value": "7",
+      "id": "d2bca120-a5be-4780-8c61-8bffda58562d",
+      "label": "Shots on target",
+      "match_id": "2c260529-6487-4d64-adc7-4e4d36e2ff65",
+      "sort_order": 4
+    },
+    {
+      "away_value": "7",
+      "created_at": "2026-09-05 07:12:33.607084+00",
+      "home_value": "19",
+      "id": "dce51612-e4ca-4c2e-b33f-5f0ee06a0c32",
+      "label": "Total shots",
+      "match_id": "2c260529-6487-4d64-adc7-4e4d36e2ff65",
+      "sort_order": 5
+    },
+    {
+      "away_value": "1",
+      "created_at": "2026-09-05 07:17:12.775085+00",
+      "home_value": "1",
+      "id": "8e985db7-51a4-499f-9c09-943e9bf97272",
+      "label": "Offsides",
+      "match_id": "2c260529-6487-4d64-adc7-4e4d36e2ff65",
+      "sort_order": 6
+    },
+    {
+      "away_value": "57%",
+      "created_at": "2026-09-10 05:28:24.00971+00",
+      "home_value": "43%",
+      "id": "e482db99-bee4-4dee-b9ca-1dc13c1bc696",
+      "label": "Ball possession",
+      "match_id": "118f7b6f-04ab-4128-8145-eb9d47a294fb",
+      "sort_order": 0
+    },
+    {
+      "away_value": "14",
+      "created_at": "2026-09-10 05:28:32.446879+00",
+      "home_value": "2",
+      "id": "6bc79ddf-293b-4d8f-8b47-e49afa63e995",
+      "label": "Corner kicks",
+      "match_id": "118f7b6f-04ab-4128-8145-eb9d47a294fb",
+      "sort_order": 1
+    },
+    {
+      "away_value": "8",
+      "created_at": "2026-09-10 05:28:40.185019+00",
+      "home_value": "8",
+      "id": "7b753ae3-e49a-4dd7-9208-82d0ac7fd456",
+      "label": "Fouls",
+      "match_id": "118f7b6f-04ab-4128-8145-eb9d47a294fb",
+      "sort_order": 2
+    },
+    {
+      "away_value": "6",
+      "created_at": "2026-09-10 05:29:07.411203+00",
+      "home_value": "0",
+      "id": "ba12d445-1a68-4918-b87d-44806446d611",
+      "label": "Shots on target",
+      "match_id": "118f7b6f-04ab-4128-8145-eb9d47a294fb",
+      "sort_order": 4
+    },
+    {
+      "away_value": "1",
+      "created_at": "2026-09-10 05:29:33.410229+00",
+      "home_value": "0",
+      "id": "ad4256d4-409b-4b28-bb12-7fe601a535f3",
+      "label": "Offsides",
+      "match_id": "118f7b6f-04ab-4128-8145-eb9d47a294fb",
+      "sort_order": 6
+    },
+    {
+      "away_value": "13",
+      "created_at": "2026-09-10 05:29:46.431531+00",
+      "home_value": "2",
+      "id": "4a9fac83-25d4-4d6a-b67b-e7b01cffa58e",
+      "label": "Total shots",
+      "match_id": "118f7b6f-04ab-4128-8145-eb9d47a294fb",
+      "sort_order": 6
+    },
+    {
+      "away_value": "60%",
+      "created_at": "2026-09-18 18:41:03.141136+00",
+      "home_value": "40%",
+      "id": "6210c8c6-f702-458f-949b-fa693b1f4785",
+      "label": "Ball possession",
+      "match_id": "80cf1936-2b76-4356-819e-160c00083965",
+      "sort_order": 0
+    },
+    {
+      "away_value": "2",
+      "created_at": "2026-09-18 18:41:20.459259+00",
+      "home_value": "5",
+      "id": "c3311630-a4f2-4b36-bc45-646834fead4d",
+      "label": "Corner kicks",
+      "match_id": "80cf1936-2b76-4356-819e-160c00083965",
+      "sort_order": 1
+    },
+    {
+      "away_value": "9",
+      "created_at": "2026-09-18 18:41:39.367947+00",
+      "home_value": "3",
+      "id": "2589dde0-1d00-4adb-8f66-df9fa21c10da",
+      "label": "Shots on target",
+      "match_id": "80cf1936-2b76-4356-819e-160c00083965",
+      "sort_order": 3
+    },
+    {
+      "away_value": "18",
+      "created_at": "2026-09-18 18:41:56.006343+00",
+      "home_value": "8",
+      "id": "02c7e42f-7c84-459c-9d97-99090d6dafa9",
+      "label": "Total shots",
+      "match_id": "80cf1936-2b76-4356-819e-160c00083965",
+      "sort_order": 4
+    },
+    {
+      "away_value": "50%",
+      "created_at": "2026-09-19 07:50:09.582215+00",
+      "home_value": "50%",
+      "id": "eab58640-e87d-40fa-9eac-0f2c12e4653d",
+      "label": "Ball possession",
+      "match_id": "b8776057-502e-4db2-8fff-97a11e5015a3",
+      "sort_order": 0
+    },
+    {
+      "away_value": "5",
+      "created_at": "2026-09-19 07:50:22.842763+00",
+      "home_value": "7",
+      "id": "d6629b3f-d9d8-4319-ae04-144338d65514",
+      "label": "Corner kicks",
+      "match_id": "b8776057-502e-4db2-8fff-97a11e5015a3",
+      "sort_order": 1
+    },
+    {
+      "away_value": "3",
+      "created_at": "2026-09-19 07:50:52.051339+00",
+      "home_value": "12",
+      "id": "d7ab44af-0cfe-4638-9298-e919906e42c6",
+      "label": "Shots on target",
+      "match_id": "b8776057-502e-4db2-8fff-97a11e5015a3",
+      "sort_order": 3
+    },
+    {
+      "away_value": "9",
+      "created_at": "2026-09-19 07:51:06.116309+00",
+      "home_value": "24",
+      "id": "c51faed2-ab62-4d79-bc2f-0f6210c9c772",
+      "label": "Total shots",
+      "match_id": "b8776057-502e-4db2-8fff-97a11e5015a3",
+      "sort_order": 4
+    },
+    {
+      "away_value": "39%",
+      "created_at": "2026-10-03 14:26:24.673862+00",
+      "home_value": "61%",
+      "id": "1be53454-9ff4-4974-943d-29c99d62c8ca",
+      "label": "Ball possession",
+      "match_id": "421ca45b-cf42-4e60-8a79-349cd5f26682",
+      "sort_order": 0
+    },
+    {
+      "away_value": "6",
+      "created_at": "2026-10-03 14:26:47.439249+00",
+      "home_value": "19",
+      "id": "5220c2de-8ff6-4a1c-abce-05ab5b86a07d",
+      "label": "Total shots",
+      "match_id": "421ca45b-cf42-4e60-8a79-349cd5f26682",
+      "sort_order": 1
+    },
+    {
+      "away_value": "1",
+      "created_at": "2026-10-03 14:27:01.22776+00",
+      "home_value": "9",
+      "id": "e21384e8-132c-469a-a8f8-353a97d61441",
+      "label": "Shots on target",
+      "match_id": "421ca45b-cf42-4e60-8a79-349cd5f26682",
+      "sort_order": 2
+    },
+    {
+      "away_value": "5",
+      "created_at": "2026-10-03 14:27:25.833519+00",
+      "home_value": "8",
+      "id": "a9cd9157-3f15-432d-8b30-7824c86d6de3",
+      "label": "Corner kicks",
+      "match_id": "421ca45b-cf42-4e60-8a79-349cd5f26682",
+      "sort_order": 3
+    },
+    {
+      "away_value": "2",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "3",
+      "id": "ec385161-f8b9-5319-8888-b7d625c5ad52",
+      "label": "Yellow cards",
+      "match_id": "d3a560b2-8050-4f8c-a712-5cf1840c33ef",
+      "sort_order": 0
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "a11f3adb-bf73-5ab2-ad07-223254f10f85",
+      "label": "Red cards",
+      "match_id": "d3a560b2-8050-4f8c-a712-5cf1840c33ef",
+      "sort_order": 1
+    },
+    {
+      "away_value": "5",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "5",
+      "id": "3721517a-d502-5268-a331-4a74328941d1",
+      "label": "Substitutions",
+      "match_id": "d3a560b2-8050-4f8c-a712-5cf1840c33ef",
+      "sort_order": 2
+    },
+    {
+      "away_value": "1",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "2",
+      "id": "a994cc07-81a3-5e77-9a66-33ec6ce0c8d3",
+      "label": "Yellow cards",
+      "match_id": "8e411019-b6b0-4441-a8ec-c3f672b1d694",
+      "sort_order": 0
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "a6f6d319-8798-539f-9646-78fd551699ad",
+      "label": "Red cards",
+      "match_id": "8e411019-b6b0-4441-a8ec-c3f672b1d694",
+      "sort_order": 1
+    },
+    {
+      "away_value": "4",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "4",
+      "id": "bf390d7a-8417-5d34-b944-87da5cc2af08",
+      "label": "Substitutions",
+      "match_id": "8e411019-b6b0-4441-a8ec-c3f672b1d694",
+      "sort_order": 2
+    },
+    {
+      "away_value": "1",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "2",
+      "id": "204c1bc0-98d1-54b3-863d-19b0b1d2cb0f",
+      "label": "Yellow cards",
+      "match_id": "194ea351-a279-4ea0-a4f9-470251759b67",
+      "sort_order": 0
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "22fe9748-2a4c-59cb-aac4-1c06dac12df0",
+      "label": "Red cards",
+      "match_id": "194ea351-a279-4ea0-a4f9-470251759b67",
+      "sort_order": 1
+    },
+    {
+      "away_value": "4",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "5",
+      "id": "04753a64-9e28-5263-a334-5c0cd5d946e9",
+      "label": "Substitutions",
+      "match_id": "194ea351-a279-4ea0-a4f9-470251759b67",
+      "sort_order": 2
+    },
+    {
+      "away_value": "1",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "4",
+      "id": "660c73ce-2cb8-51f2-94e0-02332e729adf",
+      "label": "Yellow cards",
+      "match_id": "70d568bf-6879-46ba-b61e-10227b5f149b",
+      "sort_order": 0
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "dac4c68c-749a-553d-b0cb-5fffd32b4be5",
+      "label": "Red cards",
+      "match_id": "70d568bf-6879-46ba-b61e-10227b5f149b",
+      "sort_order": 1
+    },
+    {
+      "away_value": "5",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "4",
+      "id": "647dfacb-d6b5-572f-aef5-326bb537c82d",
+      "label": "Substitutions",
+      "match_id": "70d568bf-6879-46ba-b61e-10227b5f149b",
+      "sort_order": 2
+    },
+    {
+      "away_value": "2",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "1",
+      "id": "c68ba89b-685e-57f8-97e6-f773a7375a6c",
+      "label": "Yellow cards",
+      "match_id": "8404287f-ae23-46e5-b7dc-4ca3d789e1bb",
+      "sort_order": 0
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "67a6c124-18f4-5c2e-aa46-511199de8f4c",
+      "label": "Red cards",
+      "match_id": "8404287f-ae23-46e5-b7dc-4ca3d789e1bb",
+      "sort_order": 1
+    },
+    {
+      "away_value": "4",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "5",
+      "id": "20b8799c-849c-5981-b8cb-f862ea76472b",
+      "label": "Substitutions",
+      "match_id": "8404287f-ae23-46e5-b7dc-4ca3d789e1bb",
+      "sort_order": 2
+    },
+    {
+      "away_value": "2",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "c2f14a1a-da69-5066-8d55-8eb405603334",
+      "label": "Yellow cards",
+      "match_id": "c0971454-7a7e-4de8-abde-66dc5b95da1d",
+      "sort_order": 0
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "01e1b227-70c3-5bf0-bac4-30ef04b7aaca",
+      "label": "Red cards",
+      "match_id": "c0971454-7a7e-4de8-abde-66dc5b95da1d",
+      "sort_order": 1
+    },
+    {
+      "away_value": "5",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "5",
+      "id": "aa061ed4-db10-5669-823e-d477f7ebda40",
+      "label": "Substitutions",
+      "match_id": "c0971454-7a7e-4de8-abde-66dc5b95da1d",
+      "sort_order": 2
+    },
+    {
+      "away_value": "2",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "1",
+      "id": "6227092f-77e5-566e-9ed9-063734e735c8",
+      "label": "Yellow cards",
+      "match_id": "5cf4f2e0-89d4-4941-a3aa-19c94279625f",
+      "sort_order": 0
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "317c5d58-d888-5dff-984b-aeded717dd27",
+      "label": "Red cards",
+      "match_id": "5cf4f2e0-89d4-4941-a3aa-19c94279625f",
+      "sort_order": 1
+    },
+    {
+      "away_value": "4",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "4",
+      "id": "71e11044-06f3-579f-9980-7c3d9917f27d",
+      "label": "Substitutions",
+      "match_id": "5cf4f2e0-89d4-4941-a3aa-19c94279625f",
+      "sort_order": 2
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "2",
+      "id": "c0c1e8cc-44e5-5677-a775-17b2ee854fcc",
+      "label": "Yellow cards",
+      "match_id": "deff7525-a79d-4d4b-9b28-81f6bf478222",
+      "sort_order": 0
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "882daec2-10de-5109-938d-aaf029c89d61",
+      "label": "Red cards",
+      "match_id": "deff7525-a79d-4d4b-9b28-81f6bf478222",
+      "sort_order": 1
+    },
+    {
+      "away_value": "5",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "5",
+      "id": "8ca04c49-2620-598c-bb39-fd4ae4ac32ad",
+      "label": "Substitutions",
+      "match_id": "deff7525-a79d-4d4b-9b28-81f6bf478222",
+      "sort_order": 2
+    },
+    {
+      "away_value": "1",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "687bbb57-cc71-5d21-a46f-ad6ae11740b2",
+      "label": "Yellow cards",
+      "match_id": "c6b00c0b-1e3f-4f7c-b0ce-ecbd419e4437",
+      "sort_order": 0
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "492464d3-f0d5-5718-b8be-e1b649de8d50",
+      "label": "Red cards",
+      "match_id": "c6b00c0b-1e3f-4f7c-b0ce-ecbd419e4437",
+      "sort_order": 1
+    },
+    {
+      "away_value": "4",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "5",
+      "id": "6f4805a0-8dbb-5d2a-afcb-1fc48aa525c9",
+      "label": "Substitutions",
+      "match_id": "c6b00c0b-1e3f-4f7c-b0ce-ecbd419e4437",
+      "sort_order": 2
+    },
+    {
+      "away_value": "2",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "3",
+      "id": "95694dd5-f3cc-54e8-8205-5c9b4fe9c8ee",
+      "label": "Yellow cards",
+      "match_id": "fe5e221a-f89b-4ed4-a340-fb1060fa56da",
+      "sort_order": 0
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "1",
+      "id": "2b3d0ead-82b8-5d17-b161-73446f9fad57",
+      "label": "Red cards",
+      "match_id": "fe5e221a-f89b-4ed4-a340-fb1060fa56da",
+      "sort_order": 1
+    },
+    {
+      "away_value": "4",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "2",
+      "id": "6afafe84-5274-5c8a-8461-53e2f97d6275",
+      "label": "Substitutions",
+      "match_id": "fe5e221a-f89b-4ed4-a340-fb1060fa56da",
+      "sort_order": 2
+    },
+    {
+      "away_value": "4",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "6",
+      "id": "6419b9ba-ff14-5663-b38a-ebeb6c453aa9",
+      "label": "Yellow cards",
+      "match_id": "01e3b35c-9f47-4740-9482-31e111e0913c",
+      "sort_order": 0
+    },
+    {
+      "away_value": "1",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "2",
+      "id": "4e5341dc-3f2a-5e2e-b833-b76ecaab53ba",
+      "label": "Red cards",
+      "match_id": "01e3b35c-9f47-4740-9482-31e111e0913c",
+      "sort_order": 1
+    },
+    {
+      "away_value": "5",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "5",
+      "id": "4f4ab001-26db-5812-ae72-33723bfdf519",
+      "label": "Substitutions",
+      "match_id": "01e3b35c-9f47-4740-9482-31e111e0913c",
+      "sort_order": 2
+    },
+    {
+      "away_value": "1",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "4",
+      "id": "4d34e9e8-f4ef-57e1-a268-9a19b22648c2",
+      "label": "Yellow cards",
+      "match_id": "92a4b559-a469-4c37-b213-2c8f58c891de",
+      "sort_order": 0
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "e56bf9f8-f816-5cc1-8bdf-ce9fe1fb191c",
+      "label": "Red cards",
+      "match_id": "92a4b559-a469-4c37-b213-2c8f58c891de",
+      "sort_order": 1
+    },
+    {
+      "away_value": "5",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "5",
+      "id": "ccae7a2b-d80d-5cd7-9714-370e6096c847",
+      "label": "Substitutions",
+      "match_id": "92a4b559-a469-4c37-b213-2c8f58c891de",
+      "sort_order": 2
+    },
+    {
+      "away_value": "2",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "2",
+      "id": "0aa90af8-b2ec-5628-9947-9cb3980efd11",
+      "label": "Yellow cards",
+      "match_id": "ce2eed68-4f81-4077-880b-37710eb60de7",
+      "sort_order": 0
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "ced7d2e4-b251-5bab-a32d-0370a77b0b3f",
+      "label": "Red cards",
+      "match_id": "ce2eed68-4f81-4077-880b-37710eb60de7",
+      "sort_order": 1
+    },
+    {
+      "away_value": "4",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "5",
+      "id": "4c9a1486-6607-57c7-8f8b-ec727d43e4a9",
+      "label": "Substitutions",
+      "match_id": "ce2eed68-4f81-4077-880b-37710eb60de7",
+      "sort_order": 2
+    },
+    {
+      "away_value": "3",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "62fb3efb-c22c-59da-967e-b9a7122bc069",
+      "label": "Yellow cards",
+      "match_id": "2c260529-6487-4d64-adc7-4e4d36e2ff65",
+      "sort_order": 0
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "dad9171e-6ec6-57d3-936f-a2f6878d5d99",
+      "label": "Red cards",
+      "match_id": "2c260529-6487-4d64-adc7-4e4d36e2ff65",
+      "sort_order": 1
+    },
+    {
+      "away_value": "4",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "5",
+      "id": "604e7426-8be9-5532-b85b-f25c6b9abc12",
+      "label": "Substitutions",
+      "match_id": "2c260529-6487-4d64-adc7-4e4d36e2ff65",
+      "sort_order": 2
+    },
+    {
+      "away_value": "2",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "c1a52241-fe6d-5569-a74d-ce76a89fbe30",
+      "label": "Yellow cards",
+      "match_id": "b8776057-502e-4db2-8fff-97a11e5015a3",
+      "sort_order": 0
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "15697793-a546-5c31-8715-a9103c2f113e",
+      "label": "Red cards",
+      "match_id": "b8776057-502e-4db2-8fff-97a11e5015a3",
+      "sort_order": 1
+    },
+    {
+      "away_value": "5",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "5",
+      "id": "233b22b2-9748-54ed-80be-8158e1d615ec",
+      "label": "Substitutions",
+      "match_id": "b8776057-502e-4db2-8fff-97a11e5015a3",
+      "sort_order": 2
+    },
+    {
+      "away_value": "3",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "1b3bd5a0-40f6-536e-a07c-e6b96352239f",
+      "label": "Yellow cards",
+      "match_id": "118f7b6f-04ab-4128-8145-eb9d47a294fb",
+      "sort_order": 0
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "a30a7da2-6c78-5791-834e-d9003ac192d4",
+      "label": "Red cards",
+      "match_id": "118f7b6f-04ab-4128-8145-eb9d47a294fb",
+      "sort_order": 1
+    },
+    {
+      "away_value": "5",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "5",
+      "id": "9ba879de-b296-5063-829f-05cbc8bee509",
+      "label": "Substitutions",
+      "match_id": "118f7b6f-04ab-4128-8145-eb9d47a294fb",
+      "sort_order": 2
+    },
+    {
+      "away_value": "5",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "4",
+      "id": "d3bf5905-78ea-553a-9242-a98009c5c39a",
+      "label": "Yellow cards",
+      "match_id": "421ca45b-cf42-4e60-8a79-349cd5f26682",
+      "sort_order": 0
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "fc84f9f3-815b-5c24-8238-d5d67ecf343c",
+      "label": "Red cards",
+      "match_id": "421ca45b-cf42-4e60-8a79-349cd5f26682",
+      "sort_order": 1
+    },
+    {
+      "away_value": "5",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "5",
+      "id": "a6f7f01e-6587-5516-bf2b-d5b83903694a",
+      "label": "Substitutions",
+      "match_id": "421ca45b-cf42-4e60-8a79-349cd5f26682",
+      "sort_order": 2
+    },
+    {
+      "away_value": "1",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "3",
+      "id": "7626bfa0-246d-5cc0-9901-c6e55953095a",
+      "label": "Yellow cards",
+      "match_id": "80cf1936-2b76-4356-819e-160c00083965",
+      "sort_order": 0
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "8119b0e6-cde0-5a24-a97b-6e8833c9637c",
+      "label": "Red cards",
+      "match_id": "80cf1936-2b76-4356-819e-160c00083965",
+      "sort_order": 1
+    },
+    {
+      "away_value": "5",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "5",
+      "id": "d7a2525f-8292-539e-9ccc-aac7b4398827",
+      "label": "Substitutions",
+      "match_id": "80cf1936-2b76-4356-819e-160c00083965",
+      "sort_order": 2
+    },
+    {
+      "away_value": "1",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "3",
+      "id": "5dde1e3d-df02-5da3-b436-34ff76f1aba2",
+      "label": "Yellow cards",
+      "match_id": "8f63bc16-b0f0-48d9-99c9-bb3c2097c90d",
+      "sort_order": 0
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "eadb27e6-eaba-5224-b4ea-deff5cebd987",
+      "label": "Red cards",
+      "match_id": "8f63bc16-b0f0-48d9-99c9-bb3c2097c90d",
+      "sort_order": 1
+    },
+    {
+      "away_value": "4",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "5",
+      "id": "7248a352-c655-581b-ba02-ac91c2116342",
+      "label": "Substitutions",
+      "match_id": "8f63bc16-b0f0-48d9-99c9-bb3c2097c90d",
+      "sort_order": 2
+    },
+    {
+      "away_value": "1",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "1",
+      "id": "0045df44-f523-5f75-80ff-ffa7f75792e4",
+      "label": "Yellow cards",
+      "match_id": "a4992f2c-d33b-4fd2-9d52-2f092ffe0086",
+      "sort_order": 0
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "cd6f66dd-d89a-57be-99e3-77b31e3fde6f",
+      "label": "Red cards",
+      "match_id": "a4992f2c-d33b-4fd2-9d52-2f092ffe0086",
+      "sort_order": 1
+    },
+    {
+      "away_value": "5",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "4",
+      "id": "c7e11a21-c349-5bcf-aa8f-4a7e472b9f68",
+      "label": "Substitutions",
+      "match_id": "a4992f2c-d33b-4fd2-9d52-2f092ffe0086",
+      "sort_order": 2
+    },
+    {
+      "away_value": "1",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "3",
+      "id": "bd0544c2-0626-5d52-852f-6d0bac71d2b1",
+      "label": "Yellow cards",
+      "match_id": "e120369a-d0e6-4931-a20b-97872b72eea4",
+      "sort_order": 0
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "1",
+      "id": "516d752a-c702-5cd7-b4c0-ef7b1a034375",
+      "label": "Red cards",
+      "match_id": "e120369a-d0e6-4931-a20b-97872b72eea4",
+      "sort_order": 1
+    },
+    {
+      "away_value": "5",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "4",
+      "id": "d427f308-b144-5754-b597-7e4584f66cf9",
+      "label": "Substitutions",
+      "match_id": "e120369a-d0e6-4931-a20b-97872b72eea4",
+      "sort_order": 2
+    },
+    {
+      "away_value": "2",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "1",
+      "id": "6ba66f2e-114b-5398-8139-6601e5d948dc",
+      "label": "Yellow cards",
+      "match_id": "1e531d10-5834-4fb0-b2ba-6e021ed35af3",
+      "sort_order": 0
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "c0d89ef9-575a-5300-9213-dd4a3c24048f",
+      "label": "Red cards",
+      "match_id": "1e531d10-5834-4fb0-b2ba-6e021ed35af3",
+      "sort_order": 1
+    },
+    {
+      "away_value": "4",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "5",
+      "id": "cac66d38-5482-57c9-ae11-6bafbbd948d6",
+      "label": "Substitutions",
+      "match_id": "1e531d10-5834-4fb0-b2ba-6e021ed35af3",
+      "sort_order": 2
+    },
+    {
+      "away_value": "4",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "8",
+      "id": "d3a616cd-55ac-56f8-ba9d-803566217619",
+      "label": "Yellow cards",
+      "match_id": "3344ce00-be7e-4a15-9a30-f017cc2dbc55",
+      "sort_order": 0
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "6179513d-1dd0-562d-98ef-dad022960e17",
+      "label": "Red cards",
+      "match_id": "3344ce00-be7e-4a15-9a30-f017cc2dbc55",
+      "sort_order": 1
+    },
+    {
+      "away_value": "3",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "4",
+      "id": "317fbc39-aa34-56d3-86f3-52e3e1a3e1cd",
+      "label": "Substitutions",
+      "match_id": "3344ce00-be7e-4a15-9a30-f017cc2dbc55",
+      "sort_order": 2
+    },
+    {
+      "away_value": "2",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "2",
+      "id": "116df7e3-94a0-5633-9b66-2fc43807389c",
+      "label": "Yellow cards",
+      "match_id": "65865854-e0f0-499d-89df-c911c4051ccd",
+      "sort_order": 0
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "d4e30dd3-3349-51ff-a57d-c91501d412ad",
+      "label": "Red cards",
+      "match_id": "65865854-e0f0-499d-89df-c911c4051ccd",
+      "sort_order": 1
+    },
+    {
+      "away_value": "4",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "5",
+      "id": "9b9850c1-e812-5634-b23f-3d4da2c644a8",
+      "label": "Substitutions",
+      "match_id": "65865854-e0f0-499d-89df-c911c4051ccd",
+      "sort_order": 2
+    },
+    {
+      "away_value": "2",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "f09d39bc-a509-54a6-92e9-c73af5694e36",
+      "label": "Yellow cards",
+      "match_id": "475b45ff-6314-49b5-b788-0f22d11b03ec",
+      "sort_order": 0
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "678db052-d37f-51de-98ff-681c554e1980",
+      "label": "Red cards",
+      "match_id": "475b45ff-6314-49b5-b788-0f22d11b03ec",
+      "sort_order": 1
+    },
+    {
+      "away_value": "5",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "5",
+      "id": "2109b37d-f63e-5c0e-b365-d2210204a160",
+      "label": "Substitutions",
+      "match_id": "475b45ff-6314-49b5-b788-0f22d11b03ec",
+      "sort_order": 2
+    },
+    {
+      "away_value": "2",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "2",
+      "id": "defd0147-73f0-5307-a1f2-bd1415156d92",
+      "label": "Yellow cards",
+      "match_id": "77f74163-fada-4663-9f4b-8ab2204fd5b5",
+      "sort_order": 0
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "8c1a6cc2-c395-56f1-ab2d-f04501c9c11d",
+      "label": "Red cards",
+      "match_id": "77f74163-fada-4663-9f4b-8ab2204fd5b5",
+      "sort_order": 1
+    },
+    {
+      "away_value": "4",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "5",
+      "id": "d875ee93-a6ed-5ca2-b2f4-3c400bd13b6f",
+      "label": "Substitutions",
+      "match_id": "77f74163-fada-4663-9f4b-8ab2204fd5b5",
+      "sort_order": 2
+    },
+    {
+      "away_value": "1",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "1",
+      "id": "63536584-6cb5-5a6c-9295-65571193a817",
+      "label": "Yellow cards",
+      "match_id": "81df673a-3958-4404-9020-1fcd43c5eb1e",
+      "sort_order": 0
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "bc658c4c-0d75-5c19-b56a-e740cb41afe1",
+      "label": "Red cards",
+      "match_id": "81df673a-3958-4404-9020-1fcd43c5eb1e",
+      "sort_order": 1
+    },
+    {
+      "away_value": "5",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "5",
+      "id": "7d1d41e1-6a62-5403-9205-08f4a7ed3da3",
+      "label": "Substitutions",
+      "match_id": "81df673a-3958-4404-9020-1fcd43c5eb1e",
+      "sort_order": 2
+    },
+    {
+      "away_value": "1",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "1",
+      "id": "fda8ef90-7a95-5eb9-84e1-6d11c477c517",
+      "label": "Yellow cards",
+      "match_id": "a18044df-376f-4c7e-8f7e-45885e169b47",
+      "sort_order": 0
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "9defff84-a825-5e2a-b49c-ddf2195c210c",
+      "label": "Red cards",
+      "match_id": "a18044df-376f-4c7e-8f7e-45885e169b47",
+      "sort_order": 1
+    },
+    {
+      "away_value": "5",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "5",
+      "id": "f98180bd-b684-52fd-a4b5-604663829f6d",
+      "label": "Substitutions",
+      "match_id": "a18044df-376f-4c7e-8f7e-45885e169b47",
+      "sort_order": 2
+    },
+    {
+      "away_value": "3",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "762f0c6a-1fba-5b28-9bc7-c4f413c56e6f",
+      "label": "Yellow cards",
+      "match_id": "9cadefd0-2b60-4e64-9c75-17406c7da798",
+      "sort_order": 0
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "43363300-75f8-5260-82be-4f31ad687714",
+      "label": "Red cards",
+      "match_id": "9cadefd0-2b60-4e64-9c75-17406c7da798",
+      "sort_order": 1
+    },
+    {
+      "away_value": "4",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "5",
+      "id": "d59f1057-1aa5-5f9a-9b51-9e3528a8f57f",
+      "label": "Substitutions",
+      "match_id": "9cadefd0-2b60-4e64-9c75-17406c7da798",
+      "sort_order": 2
+    },
+    {
+      "away_value": "2",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "9fbcdacd-d33a-5370-b602-b8bb2915b4e4",
+      "label": "Yellow cards",
+      "match_id": "4fa706b3-87ee-4c8b-adcc-4aa7e73ca870",
+      "sort_order": 0
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "b4f6f4f9-02d3-582e-a340-8b480de7072f",
+      "label": "Red cards",
+      "match_id": "4fa706b3-87ee-4c8b-adcc-4aa7e73ca870",
+      "sort_order": 1
+    },
+    {
+      "away_value": "2",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "4",
+      "id": "8ddeede1-f9f9-55eb-a0b1-518b9ed066d1",
+      "label": "Substitutions",
+      "match_id": "4fa706b3-87ee-4c8b-adcc-4aa7e73ca870",
+      "sort_order": 2
+    },
+    {
+      "away_value": "1",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "2",
+      "id": "8f2ec2be-03e4-5f2f-8669-299046b6d99a",
+      "label": "Yellow cards",
+      "match_id": "b400c084-5848-46ec-9c3f-286505b74dd1",
+      "sort_order": 0
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "0",
+      "id": "37a40c92-9c97-5f3c-8fec-5459ccb179b8",
+      "label": "Red cards",
+      "match_id": "b400c084-5848-46ec-9c3f-286505b74dd1",
+      "sort_order": 1
+    },
+    {
+      "away_value": "4",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "5",
+      "id": "343cc36b-f86f-5619-b8fb-d64e4fa63bb1",
+      "label": "Substitutions",
+      "match_id": "b400c084-5848-46ec-9c3f-286505b74dd1",
+      "sort_order": 2
+    },
+    {
+      "away_value": "2",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "3",
+      "id": "5428cb5f-1d95-54bf-9077-f6bf637af429",
+      "label": "Yellow cards",
+      "match_id": "52b6eb8c-d6b3-4367-9dca-fd627a32b918",
+      "sort_order": 0
+    },
+    {
+      "away_value": "0",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "1",
+      "id": "90ccd84a-c5a8-5e3b-9684-fcca3e8fc19b",
+      "label": "Red cards",
+      "match_id": "52b6eb8c-d6b3-4367-9dca-fd627a32b918",
+      "sort_order": 1
+    },
+    {
+      "away_value": "5",
+      "created_at": "2026-10-24 21:45:42.014099+00",
+      "home_value": "5",
+      "id": "529873da-45d4-5966-b3e2-1a06e041c84b",
+      "label": "Substitutions",
+      "match_id": "52b6eb8c-d6b3-4367-9dca-fd627a32b918",
+      "sort_order": 2
+    }
+  ],
+  "protected_snapshot": {
+    "events": "74a5dedcb5f2e2d1fd2f09b1c793148b",
+    "lineups": "8907cca7c0a4cf04bdad4ccc30811797",
+    "matches": "470cf786de4cdc3c5bc7cb308e0c9e47",
+    "ratings": "29faa07f20e2de613cb62eacd037eb9a"
+  }
+}

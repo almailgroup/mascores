@@ -13,7 +13,10 @@
  * optional APNS_HOST (defaults to production; sandbox is tried automatically).
  */
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
-import { socialAlertEnabled } from "../../../src/lib/social.ts";
+// Mirrors socialAlertEnabled in src/lib/social.ts; edge bundles can't import app files.
+function socialAlertEnabled(prefs: Record<string, unknown>, kind: string) {
+  return prefs.social !== false && prefs[`social_${kind}`] !== false;
+}
 
 const encoder = new TextEncoder();
 

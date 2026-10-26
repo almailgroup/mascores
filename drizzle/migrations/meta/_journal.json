@@ -400,6 +400,62 @@
       "when": 1792440193159,
       "tag": "0056_recording_comment_replies_likes_reports",
       "breakpoints": true
+    },
+    {
+      "idx": 57,
+      "version": "7",
+      "when": 1792521087334,
+      "tag": "0057_user_blocks_and_mute_all_alerts",
+      "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "7",
+      "when": 1792522749035,
+      "tag": "0058_migration",
+      "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "7",
+      "when": 1792664019691,
+      "tag": "0059_add_profiles_time_format",
+      "breakpoints": true
+    },
+    {
+      "idx": 60,
+      "version": "7",
+      "when": 1792883577607,
+      "tag": "0060_store_announced_fixture_dates",
+      "breakpoints": true
+    },
+    {
+      "idx": 61,
+      "version": "7",
+      "when": 1792884499215,
+      "tag": "0061_match_missing_players",
+      "breakpoints": true
+    },
+    {
+      "idx": 62,
+      "version": "7",
+      "when": 1792958581500,
+      "tag": "0062_competition_video_thumbnail",
+      "breakpoints": true
+    },
+    {
+      "idx": 63,
+      "version": "7",
+      "when": 1792958671170,
+      "tag": "0063_admin_send_lineups_push",
+      "breakpoints": true
+    },
+    {
+      "idx": 64,
+      "version": "7",
+      "when": 1792967222165,
+      "tag": "0064_migration",
+      "breakpoints": true
     }
   ]
 }

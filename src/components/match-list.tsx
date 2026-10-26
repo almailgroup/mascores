@@ -7,8 +7,8 @@ import { FlagIcon } from "@/components/flag";
 import { MatchNotificationButton } from "@/hooks/use-favorites";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
 import type { Match, Team } from "@/lib/db";
-import { matchClockSeconds } from "@/lib/db";
-import { useEffect, useState } from "react";
+import { matchWinner } from "@/lib/match-result";
+import { isKnockoutRound } from "@/lib/group-order";
 
 export type MatchWithTeams = Match & {
   home: Team | null;
@@ -38,6 +38,7 @@ export function useMatchGroupLabels(data: MatchWithTeams[]) {
   });
   const map = q.data ?? {};
   return (m: MatchWithTeams) => {
+    if (isKnockoutRound(m.round)) return null;
     const season = m.season ?? "";
     for (const teamId of [m.home_team_id, m.away_team_id]) {
       if (!teamId) continue;
@@ -107,42 +108,44 @@ export function MatchRow({ m, highlightTeamId }: { m: MatchWithTeams; highlightT
   const dates = useDates();
   const started = ["live", "ht", "ft", "aet", "pen", "awarded"].includes(m.status);
   const isLive = ["live", "ht"].includes(m.status);
-  const [, tick] = useState(0);
-  useEffect(() => {
-    if (!m.timer_running) return;
-    const interval = window.setInterval(() => tick((value) => value + 1), 1000);
-    return () => window.clearInterval(interval);
-  }, [m.timer_running]);
-  const seconds = matchClockSeconds(m);
-  const minute = Math.max(m.live_minute ?? 0, Math.floor(seconds / 60) + (seconds % 60 > 0 ? 1 : 0));
   const specialStatus = ["postponed", "cancelled", "interrupted"].includes(m.status);
   const finished = ["ft", "aet", "pen", "awarded"].includes(m.status);
-  const highlightedScore = highlightTeamId === m.home_team_id ? [m.home_score, m.away_score] : highlightTeamId === m.away_team_id ? [m.away_score, m.home_score] : null;
-  const outcome = highlightedScore && highlightedScore[0] != null && highlightedScore[1] != null
-    ? highlightedScore[0] > highlightedScore[1] ? "W" : highlightedScore[0] < highlightedScore[1] ? "L" : "D"
-    : null;
-  const line = (team: Team | null | undefined, score: number | null) => (
+  const winner = matchWinner(m);
+  const highlightedSide = highlightTeamId === m.home_team_id ? "home" : highlightTeamId === m.away_team_id ? "away" : null;
+  const outcome = highlightedSide ? winner ? winner === highlightedSide ? "W" : "L" : "D" : null;
+  const line = (team: Team | null | undefined, score: number | null, _side: "home" | "away", pens: number | null) => (
     <div className="flex min-w-0 items-center gap-1.5">
       <TeamCrest name={team?.name} logo={team?.logo_url} className="h-4.5 w-4.5 shrink-0" />
       <span className={`min-w-0 flex-1 truncate text-[0.8rem] ${highlightTeamId && team?.id === highlightTeamId ? "font-bold" : "font-medium"}`}>{tx(team?.name) ?? "TBD"}</span>
-      {started && <span className="shrink-0 text-[0.8rem] font-bold tabular-nums">{num(score ?? 0)}</span>}
+      {started && <span className="shrink-0 text-[0.8rem] font-bold tabular-nums">{num(score ?? 0)}{m.status === "pen" && pens != null && <span className="ms-1 text-[0.7rem] text-muted-foreground">({num(pens)})</span>}</span>}
     </div>
   );
+  const shortDate = m.kickoff_at
+    ? num(dates.date(m.kickoff_at, { day: "2-digit", month: "2-digit", year: "2-digit" }))
+    : m.kickoff_date ? num(dates.date(`${m.kickoff_date}T12:00:00Z`, { day: "2-digit", month: "2-digit", year: "2-digit" })) : "—";
+  const timeOnly = m.kickoff_at ? num(dates.time(m.kickoff_at)) : "";
   return (
     <Link data-fixture-id={m.id} to="/matches/$id" params={{ id: m.id }} className="flex items-center gap-2.5 px-3.5 py-2 hover:bg-accent">
-      <div className="w-12 shrink-0 text-center text-[0.65rem] leading-tight text-muted-foreground">
+      <div className="w-[3.6rem] shrink-0 text-center text-[0.65rem] leading-tight text-muted-foreground">
         {isLive ? (
-           <span className="font-bold text-primary">{m.status === "live" ? `${num(minute)}'` : "HT"}</span>
+          <span className="font-bold text-primary">{m.status === "live" ? "LIVE" : "HT"}</span>
+        ) : specialStatus ? (
+          <span className="block font-semibold">{tx(m.status.charAt(0).toUpperCase() + m.status.slice(1))}</span>
         ) : (
           <>
-            <div className="tabular-nums">{num(dates.kickoff(m.kickoff_at))}</div>
-            {(started || specialStatus) && <div className="font-semibold uppercase">{m.status === "ft" ? "FT" : m.status.toUpperCase()}</div>}
+            <div className="tabular-nums">{shortDate}</div>
+            {started
+              ? <div className="font-semibold uppercase">{m.status === "ft" ? "FT" : m.status.toUpperCase()}</div>
+              : timeOnly
+                ? <div className="tabular-nums">{timeOnly}</div>
+                : <div className="font-semibold uppercase">TBD</div>}
           </>
         )}
       </div>
       <div className="min-w-0 flex-1 space-y-1 border-s border-border ps-2.5">
-        {line(m.home, m.home_score)}
-        {line(m.away, m.away_score)}
+        {line(m.home, m.home_score, "home", m.home_pen)}
+        {line(m.away, m.away_score, "away", m.away_pen)}
+        {m.status === "pen" && winner && <div className="text-[0.65rem] font-medium text-muted-foreground">{tx(winner === "home" ? m.home?.name : m.away?.name)} · {tx("Won on penalties")}</div>}
       </div>
        <div className="flex shrink-0 items-center gap-1">
          {finished && outcome ? <span className={`grid h-6 w-6 place-items-center rounded-full text-[0.6rem] font-black ${outcome === "W" ? "bg-emerald-500/15 text-emerald-500" : outcome === "L" ? "bg-destructive/15 text-destructive" : "bg-muted text-muted-foreground"}`}>{outcome}</span> : <MatchNotificationButton matchId={m.id} competitionId={m.competition_id} teamIds={[m.home_team_id, m.away_team_id]} />}

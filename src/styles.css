@@ -145,10 +145,13 @@
   --event-ink: oklch(0.2 0.03 260);
   --match-foreground: oklch(0.98 0.005 240);
   --match-live: oklch(0.78 0.14 250);
+  --lineup-turf: oklch(0.48 0.13 150);
+  --lineup-turf-stripe: oklch(0.51 0.13 150);
+  --lineup-marking: oklch(0.98 0.005 150 / 35%);
   --sports-header-surface: oklch(0.17 0.015 260);
   --sports-header-foreground: oklch(0.98 0.005 240);
   --sports-header-chip: oklch(1 0 0 / 10%);
-  /* MA Scores — Light mode */
+  /* MaScores — Light mode */
   --background: oklch(0.985 0.005 240);
   --foreground: oklch(0.18 0.05 260);
   --card: oklch(1 0 0);
@@ -191,7 +194,7 @@
   --glass-highlight: oklch(1 0 0 / 16%);
   --glass-shadow: 0 3px 12px oklch(0 0 0 / 18%);
   --event-ink: oklch(0.98 0.005 240);
-  /* MA Scores — Dark mode (stadium night) */
+  /* MaScores — Dark mode (stadium night) */
   --background: oklch(0.16 0.03 260);
   --foreground: oklch(0.98 0.005 240);
   --card: oklch(0.21 0.04 262);
@@ -383,7 +386,7 @@ a:has([aria-label*="match notifications"]):active { filter: none; transform: non
 @keyframes brand-sweep { to { transform: translateX(100%); } }
 .match-hero { --collapse: 0; position: sticky; top: 0; z-index: 35; margin-top: calc(-1 * (env(safe-area-inset-top, 0px) + 2rem)); padding-top: calc(env(safe-area-inset-top, 0px) + .5rem); }
 .match-hero-body { position: relative; padding-top: calc(8px * (1 - var(--collapse))); padding-bottom: calc(8px * (1 - var(--collapse))); }
-.match-score-row { height: calc(68px - 44px * var(--collapse)); transform: translateY(calc(-22px * var(--collapse))); margin-bottom: calc(-18px * var(--collapse)); margin-left: calc(28px * var(--collapse)); margin-right: calc(112px * var(--collapse)); gap: calc(10px - 6px * var(--collapse)); }
+.match-score-row { min-height: calc(96px - 72px * var(--collapse)); transform: translateY(calc(-22px * var(--collapse))); margin-bottom: calc(-18px * var(--collapse)); margin-left: calc(28px * var(--collapse)); margin-right: calc(112px * var(--collapse)); gap: calc(10px - 6px * var(--collapse)); }
 .match-team-crest { height: calc(42px - 20px * var(--collapse)); width: calc(42px - 20px * var(--collapse)); }
 .match-team-star { width: calc(32px * (1 - var(--collapse))); opacity: calc(1 - var(--collapse)); overflow: hidden; }
 .match-score { font-size: calc(24px - 12px * var(--collapse)); }
@@ -414,6 +417,8 @@ a:has([aria-label*="match notifications"]):active { filter: none; transform: non
 @media (min-width: 640px) { .sports-header .profile-title { font-size: 18px; } .club-profile-header { margin-top: -1.5rem; } }
 
 .round-team-pitch { position: relative; background: var(--card); }
+.match-lineup-turf { background: repeating-linear-gradient(180deg, var(--lineup-turf) 0 40px, var(--lineup-turf-stripe) 40px 80px); }
+.match-lineup-marking { border-color: var(--lineup-marking); }
 .round-team-pitch::before { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(180deg, transparent 0 96px, color-mix(in oklab, var(--border) 50%, transparent) 96px 97px); pointer-events: none; }
 .round-team-pitch::after { content: ""; position: absolute; width: 80px; height: 80px; border: 1px solid var(--border); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; }
 

@@ -27,7 +27,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Talk in MA Scores voice rooms.</string>
+	<string>Talk in MaScores voice rooms.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Save match results, lineups and standings to your photos.</string>
 	<key>NSSupportsLiveActivities</key>

@@ -1,4 +1,6 @@
-import logoMark from "@/assets/logo-mark-v2.png.asset.json";
+import goalIcon from "@/assets/events/goal-white.png";
+import logoMarkWhite from "@/assets/logo-mark-dark.png";
+const logoMark = { url: logoMarkWhite };
 import { portraitSource } from "@/lib/portrait-source";
 
 /**
@@ -31,8 +33,34 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
   ctx.closePath();
 }
 
-function toBlob(canvas: HTMLCanvasElement): Promise<Blob | null> {
-  return new Promise((resolve) => canvas.toBlob((blob) => resolve(blob), "image/png", 0.95));
+async function toBlob(canvas: HTMLCanvasElement): Promise<Blob | null> {
+  // A dedicated footer keeps every export branded without covering photos or names.
+  const output = document.createElement("canvas");
+  output.width = canvas.width;
+  output.height = canvas.height + 240;
+  const ctx = output.getContext("2d");
+  if (!ctx) return null;
+  ctx.drawImage(canvas, 0, 0);
+  ctx.fillStyle = "#0b1020";
+  ctx.fillRect(0, canvas.height, output.width, 240);
+  ctx.fillStyle = "rgba(255,255,255,0.2)";
+  ctx.fillRect(60, canvas.height + 10, output.width - 120, 1);
+  const mark = await loadImage(logoMark.url);
+  if (mark) crest(ctx, mark, "", output.width - 140, canvas.height + 95, 160);
+  ctx.textAlign = "left";
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `800 34px ${FONT}`;
+  ctx.fillText("MaScores", 60, canvas.height + 65);
+  ctx.font = `500 28px ${FONT}`;
+  ctx.fillText("mascores.live", 60, canvas.height + 108);
+  ctx.fillText("Instagram · @mascoreslive", 60, canvas.height + 148);
+  ctx.fillStyle = "rgba(255,255,255,0.12)";
+  ctx.fillRect(60, canvas.height + 178, output.width - 120, 1);
+  ctx.textAlign = "center";
+  ctx.font = `600 24px ${FONT}`;
+  ctx.fillStyle = "rgba(255,255,255,0.7)";
+  ctx.fillText("Powered by Mansour Almail", output.width / 2, canvas.height + 216);
+  return new Promise((resolve) => output.toBlob((blob) => resolve(blob), "image/png", 0.95));
 }
 
 function surface(width: number, height: number, accent: string) {
@@ -77,6 +105,7 @@ export type StandingsCardRow = {
   name: string;
   logo?: string | null;
   played: number;
+  won?: number; drawn?: number; lost?: number; gf?: number; ga?: number;
   goalDifference: number;
   points: number;
   form?: ("W" | "D" | "L")[];
@@ -92,10 +121,11 @@ export async function drawStandingsCard(input: {
   accent?: string | null;
   groups: StandingsCardGroup[];
   withForm?: boolean;
+  withFull?: boolean;
 }): Promise<Blob | null> {
   const W = 1080;
   const rowH = 68;
-  const groups = input.groups.map((g) => ({ ...g, rows: g.rows.slice(0, 22) }));
+  const groups = input.groups.map((g) => ({ ...g, rows: g.rows }));
   const body = groups.reduce((total, g) => total + (g.label ? 58 : 0) + 54 + g.rows.length * rowH + 28, 0);
   const H = Math.max(760, 250 + body + 90);
   const made = surface(W, H, input.accent || "#1d4ed8");
@@ -132,6 +162,8 @@ export async function drawStandingsCard(input: {
     ctx.textAlign = "center";
     if (input.withForm) {
       ctx.fillText("LAST 5", W - 190, y + 34);
+    } else if (input.withFull) {
+      ["P","W","D","L","GLS","GD","PTS"].forEach((label,i)=>ctx.fillText(label,580+i*65,y+34));
     } else {
       ctx.fillText("P", W - 300, y + 34);
       ctx.fillText("GD", W - 200, y + 34);
@@ -156,7 +188,7 @@ export async function drawStandingsCard(input: {
       ctx.textAlign = "left";
       ctx.font = `700 30px ${FONT}`;
       ctx.fillStyle = "#ffffff";
-      ctx.fillText(row.name.slice(0, 22), 175, top + 39);
+      ctx.fillText(row.name, 175, top + 39, input.withFull ? 350 : 480);
 
       if (input.withForm) {
         const results = (row.form ?? []).slice(-5);
@@ -171,6 +203,9 @@ export async function drawStandingsCard(input: {
           ctx.font = `800 24px ${FONT}`;
           ctx.fillText(result, x + boxW / 2, top + 37);
         });
+      } else if (input.withFull) {
+        ctx.textAlign="center";ctx.font=`600 24px ${FONT}`;ctx.fillStyle="#ffffff";
+        [row.played,row.won??0,row.drawn??0,row.lost??0,`${row.gf??0}:${row.ga??0}`,row.goalDifference,row.points].forEach((value,i)=>ctx.fillText(String(value),580+i*65,top+39,62));
       } else {
         ctx.textAlign = "center";
         ctx.font = `600 28px ${FONT}`;
@@ -535,23 +570,21 @@ export async function drawMatchLineupsCard(input: {
       });
     });
   }
-  if (mark) { ctx.save(); ctx.globalAlpha = 0.7; ctx.filter = "brightness(0) invert(1)"; crest(ctx, mark, "", 978, 1516, 48); ctx.restore(); }
-  ctx.textAlign = "left"; ctx.font = `600 22px ${FONT}`;
-  ctx.fillStyle = "rgba(255,255,255,0.45)"; ctx.fillText("MA Scores · Match lineups", 60, H - 40);
   return toBlob(canvas);
 }
 
-type CardPlayer = { name: string; number: string; photo?: string | null };
+type CardPlayer = { name: string; number: string; photo?: string | null; sub?: { minute: string; out: string } | null };
 
 /** One club's starting eleven on a full pitch, with coach and substitutes. */
 export async function drawTeamLineupCard(input: {
+  possibleLineup?: boolean;
   competition: string; kickoff: string; accent: string;
   team: { teamName: string; logo?: string | null; formation: string; coach?: string | null; rows: CardPlayer[][]; bench?: CardPlayer[] };
 }): Promise<Blob | null> {
   const { team } = input;
   const bench = (team.bench ?? []).slice(0, 14);
   const benchLines = Math.ceil(bench.length / 2);
-  const benchH = bench.length ? 120 + benchLines * 50 : 0;
+  const benchH = bench.length ? 120 + benchLines * (bench.some((p) => p.sub) ? 66 : 50) : 0;
   const W = 1080, py = 300, ph = 1240, H = py + ph + 60 + benchH + 80;
   const made = surface(W, H, input.accent);
   if (!made) return null;
@@ -567,6 +600,7 @@ export async function drawTeamLineupCard(input: {
   ctx.font = `500 28px ${FONT}`; ctx.fillStyle = "rgba(255,255,255,0.72)";
   ctx.fillText(input.competition.slice(0, 48), 210, 165, 640);
   ctx.font = `500 24px ${FONT}`; ctx.fillText(input.kickoff, 210, 202, 640);
+  if (input.possibleLineup) { ctx.textAlign="left"; ctx.fillStyle="#ffffff"; ctx.font=`800 28px ${FONT}`; ctx.fillText("POSSIBLE LINEUP",60,267); }
   ctx.textAlign = "right"; ctx.fillStyle = "#ffffff"; ctx.font = `800 40px ${FONT}`;
   ctx.fillText(team.formation, 1020, 120);
   if (team.coach) { ctx.font = `600 24px ${FONT}`; ctx.fillStyle = "rgba(255,255,255,0.72)"; ctx.fillText(`Coach · ${team.coach}`, 1020, 165, 360); }
@@ -608,19 +642,29 @@ export async function drawTeamLineupCard(input: {
 
   if (bench.length) {
     const top = py + ph + 40;
+    const lineH = bench.some((p) => p.sub) ? 66 : 50;
     ctx.fillStyle = "rgba(255,255,255,0.07)"; roundRect(ctx, 60, top, 960, benchH, 28); ctx.fill();
     ctx.textAlign = "left"; ctx.fillStyle = "rgba(255,255,255,0.6)"; ctx.font = `800 24px ${FONT}`;
     ctx.fillText("SUBSTITUTES", 96, top + 56);
     bench.forEach((p, i) => {
-      const x = i % 2 ? 560 : 96, y = top + 110 + Math.floor(i / 2) * 50;
-      ctx.fillStyle = input.accent; roundRect(ctx, x, y - 28, 52, 36, 9); ctx.fill();
-      ctx.fillStyle = "#ffffff"; ctx.font = `800 20px ${FONT}`; ctx.textAlign = "center"; ctx.fillText(p.number || "-", x + 26, y - 3);
-      ctx.textAlign = "left"; ctx.font = `600 26px ${FONT}`; ctx.fillText(p.name, x + 68, y - 1, 380);
+      const x = i % 2 ? 560 : 96, y = top + 110 + Math.floor(i / 2) * lineH;
+      if (p.sub) {
+        // Came-on card: minute, number chip with a green up arrow, name in
+        // green and the replaced player in grey underneath.
+        ctx.textAlign = "right"; ctx.font = `700 24px ${FONT}`; ctx.fillStyle = "rgba(255,255,255,0.6)";
+        ctx.fillText(p.sub.minute, x + 40, y - 2);
+        ctx.fillStyle = input.accent; roundRect(ctx, x + 52, y - 34, 48, 34, 9); ctx.fill();
+        ctx.fillStyle = "#ffffff"; ctx.font = `800 20px ${FONT}`; ctx.textAlign = "center"; ctx.fillText(p.number || "-", x + 76, y - 10);
+        ctx.fillStyle = "#4ade80"; ctx.beginPath(); ctx.moveTo(x + 76, y - 2); ctx.lineTo(x + 68, y + 10); ctx.lineTo(x + 84, y + 10); ctx.closePath(); ctx.fill();
+        ctx.textAlign = "left"; ctx.font = `700 26px ${FONT}`; ctx.fillStyle = "#4ade80"; ctx.fillText(p.name, x + 118, y - 10, 340);
+        if (p.sub.out) { ctx.font = `500 22px ${FONT}`; ctx.fillStyle = "rgba(255,255,255,0.55)"; ctx.fillText(p.sub.out, x + 118, y + 18, 340); }
+      } else {
+        ctx.fillStyle = input.accent; roundRect(ctx, x, y - 28, 52, 36, 9); ctx.fill();
+        ctx.fillStyle = "#ffffff"; ctx.font = `800 20px ${FONT}`; ctx.textAlign = "center"; ctx.fillText(p.number || "-", x + 26, y - 3);
+        ctx.textAlign = "left"; ctx.font = `600 26px ${FONT}`; ctx.fillText(p.name, x + 68, y - 1, 380);
+      }
     });
   }
-  if (mark) { ctx.save(); ctx.globalAlpha = 0.75; ctx.filter = "brightness(0) invert(1)"; crest(ctx, mark, "", 990, H - 48, 44); ctx.restore(); }
-  ctx.textAlign = "left"; ctx.font = `600 22px ${FONT}`; ctx.fillStyle = "rgba(255,255,255,0.5)";
-  ctx.fillText("MA Scores · Lineup", 60, H - 40);
   return toBlob(canvas);
 }
 
@@ -638,7 +682,7 @@ export async function drawResultCard(input: {
   const glow = ctx.createRadialGradient(W, 0, 40, W, 0, 900);
   glow.addColorStop(0, input.accentAway); glow.addColorStop(1, "rgba(11,16,32,0)");
   ctx.fillStyle = glow; ctx.globalAlpha = 0.6; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1;
-  const [hl, al, mark] = await Promise.all([loadImage(input.home.logo), loadImage(input.away.logo), loadImage(logoMark.url)]);
+  const [hl, al, mark, goalImg] = await Promise.all([loadImage(input.home.logo), loadImage(input.away.logo), loadImage(logoMark.url), loadImage(goalIcon)]);
 
   ctx.textAlign = "center"; ctx.fillStyle = "rgba(255,255,255,0.85)"; ctx.font = `700 32px ${FONT}`;
   ctx.fillText(input.competition.slice(0, 48).toUpperCase(), W / 2, 110);
@@ -664,11 +708,10 @@ export async function drawResultCard(input: {
     items.slice(0, 9).forEach((s, i) => { ctx.fillStyle = "#ffffff"; ctx.fillText(`${s.name}  ${s.minute}`, x, 870 + i * 52, 430); });
   };
   if (input.homeScorers.length || input.awayScorers.length) {
-    ctx.textAlign = "center"; ctx.fillStyle = "rgba(255,255,255,0.55)"; ctx.font = `800 22px ${FONT}`; ctx.fillText("⚽  GOALS", W / 2, 820);
+    ctx.textAlign = "center"; ctx.fillStyle = "rgba(255,255,255,0.55)"; ctx.font = `800 22px ${FONT}`; ctx.fillText("GOALS", W / 2 + 20, 820);
+    if (goalImg) crest(ctx, goalImg, "", W / 2 - 52, 812, 34);
     ctx.fillStyle = "rgba(255,255,255,0.15)"; ctx.fillRect(W / 2 - 1, 845, 2, 460);
     list(input.homeScorers, W / 2 - 40, "right"); list(input.awayScorers, W / 2 + 40, "left");
   }
-  if (mark) { ctx.save(); ctx.globalAlpha = 0.8; ctx.filter = "brightness(0) invert(1)"; crest(ctx, mark, "", W - 90, H - 52, 48); ctx.restore(); }
-  ctx.textAlign = "left"; ctx.font = `600 22px ${FONT}`; ctx.fillStyle = "rgba(255,255,255,0.5)"; ctx.fillText("MA Scores · mascores.live", 60, H - 44);
   return toBlob(canvas);
 }

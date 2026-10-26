@@ -1,9 +1,10 @@
+import { hasStandings } from "@/lib/match-result";
 import { TeamCrest } from "@/components/team-crest";
 import { useAuth } from "@/hooks/use-auth";
 import { useSignInAction } from "@/lib/sign-in-action";
 import { toast } from "sonner";
 import { useCompetitionAlerts } from "@/lib/competition-alerts";
-import { requestAlertPermission } from "@/lib/notification-permission";
+import { allowBellOn } from "@/lib/notification-permission";
 import { PlayerAvatar } from "@/components/player-avatar";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -26,6 +27,7 @@ import { StandingsTable } from "@/components/standings-table";
 import { useCompetitionLogo } from "@/lib/comp-logo";
 import { useLogoAccent } from "@/lib/logo-accent";
 import { compareGroupLabels } from "@/lib/group-order";
+import { compareCompetitionRounds, fixtureTime } from "@/lib/competition-match-order";
 import { useCollapsingHeader } from "@/hooks/use-collapsing-header";
 import { SportsHeaderBackground } from "@/components/sports-header-background";
 import { Button } from "@/components/ui/button";
@@ -46,7 +48,7 @@ function groupsOf(rows: Row[]): [string | null, Row[]][] {
 }
 
 export const Route = createFileRoute("/competitions/$slug")({
-  head: ({ params }) => ({ meta: [{ title: `${params.slug} — MA Scores` }, { name: "description", content: "Competition fixtures, standings, squads and statistics on MA Scores." }, { property: "og:title", content: `${params.slug} — MA Scores` }, { property: "og:description", content: "Competition fixtures, standings, squads and statistics on MA Scores." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
+  head: ({ params }) => ({ meta: [{ title: `${params.slug} — MaScores` }, { name: "description", content: "Competition fixtures, standings, squads and statistics on MaScores." }, { property: "og:title", content: `${params.slug} — MaScores` }, { property: "og:description", content: "Competition fixtures, standings, squads and statistics on MaScores." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: CompetitionPage,
 });
 
@@ -168,7 +170,7 @@ function CompetitionPage() {
   const hidden = new Set((c.hidden_tabs ?? []) as string[]);
   const base: CompTab[] = friendly
     ? ["overview", "matches", "media", "news"]
-    : ["overview", "matches", "standings", ...(c.has_knockout ? (["knockout"] as CompTab[]) : []), "stats", "teams", "awards", "media", "news"];
+    : ["overview", "matches", ...(hasStandings(c) ? ["standings" as CompTab] : []), ...(c.has_knockout ? (["knockout"] as CompTab[]) : []), "stats", "teams", "awards", "media", "news"];
   const tabs = base.filter((item) => item === "overview" || item === "matches" || !hidden.has(item));
 
   const activeTab: CompTab = tabs.includes(tab) ? tab : "overview";
@@ -333,7 +335,7 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
     if (!user) { signIn(); return; }
     const enabled = !alerted;
     // Flip on the first tap; the permission prompt and save follow behind it.
-    if (enabled) void requestAlertPermission();
+    if (enabled && !(await allowBellOn())) return;
     await setCompetitionAlert(c.id, enabled).catch(() => { toast.error(tx("Could not save notifications")); });
   };
 
@@ -436,22 +438,15 @@ function CompetitionMatches({ data }: { data: MatchWithTeams[] }) {
     bucket.matches.push(m);
     buckets.set(key, bucket);
   });
-  // Cards follow the calendar: each card sits where its earliest match falls,
-  // so Group A and Group B rounds interleave by date instead of all of Group A
-  // running before Group B. Ties fall back to group then round order.
-  const firstDate = (b: { matches: MatchWithTeams[] }) =>
-    Math.min(...b.matches.map((m) => new Date(m.kickoff_at ?? 0).getTime()));
+  // Keep numbered rounds in place even when fixtures are TBD or postponed.
   for (const bucket of buckets.values()) {
-    bucket.matches.sort((a, b) => new Date(a.kickoff_at ?? 0).getTime() - new Date(b.kickoff_at ?? 0).getTime());
+    bucket.matches.sort((a, b) => fixtureTime(a) - fixtureTime(b));
   }
   const list = [...buckets.values()].sort((a, b) => {
-    const byDate = firstDate(a) - firstDate(b);
-    if (byDate) return byDate;
+    const byRound = compareCompetitionRounds(a, b);
+    if (byRound) return byRound;
     const byGroup = compareGroupLabels(a.group, b.group, false);
     if (byGroup) return byGroup;
-    const ra = a.round.startsWith("#") ? Number(a.round.slice(1)) : null;
-    const rb = b.round.startsWith("#") ? Number(b.round.slice(1)) : null;
-    if (ra != null && rb != null && ra !== rb) return ra - rb;
     return a.order - b.order;
   });
   return (
@@ -528,7 +523,7 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
         <div className="mt-3"><DurationBar startsOn={c.starts_on} endsOn={c.ends_on} /></div>
       </section>
 
-      {!friendly && <CompetitionRoundTeam competitionId={c.id} season={season ?? c.season ?? null} />}
+      {!friendly && !(c.hidden_tabs ?? []).includes("round team") && <CompetitionRoundTeam competitionId={c.id} season={season ?? c.season ?? null} />}
       {/* Key numbers strip — plain neutral cards. */}
       <section className="overflow-hidden rounded-2xl border border-border bg-card p-3 shadow-sm sm:p-4">
         <div className={`grid gap-2 ${friendly ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6"}`}>

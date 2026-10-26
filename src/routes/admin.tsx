@@ -42,7 +42,7 @@ import { NotificationsPanel } from "@/components/admin/notifications-panel";
 import { VerifyPanel } from "@/components/admin/verify-panel";
 
 export const Route = createFileRoute("/admin")({
-  head: () => ({ meta: [{ title: "Admin — Mansour Almail Scores" }, { name: "robots", content: "noindex" }, { name: "description", content: "Manage football content and access in MA Scores." }, { property: "og:title", content: "Admin — Mansour Almail Scores" }, { property: "og:description", content: "Manage football content and access in MA Scores." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
+  head: () => ({ meta: [{ title: "Admin — Mansour Almail Scores" }, { name: "robots", content: "noindex" }, { name: "description", content: "Manage football content and access in MaScores." }, { property: "og:title", content: "Admin — Mansour Almail Scores" }, { property: "og:description", content: "Manage football content and access in MaScores." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: () => <AdminConsole />,
 });
 
