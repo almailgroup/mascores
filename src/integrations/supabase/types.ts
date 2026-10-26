@@ -3660,6 +3660,10 @@ export type Database = {
         Args: { _succeeded: boolean; _uid: string }
         Returns: undefined
       }
+      register_push_device: {
+        Args: { _locale?: string; _token: string }
+        Returns: undefined
+      }
       reply_verification: {
         Args: { _message: string; _request: string }
         Returns: string
