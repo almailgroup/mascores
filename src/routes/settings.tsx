@@ -10,6 +10,7 @@ import { CURRENCIES, useCurrency } from "@/lib/currency";
 import { useHeightUnit } from "@/lib/units";
 import { getTimeFormat, setTimeFormat, adoptProfileTimeFormat, subscribeTimeFormat, type TimeFormat } from "@/lib/time-format";
 import { deleteMyAccount } from "@/lib/account.functions";
+import { clearPushToken } from "@/lib/native-push";
 import { useServerFn } from "@tanstack/react-start";
 import { Save, LogOut, Loader2, LogIn, Camera, Trash2, BellRing, ChevronDown, ChevronRight, User, ShieldCheck, LifeBuoy, Ticket as TicketIcon, Settings as SettingsIcon } from "lucide-react";
 import { ImageCropper } from "@/components/image-cropper";
@@ -315,7 +316,7 @@ function SettingsPage() {
       <FeedbackBox />
 
       {user && <section className="mt-5 flex flex-wrap items-center gap-4">
-          <button onClick={async () => { await supabase.auth.signOut(); navigate({ to: "/" }); }} className="inline-flex h-9 items-center gap-2 rounded-full border border-border bg-card px-4 text-xs font-medium hover:bg-accent">
+          <button onClick={async () => { try { await clearPushToken(); await supabase.auth.signOut(); navigate({ to: "/" }); } catch { setNotice(lang === "ar" ? "تعذر تسجيل الخروج. حاول مرة أخرى." : "Could not sign out. Please try again."); } }} className="inline-flex h-9 items-center gap-2 rounded-full border border-border bg-card px-4 text-xs font-medium hover:bg-accent">
             <LogOut className="h-3.5 w-3.5" /> {t("settings.signOut")}
           </button>
           <Button variant="link" size="sm" disabled={deleting} onClick={() => setConfirmDelete(true)}
