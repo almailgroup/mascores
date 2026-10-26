@@ -523,7 +523,15 @@ function MatchPage() {
           <div key={side}>
             {showPitch && <div className="mb-3 flex items-center justify-between gap-2">
               <MatchShare data={lineupShare} mode="lineups" />
-              <span className="rounded bg-muted px-2 py-0.5 text-[0.65rem] font-semibold">{num(activeFormation)}</span>
+              <span className="flex shrink-0 items-center gap-1.5">
+                {(() => {
+                  // Average rating of the rated starters, shown beside the formation like the reference apps.
+                  const rated = starters.map((s) => ratings.data?.find((r) => r.player_id === s.player_id)?.rating).filter((r): r is number => r != null);
+                  const avg = rated.length ? rated.reduce((a, b) => a + b, 0) / rated.length : null;
+                  return avg != null && <span className={`rounded px-2 py-0.5 text-[0.65rem] font-black ${ratingClass(avg)}`} title={tx("Team average rating")}>{num(formatRating(avg))}</span>;
+                })()}
+                <span className="rounded bg-muted px-2 py-0.5 text-[0.65rem] font-semibold">{num(activeFormation)}</span>
+              </span>
             </div>}
             {showPitch && (
               // Turf and markings live on a clipped layer so player cards (and the
