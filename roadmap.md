@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Repair notification registration after reinstall/account deletion/account switching; verify ownership isolation and explain TestFlight requirements.
+
 - [x] Separate match date from team names; suppress knockout group labels; create 50 verified profiles and reuse seven existing profiles, filling 185 match lineup entries. Forty-three new profiles have verified clubs and national links stay separate. Phone verification confirms complete Qatar XI and opening Abdelhak Assal's Al Khaldiya-linked profile.
 - [ ] Resolve seven new profiles' current clubs and three ambiguous source identities — blocked by missing/conflicting current-club or identity evidence; retain verified national links and do not guess clubs. Audit: scripts/sofascore-cup-new-players.json.
 
