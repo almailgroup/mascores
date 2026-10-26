@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Repair notification registration after reinstall/account deletion/account switching; verify ownership isolation and explain TestFlight requirements.
+- [x] Repair notification registration after reinstall/account deletion/account switching: restore current phone ownership and club alerts, remove five orphan registrations, add authenticated handover and deletion cleanup, disconnect before sign-out and retry on foreground/reconnect. Four regression tests and authenticated registration/readback/invalid-owner checks pass; Apple accepted the account-only test (four devices, zero failures). No native changes, so no new TestFlight build; publish web changes for future account-switch protection. On-phone display remains user-confirmed only.
 
 - [x] Separate match date from team names; suppress knockout group labels; create 50 verified profiles and reuse seven existing profiles, filling 185 match lineup entries. Forty-three new profiles have verified clubs and national links stay separate. Phone verification confirms complete Qatar XI and opening Abdelhak Assal's Al Khaldiya-linked profile.
 - [ ] Resolve seven new profiles' current clubs and three ambiguous source identities — blocked by missing/conflicting current-club or identity evidence; retain verified national links and do not guess clubs. Audit: scripts/sofascore-cup-new-players.json.
