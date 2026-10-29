@@ -26,28 +26,12 @@ export const Route = createFileRoute("/api/remove-bg")({
         if (!src.ok) return Response.json({ error: "Could not read the photo." }, { status: 400 });
         const blob = await src.blob();
 
-        const form = new FormData();
-        form.append("model", "openai/gpt-image-2.5-sunburst");
-        form.append("image", new File([blob], "photo.png", { type: blob.type || "image/png" }));
-        form.append("prompt", white
+        const { cheapImageEdit } = await import("@/lib/cheap-image-edit.server");
+        const out = await cheapImageEdit(blob, white
           ? "Keep the person exactly as they are (face, hair, kit, pose, framing unchanged). Replace the entire background with a clean plain pure white (#FFFFFF) studio background."
-          : "Keep the person exactly as they are (face, hair, kit, pose, framing unchanged). Remove the background completely so it is transparent.");
-        form.append("output_format", "png");
-        if (!white) form.append("background", "transparent");
-
-        const res = await fetch("https://ai.gateway.lovable.dev/v1/images/edits", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${process.env["LOVABLE_API_KEY"]}`, "X-Lovable-AIG-SDK": "fetch" },
-          body: form,
-        });
-        const json = (await res.json().catch(() => null)) as { data?: { b64_json?: string }[]; error?: { message?: string }; message?: string } | null;
-        if (!res.ok) {
-          const msg = res.status === 402 ? "AI credits have run out." : res.status === 429 ? "Too many requests, try again shortly." : (json?.error?.message ?? json?.message ?? "Background removal failed.");
-          return Response.json({ error: msg }, { status: res.status });
-        }
-        const b64 = json?.data?.[0]?.b64_json;
-        if (!b64) return Response.json({ error: "No image returned." }, { status: 502 });
-        return Response.json({ b64 });
+          : "Keep the person exactly as they are (face, hair, kit, pose, framing unchanged). Replace the entire background with plain pure white (#FFFFFF) so it can be cut out.");
+        if (!out.b64) return Response.json({ error: out.error }, { status: out.status });
+        return Response.json({ b64: out.b64 });
       },
     },
   },
