@@ -116,7 +116,7 @@ export function AllMatchesPanel() {
         {dayQ.isLoading && <div className="h-24 animate-pulse rounded-2xl bg-muted" />}
         {!dayQ.isLoading && groups.length === 0 && <div className="rounded-xl border border-border bg-card p-6 text-center text-xs text-muted-foreground">No matches on this day.</div>}
         {groups.map(({ comp, rows }) => (
-          <div key={comp?.id ?? "none"} className="animate-in fade-in overflow-hidden rounded-xl border border-border bg-card shadow-sm duration-300">
+          <div key={comp?.id ?? "none"} className="animate-in fade-in divide-y divide-border/60 overflow-hidden rounded-xl border border-border bg-card shadow-sm duration-300">
             <div className="flex items-center gap-2.5 px-3 py-2">
               {comp?.logo_url ? <img src={comp.logo_url} alt="" className="h-5 w-5 object-contain" /> : <span className="h-5 w-5" />}
               <span className="truncate text-xs font-semibold">{comp?.name ?? "No competition"}</span>
