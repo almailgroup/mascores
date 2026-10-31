@@ -2,7 +2,7 @@ import { MatchMissingPlayers } from "@/components/match-missing-players";
 import { Button } from "@/components/ui/button";
 import { useServerFn } from "@tanstack/react-start";
 import { readStatsPhoto } from "@/lib/stats-photo.functions";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   supabase, STATUS_LABELS, matchClockSeconds, formatClock,
@@ -425,6 +425,8 @@ function RatingsEditor({ match, lineups, players }: { match: Match; lineups: Lin
 
 function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSaved: () => void }) {
   const qc = useQueryClient();
+  const pendingLineupPlayers = useRef(new Set<string>());
+  const pendingLineupSlots = useRef(new Set<string>());
   const [picker, setPicker] = useState<{ teamId: string; slot: string } | null>(null);
   const [editingLineup, setEditingLineup] = useState<Lineup | null>(null);
   const [editNumber, setEditNumber] = useState("");
@@ -544,6 +546,12 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
   /** Show the choice immediately, save in the background, undo only on failure. */
   const saveLineupChange = (next: Lineup[], write: () => Promise<Lineup | null>, tempId?: string) => {
     const previous = readLineups();
+    const changed = [...previous, ...next].filter((row) => previous.find((p) => p.id === row.id) !== next.find((p) => p.id === row.id));
+    const affectedPlayers = new Set(changed.map((row) => row.player_id));
+    const affectedSlots = new Set(changed.filter((row) => row.position_code).map((row) => `${row.team_id}:${row.position_code}`));
+    if ([...affectedPlayers].some((id) => pendingLineupPlayers.current.has(id)) || [...affectedSlots].some((id) => pendingLineupSlots.current.has(id))) return;
+    affectedPlayers.forEach((id) => pendingLineupPlayers.current.add(id));
+    affectedSlots.forEach((id) => pendingLineupSlots.current.add(id));
     void qc.cancelQueries({ queryKey: lineupKey });
     qc.setQueryData(lineupKey, next);
     void write().then((saved) => {
@@ -553,8 +561,12 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
       if (!rows.some((row) => row.id === tempId)) { void supabase.from("match_lineups").delete().eq("id", saved.id); return; }
       qc.setQueryData<Lineup[]>(lineupKey, rows.map((row) => row.id === tempId ? saved : row));
     }).catch((e) => {
-      qc.setQueryData(lineupKey, previous);
+      qc.setQueryData<Lineup[]>(lineupKey, (rows = []) => [...rows.filter((row) => !affectedPlayers.has(row.player_id)), ...previous.filter((row) => affectedPlayers.has(row.player_id))]);
+      void qc.invalidateQueries({ queryKey: lineupKey });
       toast.error(e instanceof Error ? e.message : "Lineup could not be saved");
+    }).finally(() => {
+      affectedPlayers.forEach((id) => pendingLineupPlayers.current.delete(id));
+      affectedSlots.forEach((id) => pendingLineupSlots.current.delete(id));
     });
   };
   const checked = async <T,>(request: PromiseLike<{ data: T; error: { message: string } | null }>) => {

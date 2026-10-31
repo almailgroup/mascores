@@ -65,3 +65,4 @@
 - Shared match-result helpers decide shootout winners and standings eligibility across competition, match and club pages, keeping hidden cup tables and results consistent.
 - Shared group-stage helpers suppress inherited standings groups for knockout rounds; national squad links remain separate from players' actual club membership.
 - Push device handover uses an authenticated token-only RPC deriving ownership from auth.uid(); disconnect before sign-out and remove registrations on profile/account deletion so shared/reinstalled phones never retain deleted-account ownership.
+- Admin lineup selections update their query cache immediately, reconcile returned rows, and fetch only missing squad players; prevent conflicting pending selections so fast taps cannot create duplicate rows.
