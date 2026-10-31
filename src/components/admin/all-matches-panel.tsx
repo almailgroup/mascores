@@ -61,7 +61,7 @@ export function AllMatchesPanel() {
     queryFn: () => matchDaysBetween(strip[0], addDays(strip[14], 1)),
   });
   useEffect(() => {
-    stripRef.current?.querySelector<HTMLElement>("[data-sel='1']")?.scrollIntoView({ inline: "center", block: "nearest" });
+    stripRef.current?.querySelector<HTMLElement>("[data-sel='1']")?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
   }, [day]);
 
   const groups = useMemo(() => {
@@ -78,25 +78,25 @@ export function AllMatchesPanel() {
   const close = () => { setEditing(null); dayQ.refetch(); missingQ.refetch(); };
 
   return (
-    <div className="-mx-4 sm:mx-0">
-      <div className="flex items-stretch border-b border-border">
-        <div ref={stripRef} className="flex flex-1 overflow-x-auto px-2 pb-2">
+    <div className="-mx-4 min-h-[70vh] bg-muted/40 sm:mx-0 sm:rounded-2xl">
+      <div className="sticky top-0 z-10 flex items-stretch border-b border-border bg-card">
+        <div ref={stripRef} className="flex flex-1 snap-x overflow-x-auto scroll-smooth px-1 py-1.5 [scrollbar-width:none]">
           {strip.map((d) => {
             const k = dayKey(d); const sel = k === dayKey(day); const miss = missingDays.get(k);
             return (
-              <button key={k} data-sel={sel ? "1" : "0"} onClick={() => setDay(d)} className="flex w-12 shrink-0 flex-col items-center gap-1 py-1">
-                <span className="text-xs text-muted-foreground">{d.toLocaleDateString("en-GB", { weekday: "short" })}</span>
-                <span className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold ${sel ? "bg-primary text-primary-foreground" : ""}`}>{d.getDate()}</span>
-                <span className={`h-1.5 w-1.5 rounded-full ${miss ? "bg-destructive" : stripQ.data?.has(k) ? "bg-primary" : "bg-transparent"}`} />
+              <button key={k} data-sel={sel ? "1" : "0"} onClick={() => setDay(d)} className="flex w-11 shrink-0 snap-center flex-col items-center gap-0.5 py-0.5 transition-transform active:scale-95">
+                <span className="text-[0.65rem] text-muted-foreground">{d.toLocaleDateString("en-GB", { weekday: "short" })}</span>
+                <span className={`flex h-8 w-8 items-center justify-center rounded-full text-[0.8rem] font-semibold transition-colors duration-200 ${sel ? "bg-primary text-primary-foreground shadow-sm" : ""}`}>{d.getDate()}</span>
+                <span className={`h-1 w-1 rounded-full ${miss ? "bg-destructive" : stripQ.data?.has(k) ? "bg-primary" : "bg-transparent"}`} />
               </button>
             );
           })}
         </div>
-        <button onClick={() => setCalOpen(true)} className="flex w-12 shrink-0 items-center justify-center border-s border-border" aria-label="Open calendar"><CalendarDays className="h-5 w-5" /></button>
+        <button onClick={() => setCalOpen(true)} className="flex w-11 shrink-0 items-center justify-center border-s border-border text-muted-foreground" aria-label="Open calendar"><CalendarDays className="h-[18px] w-[18px]" /></button>
       </div>
 
       {totalMissing > 0 && (
-        <div className="mx-4 mt-3 rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-sm">
+        <div className="mx-3 mt-3 rounded-xl border border-destructive/30 bg-destructive/10 p-2.5 text-xs">
           <div className="flex items-center gap-2 font-bold text-destructive"><AlertTriangle className="h-4 w-4" /> {totalMissing} {totalMissing === 1 ? "match is" : "matches are"} missing a result</div>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {[...missingDays.entries()].slice(0, 12).map(([k, n]) => {
@@ -107,19 +107,19 @@ export function AllMatchesPanel() {
         </div>
       )}
 
-      <div className="flex items-center justify-between px-4 pt-4 text-sm">
-        <span className="font-bold">{day.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</span>
-        <span className="text-muted-foreground">{dayQ.data?.length ?? 0} matches</span>
+      <div className="flex items-center justify-between px-4 pt-3 text-xs">
+        <span className="font-semibold">{day.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</span>
+        <span className="text-muted-foreground">{dayQ.data?.length ?? 0} {dayQ.data?.length === 1 ? "match" : "matches"}</span>
       </div>
 
-      <div className="mt-3 space-y-3 px-4 pb-6">
+      <div className="mt-2 space-y-2 px-3 pb-6">
         {dayQ.isLoading && <div className="h-24 animate-pulse rounded-2xl bg-muted" />}
-        {!dayQ.isLoading && groups.length === 0 && <div className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">No matches on this day.</div>}
+        {!dayQ.isLoading && groups.length === 0 && <div className="rounded-xl border border-border bg-card p-6 text-center text-xs text-muted-foreground">No matches on this day.</div>}
         {groups.map(({ comp, rows }) => (
-          <div key={comp?.id ?? "none"} className="overflow-hidden rounded-2xl border border-border bg-card">
-            <div className="flex items-center gap-3 px-4 py-3">
-              {comp?.logo_url ? <img src={comp.logo_url} alt="" className="h-7 w-7 object-contain" /> : <span className="h-7 w-7" />}
-              <span className="truncate text-sm font-bold">{comp?.name ?? "No competition"}</span>
+          <div key={comp?.id ?? "none"} className="animate-in fade-in overflow-hidden rounded-xl border border-border bg-card shadow-sm duration-300">
+            <div className="flex items-center gap-2.5 px-3 py-2">
+              {comp?.logo_url ? <img src={comp.logo_url} alt="" className="h-5 w-5 object-contain" /> : <span className="h-5 w-5" />}
+              <span className="truncate text-xs font-semibold">{comp?.name ?? "No competition"}</span>
             </div>
             {rows.map((m) => {
               const home = teamMap.get(m.home_team_id ?? ""); const away = teamMap.get(m.away_team_id ?? "");
@@ -127,18 +127,18 @@ export function AllMatchesPanel() {
               const time = m.kickoff_at ? new Date(m.kickoff_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : "--:--";
               const status = miss ? "!" : m.status === "scheduled" ? "-" : ["live", "ht"].includes(m.status) ? m.status.toUpperCase() : "FT";
               return (
-                <button key={m.id} onClick={() => setEditing(m)} className={`flex w-full items-center gap-3 border-t border-border px-4 py-2.5 text-start hover:bg-accent ${miss ? "bg-destructive/5" : ""}`}>
-                  <div className="w-12 shrink-0 text-center text-xs text-muted-foreground"><div>{time}</div><div className={miss ? "font-bold text-destructive" : ""}>{status}</div></div>
-                  <div className="min-w-0 flex-1 space-y-1 border-s border-border ps-3">
+                <button key={m.id} onClick={() => setEditing(m)} className={`flex w-full items-center gap-3 px-3 py-2 text-start transition-colors hover:bg-accent active:bg-accent ${miss ? "bg-destructive/5" : ""}`}>
+                  <div className="w-10 shrink-0 text-center text-[0.65rem] leading-4 text-muted-foreground"><div>{time}</div><div className={miss ? "font-bold text-destructive" : ""}>{status}</div></div>
+                  <div className="min-w-0 flex-1 space-y-0.5 border-s border-border ps-2.5">
                     {[home, away].map((t, i) => (
-                      <div key={i} className="flex items-center gap-2 text-sm">
-                        <TeamCrest logo={t?.logo_url ?? null} name={t?.name ?? "TBD"} className="h-5 w-5" />
+                      <div key={i} className="flex items-center gap-2 text-[0.8rem]">
+                        <TeamCrest logo={t?.logo_url ?? null} name={t?.name ?? "TBD"} className="h-4 w-4" />
                         <span className="min-w-0 flex-1 truncate">{t?.name ?? "TBD"}</span>
-                        <span className="font-bold tabular-nums">{i === 0 ? m.home_score ?? "" : m.away_score ?? ""}</span>
+                        <span className="font-semibold tabular-nums">{i === 0 ? m.home_score ?? "" : m.away_score ?? ""}</span>
                       </div>
                     ))}
                   </div>
-                  {miss && <span className="shrink-0 rounded-full bg-destructive px-2 py-0.5 text-[0.65rem] font-bold text-destructive-foreground">Add result</span>}
+                  {miss && <span className="shrink-0 rounded-full bg-destructive px-2 py-0.5 text-[0.6rem] font-bold text-destructive-foreground">Add result</span>}
                 </button>
               );
             })}
@@ -169,29 +169,29 @@ function MatchCalendar({ value, missingDays, onPick, onClose }: { value: Date; m
   const cells = [...Array(lead).fill(null), ...Array.from({ length: count }, (_, i) => new Date(month.getFullYear(), month.getMonth(), i + 1))];
   const today = dayKey(new Date());
   return createPortal(
-    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-foreground/50 p-4" onClick={onClose}>
-      <div className="w-full max-w-sm overflow-hidden rounded-3xl bg-card shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-5"><h3 className="text-xl font-bold">Change date</h3><button onClick={onClose} aria-label="Close"><X className="h-5 w-5" /></button></div>
-        <div className="flex items-center justify-between px-5 pb-3 text-primary">
+    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-foreground/40 p-4 animate-in fade-in duration-200" onClick={onClose}>
+      <div className="w-full max-w-[20rem] overflow-hidden rounded-2xl bg-card shadow-2xl animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-4 py-3.5"><h3 className="text-base font-semibold">Change date</h3><button onClick={onClose} aria-label="Close"><X className="h-5 w-5" /></button></div>
+        <div className="flex items-center justify-between px-4 pb-2 text-sm text-primary">
           <button onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))} aria-label="Previous month"><ChevronLeft className="h-5 w-5" /></button>
           <span className="font-bold">{month.toLocaleDateString("en-GB", { month: "long", year: "numeric" })}</span>
           <button onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))} aria-label="Next month"><ChevronRight className="h-5 w-5" /></button>
         </div>
-        <div className="grid grid-cols-7 bg-muted py-2 text-center text-xs text-muted-foreground">{["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => <span key={d}>{d}</span>)}</div>
-        <div className="grid grid-cols-7 gap-y-1 p-3 text-center">
+        <div className="grid grid-cols-7 bg-muted py-1.5 text-center text-[0.65rem] text-muted-foreground">{["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => <span key={d}>{d}</span>)}</div>
+        <div className="grid grid-cols-7 gap-y-0.5 p-2 text-center">
           {cells.map((d, i) => {
             if (!d) return <span key={i} />;
             const k = dayKey(d); const sel = k === dayKey(value);
             return (
               <button key={k} onClick={() => onPick(d)} className="flex flex-col items-center py-1">
-                <span className={`flex h-9 w-9 items-center justify-center rounded-full text-sm ${sel ? "bg-primary font-bold text-primary-foreground" : k === today ? "font-bold text-primary" : ""}`}>{d.getDate()}</span>
-                <span className={`mt-0.5 h-1.5 w-1.5 rounded-full ${missingDays.has(k) ? "bg-destructive" : daysQ.data?.has(k) ? "bg-primary" : "bg-transparent"}`} />
+                <span className={`flex h-8 w-8 items-center justify-center rounded-full text-[0.8rem] transition-colors ${sel ? "bg-primary font-bold text-primary-foreground" : k === today ? "font-bold text-primary" : ""}`}>{d.getDate()}</span>
+                <span className={`mt-0.5 h-1 w-1 rounded-full ${missingDays.has(k) ? "bg-destructive" : daysQ.data?.has(k) ? "bg-primary" : "bg-transparent"}`} />
               </button>
             );
           })}
         </div>
-        <div className="flex items-center justify-between border-t border-border p-4 text-xs">
-          <button onClick={() => onPick(startOfDay(new Date()))} className="rounded-full bg-primary px-5 py-2 text-sm font-bold text-primary-foreground">Today</button>
+        <div className="flex items-center justify-between border-t border-border px-4 py-3 text-[0.7rem]">
+          <button onClick={() => onPick(startOfDay(new Date()))} className="rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground">Today</button>
           <span className="flex flex-col items-end gap-1"><span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary" />Days with matches</span><span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-destructive" />Missing result</span></span>
         </div>
       </div>
