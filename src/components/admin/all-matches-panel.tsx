@@ -11,7 +11,7 @@ type Row = Match & { competitions: { id: string; name: string; logo_url: string 
 const dayKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 const addDays = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
-const FINISHED = new Set(["finished", "ft", "aet", "pen", "awarded", "cancelled", "postponed", "abandoned"]);
+const FINISHED = new Set(["ft", "aet", "pen", "awarded", "cancelled", "postponed", "interrupted"]);
 /** A match whose kickoff was over two hours ago but still has no final result saved. */
 export const missingResult = (m: Pick<Match, "kickoff_at" | "status">, now = Date.now()) =>
   !!m.kickoff_at && new Date(m.kickoff_at).getTime() < now - 2 * 3600_000 && !FINISHED.has(m.status);
@@ -132,7 +132,7 @@ export function AllMatchesPanel() {
                   <div className="min-w-0 flex-1 space-y-1 border-s border-border ps-3">
                     {[home, away].map((t, i) => (
                       <div key={i} className="flex items-center gap-2 text-sm">
-                        <TeamCrest src={t?.logo_url ?? null} name={t?.name ?? "TBD"} className="h-5 w-5" />
+                        <TeamCrest logo={t?.logo_url ?? null} name={t?.name ?? "TBD"} className="h-5 w-5" />
                         <span className="min-w-0 flex-1 truncate">{t?.name ?? "TBD"}</span>
                         <span className="font-bold tabular-nums">{i === 0 ? m.home_score ?? "" : m.away_score ?? ""}</span>
                       </div>
