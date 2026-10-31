@@ -472,8 +472,13 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
     const self = teams.find((t) => t.id === tid);
     return teams.filter((t) => t.id !== tid && (t.parent_team_id === tid || (self?.parent_team_id && (t.id === self.parent_team_id || t.parent_team_id === self.parent_team_id))));
   };
-  const lineupIds = (lineupsQ.data ?? []).map((l) => l.player_id).join(",");
+  // Only look up lineup players missing from the loaded squads, so picking a
+  // squad player never triggers another player download.
+  const knownPlayerIds = new Set((playersQ.data ?? []).map((p) => p.id));
+  const lineupIds = playersQ.isSuccess ? [...new Set((lineupsQ.data ?? []).map((l) => l.player_id).filter((id) => !knownPlayerIds.has(id)))].sort().join(",") : "";
   const extraQ = useQuery({
+    enabled: playersQ.isSuccess || teamIds.length === 0,
+    placeholderData: (previous) => previous,
     queryKey: ["admin", "lineup-extra-players", match.id, extraSquads.join(","), lineupIds],
     queryFn: async () => {
       const out: Player[] = [];
@@ -534,30 +539,52 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
     onSaved();
   };
 
-  const toggle = async (playerId: string, teamId: string, starting: boolean) => {
-    const existing = lineups.find((l) => l.player_id === playerId);
-    if (existing) {
-      if (existing.is_starting === starting) await supabase.from("match_lineups").delete().eq("id", existing.id);
-      else await supabase.from("match_lineups").update({ is_starting: starting }).eq("id", existing.id);
-    } else {
-      await supabase.from("match_lineups").insert({ match_id: match.id, team_id: teamId, player_id: playerId, is_starting: starting } as never);
+  const lineupKey = ["admin", "lineups", match.id];
+  const readLineups = () => qc.getQueryData<Lineup[]>(lineupKey) ?? lineups;
+  /** Show the choice immediately, save in the background, undo only on failure. */
+  const saveLineupChange = async (next: Lineup[], write: () => Promise<Lineup | null>, tempId?: string) => {
+    const previous = readLineups();
+    await qc.cancelQueries({ queryKey: lineupKey });
+    qc.setQueryData(lineupKey, next);
+    try {
+      const saved = await write();
+      if (saved && tempId) qc.setQueryData<Lineup[]>(lineupKey, (rows = []) => rows.map((row) => row.id === tempId ? saved : row));
+    } catch (e) {
+      qc.setQueryData(lineupKey, previous);
+      toast.error(e instanceof Error ? e.message : "Lineup could not be saved");
     }
-    qc.invalidateQueries({ queryKey: ["admin", "lineups", match.id] });
+  };
+  const checked = async <T,>(request: PromiseLike<{ data: T; error: { message: string } | null }>) => {
+    const { data, error } = await request;
+    if (error) throw new Error(error.message);
+    return data;
+  };
+
+  const toggle = async (playerId: string, teamId: string, starting: boolean) => {
+    const rows = readLineups();
+    const existing = rows.find((l) => l.player_id === playerId);
+    if (existing) {
+      if (existing.is_starting === starting) return saveLineupChange(rows.filter((l) => l.id !== existing.id), async () => { if (!existing.id.startsWith("temp-")) await checked(supabase.from("match_lineups").delete().eq("id", existing.id)); return null; });
+      return saveLineupChange(rows.map((l) => l.id === existing.id ? { ...l, is_starting: starting } : l), async () => { await checked(supabase.from("match_lineups").update({ is_starting: starting }).eq("id", existing.id)); return null; });
+    }
+    const tempId = `temp-${crypto.randomUUID()}`;
+    const row = { match_id: match.id, team_id: teamId, player_id: playerId, is_starting: starting };
+    return saveLineupChange([...rows, { ...row, id: tempId, position_code: null, shirt_number: null } as Lineup],
+      async () => checked(supabase.from("match_lineups").insert(row as never).select("*").single()) as Promise<Lineup>, tempId);
   };
 
   const assignSlot = async (teamId: string, slot: string, playerId: string | null) => {
-    const current = lineups.find((l) => l.team_id === teamId && l.position_code === slot);
-    if (current) await supabase.from("match_lineups").delete().eq("id", current.id);
-    if (playerId) {
-      const dupe = lineups.find((l) => l.player_id === playerId);
-      if (dupe) await supabase.from("match_lineups").delete().eq("id", dupe.id);
-      const p = players.find((x) => x.id === playerId);
-      await supabase.from("match_lineups").insert({
-        match_id: match.id, team_id: teamId, player_id: playerId,
-        is_starting: true, position_code: slot, shirt_number: p?.shirt_number ?? null,
-      } as never);
-    }
-    qc.invalidateQueries({ queryKey: ["admin", "lineups", match.id] });
+    const rows = readLineups();
+    const removed = rows.filter((l) => (l.team_id === teamId && l.position_code === slot) || (playerId && l.player_id === playerId));
+    const kept = rows.filter((l) => !removed.includes(l));
+    const p = players.find((x) => x.id === playerId);
+    const row = playerId ? { match_id: match.id, team_id: teamId, player_id: playerId, is_starting: true, position_code: slot, shirt_number: p?.shirt_number ?? null } : null;
+    const tempId = row ? `temp-${crypto.randomUUID()}` : undefined;
+    return saveLineupChange(row ? [...kept, { ...row, id: tempId } as Lineup] : kept, async () => {
+      const ids = removed.map((l) => l.id).filter((id) => !id.startsWith("temp-"));
+      if (ids.length) await checked(supabase.from("match_lineups").delete().in("id", ids));
+      return row ? checked(supabase.from("match_lineups").insert(row as never).select("*").single()) as Promise<Lineup> : null;
+    }, tempId);
   };
 
   const publish = async (value: boolean) => {
