@@ -164,6 +164,7 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
               <option value="">Choose a category</option>
               {["Professional", "Amateur", "Youth", "Women", "Reserves", "International", "Club", "Cup", "Futsal", "Friendly", "Other"].map((item) => <option key={item} value={item}>{item}</option>)}
             </select>
+          </Field>
           <Field label="Sport"><select className={inputCls} value={form.sport ?? "football"} onChange={(e) => setForm({ ...form, sport: e.target.value })}><option value="football">Football</option><option value="basketball">Basketball</option><option value="american_football">American football</option><option value="hockey">Hockey</option><option value="volleyball">Volleyball</option><option value="handball">Handball</option></select></Field>
           <label className="flex items-start gap-2 rounded-xl border border-border bg-background/50 p-3 text-xs sm:col-span-2">
             <input type="checkbox" className="mt-0.5 h-4 w-4" checked={form.is_national ?? false} onChange={(e) => setForm({ ...form, is_national: e.target.checked })} />
@@ -177,7 +178,7 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
           <Field label="Seasons"><div className="space-y-2"><div className="flex flex-wrap gap-2">{(form.seasons ?? []).map((season) => <button type="button" key={season} className="rounded-full border border-border px-3 py-1 text-xs" onClick={() => setForm({ ...form, seasons: (form.seasons ?? []).filter((item) => item !== season) })}>{season} ×</button>)}</div><input className={inputCls} placeholder="Add a season, for example 25/26, then press Enter" onKeyDown={(e) => { if (e.key !== "Enter") return; e.preventDefault(); const season = e.currentTarget.value.trim(); if (season && !(form.seasons ?? []).includes(season)) setForm({ ...form, seasons: [...(form.seasons ?? []), season] }); e.currentTarget.value = ""; }} /></div></Field>
           <Field label="Sort order"><input type="number" className={inputCls} value={form.sort_order ?? 0} onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) })} /></Field>
           <Field label="Starts on"><input type="date" className={inputCls} value={form.starts_on ?? ""} onChange={(e) => setForm({ ...form, starts_on: e.target.value || null })} /></Field>
-          </Field>
+          <Field label="Ends on"><input type="date" className={inputCls} value={form.ends_on ?? ""} onChange={(e) => setForm({ ...form, ends_on: e.target.value || null })} /></Field>
             </div>
           </details>
           <details className="group rounded-2xl border border-border bg-background/40 sm:col-span-2">
