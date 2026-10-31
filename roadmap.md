@@ -96,3 +96,4 @@
 - [x] Admin "Matches" section: every competition by day, in-app calendar, missing-result warnings; Edit competition grouped into folding sections.
 - [x] Estimated ratings for Al Arabi–Fahaheel and Shabab–Qadsia (round 6); Sofascore stats for Shabab–Qadsia; mfsoccer lineups + 4-2-3-1 for Tadamon–Sahel (round 7); U19 round 6 results from Sportscorner. U17 already matched Sportscorner.
 - [ ] Confirm Tadamon #15 (mfsoccer "بيريرا") is Pierre Desiré Zebli — matched by shirt number.
+- [ ] Kuwait SC ratings for Al Wahda match (round 1 ACL Two)
