@@ -542,17 +542,20 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
   const lineupKey = ["admin", "lineups", match.id];
   const readLineups = () => qc.getQueryData<Lineup[]>(lineupKey) ?? lineups;
   /** Show the choice immediately, save in the background, undo only on failure. */
-  const saveLineupChange = async (next: Lineup[], write: () => Promise<Lineup | null>, tempId?: string) => {
+  const saveLineupChange = (next: Lineup[], write: () => Promise<Lineup | null>, tempId?: string) => {
     const previous = readLineups();
-    await qc.cancelQueries({ queryKey: lineupKey });
+    void qc.cancelQueries({ queryKey: lineupKey });
     qc.setQueryData(lineupKey, next);
-    try {
-      const saved = await write();
-      if (saved && tempId) qc.setQueryData<Lineup[]>(lineupKey, (rows = []) => rows.map((row) => row.id === tempId ? saved : row));
-    } catch (e) {
+    void write().then((saved) => {
+      if (!saved || !tempId) return;
+      const rows = qc.getQueryData<Lineup[]>(lineupKey) ?? [];
+      // Removed again before the save finished: remove the saved row too.
+      if (!rows.some((row) => row.id === tempId)) { void supabase.from("match_lineups").delete().eq("id", saved.id); return; }
+      qc.setQueryData<Lineup[]>(lineupKey, rows.map((row) => row.id === tempId ? saved : row));
+    }).catch((e) => {
       qc.setQueryData(lineupKey, previous);
       toast.error(e instanceof Error ? e.message : "Lineup could not be saved");
-    }
+    });
   };
   const checked = async <T,>(request: PromiseLike<{ data: T; error: { message: string } | null }>) => {
     const { data, error } = await request;
