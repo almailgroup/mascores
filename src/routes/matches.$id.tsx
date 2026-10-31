@@ -657,7 +657,7 @@ function MatchPage() {
       </div>
       <MatchMomentum matchId={id} home={match.home} away={match.away} minutes={match.momentum_minutes ?? 90} events={(events.data ?? []).map((e) => ({ minute: e.minute, type: e.type, team_id: e.team_id }))} />
       </div></LineupPortraits>}
-      {tab === "stats" && <MatchStatsPanel rows={stats.data ?? []} home={match.home} away={match.away} />}
+      {tab === "stats" && <MatchStatsPanel rows={stats.data ?? []} status={match.status} home={match.home} away={match.away} />}
       {tab === "previous" && <PreviousMatches home={match.home} away={match.away} currentId={match.id} />}
       {tab === "standings" && hasStandings(match.competition) && <MatchStandings competitionId={match.competition_id} season={match.season} liveTeamIds={isLive ? [match.home_team_id, match.away_team_id].filter(Boolean) as string[] : []} highlightIds={[match.home_team_id, match.away_team_id].filter(Boolean) as string[]} />}
       {tab === "media" && <div><h3 className="mb-3 font-bold">{tx("Videos & media")}</h3><div className="grid gap-2">{media.data?.map((item) => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="overflow-hidden rounded-xl border border-border bg-card hover:border-primary">{<MatchVideoThumb background={match.competition?.video_thumbnail_url} leagueLogo={match.competition?.logo_url} homeLogo={match.home?.logo_url} awayLogo={match.away?.logo_url} score={match.home_score != null && match.away_score != null ? `${match.home_score} - ${match.away_score}` : "VS"} />}<div className="p-4"><div className="text-xs font-bold uppercase text-primary">{item.source}</div><div className="mt-1 font-semibold">{tx(item.title) || tx("Open media")}</div></div></a>)}{media.data?.length === 0 && <p className="text-sm text-muted-foreground">{tx("No media posted.")}</p>}</div></div>}
@@ -882,7 +882,13 @@ function timelineWithBreaks(events: TimelineEvent[], status: string, homeTeamId:
 type StatRow = { id: string; label: string; home_value: string | number | null; away_value: string | number | null };
 
 /** Colour-accented comparison bars for published match statistics. */
-function MatchStatsPanel({ rows, home, away }: { rows: StatRow[]; home?: Partial<Team> | null; away?: Partial<Team> | null }) {
+/** Stats shown at 0 (possession 50/50) once a match kicks off, until real numbers arrive. */
+const STARTED_STAT_DEFAULTS: [string, string][] = [
+  ["Ball possession", "50%"], ["Total shots", "0"], ["Shots on target", "0"], ["Corner kicks", "0"],
+  ["Fouls", "0"], ["Offsides", "0"], ["Yellow cards", "0"], ["Red cards", "0"],
+];
+
+function MatchStatsPanel({ rows: published, status, home, away }: { rows: StatRow[]; status?: string | null; home?: Partial<Team> | null; away?: Partial<Team> | null }) {
   const tx = useTx();
   const num = useNum();
   // Bars take each club's own badge colour instead of a fixed blue/green pair.
@@ -890,6 +896,9 @@ function MatchStatsPanel({ rows, home, away }: { rows: StatRow[]; home?: Partial
   const awayAccent = useLogoAccent(away?.logo_url ?? null);
   const homeColor = homeAccent?.color ?? "var(--primary)";
   const awayColor = awayAccent?.color ?? "var(--muted-foreground)";
+  const rows: StatRow[] = published.length || !status || ["scheduled", "postponed", "cancelled"].includes(status)
+    ? published
+    : STARTED_STAT_DEFAULTS.map(([label, v]) => ({ id: `default-${label}`, label, home_value: v, away_value: v }));
   if (rows.length === 0) {
     return <div className="rounded-2xl border border-border bg-card p-6 text-center text-sm text-muted-foreground">{tx("No statistics published yet.")}</div>;
   }
