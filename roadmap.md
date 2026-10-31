@@ -92,3 +92,7 @@
 - [x] Share images footer: "Powered by Mansour Almail"
 - [x] Transfer history redesign with tappable team links
 - [x] Refresh Khaleeji 27 Team of the Round (fixed release window: set realistic completion times)
+
+- [x] Admin "Matches" section: every competition by day, in-app calendar, missing-result warnings; Edit competition grouped into folding sections.
+- [x] Estimated ratings for Al Arabi–Fahaheel and Shabab–Qadsia (round 6); Sofascore stats for Shabab–Qadsia; mfsoccer lineups + 4-2-3-1 for Tadamon–Sahel (round 7); U19 round 6 results from Sportscorner. U17 already matched Sportscorner.
+- [ ] Confirm Tadamon #15 (mfsoccer "بيريرا") is Pierre Desiré Zebli — matched by shirt number.

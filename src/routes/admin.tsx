@@ -14,6 +14,7 @@ import { TeamsPanel } from "@/components/admin/teams-panel";
 import { FifaRankingsPanel } from "@/components/admin/fifa-rankings-panel";
 import { PlayersPanel } from "@/components/admin/players-panel";
 import { MatchesPanel } from "@/components/admin/matches-panel";
+import { AllMatchesPanel } from "@/components/admin/all-matches-panel";
 import { StandingsPanel } from "@/components/admin/standings-panel";
 import { KnockoutPanel } from "@/components/admin/knockout-panel";
 import { NewsPanel } from "@/components/admin/news-panel";
@@ -55,11 +56,11 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [tab, setTab] = useState<"competitions" | "teams" | "countries" | "players" | "news" | "ai" | "venues" | "channels" | "transfers" | "reports" | "tickets" | "users" | "voice" | "voice users" | "rabta" | "approvals" | "appeals" | "manage" | "requests" | "bin" | "merge" | "notifications" | "verify" | null>(null);
+  const [tab, setTab] = useState<"matches" | "competitions" | "teams" | "countries" | "players" | "news" | "ai" | "venues" | "channels" | "transfers" | "reports" | "tickets" | "users" | "voice" | "voice users" | "rabta" | "approvals" | "appeals" | "manage" | "requests" | "bin" | "merge" | "notifications" | "verify" | null>(null);
   useEffect(() => {
     const sync = () => {
       const requested = new URLSearchParams(window.location.search).get("tab");
-      const sections = ["competitions", "teams", "countries", "players", "news", "ai", "venues", "channels", "transfers", "reports", "tickets", "users", "voice", "voice users", "rabta", "approvals", "appeals", "manage", "requests", "bin", "merge", "notifications", "verify"] as const;
+      const sections = ["matches", "competitions", "teams", "countries", "players", "news", "ai", "venues", "channels", "transfers", "reports", "tickets", "users", "voice", "voice users", "rabta", "approvals", "appeals", "manage", "requests", "bin", "merge", "notifications", "verify"] as const;
       setTab(sections.find((section) => section === requested) ?? null);
     };
     sync();
@@ -98,6 +99,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
     if (key === "users" || key === "approvals" || key === "appeals" || key === "manage" || key === "rabta") return isOwner || (key === "rabta" && scopes.has("rabta"));
     if (everything) return true;
     switch (key) {
+      case "matches": return scopes.has("competitions") || scopes.has("matches");
       case "competitions": return scopes.has("competitions") || scopes.has("matches") || scopes.has("standings");
       case "teams": return scopes.has("teams");
       case "countries": return scopes.has("teams");
@@ -188,7 +190,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
           <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
             {isOwner && <button onClick={() => setTab("voice users")} className="flex min-h-20 flex-col items-start justify-between rounded-lg border border-border bg-card p-3 text-left font-semibold"><ShieldCheck className="h-4 w-4" />Voice users</button>}
             {([
-              ["competitions", Trophy], ["teams", Shield], ["countries", Globe], ["players", Users], ["news", Newspaper], ["ai", Bot], ["venues", Landmark], ["channels", Radio], ["transfers", Repeat2], ["tickets", Ticket], ["reports", Flag], ["voice", Mic], ...(canRabta ? [["rabta", Megaphone] as const] : []), ...(isOwner ? [["users", UserCog] as const, ["approvals", CheckCheck] as const, ["appeals", LifeBuoy] as const] : []), ...(!isOwner ? [["requests", ClipboardList] as const] : []), ...(isOwner ? [["notifications", BellRing] as const, ["manage", KeyRound] as const, ["merge", GitMerge] as const, ["bin", Trash2] as const, ["verify", BadgeCheck] as const] : []),
+              ["matches", CalendarDays], ["competitions", Trophy], ["teams", Shield], ["countries", Globe], ["players", Users], ["news", Newspaper], ["ai", Bot], ["venues", Landmark], ["channels", Radio], ["transfers", Repeat2], ["tickets", Ticket], ["reports", Flag], ["voice", Mic], ...(canRabta ? [["rabta", Megaphone] as const] : []), ...(isOwner ? [["users", UserCog] as const, ["approvals", CheckCheck] as const, ["appeals", LifeBuoy] as const] : []), ...(!isOwner ? [["requests", ClipboardList] as const] : []), ...(isOwner ? [["notifications", BellRing] as const, ["manage", KeyRound] as const, ["merge", GitMerge] as const, ["bin", Trash2] as const, ["verify", BadgeCheck] as const] : []),
             ] as const)
               .filter(([k]) => allowed(k))
               .map(([k, Icon]) => (
@@ -199,6 +201,7 @@ export function AdminConsole({ owner = false }: { owner?: boolean }) {
             <p className="mt-6 rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">You do not have access to any sections yet. The site owner decides what you can manage.</p>
           )}
           <Modal open={!!tab && allowed(tab)} fullPage title={tab === "ai" ? "Almail AI" : tab === "bin" ? "Recycle bin" : (tab ?? "").replace(/^./, (letter) => letter.toUpperCase())} onClose={closeSection}>
+            {tab === "matches" && allowed("matches") && <AllMatchesPanel />}
             {tab === "competitions" && allowed("competitions") && <CompetitionsPanel onOpen={setOpenComp} />}
 
             {tab === "teams" && allowed("teams") && (
