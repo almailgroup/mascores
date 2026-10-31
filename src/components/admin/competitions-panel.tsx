@@ -133,6 +133,7 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
               <option value="cup">Cup</option>
               <option value="friendly">Friendly</option>
             </select>
+          </Field>
           <div className="sm:col-span-2">
             <Field label="Logo (light mode)">
               <ImageInput value={form.logo_url ?? null} onChange={(v) => setForm({ ...form, logo_url: v })} onFile={async (f) => { const url = await uploadMedia("competition-logos", f); if (url) setForm({ ...form, logo_url: url }); }} />
@@ -214,7 +215,7 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
           <details className="group rounded-2xl border border-border bg-background/40 sm:col-span-2">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-2 p-3 text-sm font-bold"><span>Related competitions & titles<span className="block text-[0.7rem] font-normal text-muted-foreground">Higher/lower divisions, youth leagues, title holder</span></span><ChevronRight className="h-4 w-4 shrink-0 transition-transform group-open:rotate-90" /></summary>
             <div className="grid gap-3 border-t border-border p-3 sm:grid-cols-2">
-          <Field label="Ends on"><input type="date" className={inputCls} value={form.ends_on ?? ""} onChange={(e) => setForm({ ...form, ends_on: e.target.value || null })} /></Field>
+          <Field label="Parent competition"><select className={inputCls} value={form.parent_competition_id ?? ""} onChange={(e) => setForm({ ...form, parent_competition_id: e.target.value || null })}><option value="">None</option>{(q.data ?? []).filter((item) => item.id !== form.id).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></Field>
           <Field label="Higher division"><select className={inputCls} value={form.higher_division_id ?? ""} onChange={(e) => setForm({ ...form, higher_division_id: e.target.value || null })}><option value="">None</option>{(q.data ?? []).filter((item) => item.id !== form.id).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></Field>
           <Field label="Lower division"><select className={inputCls} value={form.lower_division_id ?? ""} onChange={(e) => setForm({ ...form, lower_division_id: e.target.value || null })}><option value="">None</option>{(q.data ?? []).filter((item) => item.id !== form.id).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></Field>
 
