@@ -1,5 +1,6 @@
 # Roadmap
 
+- [ ] Remove the newly imported AFC news and report media links; fill source-verified player positions and nationalities without guessing missing countries.
 - [x] Add source-verified lineups, benches, events, statistics and referees for all 48 existing played AFC Champions League Two fixtures; retain independent estimated ratings and source attribution. Added 27 dated AFC report summaries and competition media links. Authenticated browser verified Adelaide–Lion City lineups/statistics and the competition page. Audit: scripts/afc-champions-two-import.json.
 - [ ] Complete AFC Champions League Two video/report gaps — no verified exact-season highlights/full-match uploads found; 21 match reports not available in retrieved articles. Three source sides list six substitutions, so those disputed substitution sets are held back rather than guessed. Further future fixtures were not part of this historical import.
 
