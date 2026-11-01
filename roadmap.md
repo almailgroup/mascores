@@ -1,8 +1,9 @@
 # Roadmap
 
-- [ ] Remove the newly imported AFC news and report media links; fill source-verified player positions and nationalities without guessing missing countries.
+- [x] Remove all 27 newly imported AFC news posts and report media links; update 608 profiles, filling 341 missing positions and 495 missing nationalities from ESPN athlete profiles. Verified Qatar flag and Forward on Khaled Ali Binsabaa’s profile. Audit: scripts/afc-player-profile-corrections.json.
+- [ ] Fill 170 remaining source-mapped players’ nationalities — blocked by absent citizenship in ESPN athlete records; preserve unknown values rather than infer countries from names or clubs.
 - [x] Add source-verified lineups, benches, events, statistics and referees for all 48 existing played AFC Champions League Two fixtures; retain independent estimated ratings and source attribution. Added 27 dated AFC report summaries and competition media links. Authenticated browser verified Adelaide–Lion City lineups/statistics and the competition page. Audit: scripts/afc-champions-two-import.json.
-- [ ] Complete AFC Champions League Two video/report gaps — no verified exact-season highlights/full-match uploads found; 21 match reports not available in retrieved articles. Three source sides list six substitutions, so those disputed substitution sets are held back rather than guessed. Further future fixtures were not part of this historical import.
+- [ ] Complete AFC Champions League Two video gaps — no verified exact-season highlights/full-match uploads found. News/report links were removed at the user’s request. Three source sides list six substitutions, so those disputed substitution sets are held back rather than guessed. Further future fixtures were not part of this historical import.
 
 - [x] Repair notification registration after reinstall/account deletion/account switching: restore current phone ownership and club alerts, remove five orphan registrations, add authenticated handover and deletion cleanup, disconnect before sign-out and retry on foreground/reconnect. Four regression tests and authenticated registration/readback/invalid-owner checks pass; Apple accepted the account-only test (four devices, zero failures). No native changes, so no new TestFlight build; publish web changes for future account-switch protection. On-phone display remains user-confirmed only.
 
