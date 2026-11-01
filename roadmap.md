@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Add verified Sofascore statistics for Al Qadsia–Al Arabi (November 1, round 7) and verify the match Stats page — blocked by Sofascore denying both browser and match-data requests; need the exact match link or a full-time Statistics screenshot. Existing values left unchanged rather than guessed.
+
 - [x] Remove all 27 newly imported AFC news posts and report media links; update 608 profiles, filling 341 missing positions and 495 missing nationalities from ESPN athlete profiles. Verified Qatar flag and Forward on Khaled Ali Binsabaa’s profile. Audit: scripts/afc-player-profile-corrections.json.
 - [ ] Fill 170 remaining source-mapped players’ nationalities — blocked by absent citizenship in ESPN athlete records; preserve unknown values rather than infer countries from names or clubs.
 - [x] Add source-verified lineups, benches, events, statistics and referees for all 48 existing played AFC Champions League Two fixtures; retain independent estimated ratings and source attribution. Added 27 dated AFC report summaries and competition media links. Authenticated browser verified Adelaide–Lion City lineups/statistics and the competition page. Audit: scripts/afc-champions-two-import.json.
