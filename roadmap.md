@@ -1,6 +1,7 @@
 # Roadmap
 
-- [ ] Complete AFC Champions League Two coverage: verify every existing fixture against sources, add available lineups/events/ratings/statistics, official highlights/full matches and dated competition-linked news/media; retain explicit gaps where evidence is unavailable.
+- [x] Add source-verified lineups, benches, events, statistics and referees for all 48 existing played AFC Champions League Two fixtures; retain independent estimated ratings and source attribution. Added 27 dated AFC report summaries and competition media links. Authenticated browser verified Adelaide–Lion City lineups/statistics and the competition page. Audit: scripts/afc-champions-two-import.json.
+- [ ] Complete AFC Champions League Two video/report gaps — no verified exact-season highlights/full-match uploads found; 21 match reports not available in retrieved articles. Three source sides list six substitutions, so those disputed substitution sets are held back rather than guessed. Further future fixtures were not part of this historical import.
 
 - [x] Repair notification registration after reinstall/account deletion/account switching: restore current phone ownership and club alerts, remove five orphan registrations, add authenticated handover and deletion cleanup, disconnect before sign-out and retry on foreground/reconnect. Four regression tests and authenticated registration/readback/invalid-owner checks pass; Apple accepted the account-only test (four devices, zero failures). No native changes, so no new TestFlight build; publish web changes for future account-switch protection. On-phone display remains user-confirmed only.
 
