@@ -470,3 +470,9 @@ a, button, [role="button"] {
 @media (prefers-reduced-motion: reduce) {
   a:active, button:active, [role="button"]:active { transform: none; }
 }
+
+/* Pressed rows darken so a tap is clearly felt; scrolling cancels the tap natively. */
+@media (hover: none) {
+  a:active { filter: brightness(0.82); }
+  .dark a:active { filter: brightness(1.25); }
+}
