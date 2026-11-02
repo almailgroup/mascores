@@ -2,6 +2,7 @@ import UIKit
 import Capacitor
 import Photos
 import AuthenticationServices
+import ObjectiveC
 import WebKit
 
 // Named after its JS name so Capacitor can also load it on demand
@@ -175,7 +176,7 @@ final class FormAssistantBarHider {
 
     private static func apply(_ webView: WKWebView) -> Bool {
         for view in contentViews(in: webView) {
-            let baseClass = type(of: view).classForCoder
+            let baseClass = type(of: view)
             let newName = String(describing: baseClass) + "_NoFormBar"
             let targetClass: AnyClass
             if let existing = NSClassFromString(newName) {
