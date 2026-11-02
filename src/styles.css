@@ -449,3 +449,24 @@ a:has([aria-label*="match notifications"]):active { filter: none; transform: non
 .ios-spinner span { position: absolute; left: 11.75px; top: 9px; width: 2.5px; height: 8px; border-radius: 2px; background: var(--muted-foreground); transform-origin: 50% 50%; opacity: calc(clamp(0, var(--spokes) - var(--i), 1) * 0.85); }
 .ios-spinner.is-spinning span { opacity: 0.25; animation: ios-spoke 0.8s linear infinite; animation-delay: calc(var(--i) * 0.1s - 0.8s); }
 @keyframes ios-spoke { 0% { opacity: 0.9; } 100% { opacity: 0.2; } }
+
+/* App feel: no long-press link/image previews, satisfying press feedback */
+html { -webkit-tap-highlight-color: transparent; }
+a, img, button, [role="button"], [role="tab"] {
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
+}
+a, button, [role="button"], [role="tab"] { user-select: none; }
+a, button, [role="button"] {
+  transition: transform 160ms cubic-bezier(.2,.8,.2,1), opacity 160ms ease, filter 160ms ease;
+}
+@media (hover: none) {
+  a:active, button:not(:disabled):active, [role="button"]:active {
+    transform: scale(0.96);
+    opacity: 0.85;
+    transition-duration: 60ms;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  a:active, button:active, [role="button"]:active { transform: none; }
+}
