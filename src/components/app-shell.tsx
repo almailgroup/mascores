@@ -181,7 +181,7 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
       </div>
 
       <BrowseGestures />
-      {!bare && (nativeApp ? (
+      {!bare && PRIMARY_NAV.some((item) => location.pathname === item.to || location.pathname === `${item.to}/`) && (nativeApp ? (
         <nav data-no-gesture aria-label="Main navigation" className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3 md:hidden" style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}>
           <GlassTabBar
             items={PRIMARY_NAV}
