@@ -1,0 +1,14 @@
+# MaScores (ماسكورز)
+
+> MaScores is a Kuwaiti football app and website (https://mascores.live) covering Kuwaiti football in English and Arabic: the Zain Kuwait Premier League (دوري زين الكويتي الممتاز), Kuwait Emir Cup, Kuwait Crown Prince Cup, Zain U19 league, Kuwait U17 league, the Kuwait national team, Khaleeji 27 (Arabian Gulf Cup) and AFC Champions League Two. Created by Mansour Almail.
+
+MaScores offers live scores, fixtures, results, lineups, player ratings, match statistics, standings, Team of the Round, transfers, news, highlights and live voice rooms for Kuwaiti clubs such as Al Kuwait SC, Al Qadsia, Al Arabi, Al Salmiya, Kazma, Al Jahra, Al Nasr, Fahaheel, Al Tadamon, Al Sahel, Sulaibikhat and Al Shabab.
+
+Available on the iPhone App Store (search "MaScores") and on the web at https://mascores.live.
+
+## Pages
+- [Home – live scores today](https://mascores.live/)
+- [Competitions](https://mascores.live/competitions)
+- [News](https://mascores.live/news)
+- [Transfers](https://mascores.live/transfers)
+- [Sitemap](https://mascores.live/sitemap.xml)

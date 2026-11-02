@@ -21,6 +21,7 @@ import { Route as ScannerRouteImport } from './routes/scanner'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SecretadminsafhaRouteImport } from './routes/secretadminsafha'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as TicketsRouteImport } from './routes/tickets'
 import { Route as TransfersRouteImport } from './routes/transfers'
@@ -101,6 +102,11 @@ const SecretadminsafhaRoute = SecretadminsafhaRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SupportRoute = SupportRouteImport.update({
@@ -222,6 +228,7 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/secretadminsafha': typeof SecretadminsafhaRoute
   '/settings': typeof SettingsRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/support': typeof SupportRoute
   '/tickets': typeof TicketsRoute
   '/transfers': typeof TransfersRoute
@@ -257,6 +264,7 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/secretadminsafha': typeof SecretadminsafhaRoute
   '/settings': typeof SettingsRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/support': typeof SupportRoute
   '/tickets': typeof TicketsRoute
   '/transfers': typeof TransfersRoute
@@ -293,6 +301,7 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/secretadminsafha': typeof SecretadminsafhaRoute
   '/settings': typeof SettingsRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/support': typeof SupportRoute
   '/tickets': typeof TicketsRoute
   '/transfers': typeof TransfersRoute
@@ -330,6 +339,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/secretadminsafha'
     | '/settings'
+    | '/sitemap.xml'
     | '/support'
     | '/tickets'
     | '/transfers'
@@ -365,6 +375,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/secretadminsafha'
     | '/settings'
+    | '/sitemap.xml'
     | '/support'
     | '/tickets'
     | '/transfers'
@@ -400,6 +411,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/secretadminsafha'
     | '/settings'
+    | '/sitemap.xml'
     | '/support'
     | '/tickets'
     | '/transfers'
@@ -436,6 +448,7 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   SecretadminsafhaRoute: typeof SecretadminsafhaRoute
   SettingsRoute: typeof SettingsRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SupportRoute: typeof SupportRoute
   TicketsRoute: typeof TicketsRoute
   TransfersRoute: typeof TransfersRoute
@@ -541,6 +554,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/support': {
@@ -718,6 +738,7 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   SecretadminsafhaRoute: SecretadminsafhaRoute,
   SettingsRoute: SettingsRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   SupportRoute: SupportRoute,
   TicketsRoute: TicketsRoute,
   TransfersRoute: TransfersRoute,
