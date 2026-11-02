@@ -23,7 +23,7 @@ export function GlassTabBar({ items, activeIndex, label, onReselect }: {
   const lensRef = useRef<HTMLDivElement>(null);
   const clipRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
-  const st = useRef({ width: 0, left: 0, dragging: false, moved: false, startX: 0, x: 0, raf: 0 });
+  const st = useRef({ width: 0, height: 1, left: 0, dragging: false, moved: false, startX: 0, x: 0, raf: 0 });
   const count = items.length;
 
   const slot = () => (st.current.width - PAD * 2) / count;
