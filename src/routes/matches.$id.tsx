@@ -1,3 +1,4 @@
+import { getSeoInfo, seoHead } from "@/lib/seo-head";
 import { possibleLineupWindow } from "@/lib/possible-lineup";
 import { hasStandings, matchWinner } from "@/lib/match-result";
 import { eventPlayers } from "@/lib/event-players";
@@ -75,7 +76,8 @@ function formationRows(formation: string | null | undefined): string[][] {
 }
 
 export const Route = createFileRoute("/matches/$id")({
-  head: ({ params }) => ({ meta: [{ title: `Match — MaScores` }, { name: "description", content: `Match center ${params.id}` }, { property: "og:title", content: `Match — MaScores` }, { property: "og:description", content: `Match center ${params.id}` }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
+  loader: ({ params }) => (typeof window === "undefined" ? getSeoInfo({ data: { kind: "match", id: params.id } }) : null),
+  head: ({ params, loaderData }) => seoHead(loaderData, "Match — MaScores", `/matches/${params.id}`),
   component: MatchPage,
 });
 
