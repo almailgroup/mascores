@@ -1,9 +1,7 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useRouter } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
 
-let previousPage: HTMLElement | null = null;
 
 /** Interactive gestures: navigation happens only after a completed drag is released. */
 export function BrowseGestures() {
@@ -14,26 +12,6 @@ export function BrowseGestures() {
   const [refreshing, setRefreshing] = useState(false);
   const [indicatorTop, setIndicatorTop] = useState(0);
   const busy = useRef(false);
-  useLayoutEffect(() => {
-    const surface = document.querySelector<HTMLElement>("[data-browse-surface]");
-    const capture = () => {
-      if (!surface) return;
-      const copy = surface.cloneNode(true) as HTMLElement;
-      copy.querySelectorAll("[data-gesture-ui]").forEach((node) => node.remove());
-      copy.removeAttribute("data-browse-surface");
-      copy.querySelectorAll("[id]").forEach((node) => node.removeAttribute("id"));
-      copy.style.transform = `translateY(${-window.scrollY}px)`;
-      copy.style.transition = "none";
-      copy.inert = true;
-      previousPage = copy;
-    };
-    const onClick = (event: MouseEvent) => {
-      if (event.target instanceof Element && event.target.closest('a[href]')) capture();
-    };
-    document.addEventListener("pointerdown", onClick, true);
-    return () => { document.removeEventListener("pointerdown", onClick, true); };
-  }, [location.pathname]);
-
   useEffect(() => {
     const surface = document.querySelector<HTMLElement>("[data-browse-surface]");
     // Move the entire browsing page, including its header, but not the fixed tab bar.
@@ -47,6 +25,7 @@ export function BrowseGestures() {
     let axis: "back" | "refresh" | null = null;
     let underlay: HTMLDivElement | null = null;
     let timer: ReturnType<typeof setTimeout> | null = null;
+    let pullOn = false;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const reset = () => {
       timer = null;
@@ -59,7 +38,7 @@ export function BrowseGestures() {
       refreshContent.style.transition = "";
       document.documentElement.style.overscrollBehaviorY = "";
       underlay?.remove(); underlay = null;
-      setPull(0);
+      setPull(0); pullOn = false;
     };
     const settle = () => {
       // A transform on the shell makes fixed navigation relative to the page.
@@ -72,7 +51,7 @@ export function BrowseGestures() {
         refreshContent.style.transition = reduced ? "none" : "transform 280ms cubic-bezier(.2,.8,.2,1)";
         refreshContent.style.transform = "";
       }
-      setPull(0);
+      setPull(0); pullOn = false;
       timer = setTimeout(reset, reduced ? 0 : 280);
     };
     const onStart = (event: TouchEvent) => {
@@ -110,7 +89,6 @@ export function BrowseGestures() {
           underlay = document.createElement("div");
           underlay.className = "browse-back-underlay";
           underlay.setAttribute("aria-hidden", "true");
-          if (previousPage) underlay.append(previousPage.cloneNode(true));
           document.body.append(underlay);
           surface.style.boxShadow = "-8px 0 24px var(--border)";
         }
@@ -122,7 +100,9 @@ export function BrowseGestures() {
         const offset = 110 * (1 - Math.exp(-distance / 230));
         refreshContent.style.transition = "none";
         refreshContent.style.transform = `translateY(${offset}px)`;
-        setPull(offset);
+        if (!pullOn) { pullOn = true; setPull(1); }
+        const ind = document.querySelector<HTMLElement>("[data-pull-indicator]");
+        if (ind) { ind.style.opacity = String(Math.min(1, offset / 70)); ind.style.setProperty("--spokes", String(Math.min(8, Math.ceil(offset / 11)))); }
       }
     };
     const onEnd = () => {
@@ -136,7 +116,7 @@ export function BrowseGestures() {
         if (underlay) { underlay.style.transition = "transform 200ms ease-out"; underlay.style.transform = "translateX(0px)"; }
         timer = setTimeout(() => { reset(); timer = null; busy.current = false; router.history.back(); }, reduced ? 0 : 200);
       } else if (axis === "refresh" && distance >= 180) {
-        busy.current = true; setRefreshing(true); setPull(64);
+        busy.current = true; setRefreshing(true);
         refreshContent.style.transition = "transform 180ms ease-out";
         refreshContent.style.transform = "translateY(64px)";
         void Promise.all([qc.invalidateQueries(), router.invalidate(), new Promise((resolve) => setTimeout(resolve, 500))]).catch(() => {}).finally(() => {
@@ -162,5 +142,11 @@ export function BrowseGestures() {
     };
   }, [router, qc, location.pathname]);
   if (!pull && !refreshing) return null;
-  return <div data-gesture-ui role="status" aria-label={refreshing ? "Refreshing" : "Pull to refresh"} className="browse-refresh-indicator pointer-events-none fixed inset-x-0 z-20 flex justify-center" style={{ top: indicatorTop || "env(safe-area-inset-top)", height: refreshing ? 48 : Math.min(pull, 48) }}><Loader2 className={`h-5 w-5 self-center text-muted-foreground ${refreshing ? "animate-spin" : ""}`} style={{ transform: refreshing ? undefined : `rotate(${pull * 4}deg)`, opacity: Math.min(1, pull / 40) }} /></div>;
+  return (
+    <div data-gesture-ui role="status" aria-label={refreshing ? "Refreshing" : "Pull to refresh"} className="pointer-events-none fixed inset-x-0 z-20 flex h-12 items-center justify-center" style={{ top: indicatorTop || "env(safe-area-inset-top)" }}>
+      <div data-pull-indicator className={`ios-spinner ${refreshing ? "is-spinning" : ""}`} style={refreshing ? { opacity: 1 } : undefined}>
+        {Array.from({ length: 8 }, (_, i) => <span key={i} style={{ transform: `rotate(${i * 45}deg) translateY(-7px)`, ["--i" as string]: i }} />)}
+      </div>
+    </div>
+  );
 }
