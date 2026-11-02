@@ -146,7 +146,7 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
 
   return (
     <div data-browse-surface className="relative min-h-screen bg-background text-foreground">
-      <div className="pointer-events-none fixed inset-0 opacity-40 [background:radial-gradient(circle_at_10%_-10%,color-mix(in_oklab,var(--primary)_25%,transparent),transparent_55%),radial-gradient(circle_at_100%_100%,color-mix(in_oklab,var(--primary)_15%,transparent),transparent_60%)]" />
+      <div data-browse-glow className="pointer-events-none fixed inset-0 opacity-40 transition-opacity [background:radial-gradient(circle_at_10%_-10%,color-mix(in_oklab,var(--primary)_25%,transparent),transparent_55%),radial-gradient(circle_at_100%_100%,color-mix(in_oklab,var(--primary)_15%,transparent),transparent_60%)]" />
 
       <div data-browse-page>
       {!hideHeader && <header data-shell-header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 pt-[env(safe-area-inset-top)] backdrop-blur-md">
