@@ -29,7 +29,7 @@ export function BrowseGestures() {
     const t = setTimeout(take, 150);
     const t2 = setTimeout(take, 1200);
     // Refresh right before any tap/click that may leave this page, so the snapshot is never stale or missing.
-    const onTap = (e: Event) => { if (!(e.target instanceof Element) || !e.target.closest("[data-browse-page]")) return; if (e.type === "touchstart" && (e as TouchEvent).touches[0]?.clientX <= 28) return; take(); };
+    const onTap = (e: Event) => { if (!(e.target instanceof Element) || !e.target.closest("[data-browse-page]")) return; if (e.type === "touchstart" && ((e as TouchEvent).touches[0]?.clientX ?? 99) <= 28) return; take(); };
     document.addEventListener("touchstart", onTap, { capture: true, passive: true });
     document.addEventListener("mousedown", onTap, true);
     let st: ReturnType<typeof setTimeout> | null = null;
