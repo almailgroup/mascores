@@ -60,7 +60,6 @@ export function BrowseGestures() {
       timer = null;
       surface.style.transform = "";
       surface.style.transition = "";
-      surface.style.boxShadow = "";
       content.style.transform = "";
       content.style.transition = "";
       refreshContent.style.transform = "";
@@ -125,7 +124,6 @@ export function BrowseGestures() {
             underlay.append(inner);
           }
           document.body.append(underlay);
-          surface.style.boxShadow = "-8px 0 24px var(--border)";
         }
         surface.style.transition = "none";
         surface.style.transform = `translateX(${distance}px)`;
