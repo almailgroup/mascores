@@ -62,13 +62,11 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
     return form.country_code ? team.country_code === form.country_code : team.country === form.country;
   });
 
-  // Lock the page behind the full-screen editor, like a native settings page.
   useEffect(() => {
     if (!open) return;
-    let locked = 0;
     const previous = document.body.style.overflow;
-    if (locked++ === 0) document.body.style.overflow = "hidden";
-    return () => { if (--locked === 0) document.body.style.overflow = previous; };
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previous; };
   }, [open]);
 
   const save = async () => {
