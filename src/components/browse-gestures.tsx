@@ -12,6 +12,27 @@ export function BrowseGestures() {
   const [refreshing, setRefreshing] = useState(false);
   const [indicatorTop, setIndicatorTop] = useState(0);
   const busy = useRef(false);
+  // Static snapshots of recently visited pages, keyed by history index, shown under the back swipe.
+  const snaps = useRef(new Map<number, { node: HTMLElement; scroll: number }>());
+  const idx = () => Number((router.history.location.state as Record<string, unknown>)?.__TSR_index ?? 0);
+  useEffect(() => {
+    const index = idx();
+    const take = () => {
+      const page = document.querySelector<HTMLElement>("[data-browse-page]");
+      if (!page) return;
+      const node = page.cloneNode(true) as HTMLElement;
+      node.querySelectorAll("video,iframe,audio").forEach((n) => n.remove());
+      node.removeAttribute("data-browse-page");
+      snaps.current.set(index, { node, scroll: window.scrollY });
+      for (const k of snaps.current.keys()) if (k > index || k < index - 8) snaps.current.delete(k);
+    };
+    const t = setTimeout(take, 900);
+    let st: ReturnType<typeof setTimeout> | null = null;
+    const onScroll = () => { if (st) clearTimeout(st); st = setTimeout(take, 400); };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => { clearTimeout(t); if (st) clearTimeout(st); window.removeEventListener("scroll", onScroll); take(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.href]);
   useEffect(() => {
     const surface = document.querySelector<HTMLElement>("[data-browse-surface]");
     // Move the entire browsing page, including its header, but not the fixed tab bar.
@@ -89,6 +110,12 @@ export function BrowseGestures() {
           underlay = document.createElement("div");
           underlay.className = "browse-back-underlay";
           underlay.setAttribute("aria-hidden", "true");
+          const snap = snaps.current.get(idx() - 1);
+          if (snap) {
+            const inner = snap.node.cloneNode(true) as HTMLElement;
+            inner.style.transform = `translateY(${-snap.scroll}px)`;
+            underlay.append(inner);
+          }
           document.body.append(underlay);
           surface.style.boxShadow = "-8px 0 24px var(--border)";
         }
