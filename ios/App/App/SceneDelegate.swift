@@ -127,4 +127,74 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
         SceneDelegateProxy.shared.scene(scene, continue: userActivity)
     }
+
+    // In case WebKit rebuilt the web view's content view while the app was
+    // away, try again on every activation. It is a no-op once applied.
+    func sceneDidBecomeActive(_ scene: UIScene) {
+        if let bridge = window?.rootViewController as? MASBridgeViewController {
+            FormAssistantBarHider.start(over: bridge.webView)
+        }
+    }
+}
+
+// iOS shows a form assistant bar (up/down arrows and a Done button) above the
+// keyboard whenever a text field inside the web view is focused. WKWebView has
+// no public API to remove it, so the private content view's class is swapped
+// for a runtime subclass whose `inputAccessoryView` is nil — the same
+// technique Capacitor itself used for its old "hide form accessory bar"
+// setting. It only runs inside the iPhone app; Safari and the website keep
+// the system behaviour.
+final class FormAssistantBarHider {
+    private static var helperClass: AnyClass?
+    private static var attempts = 0
+
+    static func start(over webView: WKWebView?) {
+        guard let webView, !hasSwap(webView) else { return }
+        if apply(webView) { return }
+        // The content view is created a moment after the web view itself;
+        // retry briefly instead of giving up after the first look.
+        attempts += 1
+        guard attempts < 60 else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { start(over: webView) }
+    }
+
+    /// True once a content view already carries the replacement class.
+    private static func hasSwap(_ root: UIView) -> Bool {
+        contentViews(in: root).contains { String(describing: type(of: $0)).hasSuffix("_NoFormBar") }
+    }
+
+    private static func contentViews(in root: UIView) -> [UIView] {
+        var found: [UIView] = []
+        for child in root.subviews {
+            let name = String(describing: type(of: child))
+            if name.hasPrefix("WKContent") { found.append(child) }
+            found.append(contentsOf: contentViews(in: child))
+        }
+        return found
+    }
+
+    private static func apply(_ webView: WKWebView) -> Bool {
+        for view in contentViews(in: webView) {
+            let baseClass = type(of: view).classForCoder
+            let newName = String(describing: baseClass) + "_NoFormBar"
+            let targetClass: AnyClass
+            if let existing = NSClassFromString(newName) {
+                targetClass = existing
+            } else {
+                guard let superclass = baseClass.superclass,
+                      let newClass = objc_allocateClassPair(superclass, newName, 0) else { continue }
+                let selector = sel_registerName("inputAccessoryView")
+                let block: @convention(block) (AnyObject) -> UIView? = { _ in nil }
+                let encoding = class_getInstanceMethod(baseClass, selector)
+                    .map { String(cString: method_getTypeEncoding($0)) } ?? "@16@0:8"
+                class_addMethod(newClass, selector, imp_implementationWithBlock(block), encoding)
+                objc_registerClassPair(newClass)
+                helperClass = newClass
+                targetClass = newClass
+            }
+            object_setClass(view, targetClass)
+            return true
+        }
+        return false
+    }
 }
