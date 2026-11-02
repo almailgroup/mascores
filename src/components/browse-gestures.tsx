@@ -5,7 +5,6 @@ import { useQueryClient } from "@tanstack/react-query";
 
 // Module-level so snapshots survive this component remounting on navigation.
 const SNAPS = { current: new Map<number, { node: HTMLElement; scroll: number }>() };
-if (typeof window !== "undefined") (window as unknown as { __snaps: unknown }).__snaps = SNAPS;
 
 /** Interactive gestures: navigation happens only after a completed drag is released. */
 export function BrowseGestures() {
