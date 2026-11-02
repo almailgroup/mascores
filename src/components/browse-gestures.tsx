@@ -14,7 +14,7 @@ export function BrowseGestures() {
   const busy = useRef(false);
   // Static snapshots of recently visited pages, keyed by history index, shown under the back swipe.
   const snaps = useRef(new Map<number, { node: HTMLElement; scroll: number }>());
-  const idx = () => Number((router.history.location.state as Record<string, unknown>)?.__TSR_index ?? 0);
+  const idx = () => Number((router.history.location.state as unknown as Record<string, unknown>)?.__TSR_index ?? 0);
   useEffect(() => {
     const index = idx();
     const take = () => {
