@@ -65,6 +65,7 @@ export function BrowseGestures() {
       refreshContent.style.transform = "";
       refreshContent.style.transition = "";
       document.documentElement.style.overscrollBehaviorY = "";
+      surface.style.background = "";
       underlay?.remove(); underlay = null;
       setPull(0); pullOn = false;
     };
@@ -95,7 +96,7 @@ export function BrowseGestures() {
       if (!touch) return;
       refreshContent = content.querySelector<HTMLElement>("[data-refresh-body]") ?? content;
       refreshHeader = content.querySelector<HTMLElement>("[data-refresh-header]");
-      start = { x: touch.clientX, y: touch.clientY, edge: touch.clientX <= 28 && router.history.canGoBack(), top: window.scrollY <= 0 };
+      start = { x: touch.clientX, y: touch.clientY, edge: touch.clientX <= 28 && router.history.canGoBack() && !["/","/favorites","/news","/transfers","/tickets"].includes(window.location.pathname.replace(/(.)\/$/, "$1")), top: window.scrollY <= 0 };
       setIndicatorTop(refreshHeader?.getBoundingClientRect().bottom ?? 0);
       distance = 0; axis = null;
     };
@@ -133,6 +134,7 @@ export function BrowseGestures() {
         const offset = 110 * (1 - Math.exp(-distance / 230));
         refreshContent.style.transition = "none";
         refreshContent.style.transform = `translateY(${offset}px)`;
+        surface.style.background = "var(--background)";
         if (!pullOn) { pullOn = true; setPull(1); }
         const ind = document.querySelector<HTMLElement>("[data-pull-indicator]");
         if (ind) { ind.style.opacity = String(Math.min(1, offset / 70)); ind.style.setProperty("--spokes", String(Math.min(8, Math.ceil(offset / 11)))); }
