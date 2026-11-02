@@ -66,6 +66,7 @@ export function BrowseGestures() {
       refreshContent.style.transition = "";
       document.documentElement.style.overscrollBehaviorY = "";
       surface.style.background = "";
+      const glowOff = surface.querySelector<HTMLElement>("[data-browse-glow]"); if (glowOff) glowOff.style.opacity = "";
       underlay?.remove(); underlay = null;
       setPull(0); pullOn = false;
     };
@@ -135,6 +136,7 @@ export function BrowseGestures() {
         refreshContent.style.transition = "none";
         refreshContent.style.transform = `translateY(${offset}px)`;
         surface.style.background = "var(--background)";
+        const glow = surface.querySelector<HTMLElement>("[data-browse-glow]"); if (glow) glow.style.opacity = "0";
         if (!pullOn) { pullOn = true; setPull(1); }
         const ind = document.querySelector<HTMLElement>("[data-pull-indicator]");
         if (ind) { ind.style.opacity = String(Math.min(1, offset / 70)); ind.style.setProperty("--spokes", String(Math.min(8, Math.ceil(offset / 11)))); }
