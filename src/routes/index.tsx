@@ -24,13 +24,33 @@ import { scheduleTime } from "@/lib/fixture-schedule";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "MaScores — Football, curated" },
-      { name: "description", content: "MaScores is a football app built to give you good, reliable information — matches, lineups, live events, standings, transfers, and news for every competition you follow." },
-      { property: "og:title", content: "MaScores — Football, curated" },
-      { property: "og:description", content: "A football app giving good, reliable information — matches, lineups, standings, and news." },
+      { title: "MaScores — Kuwaiti League Live Scores, Lineups & Stats | ماسكورز" },
+      { name: "description", content: "Live scores, fixtures, lineups, ratings and standings for the Zain Kuwait Premier League, Emir Cup and Kuwait national team. نتائج الدوري الكويتي مباشر." },
+      { name: "keywords", content: "Kuwaiti league, Kuwait Premier League, Zain Premier League, Kuwait football live scores, Kuwait Emir Cup, Kuwait national team, Al Kuwait SC, Al Qadsia, Al Arabi, الدوري الكويتي, دوري زين, نتائج مباريات الكويت, كأس الأمير, MaScores, ماسكورز" },
+      { property: "og:title", content: "MaScores — Kuwaiti League Live Scores & Stats" },
+      { property: "og:description", content: "Live scores, lineups, ratings and standings for Kuwaiti football — Zain Premier League, Emir Cup and more." },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://mascores.live/" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [
+      { rel: "canonical", href: "https://mascores.live/" },
+      { rel: "alternate", hrefLang: "en", href: "https://mascores.live/" },
+      { rel: "alternate", hrefLang: "ar", href: "https://mascores.live/" },
+    ],
+    scripts: [{
+      type: "application/ld+json",
+      children: JSON.stringify({
+        "@context": "https://schema.org",
+        "@graph": [
+          { "@type": "WebSite", name: "MaScores", alternateName: ["MA Scores", "ماسكورز"], url: "https://mascores.live/", inLanguage: ["en", "ar"],
+            potentialAction: { "@type": "SearchAction", target: "https://mascores.live/search?q={q}", "query-input": "required name=q" } },
+          { "@type": "Organization", name: "MaScores", url: "https://mascores.live/", logo: "https://mascores.live/icon-512.png", founder: { "@type": "Person", name: "Mansour Almail" },
+            description: "Kuwaiti football app covering the Zain Kuwait Premier League, Emir Cup, youth leagues and the Kuwait national team." },
+          { "@type": "MobileApplication", name: "MaScores", operatingSystem: "iOS", applicationCategory: "SportsApplication", offers: { "@type": "Offer", price: "0", priceCurrency: "KWD" } },
+        ],
+      }),
+    }],
   }),
   component: Home,
 });
