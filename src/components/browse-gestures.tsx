@@ -3,6 +3,9 @@ import { useLocation, useRouter } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 
 
+// Module-level so snapshots survive this component remounting on navigation.
+const SNAPS = { current: new Map<number, { node: HTMLElement; scroll: number }>() };
+
 /** Interactive gestures: navigation happens only after a completed drag is released. */
 export function BrowseGestures() {
   const router = useRouter();
@@ -13,7 +16,7 @@ export function BrowseGestures() {
   const [indicatorTop, setIndicatorTop] = useState(0);
   const busy = useRef(false);
   // Static snapshots of recently visited pages, keyed by history index, shown under the back swipe.
-  const snaps = useRef(new Map<number, { node: HTMLElement; scroll: number }>());
+  const snaps = SNAPS;
   const idx = () => Number((router.history.location.state as unknown as Record<string, unknown>)?.__TSR_index ?? 0);
   useEffect(() => {
     const index = idx();
