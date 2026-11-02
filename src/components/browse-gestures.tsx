@@ -154,6 +154,18 @@ export function BrowseGestures() {
         timer = setTimeout(() => { reset(); timer = null; busy.current = false; router.history.back(); }, reduced ? 0 : 200);
       } else if (axis === "refresh" && distance >= 180) {
         busy.current = true; setRefreshing(true);
+        // One light buzz the moment the refresh actually triggers, like iOS.
+        void (async () => {
+          try {
+            const { Capacitor } = await import("@capacitor/core");
+            if (Capacitor.isNativePlatform()) {
+              const { Haptics, ImpactStyle } = await import("@capacitor/haptics");
+              await Haptics.impact({ style: ImpactStyle.Light });
+              return;
+            }
+          } catch { /* fall through */ }
+          try { navigator.vibrate?.(10); } catch { /* unsupported */ }
+        })();
         refreshContent.style.transition = "transform 180ms ease-out";
         refreshContent.style.transform = "translateY(64px)";
         void Promise.all([qc.invalidateQueries(), router.invalidate(), new Promise((resolve) => setTimeout(resolve, 500))]).catch(() => {}).finally(() => {

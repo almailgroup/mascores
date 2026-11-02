@@ -1,4 +1,3 @@
-import { isOwnerEmail } from "@/lib/owner.functions";
 import { Link, useLocation, useRouter } from "@tanstack/react-router";
 import { Home, Search, Star, Newspaper, ArrowLeftRight, Ticket, Settings, LogIn, ArrowLeft, Radio, User, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -109,14 +108,6 @@ function scrollToNavTop(item: NavItem, currentPath: string, event: { preventDefa
 
 export function AppShell({ children, bare = false }: { children: ReactNode; bare?: boolean }) {
   const { user, loading } = useAuth();
-  const { data: hasGrants = false } = useQuery({
-    queryKey: ["has-admin-grants", user?.id],
-    enabled: !!user && !isOwnerEmail(user?.email),
-    queryFn: async () => {
-      const { count } = await supabase.from("admin_grants").select("id", { count: "exact", head: true }).eq("user_id", user!.id);
-      return (count ?? 0) > 0;
-    },
-  });
   const { t } = useI18n();
   const location = useLocation();
   const router = useRouter();
@@ -173,9 +164,6 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
         }}
       >
 
-        {!hideHeader && (isOwnerEmail(user?.email) || hasGrants) && (
-          <Link to={isOwnerEmail(user?.email) ? "/secretadminsafha" : "/admin"} className="mb-3 flex items-center justify-center rounded-2xl border border-primary/40 bg-primary/10 px-4 py-2.5 text-sm font-semibold text-primary">Go to admin section</Link>
-        )}
         {children}
       </main>
       </div>
