@@ -1,3 +1,4 @@
+import { getSeoInfo, seoHead } from "@/lib/seo-head";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -30,16 +31,8 @@ import { ClubNotificationButton } from "@/components/club-notification-button";
 import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/teams/$id")({
-  head: () => ({
-    meta: [
-      { title: "Club — MaScores" },
-      { name: "description", content: "Club profile: matches, standings, squad, statistics, media and transfers." },
-      { property: "og:title", content: "Club — MaScores" },
-      { property: "og:description", content: "Club profile: matches, standings, squad, statistics, media and transfers." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
+  loader: ({ params }) => (typeof window === "undefined" ? getSeoInfo({ data: { kind: "team", id: params.id } }) : null),
+  head: ({ params, loaderData }) => seoHead(loaderData, "Club — MaScores", `/teams/${params.id}`),
   component: TeamPage,
 });
 

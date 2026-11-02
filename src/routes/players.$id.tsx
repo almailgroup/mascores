@@ -1,3 +1,4 @@
+import { getSeoInfo, seoHead } from "@/lib/seo-head";
 import { TeamCrest } from "@/components/team-crest";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
@@ -24,16 +25,8 @@ import { useDates, useNum } from "@/lib/auto-translate";
 import { fetchPlayerNationalTeams, findNationalTeamByCountry } from "@/lib/national";
 
 export const Route = createFileRoute("/players/$id")({
-  head: () => ({
-    meta: [
-      { title: "Player — MaScores" },
-      { name: "description", content: "Player profile: details, transfer history, matches and media." },
-      { property: "og:title", content: "Player — MaScores" },
-      { property: "og:description", content: "Player profile: details, transfer history, matches and media." },
-      { property: "og:type", content: "profile" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
+  loader: ({ params }) => (typeof window === "undefined" ? getSeoInfo({ data: { kind: "player", id: params.id } }) : null),
+  head: ({ params, loaderData }) => seoHead(loaderData, "Player — MaScores", `/players/${params.id}`),
   validateSearch: (search: Record<string, unknown>): { nt?: string } =>
     typeof search.nt === "string" ? { nt: search.nt } : {},
   component: PlayerPage,
