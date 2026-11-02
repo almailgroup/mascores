@@ -43,7 +43,7 @@ type Tab = "details" | "matches" | "media" | "news";
 
 type Comp = { id: string; slug: string; name: string; logo_url: string | null; country: string | null; country_code: string | null; sport: string | null };
 type PlayerMatch = Match & { home: Team | null; away: Team | null; competition: Comp | null };
-type PlayerMatchData = { rows: PlayerMatch[]; events: { match_id: string; type: string; player_id: string | null; assist_player_id: string | null }[]; ratings: Record<string, number> };
+type PlayerMatchData = { rows: PlayerMatch[]; events: { match_id: string; type: string; player_id: string | null; assist_player_id: string | null }[]; ratings: Record<string, number>; benches: Record<string, boolean> };
 
 function age(dob: string | null | undefined) {
   if (!dob) return null;
@@ -87,9 +87,9 @@ function PlayerPage() {
     queryFn: () => findNationalTeamByCountry(q.data?.nationality, q.data?.nationality_code),
   });
   const matches = useQuery({ enabled: !!q.data, queryKey: ["player-matches", id], queryFn: async () => {
-    const { data: lineups } = await supabase.from("match_lineups").select("match_id").eq("player_id", id);
+    const { data: lineups } = await supabase.from("match_lineups").select("match_id,is_starting").eq("player_id", id);
     const ids = [...new Set((lineups ?? []).map((l) => l.match_id))];
-    if (!ids.length) return { rows: [], events: [], ratings: {} as Record<string, number> };
+    if (!ids.length) return { rows: [], events: [], ratings: {} as Record<string, number>, benches: {} as Record<string, boolean> };
     const [{ data }, { data: events }, { data: ratings }] = await Promise.all([
       supabase.from("matches")
         .select("*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url), competition:competition_id(id,slug,name,logo_url,country,country_code,sport)")
@@ -101,6 +101,7 @@ function PlayerPage() {
       rows: (data ?? []) as unknown as PlayerMatch[],
       events: (events ?? []).filter((e) => e.player_id === id || e.assist_player_id === id) as { match_id: string; type: string; player_id: string | null; assist_player_id: string | null }[],
       ratings: Object.fromEntries((ratings ?? []).filter((r) => r.match_id).map((r) => [r.match_id as string, Number(r.rating)])) as Record<string, number>,
+      benches: Object.fromEntries((lineups ?? []).filter((l) => l.match_id && l.is_starting === false).map((l) => [l.match_id as string, true])) as Record<string, boolean>,
     };
   }});
   const transferClubs = useQuery({
@@ -329,7 +330,9 @@ function PlayerMatches({ data, playerId, playerTeamId }: { data: PlayerMatchData
                     <div className={isHome ? "text-muted-foreground" : ""}>{m.away_score != null ? num(String(m.away_score)) : ""}</div>
                   </div>
                   <div className="flex w-10 shrink-0 justify-end text-[0.7rem] font-bold">
-                    {rating != null ? <span className={`${ratingClass(rating)} min-w-[2.25rem] text-center`}>{num(rating.toFixed(1))}</span> : <span className="font-semibold text-muted-foreground">{tx("N/A")}</span>}
+                    {rating != null ? <span className={`${ratingClass(rating)} min-w-[2.25rem] text-center`}>{num(rating.toFixed(1))}</span>
+                      : data.benches[m.id] ? <BenchIcon className="h-4 w-6 text-muted-foreground" />
+                      : <span className="font-semibold text-muted-foreground">{tx("N/A")}</span>}
                   </div>
                 </Link>
               );
