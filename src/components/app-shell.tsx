@@ -187,7 +187,7 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
             items={PRIMARY_NAV}
             activeIndex={PRIMARY_NAV.findIndex((item) => item.exact ? location.pathname === item.to : location.pathname.startsWith(item.to))}
             label={(key) => t(key as never)}
-            onReselect={(item) => scrollToNavTop(item, location.pathname, { preventDefault() {} } as never)}
+            onReselect={(item) => scrollToNavTop(item as NavItem, location.pathname, { preventDefault() {} })}
           />
         </nav>
       ) : <nav data-no-gesture aria-label="Main navigation" className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/60 bg-background/95 backdrop-blur-xl md:hidden" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
