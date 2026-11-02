@@ -26,11 +26,16 @@ export function BrowseGestures() {
       snaps.current.set(index, { node, scroll: window.scrollY });
       for (const k of snaps.current.keys()) if (k > index || k < index - 8) snaps.current.delete(k);
     };
-    const t = setTimeout(take, 900);
+    const t = setTimeout(take, 150);
+    const t2 = setTimeout(take, 1200);
+    // Refresh right before any tap/click that may leave this page, so the snapshot is never stale or missing.
+    const onTap = (e: Event) => { if (!(e.target instanceof Element) || !e.target.closest("[data-browse-page]")) return; if (e.type === "touchstart" && (e as TouchEvent).touches[0]?.clientX <= 28) return; take(); };
+    document.addEventListener("touchstart", onTap, { capture: true, passive: true });
+    document.addEventListener("mousedown", onTap, true);
     let st: ReturnType<typeof setTimeout> | null = null;
     const onScroll = () => { if (st) clearTimeout(st); st = setTimeout(take, 400); };
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => { clearTimeout(t); if (st) clearTimeout(st); window.removeEventListener("scroll", onScroll); };
+    return () => { clearTimeout(t); clearTimeout(t2); document.removeEventListener("touchstart", onTap, true); document.removeEventListener("mousedown", onTap, true); if (st) clearTimeout(st); window.removeEventListener("scroll", onScroll); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.href]);
   useEffect(() => {
