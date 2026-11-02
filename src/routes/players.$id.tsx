@@ -344,6 +344,16 @@ function PlayerMatches({ data, playerId, playerTeamId }: { data: PlayerMatchData
   );
 }
 
+function BenchIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+      <path d="M3.5 6h17a1.4 1.4 0 0 1 0 2.8h-17a1.4 1.4 0 0 1 0-2.8Z" />
+      <path d="M5.2 10.4h13.6a1.2 1.2 0 0 1 1.2 1.2v1.2a1.2 1.2 0 0 1-1.2 1.2H5.2A1.2 1.2 0 0 1 4 12.8v-1.2a1.2 1.2 0 0 1 1.2-1.2Z" />
+      <path d="M6.2 15.2h2.6v3.6H6.2zM15.2 15.2h2.6v3.6h-2.6z" />
+    </svg>
+  );
+}
+
 function TeamLine({ team, dim }: { team: Team | null; dim: boolean }) {
   const tx = useTx();
   return (
