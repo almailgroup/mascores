@@ -73,31 +73,39 @@ export function GlassTabBar({ items, activeIndex, label, onReselect }: {
       onPointerCancel={() => { setDrag(null); setPressed(false); }}
       onContextMenu={(e) => e.preventDefault()}
     >
-      {slot > 0 && activeIndex >= 0 && (
-        <div
-          aria-hidden
-          className="pointer-events-none absolute rounded-full border border-foreground/10 bg-foreground/10 shadow-[inset_0_1px_0_hsl(0_0%_100%/0.25),0_4px_14px_-6px_hsl(0_0%_0%/0.4)] backdrop-blur-md"
-          style={{
-            top: pad,
-            bottom: pad,
-            width: slot,
-            transform: `translateX(${lensX - pad}px) scale(${pressed ? 1.18 : 1}, ${pressed ? 1.12 : 1})`,
-            left: pad,
-            transition: drag?.moved ? "transform 90ms ease-out" : "transform 380ms cubic-bezier(.34,1.56,.64,1)",
-          }}
-        />
-      )}
-      {items.map((item, i) => {
-        const on = i === hoverIndex;
+      {items.map((item) => (
+        <div key={item.to} role="tab" aria-label={label(item.labelKey)}
+          className="relative flex min-w-0 flex-1 flex-col items-center gap-0.5 py-2 text-[0.62rem] font-bold text-foreground">
+          <item.icon className="h-5 w-5" strokeWidth={2.2} />
+          <span className="truncate">{label(item.labelKey)}</span>
+        </div>
+      ))}
+      {slot > 0 && activeIndex >= 0 && (() => {
+        const grow = pressed ? 10 : 0;
+        const left = lensX - grow;
+        const right = width - lensX - slot - grow;
+        const ease = drag?.moved ? "90ms ease-out" : "420ms cubic-bezier(.34,1.56,.64,1)";
         return (
-          <div key={item.to} role="tab" aria-selected={i === activeIndex} aria-label={label(item.labelKey)}
-            className={`relative z-10 flex min-w-0 flex-1 flex-col items-center gap-0.5 py-2 text-[0.62rem] font-semibold transition-[color,transform] duration-200 ${on ? "text-primary" : "text-foreground/80"}`}
-            style={{ transform: on && pressed ? "scale(1.1)" : "scale(1)" }}>
-            <item.icon className="h-5 w-5" strokeWidth={on ? 2.4 : 2} />
-            <span className="truncate">{label(item.labelKey)}</span>
-          </div>
+          <>
+            {/* Tinted, magnified copy of the tabs visible only through the lens */}
+            <div aria-hidden className="pointer-events-none absolute inset-0 z-10"
+              style={{ clipPath: `inset(${pad - grow}px ${right}px ${pad - grow}px ${left}px round 9999px)`, transition: `clip-path ${ease}` }}>
+              <div className="flex h-full items-center text-primary"
+                style={{ padding: pad, transform: `scale(${pressed ? 1.14 : 1})`, transformOrigin: `${lensX + slot / 2}px 50%`, transition: `transform ${ease}` }}>
+                {items.map((item) => (
+                  <div key={item.to} className="flex min-w-0 flex-1 flex-col items-center gap-0.5 py-2 text-[0.62rem] font-bold">
+                    <item.icon className="h-5 w-5" strokeWidth={2.4} />
+                    <span className="truncate">{label(item.labelKey)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* The glass bubble itself */}
+            <div aria-hidden className={`mas-glass-lens pointer-events-none absolute z-20 rounded-full ${pressed ? "is-pressed" : ""}`}
+              style={{ top: pad - grow, bottom: pad - grow, left, width: slot + grow * 2, transition: `left ${ease}, top ${ease}, bottom ${ease}, width ${ease}, background-color 200ms, box-shadow 200ms` }} />
+          </>
         );
-      })}
+      })()}
     </div>
   );
 }
