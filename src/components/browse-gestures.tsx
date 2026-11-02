@@ -30,7 +30,7 @@ export function BrowseGestures() {
     let st: ReturnType<typeof setTimeout> | null = null;
     const onScroll = () => { if (st) clearTimeout(st); st = setTimeout(take, 400); };
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => { clearTimeout(t); if (st) clearTimeout(st); window.removeEventListener("scroll", onScroll); take(); };
+    return () => { clearTimeout(t); if (st) clearTimeout(st); window.removeEventListener("scroll", onScroll); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.href]);
   useEffect(() => {
