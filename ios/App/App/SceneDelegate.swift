@@ -2,6 +2,7 @@ import UIKit
 import Capacitor
 import Photos
 import AuthenticationServices
+import WebKit
 
 // Named after its JS name so Capacitor can also load it on demand
 // (NSClassFromString("PhotoLibrary")) even if registration was skipped.
@@ -97,6 +98,8 @@ class MASBridgeViewController: CAPBridgeViewController {
     override func capacitorDidLoad() {
         bridge?.registerPluginInstance(PhotoLibraryPlugin())
         bridge?.registerPluginInstance(AuthSheetPlugin())
+        // Remove the web-only keyboard form assistant bar (arrows + Done).
+        FormAssistantBarHider.start(over: webView)
     }
 }
 
