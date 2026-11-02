@@ -16,6 +16,7 @@ import { BrowseGestures } from "@/components/browse-gestures";
 import { suspensionMessage, useMySuspension } from "@/lib/suspension";
 import { SocialActivityButton } from "@/components/social-activity";
 import { isNativeApp } from "@/lib/native-notify";
+import { GlassTabBar } from "@/components/glass-tab-bar";
 
 /**
  * A restricted person cannot use the app at all: they only see why, and a box to
@@ -182,18 +183,12 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
       <BrowseGestures />
       {!bare && (nativeApp ? (
         <nav data-no-gesture aria-label="Main navigation" className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3 md:hidden" style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}>
-          <div className="pointer-events-auto mx-auto flex max-w-md items-center gap-1 rounded-full border border-border/50 bg-background/70 p-1.5 shadow-[0_8px_32px_-8px_hsl(0_0%_0%/0.35)] backdrop-blur-2xl backdrop-saturate-150">
-            {PRIMARY_NAV.map((item) => {
-              const active = item.exact ? location.pathname === item.to : location.pathname.startsWith(item.to);
-              return (
-                <Link key={item.to} to={item.to} onClick={(event) => scrollToNavTop(item, location.pathname, event)}
-                  className={`flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-full px-1 py-2 text-[0.62rem] font-semibold transition-colors ${active ? "bg-foreground/10 text-primary" : "text-foreground/80"}`}>
-                  <item.icon className="h-5 w-5" strokeWidth={active ? 2.4 : 2} />
-                  <span className="truncate">{t(item.labelKey)}</span>
-                </Link>
-              );
-            })}
-          </div>
+          <GlassTabBar
+            items={PRIMARY_NAV}
+            activeIndex={PRIMARY_NAV.findIndex((item) => item.exact ? location.pathname === item.to : location.pathname.startsWith(item.to))}
+            label={(key) => t(key as never)}
+            onReselect={(item) => scrollToNavTop(item as NavItem, location.pathname, { preventDefault() {} })}
+          />
         </nav>
       ) : <nav data-no-gesture aria-label="Main navigation" className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/60 bg-background/95 backdrop-blur-xl md:hidden" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
         <div className="mx-auto flex max-w-7xl items-center justify-around px-2 py-2">
