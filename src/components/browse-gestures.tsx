@@ -60,7 +60,6 @@ export function BrowseGestures() {
       timer = null;
       surface.style.transform = "";
       surface.style.transition = "";
-      surface.style.boxShadow = "";
       content.style.transform = "";
       content.style.transition = "";
       refreshContent.style.transform = "";
