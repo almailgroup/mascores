@@ -134,7 +134,12 @@ function SettingsPage() {
     <AppShell>
       <BackButton iconOnly className="mb-3" />
       <div className="flex items-center justify-between"><h1 className="text-3xl font-bold">{t("settings.title")}</h1>{user && <SocialActivityButton />}</div>
-      {owner.data && <Link to="/admin" className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-primary">{lang === "ar" ? "إدارة المسابقات وسجل الأبطال" : "Competition settings & title history"}</Link>}
+      {user && (owner.data || hasGrants.data) && (
+        <Link to={isOwnerEmail(user.email) ? "/secretadminsafha" : "/admin"} className="mt-3 flex items-center justify-between gap-2 rounded-2xl border border-primary/40 bg-primary/10 px-4 py-3 text-sm font-semibold text-primary">
+          <span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> {lang === "ar" ? "قسم الإدارة" : "Admin section"}</span>
+          <ChevronRight className="h-4 w-4" />
+        </Link>
+      )}
       {user && <p className="mt-1 text-sm text-muted-foreground">{user.email}</p>}
 
       <section className="mt-6 rounded-3xl border border-border bg-card p-6">
