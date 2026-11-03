@@ -36,6 +36,11 @@ export const EVENT_TYPES = [
   { v: "substitution", l: "Substitution" },
   { v: "injury_sub", l: "Injury substitution" },
   { v: "var", l: "VAR" },
+  { v: "goal_disallowed", l: "Goal disallowed" },
+  { v: "penalty_awarded", l: "Penalty awarded" },
+  { v: "penalty_cancelled", l: "Penalty cancelled" },
+  { v: "red_cancelled", l: "Red card cancelled" },
+  { v: "yellow_cancelled", l: "Yellow card cancelled" },
   { v: "note", l: "Note" },
 ];
 

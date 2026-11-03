@@ -95,6 +95,11 @@ export const EVENT_META: Record<string, { label: string; icon: string }> = {
   injury_sub: { label: "Injury substitution", icon: "🚑" },
   sub: { label: "Substitution", icon: "🔁" },
   var: { label: "VAR", icon: "📺" },
+  goal_disallowed: { label: "Goal disallowed", icon: "🚫" },
+  red_cancelled: { label: "Red card cancelled", icon: "↩️" },
+  yellow_cancelled: { label: "Yellow card cancelled", icon: "↩️" },
+  penalty_cancelled: { label: "Penalty cancelled", icon: "🚫" },
+  penalty_awarded: { label: "Penalty awarded", icon: "🎯" },
   assist: { label: "Assist", icon: "👟" },
   note: { label: "Note", icon: "📝" },
 };
