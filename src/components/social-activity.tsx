@@ -13,7 +13,7 @@ export function useSocialActivity() {
   const { user } = useAuth(); const qc = useQueryClient();
   useEffect(() => {
     if (!user) return;
-    const channel = supabase.channel(`social-${user.id}`).on('postgres_changes',{event:'*',schema:'public',table:'social_notifications',filter:`recipient_id=eq.${user.id}`},() => { void qc.invalidateQueries({queryKey:['social-activity']}); }).on('postgres_changes',{event:'*',schema:'public',table:'follow_requests',filter:`target_id=eq.${user.id}`},() => { void qc.invalidateQueries({queryKey:['social-activity']}); }).subscribe();
+    const channel = supabase.channel(`social-${user.id}-${Math.random().toString(36).slice(2)}`).on('postgres_changes',{event:'*',schema:'public',table:'social_notifications',filter:`recipient_id=eq.${user.id}`},() => { void qc.invalidateQueries({queryKey:['social-activity']}); }).on('postgres_changes',{event:'*',schema:'public',table:'follow_requests',filter:`target_id=eq.${user.id}`},() => { void qc.invalidateQueries({queryKey:['social-activity']}); }).subscribe();
     return () => { void supabase.removeChannel(channel); };
   },[user?.id,qc]);
   return useQuery({queryKey:['social-activity',user?.id],enabled:!!user,queryFn:async () => {

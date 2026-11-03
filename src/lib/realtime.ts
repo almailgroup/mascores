@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 export function useRealtime(tables: string[]) {
   const qc = useQueryClient();
   useEffect(() => {
-    const channel = supabase.channel(`rt-${tables.join("-")}`);
+    const channel = supabase.channel(`rt-${tables.join("-")}-${Math.random().toString(36).slice(2)}`);
     tables.forEach((table) => {
       channel.on(
         "postgres_changes" as never,

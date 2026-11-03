@@ -208,7 +208,7 @@ export function useLiveEventAlerts() {
       void loadAlerts();
     };
     window.addEventListener("mas:alerts-changed", refreshExplicit);
-    const channel = supabase.channel("mas-live-alerts");
+    const channel = supabase.channel(`mas-live-alerts-${Math.random().toString(36).slice(2)}`);
     channel.on("postgres_changes" as never, { event: "INSERT", schema: "public", table: "match_events" },
       (payload: { new: EventRow }) => { void onEvent(payload.new); });
     channel.on("postgres_changes" as never, { event: "UPDATE", schema: "public", table: "matches" },
