@@ -470,6 +470,13 @@
       "when": 1793458090637,
       "tag": "0066_auto_match_stats",
       "breakpoints": true
+    },
+    {
+      "idx": 67,
+      "version": "7",
+      "when": 1793742528154,
+      "tag": "0067_final_standings_rows",
+      "breakpoints": true
     }
   ]
 }
