@@ -55,7 +55,6 @@ export function CompetitionRoundTeam({ competitionId, season }: { competitionId:
         return option?.round_number != null ? `${tx("Round")} ${num(option.round_number)}` : tx(option?.round_label) ?? tx("Round");
       }} />}
     </div>
-    {showInfo && <div className="mx-3 my-3 flex items-start gap-2 rounded-lg bg-muted p-3 text-[0.65rem] leading-relaxed"><span className="min-w-0 flex-1">{tx("Top-rated players at each position, based on their rating from that round’s match.")}</span><Button variant="ghost" size="icon" aria-label={tx("Close")} onClick={() => setShowInfo(false)} className="h-6 w-6 shrink-0"><X className="h-3 w-3" /></Button></div>}
     {rounds.isError ? <p className="p-4 text-xs text-destructive">{tx("Unable to load round ratings")}</p> : round?.ready && round.players.length === 11 ? <div className="round-team-pitch px-2 pb-4 pt-3">
       {["Forward","Midfielder","Defender","Goalkeeper"].map(position => <div key={position} className="relative z-10 flex min-h-24 items-start justify-around gap-1">
         {round.players.filter(p => p.position === position).map(player => <Link key={player.id} to="/players/$id" params={{ id: player.id }} className="flex w-20 min-w-0 flex-col items-center pt-2 text-center">
