@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { savePhoto } from "@/lib/save-photo";
 
 /** One accessible, memory-safe image sheet for results, lineups and standings. */
-export function ShareCardButton({ render, title, label: buttonLabel, iconOnly = false, disabled = false }: {
+export function ShareCardButton({ render, title, label: buttonLabel, iconOnly = false, disabled = false, onSurface = false }: {
+  onSurface?: boolean;
   render: () => Promise<Blob | null>;
   title: string;
   label?: string;
@@ -90,7 +91,7 @@ export function ShareCardButton({ render, title, label: buttonLabel, iconOnly = 
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
         <Button disabled={disabled} variant="outline" size={iconOnly ? "icon" : "sm"} aria-label={buttonLabel ?? label("Share image", "مشاركة صورة")}
-          className={iconOnly ? "rounded-full border-primary-foreground/20 bg-primary-foreground/15 text-primary-foreground hover:bg-primary-foreground/25 hover:text-primary-foreground" : "rounded-full"}>
+          className={iconOnly && onSurface ? "h-8 w-8 rounded-full border-primary/30 bg-primary/10 text-primary hover:bg-primary/20" : iconOnly ? "rounded-full border-primary-foreground/20 bg-primary-foreground/15 text-primary-foreground hover:bg-primary-foreground/25 hover:text-primary-foreground" : "rounded-full"}>
           <Share2 />{!iconOnly && (buttonLabel ?? label("Share", "مشاركة"))}
         </Button>
       </Dialog.Trigger>
