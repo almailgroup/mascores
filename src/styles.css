@@ -513,17 +513,25 @@ a, button, [role="button"] {
   60% { opacity: 1; }
   100% { opacity: 1; transform: none; }
 }
-.tc-card {
-  --rx: 0deg; --ry: 0deg; --mx: 50%; --my: 50%; --flip: 0deg;
+.tc-tilt {
+  --rx: 0deg; --ry: 0deg; --mx: 50%; --my: 50%;
   position: relative; width: min(340px, 86vw); aspect-ratio: 5 / 7; margin-inline: auto;
   transform-style: preserve-3d;
-  transform: rotateX(var(--rx)) rotateY(calc(var(--ry) + var(--flip)));
+  -webkit-transform-style: preserve-3d;
+  transform: rotateX(var(--rx)) rotateY(var(--ry));
   transition: transform .5s cubic-bezier(.2,.8,.2,1);
   touch-action: pan-y; cursor: pointer; -webkit-tap-highlight-color: transparent;
 }
-.tc-card.is-tracking { transition: transform .08s linear; }
-.tc-card.is-flipped { --flip: 180deg; transition: transform .9s cubic-bezier(.3,1.4,.4,1); }
-.tc-card.is-idle:not(.is-flipped) { animation: tc-sway 6s ease-in-out infinite; }
+.tc-tilt.is-tracking { transition: transform .18s ease-out; }
+.tc-card {
+  position: absolute; inset: 0;
+  transform-style: preserve-3d; -webkit-transform-style: preserve-3d;
+  transform: rotateY(0deg);
+  transition: transform 1.2s cubic-bezier(.45,0,.25,1);
+  will-change: transform;
+}
+.tc-card.is-flipped { transform: rotateY(180deg); }
+.tc-tilt.is-idle:not(.is-flipped) { animation: tc-sway 6s ease-in-out infinite; }
 @keyframes tc-sway {
   0%, 100% { --rx: 4deg; --ry: -8deg; --mx: 30%; --my: 30%; }
   50% { --rx: -4deg; --ry: 8deg; --mx: 70%; --my: 70%; }
@@ -535,10 +543,14 @@ a, button, [role="button"] {
 .tc-face {
   position: absolute; inset: 0; border-radius: 26px; overflow: hidden;
   backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  transition: visibility 0s .6s;
   background: var(--card);
   box-shadow: 0 30px 60px -25px color-mix(in oklab, var(--foreground) 45%, transparent), 0 0 0 1px color-mix(in oklab, var(--tc-gold-deep) 35%, transparent);
 }
-.tc-back { transform: rotateY(180deg); }
+.tc-front { transform: translateZ(1px); visibility: visible; }
+.tc-back { transform: rotateY(180deg) translateZ(1px); visibility: hidden; }
+.tc-card.is-flipped .tc-front { visibility: hidden; }
+.tc-card.is-flipped .tc-back { visibility: visible; }
 .tc-frame { position: absolute; inset: 9px; border-radius: 19px; border: 1.5px solid color-mix(in oklab, var(--tc-gold) 80%, transparent); pointer-events: none; z-index: 3; }
 .tc-frame::after { content: ""; position: absolute; inset: 4px; border-radius: 15px; border: 1px dashed color-mix(in oklab, var(--tc-gold-deep) 30%, transparent); }
 .tc-foil {
@@ -593,7 +605,7 @@ a, button, [role="button"] {
 @keyframes links-reveal { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 .tc-shadow { width: 62%; height: 18px; margin: 26px auto 0; border-radius: 50%; background: radial-gradient(closest-side, color-mix(in oklab, var(--foreground) 22%, transparent), transparent); }
 @media (hover: hover) { .tc-link:hover { transform: translateX(4px); } [dir="rtl"] .tc-link:hover { transform: translateX(-4px); } }
-.tc-link:focus-visible, .tc-card:focus-visible { outline: 3px solid var(--primary); outline-offset: 4px; }
+.tc-link:focus-visible, .tc-tilt:focus-visible { outline: 3px solid var(--primary); outline-offset: 4px; }
 @media (prefers-reduced-motion: reduce) {
  .links-page *, .links-page *::before, .links-page *::after { animation: none !important; transition: none !important; }
 }
