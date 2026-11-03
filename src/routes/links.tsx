@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Globe, Apple, Mail, ArrowUpRight, Languages } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 
@@ -42,8 +42,6 @@ export const Route = createFileRoute("/links")({
 
 function LinksPage() {
   const [lang, setLang] = useState<"en" | "ar">("en");
-  const [shown, setShown] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setShown(true), 30); return () => clearTimeout(t); }, []);
   const c = COPY[lang];
   return (
     <div dir={lang === "ar" ? "rtl" : "ltr"} className="links-page relative min-h-screen overflow-hidden bg-background text-foreground">
@@ -61,7 +59,7 @@ function LinksPage() {
           </button>
         </div>
 
-        <header className={`mt-8 flex flex-col items-center text-center transition-all duration-700 ${shown ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"}`}>
+        <header className={`mt-8 flex flex-col items-center text-center transition-all duration-700 links-rise`}>
           <div className="grid h-28 w-28 place-items-center rounded-[2rem] border border-border bg-card shadow-[0_18px_40px_-18px_color-mix(in_oklab,var(--primary)_45%,transparent)] rotate-[-4deg]">
             <BrandLogo showWordmark={false} className="h-20 w-20 rotate-[4deg] object-contain" />
           </div>
@@ -76,8 +74,8 @@ function LinksPage() {
             const featured = i === 1;
             return (
               <a key={item.href} href={item.href} target={item.href.startsWith("mailto") ? undefined : "_blank"} rel="noreferrer"
-                style={{ transitionDelay: `${150 + i * 90}ms` }}
-                className={`group relative flex items-stretch overflow-hidden rounded-3xl border transition-all duration-500 active:scale-[0.98] ${shown ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"} ${featured ? "border-primary bg-primary text-primary-foreground shadow-[0_20px_40px_-20px_var(--primary)]" : "border-border bg-card"}`}>
+                style={{ animationDelay: `${150 + i * 90}ms` }}
+                className={`group relative flex items-stretch overflow-hidden rounded-3xl border transition-all duration-500 active:scale-[0.98] links-rise ${featured ? "border-primary bg-primary text-primary-foreground shadow-[0_20px_40px_-20px_var(--primary)]" : "border-border bg-card"}`}>
                 <div className={`flex w-16 shrink-0 flex-col items-center justify-center gap-1 border-dashed ${lang === "ar" ? "border-l" : "border-r"} ${featured ? "border-primary-foreground/30" : "border-border"}`}>
                   <span className={`text-[0.65rem] font-black tracking-widest ${featured ? "text-primary-foreground/70" : "text-muted-foreground"}`}>{item.n}</span>
                   <Icon className="h-6 w-6" />
