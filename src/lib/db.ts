@@ -47,6 +47,31 @@ export function formatClock(seconds: number): string {
   return `${mm}:${String(ss).padStart(2, "0")}`;
 }
 
+const PERIOD_CAP: Record<string, number> = { "1h": 2700, "2h": 5400, et1: 6300, et2: 7200 };
+const PERIOD_START: Record<string, number> = { "1h": 0, "2h": 2700, et1: 5400, et2: 6300 };
+
+/** Running period, from the admin's stored choice (falls back to the clock for older rows). */
+export function livePeriod(m: { period?: string | null }, seconds: number): string {
+  if (m.period && m.period in PERIOD_CAP) return m.period;
+  return seconds >= 6300 ? "et2" : seconds >= 5400 ? "et1" : seconds >= 2700 ? "2h" : "1h";
+}
+
+/** Live clock that stays in its period: past 45:00 in the 1st half shows "45+2'" until the admin starts the next one. */
+export function formatLiveClock(m: { period?: string | null }, seconds: number): string {
+  const period = livePeriod(m, seconds);
+  const cap = PERIOD_CAP[period];
+  if (seconds >= cap) return `${cap / 60}+${Math.floor((seconds - cap) / 60) + 1}'`;
+  return formatClock(Math.max(seconds, PERIOD_START[period]));
+}
+
+/** Whole live minute for compact lists, e.g. "45+3'" or "67'". */
+export function liveMinuteLabel(m: { period?: string | null }, seconds: number): string {
+  const period = livePeriod(m, seconds);
+  const cap = PERIOD_CAP[period];
+  if (seconds >= cap) return `${cap / 60}+${Math.floor((seconds - cap) / 60) + 1}'`;
+  return `${Math.floor(seconds / 60) + 1}'`;
+}
+
 export const STATUS_LABELS: Record<string, string> = {
   scheduled: "Scheduled",
   live: "Live",

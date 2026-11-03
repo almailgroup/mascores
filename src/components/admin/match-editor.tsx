@@ -5,7 +5,7 @@ import { readStatsPhoto } from "@/lib/stats-photo.functions";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  supabase, STATUS_LABELS, matchClockSeconds, formatClock,
+  supabase, STATUS_LABELS, matchClockSeconds, formatClock, formatLiveClock, livePeriod,
   ratingClass, formatRating,
   type Match, type Team, type Player, type MatchEvent, type Lineup,
 } from "@/lib/db";
@@ -971,7 +971,7 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
       <div>
         {/* Clock */}
         <div className="rounded-lg border border-border bg-background/50 p-4 text-center">
-          <div className="text-4xl font-black tabular-nums">{formatClock(seconds)}</div>
+          <div className="text-4xl font-black tabular-nums">{match.status === "live" ? formatLiveClock(match, seconds) : formatClock(seconds)}</div>
           <div className="mt-1 text-[0.65rem] uppercase tracking-widest text-muted-foreground">{minute}′ · {STATUS_LABELS[match.status] ?? match.status}</div>
           <div className="mt-3 flex flex-wrap justify-center gap-2">
             {match.timer_running
@@ -1305,23 +1305,23 @@ function PeriodBoxes({ match, seconds, patchMatch }: { match: Match; seconds: nu
   const shootout = live && match.home_pen != null;
   const base = match.timer_elapsed_seconds ?? 0;
   const phase = shootout ? "pens"
-    : live ? (seconds >= 6300 ? "et2" : seconds >= 5400 ? "et1" : seconds >= 2700 ? "2h" : "1h")
+    : live ? livePeriod(match, seconds)
     : match.status === "ht" ? (base >= 5400 ? "etht" : "ht") : match.status;
-  const clock = formatClock(seconds);
-  const startAt = (from: number, extra: Partial<Match> = {}) => patchMatch({ status: "live", timer_running: true, timer_started_at: now(), timer_elapsed_seconds: from, home_pen: null, away_pen: null, ...extra });
-  const keep = (lo: number, hi: number) => (seconds >= lo && seconds < hi ? seconds : lo);
+  const clock = formatLiveClock(match, seconds);
+  const startAt = (from: number, period: string, extra: Partial<Match> = {}) => patchMatch({ status: "live", period, timer_running: true, timer_started_at: now(), timer_elapsed_seconds: from, home_pen: null, away_pen: null, ...extra });
+  const keep = (lo: number, k: string) => (phase === k && seconds >= lo ? seconds : lo);
   type B = { key: string; label: string; sub?: string; active: boolean; run: () => Promise<void> | void };
   const main: B[] = [
-    { key: "1h", label: "1st half", sub: phase === "1h" ? clock : "-", active: phase === "1h", run: () => startAt(phase === "1h" || phase === "ht" ? keep(0, 2700) : 0) },
+    { key: "1h", label: "1st half", sub: phase === "1h" ? clock : "-", active: phase === "1h", run: () => startAt(keep(0, "1h"), "1h") },
     { key: "ht", label: "HT", active: phase === "ht", run: () => patchMatch({ status: "ht", ...stop, timer_elapsed_seconds: 2700, live_minute: 45 }) },
-    { key: "2h", label: "2nd half", sub: phase === "2h" ? clock : "-", active: phase === "2h", run: () => startAt(keep(2700, 5400)) },
+    { key: "2h", label: "2nd half", sub: phase === "2h" ? clock : "-", active: phase === "2h", run: () => startAt(keep(2700, "2h"), "2h") },
     { key: "ft", label: "Confirm FT", active: match.status === "ft", run: () => patchMatch({ status: "ft", ...stop, timer_elapsed_seconds: 5400, home_pen: null, away_pen: null }) },
   ];
   const et: B[] = [
     { key: "etwait", label: "Waiting for extra time", active: match.status === "etwait", run: () => patchMatch({ status: "etwait", ...stop, timer_elapsed_seconds: 5400, live_minute: 90, home_pen: null, away_pen: null }) },
-    { key: "et1", label: "Extra time 1st half", sub: phase === "et1" ? clock : "-", active: phase === "et1", run: () => startAt(keep(5400, 6300)) },
+    { key: "et1", label: "Extra time 1st half", sub: phase === "et1" ? clock : "-", active: phase === "et1", run: () => startAt(keep(5400, "et1"), "et1") },
     { key: "etht", label: "Extra time break", active: phase === "etht", run: () => patchMatch({ status: "ht", ...stop, timer_elapsed_seconds: 6300, live_minute: 105 }) },
-    { key: "et2", label: "Extra time 2nd half", sub: phase === "et2" ? clock : "-", active: phase === "et2", run: () => startAt(keep(6300, 7200)) },
+    { key: "et2", label: "Extra time 2nd half", sub: phase === "et2" ? clock : "-", active: phase === "et2", run: () => startAt(keep(6300, "et2"), "et2") },
     { key: "aet", label: "Confirm FT after ET", active: match.status === "aet", run: () => patchMatch({ status: "aet", ...stop, timer_elapsed_seconds: 7200, home_pen: null, away_pen: null }) },
   ];
   const pens: B[] = [

@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 const H2H_NOTICE_KEY = "mascores:h2h-filter-notice-dismissed";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, SectionHeader, EmptyState, LoadingSkeleton } from "@/components/app-shell";
-import { supabase, formatKickoff, matchClockSeconds, type Competition, type Match, type Team } from "@/lib/db";
+import { supabase, formatKickoff, matchClockSeconds, liveMinuteLabel, type Competition, type Match, type Team } from "@/lib/db";
 import { useI18n } from "@/lib/i18n";
 import { useRealtime } from "@/lib/realtime";
 import { useFavorites, FavoriteButton } from "@/hooks/use-favorites";
@@ -683,7 +683,7 @@ export function MatchTile({ m }: { m: MatchWithTeams }) {
         </span>
         <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 ${isLive ? "bg-primary/15 text-primary" : "bg-muted"}`}>
           {isLive && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />}
-          {m.status === "live" ? `${Math.max(m.live_minute ?? 0, Math.floor(matchClockSeconds(m) / 60))}'` : m.status.toUpperCase()}
+          {m.status === "live" ? liveMinuteLabel(m, matchClockSeconds(m)) : m.status.toUpperCase()}
         </span>
       </div>
       <div className="mt-3 grid items-center gap-2" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
