@@ -159,12 +159,12 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
       return <section key={group ?? "single"}>
         <div className={modern ? "overflow-hidden rounded-lg border border-border bg-card" : "overflow-hidden rounded-3xl border border-border bg-card shadow-sm"}>
           {modern && group && <div className="flex items-center justify-between gap-2 px-3 pb-1.5 pt-3">
-            <h3 className="text-[0.7rem] font-bold">{tx(group)}</h3>
-            {groupList.length > 1 && <ShareCardButton iconOnly title={`${shareTitle} · ${tx(group)}`} render={() => renderCard([[group, groupRows]])} />}
+            {competition.data ? <Link to="/competitions/$slug" params={{ slug: competition.data.slug }} className="text-[0.7rem] font-bold hover:text-primary">{tx(group)}</Link> : <h3 className="text-[0.7rem] font-bold">{tx(group)}</h3>}
+            {groupList.length > 1 && <ShareCardButton iconOnly onSurface title={`${shareTitle} · ${tx(group)}`} render={() => renderCard([[group, groupRows]])} />}
           </div>}
           <div className={`grid ${cols} items-center gap-1 ${modern ? "bg-card" : "bg-muted/40"} px-3 py-1.5 text-[0.6rem] font-semibold text-muted-foreground`}>
-            <span>#</span>
-            <span>{tx("Team")}</span>
+            <span />
+            <span />
             {view === "full" && <><span className="text-center">P</span><span className="text-center">W</span><span className="text-center">D</span><span className="text-center">L</span><span className="text-center">GLS</span><span className="text-center">GD</span><span className="text-center">PTS</span></>}
             {view === "form" && <span className="text-end">{tx("Last 5")}</span>}
             {view === "short" && <><span className="text-center">P</span><span className="text-center">GD</span><span className="text-center">PTS</span></>}

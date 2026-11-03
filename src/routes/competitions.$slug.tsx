@@ -57,7 +57,13 @@ export const Route = createFileRoute("/competitions/$slug")({
 function CompetitionPage() {
   const { slug } = Route.useParams();
   const [tab, setTab] = useState<CompTab>("overview");
-  const [season, setSeason] = useState<string | null>(null);
+  const [season, setSeasonState] = useState<string | null>(null);
+  // Remember the chosen season per competition so returning from a match keeps it.
+  useEffect(() => { setSeasonState(sessionStorage.getItem(`comp-season:${slug}`)); }, [slug]);
+  const setSeason = (value: string | null) => {
+    setSeasonState(value);
+    if (value) sessionStorage.setItem(`comp-season:${slug}`, value); else sessionStorage.removeItem(`comp-season:${slug}`);
+  };
   useRealtime(["competitions", "teams", "matches", "standings_rows", "competition_awards", "media_items"]);
 
   const comp = useQuery({
