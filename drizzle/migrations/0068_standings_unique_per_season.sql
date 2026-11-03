@@ -1,0 +1,2 @@
+ALTER TABLE public.standings_rows DROP CONSTRAINT standings_rows_competition_id_team_id_key;
+CREATE UNIQUE INDEX standings_rows_comp_team_season_group_key ON public.standings_rows (competition_id, team_id, COALESCE(season,''), COALESCE(group_label,''));
