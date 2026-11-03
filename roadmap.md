@@ -12,3 +12,4 @@
 - [ ] Team picker first-run app-only
 - [ ] Match standings show only the teams' group
 - [ ] Link-in-bio page (light, EN/AR toggle, App Store link)
+- [ ] 2025/26 relegation group: Kuwait SC vs Al Nasr mistake
