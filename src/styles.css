@@ -497,7 +497,28 @@ a, button, [role="button"] {
   --muted-foreground: oklch(0.48 0.03 255);
   --border: oklch(0.88 0.02 85);
   --links-pitch: oklch(0.55 0.22 260 / 0.09);
+  --links-ig-a: oklch(0.82 0.17 85);
+  --links-ig-b: oklch(0.7 0.21 350);
+  --links-ig-c: oklch(0.55 0.22 305);
+  --links-x-bg: oklch(0.17 0.02 260);
 }
 @keyframes links-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 .links-rise { animation: links-rise 0.6s cubic-bezier(.2,.8,.2,1) both; }
+/* Floodlight glow behind the header. */
+.links-glow {
+  background: radial-gradient(60rem 28rem at 50% -12rem, color-mix(in oklab, var(--primary) 14%, transparent), transparent 72%);
+}
+/* Sheen across the featured App Store card. */
+.links-shine {
+  background: radial-gradient(24rem 14rem at 110% -30%, color-mix(in oklab, var(--primary-foreground) 38%, transparent), transparent 70%);
+}
+/* Instagram brand gradient and X badge; white glyphs stay legible on both. */
+.links-ig {
+  color: oklch(1 0 0);
+  background: linear-gradient(135deg, var(--links-ig-a), var(--links-ig-b) 55%, var(--links-ig-c));
+}
+.links-x {
+  color: oklch(1 0 0);
+  background: var(--links-x-bg);
+}
 @media (prefers-reduced-motion: reduce) { .links-rise { animation: none; } }
