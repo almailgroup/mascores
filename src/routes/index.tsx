@@ -313,7 +313,8 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
       </div>
       {calendarOpen && <MonthCalendar day={day} onPick={(selected) => {
         const today = new Date(); today.setHours(0, 0, 0, 0);
-        setOffset(Math.round((selected.getTime() - today.getTime()) / 86400000));
+        const pick = new Date(selected); pick.setHours(0, 0, 0, 0);
+        setOffset(Math.round((pick.getTime() - today.getTime()) / 86400000));
         setStatus(null);
         setCalendarOpen(false);
       }} onClose={() => setCalendarOpen(false)} />}
