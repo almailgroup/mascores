@@ -854,7 +854,10 @@ function MatchStandings({ competitionId, season, liveTeamIds, highlightIds }: { 
     },
   });
   if (!q.data?.length) return <EmptyState title={tx("No standings yet")} />;
-  return <StandingsTable showCompetition rows={q.data} labels={labels.data ?? []} highlightTeamIds={highlightIds} liveTeamIds={liveTeamIds} />;
+  // Group competitions: show only the group(s) these two clubs are in.
+  const myGroups = new Set(q.data.filter((r) => highlightIds.includes(r.team_id)).map((r) => r.group_label ?? null));
+  const rows = myGroups.size ? q.data.filter((r) => myGroups.has(r.group_label ?? null)) : q.data;
+  return <StandingsTable showCompetition rows={rows} labels={labels.data ?? []} highlightTeamIds={highlightIds} liveTeamIds={liveTeamIds} />;
 }
 
 
