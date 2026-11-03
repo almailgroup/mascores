@@ -144,7 +144,7 @@
   --radius: 0.625rem;
   --event-ink: oklch(0.2 0.03 260);
   --match-foreground: oklch(0.98 0.005 240);
-  --match-live: oklch(0.78 0.14 250);
+  --match-live: oklch(0.66 0.23 25);
   --lineup-turf: oklch(0.48 0.13 150);
   --lineup-turf-stripe: oklch(0.51 0.13 150);
   --lineup-marking: oklch(0.98 0.005 150 / 35%);
