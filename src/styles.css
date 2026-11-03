@@ -279,6 +279,9 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  /* iOS WebKit only honours touch-action on the touched element's chain, so
+     apply it everywhere: blocks double-tap zoom, keeps pinch zoom. */
+  body, body * { touch-action: manipulation; }
   button, a, [role="tab"] { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
   button:not(:disabled), a[href], [role="tab"], [role="button"] {
     transition: transform 120ms ease, filter 120ms ease, opacity 120ms ease;
