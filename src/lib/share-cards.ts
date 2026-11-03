@@ -150,6 +150,7 @@ export async function drawStandingsCard(input: {
     if (group.label) {
       ctx.font = `700 30px ${FONT}`;
       ctx.fillStyle = "rgba(255,255,255,0.75)";
+      ctx.textAlign = "left";
       ctx.fillText(group.label.slice(0, 30), 60, y + 34);
       y += 58;
     }

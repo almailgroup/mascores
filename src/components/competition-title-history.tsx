@@ -74,12 +74,12 @@ export function CompetitionTitleHistory({ competitionId }: { competitionId: stri
     </DialogTrigger>
 
     <DialogContent className="flex max-h-[88vh] w-[calc(100vw-1.5rem)] max-w-md flex-col gap-0 overflow-hidden rounded-3xl border-border p-0 [&>button:last-child]:hidden">
-      <div className="relative overflow-hidden border-b border-border px-5 pb-4 pt-5">
+      <div className="relative shrink-0 overflow-hidden border-b border-border px-5 pb-4 pt-5">
         <div aria-hidden className="pointer-events-none absolute -start-16 -top-20 h-48 w-48 rounded-full bg-primary/20 blur-3xl" />
         <div className="relative flex items-start justify-between gap-3">
           <div>
             <div className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">{num(rows.length)} {tx("seasons")}</div>
-            <DialogTitle className="mt-1 text-2xl font-black leading-none">{tx("Title history")}</DialogTitle>
+            <DialogTitle className="mt-1 text-2xl font-black leading-tight">{tx("Title history")}</DialogTitle>
           </div>
           <DialogClose className="grid h-9 w-9 place-items-center rounded-full bg-muted text-foreground transition active:scale-95" aria-label={tx("Close")}><X className="h-4 w-4" /></DialogClose>
         </div>
