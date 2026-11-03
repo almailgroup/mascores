@@ -66,9 +66,9 @@ function useForm(rows: PublicStandingRow[], enabled: boolean) {
 function FormStrip({ results }: { results: ("W" | "D" | "L")[] }) {
   const tone = { W: "bg-success text-success-foreground", D: "bg-muted-foreground text-background", L: "bg-destructive text-destructive-foreground" } as const;
   return (
-    <span className="flex h-6 w-full max-w-[10rem] overflow-hidden rounded-md bg-muted">
+    <span className="flex h-6 w-full max-w-[10rem] overflow-hidden rounded-md">
       {results.map((result, index) => (
-        <span key={index} className={`grid w-7 shrink-0 place-items-center text-[0.65rem] font-bold ${tone[result]}`}>{result}</span>
+        <span key={index} className={`grid min-w-0 flex-1 place-items-center text-[0.65rem] font-bold ${tone[result]}`}>{result}</span>
       ))}
     </span>
   );
@@ -158,13 +158,14 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
         : modern ? "grid-cols-[1.5rem_minmax(0,1fr)_1.75rem_2rem_2rem]" : "grid-cols-[2.75rem_minmax(0,1fr)_2rem_2.25rem_2.5rem]";
       return <section key={group ?? "single"}>
         <div className={modern ? "overflow-hidden rounded-lg border border-border bg-card" : "overflow-hidden rounded-3xl border border-border bg-card shadow-sm"}>
-          {modern && group && <div className="flex items-center justify-between gap-2 px-3 pb-1.5 pt-3">
-            {competition.data ? <Link to="/competitions/$slug" params={{ slug: competition.data.slug }} className="text-[0.7rem] font-bold hover:text-primary">{tx(group)}</Link> : <h3 className="text-[0.7rem] font-bold">{tx(group)}</h3>}
-            {groupList.length > 1 && <ShareCardButton iconOnly onSurface title={`${shareTitle} · ${tx(group)}`} render={() => renderCard([[group, groupRows]])} />}
-          </div>}
-          <div className={`grid ${cols} items-center gap-1 ${modern ? "bg-card" : "bg-muted/40"} px-3 py-1.5 text-[0.6rem] font-semibold text-muted-foreground`}>
+          <div className={`grid ${cols} items-center gap-1 ${modern ? "bg-card" : "bg-muted/40"} px-3 py-2 text-[0.6rem] font-semibold text-muted-foreground`}>
             <span />
-            <span />
+            <span className="flex min-w-0 items-center gap-1.5">
+              {competition.data
+                ? <Link to="/competitions/$slug" params={{ slug: competition.data.slug }} className="truncate text-[0.7rem] font-bold text-foreground hover:text-primary">{group ? tx(group) : `${tx(competition.data.name)}${rows[0]?.season ? ` ${num(rows[0].season)}` : ""}`}</Link>
+                : group && <span className="truncate text-[0.7rem] font-bold text-foreground">{tx(group)}</span>}
+              {group && groupList.length > 1 && <ShareCardButton iconOnly onSurface title={`${shareTitle} · ${tx(group)}`} render={() => renderCard([[group, groupRows]])} />}
+            </span>
             {view === "full" && <><span className="text-center">P</span><span className="text-center">W</span><span className="text-center">D</span><span className="text-center">L</span><span className="text-center">GLS</span><span className="text-center">GD</span><span className="text-center">PTS</span></>}
             {view === "form" && <span className="text-end">{tx("Last 5")}</span>}
             {view === "short" && <><span className="text-center">P</span><span className="text-center">GD</span><span className="text-center">PTS</span></>}
