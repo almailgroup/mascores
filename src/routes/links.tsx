@@ -98,6 +98,16 @@ function LinksPage() {
           <Button variant="ghost" onClick={() => setLang(lang === "en" ? "ar" : "en")} className="gap-2 text-xs font-bold"><Languages className="h-4 w-4" />{c.toggle}</Button>
         </div>
         <header className="links-identity relative pt-7 pb-7">
+          <div className="links-clockline" aria-hidden dir="ltr">
+            <span className="links-clock-track">
+              <span className="links-clock-fill">
+                <span className="links-clock-dot" />
+              </span>
+              <span className="links-clock-ticks">
+                {Array.from({ length: 9 }, (_, i) => <i key={i} style={{ left: `${(i + 1) * 10}%`, animationDelay: `${0.9 + i * 0.35}s` }} />)}
+              </span>
+            </span>
+          </div>
           <img src={logo.url} alt={c.name} className="links-original-logo mb-5 h-24 w-24 object-contain" />
           <h1 className="links-name font-black">{c.name}<span>.</span></h1>
           <p className="mt-2 text-base font-bold">{c.tag}</p>
