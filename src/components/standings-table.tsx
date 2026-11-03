@@ -74,7 +74,8 @@ function FormStrip({ results }: { results: ("W" | "D" | "L")[] }) {
   );
 }
 
-export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds, liveTeamIds, modern = true }: {
+export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds, liveTeamIds, modern = true, showCompetition = false }: {
+  showCompetition?: boolean;
   rows: PublicStandingRow[];
   labels: Label[];
   highlightTeamId?: string;
@@ -91,37 +92,24 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
   const competitionId = rows[0]?.competition_id ?? null;
   const competition = useQuery({
     enabled: !!competitionId,
-    queryKey: ["standings-competition-name", competitionId],
+    queryKey: ["standings-competition-info", competitionId],
     queryFn: async () => {
       if (!competitionId) return null;
-      const { data } = await supabase.from("competitions").select("name").eq("id", competitionId).maybeSingle();
-      return data?.name ?? null;
+      const { data } = await supabase.from("competitions").select("name,slug").eq("id", competitionId).maybeSingle();
+      return data ?? null;
     },
   });
-  const shareTitle = competition.data ? tx(competition.data) : tx("Standings");
+  const shareTitle = competition.data ? tx(competition.data.name) : tx("Standings");
   const highlights = [...(highlightTeamIds ?? []), ...(highlightTeamId ? [highlightTeamId] : [])];
   const views: View[] = ["full", "form", "short"];
   const viewName: Record<View, string> = { full: tx("Full"), form: tx("Form"), short: tx("Short") };
 
-  return <div ref={shotRef} className="space-y-4">
-    <div className="flex items-center justify-between gap-2">
-    <div className={modern ? "inline-flex gap-1 text-xs font-semibold" : "inline-flex rounded-full border border-border bg-card p-1 text-xs font-semibold"}>
-      {views.map((item) => (
-        <Button key={item} variant="ghost" size="sm" type="button" aria-pressed={view === item} onClick={() => setView(item)}
-          className={`h-8 rounded-lg px-3 text-xs transition-colors ${view === item ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}>
-          {viewName[item]}
-        </Button>
-      ))}
-    </div>
-    <ShareCardButton
-      disabled={competition.isLoading}
-      title={shareTitle}
-      render={() => drawStandingsCard({
+  const renderCard = (groups: ReturnType<typeof grouped>) => drawStandingsCard({
         title: shareTitle,
         subtitle: [tx("Standings"), rows[0]?.season ?? null].filter(Boolean).join(" · "),
         withForm: view === "form",
          withFull: view === "full",
-        groups: grouped(rows).map(([group, groupRows]) => ({
+        groups: groups.map(([group, groupRows]) => ({
           label: group ? tx(group) : null,
           rows: groupRows.map((row, index) => ({
             position: index + 1,
@@ -134,10 +122,28 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
             highlight: highlights.includes(row.team_id),
           })),
         })),
-      })}
+      }));
+  const groupList = grouped(rows);
+  return <div ref={shotRef} className="space-y-4">
+    {showCompetition && competition.data && <Link to="/competitions/$slug" params={{ slug: competition.data.slug }} className="block text-base font-black hover:text-primary">
+      {tx(competition.data.name)}{rows[0]?.season ? ` ${num(rows[0].season)}` : ""}
+    </Link>}
+    <div className="flex items-center justify-between gap-2">
+    <div className={modern ? "inline-flex gap-1 text-xs font-semibold" : "inline-flex rounded-full border border-border bg-card p-1 text-xs font-semibold"}>
+      {views.map((item) => (
+        <Button key={item} variant="ghost" size="sm" type="button" aria-pressed={view === item} onClick={() => setView(item)}
+          className={`h-8 rounded-lg px-3 text-xs transition-colors ${view === item ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}>
+          {viewName[item]}
+        </Button>
+      ))}
+    </div>
+    <ShareCardButton
+      disabled={competition.isLoading}
+      title={shareTitle}
+      render={() => renderCard(grouped(rows))}
     />
     </div>
-    {grouped(rows).map(([group, groupRows]) => {
+    {groupList.map(([group, groupRows]) => {
       const positionLabel = (index: number) => labels.find((label) => (label.group_label ?? null) === group && label.position === index + 1)
         ?? labels.find((label) => !label.group_label && label.position === index + 1);
       const rowLabel = (row: PublicStandingRow, index: number) => {
@@ -152,10 +158,13 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
         : modern ? "grid-cols-[1.5rem_minmax(0,1fr)_1.75rem_2rem_2rem]" : "grid-cols-[2.75rem_minmax(0,1fr)_2rem_2.25rem_2.5rem]";
       return <section key={group ?? "single"}>
         <div className={modern ? "overflow-hidden rounded-lg border border-border bg-card" : "overflow-hidden rounded-3xl border border-border bg-card shadow-sm"}>
-          {modern && group && <h3 className="px-3 pb-1.5 pt-3 text-[0.7rem] font-bold">{tx(group)}</h3>}
+          {modern && group && <div className="flex items-center justify-between gap-2 px-3 pb-1.5 pt-3">
+            <h3 className="text-[0.7rem] font-bold">{tx(group)}</h3>
+            {groupList.length > 1 && <ShareCardButton iconOnly title={`${shareTitle} · ${tx(group)}`} render={() => renderCard([[group, groupRows]])} />}
+          </div>}
           <div className={`grid ${cols} items-center gap-1 ${modern ? "bg-card" : "bg-muted/40"} px-3 py-1.5 text-[0.6rem] font-semibold text-muted-foreground`}>
             <span>#</span>
-            <span>{group ? tx(group) : tx("Team")}</span>
+            <span>{tx("Team")}</span>
             {view === "full" && <><span className="text-center">P</span><span className="text-center">W</span><span className="text-center">D</span><span className="text-center">L</span><span className="text-center">GLS</span><span className="text-center">GD</span><span className="text-center">PTS</span></>}
             {view === "form" && <span className="text-end">{tx("Last 5")}</span>}
             {view === "short" && <><span className="text-center">P</span><span className="text-center">GD</span><span className="text-center">PTS</span></>}

@@ -481,7 +481,7 @@ function StandingsTabs({ rows, labels, teamId, tx }: {
         }} />
         {availableSeasons.length > 0 && <SeasonMenu seasons={availableSeasons} value={activeSeason} onChange={(value) => current && setSelectedSeasons((previous) => ({ ...previous, [current.competition_id]: value }))} />}
         </div>
-        <StandingsTable rows={list} labels={currentLabels} highlightTeamId={teamId} modern />
+        <StandingsTable showCompetition rows={list} labels={currentLabels} highlightTeamId={teamId} modern />
       </div>
     </div>
   );
