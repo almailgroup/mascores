@@ -76,7 +76,15 @@ function CompetitionPage() {
       const selectedSeason = season ?? comp.data!.season;
        if (selectedSeason) linkQuery = linkQuery.eq("season", selectedSeason);
       const { data: links } = await linkQuery;
-      const ids = (links ?? []).map((link) => link.team_id);
+      let ids = (links ?? []).map((link) => link.team_id);
+      // Past seasons have no team links: derive participants from that season's table and results.
+      if (!ids.length && selectedSeason) {
+        const [{ data: rows }, { data: games }] = await Promise.all([
+          supabase.from("standings_rows").select("team_id").eq("competition_id", comp.data!.id).eq("season", selectedSeason),
+          supabase.from("matches").select("home_team_id,away_team_id").eq("competition_id", comp.data!.id).eq("season", selectedSeason),
+        ]);
+        ids = [...new Set([...(rows ?? []).map((r) => r.team_id), ...(games ?? []).flatMap((g) => [g.home_team_id, g.away_team_id])].filter((v): v is string => !!v))];
+      }
       const { data } = ids.length ? await supabase.from("teams").select("*").in("id", ids).order("name") : { data: [] };
       return (data ?? []) as Team[];
     },
@@ -173,7 +181,12 @@ function CompetitionPage() {
   const base: CompTab[] = friendly
     ? ["overview", "matches", "media", "news"]
     : ["overview", "matches", ...(hasStandings(c) ? ["standings" as CompTab] : []), ...(c.has_knockout ? (["knockout"] as CompTab[]) : []), "stats", "teams", "awards", "media", "news"];
-  const tabs = base.filter((item) => item === "overview" || item === "matches" || !hidden.has(item));
+  const activeSeasonKey = seasonKey(season ?? c.season ?? c.seasons?.[0] ?? null);
+  const pastSeason = !!season && !!c.season && seasonKey(season) !== seasonKey(c.season);
+  // Awards belong to their own season; legacy awards without a season count as the current one.
+  const seasonAwards = (awards.data ?? []).filter((a) => a.season ? seasonKey(a.season) === activeSeasonKey : !pastSeason);
+  const tabs = base.filter((item) => item === "overview" || item === "matches" || !hidden.has(item))
+    .filter((item) => !pastSeason || (item !== "stats" && (item !== "awards" || seasonAwards.length > 0)));
 
   const activeTab: CompTab = tabs.includes(tab) ? tab : "overview";
   const theme = competitionTheme({ slug: c.slug, name: c.name });
@@ -227,13 +240,22 @@ function CompetitionPage() {
           ))}
         </div>
       ) : <EmptyState title={tx("No teams yet")} />}</>}
-      {activeTab === "awards" && !friendly && <AwardsBoard awards={awards.data ?? []} />}
+      {activeTab === "awards" && !friendly && <AwardsBoard awards={seasonAwards} />}
       {activeTab === "media" && <>{media.data && media.data.length > 0 ? <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{media.data.map((item) => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="rounded-lg border border-border bg-card p-4 hover:border-primary"><div className="text-xs font-bold uppercase text-primary">{item.source}</div><div className="mt-1 font-semibold">{tx(item.title) || tx("Open media")}</div><div className="mt-1 truncate text-xs text-muted-foreground">{item.url}</div></a>)}</div> : <EmptyState title={tx("No competition media yet")} />}</>}
       {activeTab === "news" && <LinkedNews kind="competition" id={c.id} />}
        </div>
       </div>
     </AppShell>
   );
+}
+
+/** Normalises "26/27" and "2026/2027" to the same season key. */
+function seasonKey(value: string | null | undefined) {
+  if (!value) return null;
+  const m = value.match(/^(\d{2,4})\s*[/-]\s*(\d{2,4})$/);
+  if (!m) return value;
+  const full = (v: string) => (v.length === 2 ? `20${v}` : v);
+  return `${full(m[1])}/${full(m[2])}`;
 }
 
 type CompTab = "overview" | "matches" | "standings" | "knockout" | "stats" | "teams" | "awards" | "media" | "news";
@@ -525,7 +547,7 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
         <div className="mt-3"><DurationBar startsOn={c.starts_on} endsOn={c.ends_on} /></div>
       </section>
 
-      {!friendly && !(c.hidden_tabs ?? []).includes("round team") && <CompetitionRoundTeam competitionId={c.id} season={season ?? c.season ?? null} />}
+      {!friendly && isCurrentSeason && !(c.hidden_tabs ?? []).includes("round team") && <CompetitionRoundTeam competitionId={c.id} season={season ?? c.season ?? null} />}
       {/* Key numbers strip — plain neutral cards. */}
       <section className="overflow-hidden rounded-2xl border border-border bg-card p-3 shadow-sm sm:p-4">
         <div className={`grid gap-2 ${friendly ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6"}`}>

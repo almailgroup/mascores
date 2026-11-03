@@ -2443,6 +2443,7 @@ export type Database = {
           gf: number
           group_label: string | null
           id: string
+          is_final: boolean
           lost: number
           played: number
           points: number
@@ -2462,6 +2463,7 @@ export type Database = {
           gf?: number
           group_label?: string | null
           id?: string
+          is_final?: boolean
           lost?: number
           played?: number
           points?: number
@@ -2481,6 +2483,7 @@ export type Database = {
           gf?: number
           group_label?: string | null
           id?: string
+          is_final?: boolean
           lost?: number
           played?: number
           points?: number
