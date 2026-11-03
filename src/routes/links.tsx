@@ -141,9 +141,10 @@ function LinksPage() {
             onPointerCancel={onLeave}
             onClick={onCardClick}
             onKeyDown={(e) => { if ((e.key === "Enter" || e.key === " ") && e.target === e.currentTarget) { e.preventDefault(); setFlipped((f) => !f); } }}
-            className={`tc-card ${flipped ? "is-flipped" : ""} ${tracking ? "is-tracking" : "is-idle"}`}
+            className={`tc-tilt ${flipped ? "is-flipped" : ""} ${tracking ? "is-tracking" : "is-idle"}`}
           >
-            <section className="tc-face tc-front" inert={flipped}>
+            <div className={`tc-card ${flipped ? "is-flipped" : ""}`}>
+            <section className="tc-face tc-front" inert={flipped} aria-hidden={flipped}>
               <div className="tc-art"><div className="tc-rays" /></div>
               <img src={logo.url} alt={c.name} className="tc-logo" />
               <div className="tc-rating"><b>99</b><span>{c.rating}</span></div>
@@ -163,7 +164,7 @@ function LinksPage() {
               <div className="tc-glare" />
             </section>
 
-            <section className="tc-face tc-back" inert={!flipped}>
+            <section className="tc-face tc-back" inert={!flipped} aria-hidden={!flipped}>
               <div className="tc-back-inner">
                 <div className="tc-back-head">
                   <div><h2 className="text-2xl font-black">{c.backTitle}</h2><span className="text-xs font-bold text-primary" dir="ltr">{HANDLE}</span></div>
@@ -185,6 +186,7 @@ function LinksPage() {
               <div className="tc-foil" />
               <div className="tc-glare" />
             </section>
+            </div>
           </div>
         </div>
         <div className="tc-shadow" aria-hidden />
