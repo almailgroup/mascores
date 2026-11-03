@@ -84,129 +84,75 @@ export const Route = createFileRoute("/links")({
 
 function LinksPage() {
   const [lang, setLang] = useState<"en" | "ar">("en");
-  const [logoReplay, setLogoReplay] = useState(0);
+  const [signal, setSignal] = useState(0);
   const c = COPY[lang];
   const rtl = lang === "ar";
   return (
-    <div dir={rtl ? "rtl" : "ltr"} className="links-page relative min-h-screen overflow-hidden bg-background text-foreground">
-      {/* A drawn centre circle gives the page its football identity. */}
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[36rem]">
-        <div className="links-field absolute left-1/2 top-40 h-[26rem] w-[26rem] -translate-x-1/2 rounded-full border-[3px] border-[var(--links-pitch)]" />
-        <div className="absolute inset-x-0 top-[22.5rem] h-[3px] bg-[var(--links-pitch)]" />
-        <div className="absolute left-1/2 top-[22.15rem] h-3 w-3 -translate-x-1/2 rounded-full bg-[var(--links-pitch)]" />
-      </div>
-
-      <main className="relative mx-auto flex min-h-screen max-w-md flex-col px-5 pb-10 pt-[calc(env(safe-area-inset-top)+1.25rem)]">
-        <div className="flex justify-end">
-          <Button variant="outline" onClick={() => setLang(lang === "en" ? "ar" : "en")} className="links-language h-10 gap-2 rounded-full border-border bg-card px-4 text-sm font-bold shadow-sm">
-            <Languages className="h-4 w-4 text-primary" />{c.toggle}
-          </Button>
+    <div dir={rtl ? "rtl" : "ltr"} className="links-page min-h-screen bg-background text-foreground">
+      <main className="links-layout mx-auto max-w-2xl px-6 pb-8">
+        <div className="links-topline flex items-center justify-between border-b border-border py-4">
+          <span className="text-xs font-bold" dir="ltr">MA / KUWAIT</span>
+          <Button variant="ghost" onClick={() => setLang(lang === "en" ? "ar" : "en")} className="gap-2 text-xs font-bold"><Languages className="h-4 w-4" />{c.toggle}</Button>
         </div>
-
-        <header className={`mt-7 flex flex-col items-center text-center transition-all duration-700 links-rise`}>
-          <div key={logoReplay} className="links-emblem relative grid h-36 w-36 place-items-center">
-            <span aria-hidden className="links-orbit"><span className="links-orbit-ball">⚽</span></span>
-            <span aria-hidden className="links-emblem-ring" />
-            <Button variant="ghost" aria-label="MaScores" onClick={() => setLogoReplay(value => value + 1)} className="links-logo h-28 w-28 rounded-[2rem] border border-border bg-card p-0">
-              <BrandLogo showWordmark={false} className="h-20 w-20 object-contain" />
-            </Button>
+        <header className="links-identity relative pt-7 pb-7">
+          <div key={signal} className="links-signal relative" dir="ltr">
+            <svg aria-hidden viewBox="0 0 600 230" className="links-signal-art">
+              <g className="links-signal-grid" fill="none" stroke="currentColor">
+                <path d="M0 36H600M0 115H600M0 194H600M70 0V230M300 0V230M530 0V230" />
+                <path d="M0 115H70L160 36H255L345 194H440L530 115H600" className="links-route-line" />
+              </g>
+              <g className="links-signal-mark" fill="none" stroke="currentColor" strokeWidth="20" strokeLinejoin="miter">
+                <path d="M170 174L205 55L248 115L299 55L264 174" />
+                <path d="M310 174L378 55L413 174M337 132H399" />
+              </g>
+              <path className="links-signal-accent" d="M426 158L446 174H422Z" />
+              <g className="links-signal-nodes"><circle cx="70" cy="115" r="5"/><circle cx="530" cy="115" r="5"/></g>
+            </svg>
+            <Button variant="ghost" className="links-replay absolute bottom-1 right-0 h-10 w-10 rounded-full border border-border p-0" aria-label={rtl ? "إعادة الحركة" : "Replay animation"} onClick={() => setSignal(value => value + 1)}><ArrowUpRight className="h-4 w-4" /></Button>
           </div>
-          <h1 className="links-wordmark mt-3 text-4xl font-black" aria-label="MaScores" dir="ltr">
-            {"MaScores".split("").map((letter, i) => <span key={i} aria-hidden>{letter}</span>)}
-          </h1>
-          <p className="mt-2 text-lg font-bold text-primary">{c.tag}</p>
-          <p className="mt-1 text-sm text-muted-foreground">{c.sub}</p>
+          <div className="links-name-row mt-2 flex items-end justify-between gap-3">
+            <h1 className="links-name font-black" dir="ltr">MaScores<span>.</span></h1>
+            <span className="links-edition pb-2 text-[10px] font-bold" dir="ltr">EST. KUWAIT</span>
+          </div>
+          <p className="mt-2 text-base font-bold">{c.tag}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{c.sub}</p>
         </header>
-
-        {/* Halfway-line divider with the match ball. */}
-        <div aria-hidden className="links-kickoff mt-9 flex items-center gap-3 links-rise" style={{ animationDelay: "80ms" }}>
-          <span className="h-px flex-1 bg-border" />
-          <span className="grid h-7 w-7 place-items-center rounded-full border-2 border-border bg-card">
-            <span className="h-2.5 w-2.5 rounded-full bg-primary" />
-          </span>
-          <span className="h-px flex-1 bg-border" />
-        </div>
-
-        {/* Featured: App Store. */}
-        <a href={APP_STORE} target="_blank" rel="noreferrer"
-          style={{ animationDelay: "150ms" }}
-          className="links-feature links-interactive links-rise group relative mt-6 block overflow-hidden rounded-[2rem] bg-primary p-5 text-primary-foreground">
-          <div aria-hidden className="links-shine pointer-events-none absolute inset-0" />
-          <div className="relative flex items-center gap-4">
-            <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-primary-foreground/15 ring-1 ring-inset ring-primary-foreground/25 backdrop-blur-sm">
-              <AppleLogo className="h-9 w-9" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-[0.68rem] font-bold uppercase tracking-[0.2em] opacity-75">{c.appStore.kicker}</div>
-              <div className="text-2xl font-black leading-tight">{c.appStore.title}</div>
-              <div className="mt-0.5 text-sm opacity-85">{c.appStore.desc}</div>
-            </div>
-            <ArrowUpRight className={`h-5 w-5 shrink-0 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 ${rtl ? "-scale-x-100" : ""}`} />
+        <a href={APP_STORE} target="_blank" rel="noreferrer" className="links-app links-destination group relative block overflow-hidden p-6 text-primary-foreground">
+          <div aria-hidden className="links-app-stripes" />
+          <div className="relative flex items-start justify-between gap-4">
+            <AppleLogo className="h-8 w-8 shrink-0" />
+            <span className="text-[10px] font-bold" dir="ltr">01 / iOS</span>
           </div>
-          <div className="relative mt-4 flex items-center justify-between border-t border-primary-foreground/20 pt-3">
-            <span className="text-xs font-bold opacity-80" dir="ltr">mascores.live</span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-foreground px-3.5 py-1 text-xs font-black text-primary">
-              {c.appStore.cta}
-            </span>
+          <div className="relative mt-5 flex items-end justify-between gap-3">
+            <div><span className="text-xs opacity-80">{c.appStore.kicker}</span><h2 className="text-3xl font-black">{c.appStore.title}</h2></div>
+            <ArrowUpRight className="links-arrow h-8 w-8 shrink-0" />
+          </div>
+          <div className="relative mt-4 flex items-center justify-between gap-3 border-t border-primary-foreground/25 pt-3">
+            <span className="max-w-[65%] text-xs opacity-80">{c.appStore.desc}</span>
+            <span className="text-xs font-bold">{c.appStore.cta}</span>
           </div>
         </a>
-
-        {/* Website and contact, ticket-stub cards. */}
-        <nav className="mt-3 space-y-3">
+        <nav className="links-destinations mt-6" aria-label={rtl ? "الروابط" : "Links"}>
           {c.items.map((item, i) => {
             const Icon = item.icon;
-            return (
-              <a key={item.href} href={item.href} target={item.href.startsWith("mailto") ? undefined : "_blank"} rel="noreferrer"
-                style={{ animationDelay: `${260 + i * 90}ms` }}
-                className={`links-ticket links-interactive group relative flex items-stretch overflow-hidden rounded-3xl border border-border bg-card links-rise`}>
-                <div className={`flex w-16 shrink-0 flex-col items-center justify-center gap-1 border-dashed ${rtl ? "border-l" : "border-r"} border-border`}>
-                  <span className="text-[0.65rem] font-black tracking-widest text-muted-foreground">{item.n}</span>
-                  <Icon className="h-6 w-6 text-primary" />
-                </div>
-                <div className="min-w-0 flex-1 px-4 py-4">
-                  <div className="text-lg font-black leading-tight">{item.title}</div>
-                  <div className="mt-0.5 text-sm text-muted-foreground">{item.desc}</div>
-                  <div className="mt-2 inline-flex rounded-full bg-muted px-2.5 py-0.5 text-[0.7rem] font-bold text-primary" dir="ltr">{item.meta}</div>
-                </div>
-                <div className="flex items-center px-4">
-                  <ArrowUpRight className={`h-5 w-5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 ${rtl ? "-scale-x-100" : ""}`} />
-                </div>
-              </a>
-            );
+            return <a key={item.href} href={item.href} target={i === 0 ? "_blank" : undefined} rel="noreferrer" className="links-row links-destination group flex items-center gap-4 border-b border-border py-5">
+              <span className="text-[10px] text-muted-foreground" dir="ltr">0{i + 2}</span>
+              <Icon className="h-5 w-5 shrink-0 text-primary" />
+              <div className="min-w-0 flex-1"><h2 className="text-xl font-black">{item.title}</h2><span className="text-xs text-muted-foreground" dir="ltr">{item.meta}</span></div>
+              <ArrowUpRight className="links-arrow h-5 w-5 shrink-0" />
+            </a>;
           })}
         </nav>
-
-        {/* Socials. */}
-        <section className="mt-8 links-rise" style={{ animationDelay: "440ms" }}>
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-black uppercase tracking-[0.22em] text-muted-foreground">{c.socialTitle}</span>
-            <span className="h-px flex-1 bg-border" />
-          </div>
-          <div className="mt-3 grid grid-cols-2 gap-3">
-            {c.social.map((item, i) => {
-              const ig = i === 0;
-              return (
-                <a key={item.href} href={item.href} target="_blank" rel="noreferrer"
-                  style={{ animationDelay: `${500 + i * 90}ms` }}
-                  className="links-social links-interactive group links-rise relative overflow-hidden rounded-3xl border border-border bg-card p-4 text-center">
-                  <div className={`mx-auto grid h-12 w-12 place-items-center rounded-2xl ${ig ? "links-ig" : "links-x"}`}>
-                    {ig ? <Instagram className="h-6 w-6" /> : <XLogo className="h-5 w-5" />}
-                  </div>
-                  <div className="mt-3 text-sm font-black">{item.name}</div>
-                  <div className="text-xs font-bold text-primary" dir="ltr">{HANDLE}</div>
-                  <div className="mt-1 text-[0.7rem] leading-snug text-muted-foreground">{item.desc}</div>
-                </a>
-              );
-            })}
+        <section className="mt-8">
+          <div className="flex items-center justify-between"><h2 className="text-xs font-bold text-muted-foreground">{c.socialTitle}</h2><span className="text-xs font-bold" dir="ltr">{HANDLE}</span></div>
+          <div className="mt-4 grid grid-cols-2 gap-5">
+            {c.social.map((item, i) => <a key={item.href} href={item.href} target="_blank" rel="noreferrer" className={`links-network links-destination group border-t-2 pt-4 ${i === 0 ? "links-network-ig" : "links-network-x"}`}>
+              <div className="flex items-center justify-between">{i === 0 ? <Instagram className="h-6 w-6" /> : <XLogo className="h-5 w-5" />}<ArrowUpRight className="links-arrow h-4 w-4" /></div>
+              <h3 className="mt-4 text-base font-black">{item.name}</h3><p className="mt-1 text-xs text-muted-foreground">{item.desc}</p>
+            </a>)}
           </div>
         </section>
-
-        <div aria-hidden className="links-ticker mt-8 overflow-hidden border-y border-border py-3" dir="ltr">
-          <div className="links-ticker-track flex w-max items-center gap-6 text-xs font-bold text-primary">
-            {Array.from({ length: 4 }, (_, i) => <span key={i} className="flex items-center gap-6"><span>MaScores</span><span className="links-ticker-star">✦</span><span>{HANDLE}</span><span className="links-ticker-star">✦</span></span>)}
-          </div>
-        </div>
-        <footer className="mt-auto pt-8 text-center text-xs font-semibold text-muted-foreground">{c.by}</footer>
+        <footer className="mt-10 flex items-center gap-3 border-t border-border pt-5"><BrandLogo showWordmark={false} className="h-7 w-7 object-contain" /><p className="text-[10px] text-muted-foreground">{c.by}</p></footer>
       </main>
     </div>
   );
