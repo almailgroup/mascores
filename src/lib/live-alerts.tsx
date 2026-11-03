@@ -61,7 +61,7 @@ const EVENT_SOUND: Record<string, AlertEventKey> = {
   penalty_missed: "miss", missed_penalty: "miss", penalty_miss: "miss",
   yellow_card: "card", yellow: "card", second_yellow: "secondYellow", red_card: "redcard", red: "redcard",
   substitution: "sub", sub: "sub", injury_sub: "injury", injury: "injury",
-  var: "var", note: "note", assist: "scorer", save: "note",
+  var: "var", goal_disallowed: "var", red_cancelled: "var", yellow_cancelled: "var", penalty_cancelled: "var", penalty_awarded: "var", note: "note", assist: "scorer", save: "note",
 };
 type AlertPreferences = { goals?: boolean; cards?: boolean; kickoff?: boolean; final?: boolean; sound?: string; sounds?: AlertSoundMap };
 
