@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { Globe, Mail, ArrowUpRight, Instagram, Languages } from "lucide-react";
+import { useRef, useState } from "react";
+import { Globe, Mail, ArrowUpRight, Instagram, Languages, RotateCw } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo-mark-v2.png.asset.json";
@@ -27,48 +27,44 @@ function XLogo({ className }: { className?: string }) {
 const COPY = {
   en: {
     name: "MaScores",
-    platform: "For iPhone",
     tag: "Kuwaiti football, live",
-    sub: "Scores · Standings · Lineups · News",
-    appStore: {
-      kicker: "Download on the",
-      title: "App Store",
-      desc: "Goal alerts and live scores on your iPhone",
-      cta: "Get the app",
-    },
-    items: [
-      { n: "01", title: "Website", desc: "Live scores, tables and match centres", meta: "mascores.live", href: "https://mascores.live", icon: Globe },
-      { n: "02", title: "Contact us", desc: "Suggestions, corrections or partnerships", meta: "info@mascores.live", href: "mailto:info@mascores.live", icon: Mail },
+    rating: "OVR",
+    edition: "Edition 2026/27",
+    serial: "No. 001",
+    stats: [["99", "LIVE"], ["98", "TABLES"], ["97", "LINEUPS"], ["99", "ALERTS"], ["96", "NEWS"], ["98", "STATS"]],
+    hint: "Tap the card to flip",
+    backTitle: "Find us",
+    flip: "Flip card",
+    flipBack: "Show front",
+    links: [
+      { key: "app", title: "App Store", desc: "MaScores for iPhone", href: APP_STORE },
+      { key: "web", title: "Website", desc: "mascores.live", href: "https://mascores.live" },
+      { key: "ig", title: "Instagram", desc: HANDLE, href: "https://instagram.com/mascoreslive" },
+      { key: "x", title: "X", desc: HANDLE, href: "https://x.com/mascoreslive" },
+      { key: "mail", title: "Contact us", desc: "info@mascores.live", href: "mailto:info@mascores.live" },
     ],
-    socialTitle: "Follow us",
-    social: [
-      { name: "Instagram", desc: "Highlights and match graphics", href: "https://instagram.com/mascoreslive" },
-      { name: "X", desc: "Live updates on matchdays", href: "https://x.com/mascoreslive" },
-    ],
-    by: "Made in Kuwait by Mansour Almail",
+    by: "Made by Mansour Almail",
     toggle: "العربية",
   },
   ar: {
     name: "ما سكورز",
-    platform: "للآيفون",
     tag: "الكرة الكويتية مباشرة",
-    sub: "النتائج · الترتيب · التشكيلات · الأخبار",
-    appStore: {
-      kicker: "حمّل التطبيق من",
-      title: "متجر آبل",
-      desc: "تنبيهات الأهداف والنتائج المباشرة على آيفونك",
-      cta: "احصل على التطبيق",
-    },
-    items: [
-      { n: "٠١", title: "الموقع", desc: "النتائج المباشرة والترتيب ومراكز المباريات", meta: "mascores.live", href: "https://mascores.live", icon: Globe },
-      { n: "٠٢", title: "تواصل معنا", desc: "اقتراح، تصحيح أو شراكة", meta: "info@mascores.live", href: "mailto:info@mascores.live", icon: Mail },
+    rating: "تقييم",
+    edition: "إصدار ٢٠٢٦/٢٧",
+    serial: "رقم ٠٠١",
+    stats: [["٩٩", "مباشر"], ["٩٨", "الترتيب"], ["٩٧", "التشكيلات"], ["٩٩", "التنبيهات"], ["٩٦", "الأخبار"], ["٩٨", "الإحصاءات"]],
+    hint: "اضغط على البطاقة لقلبها",
+    backTitle: "تجدنا هنا",
+    flip: "اقلب البطاقة",
+    flipBack: "الوجه الأمامي",
+    links: [
+      { key: "app", title: "متجر آبل", desc: "ما سكورز للآيفون", href: APP_STORE },
+      { key: "web", title: "الموقع", desc: "mascores.live", href: "https://mascores.live" },
+      { key: "ig", title: "إنستغرام", desc: HANDLE, href: "https://instagram.com/mascoreslive" },
+      { key: "x", title: "إكس", desc: HANDLE, href: "https://x.com/mascoreslive" },
+      { key: "mail", title: "تواصل معنا", desc: "info@mascores.live", href: "mailto:info@mascores.live" },
     ],
-    socialTitle: "تابعنا",
-    social: [
-      { name: "إنستغرام", desc: "أبرز اللقطات وبطاقات المباريات", href: "https://instagram.com/mascoreslive" },
-      { name: "إكس", desc: "تحديثات مباشرة في يوم المباريات", href: "https://x.com/mascoreslive" },
-    ],
-    by: "صُنع في الكويت بواسطة منصور المعيل",
+    by: "من صنع منصور المعيل",
     toggle: "English",
   },
 } as const;
@@ -87,68 +83,120 @@ export const Route = createFileRoute("/links")({
   component: LinksPage,
 });
 
+function LinkIcon({ k }: { k: string }) {
+  if (k === "app") return <AppleLogo className="h-5 w-5" />;
+  if (k === "web") return <Globe className="h-5 w-5" />;
+  if (k === "ig") return <Instagram className="h-5 w-5" />;
+  if (k === "x") return <XLogo className="h-4 w-4" />;
+  return <Mail className="h-5 w-5" />;
+}
+
 function LinksPage() {
   const [lang, setLang] = useState<"en" | "ar">("en");
+  const [flipped, setFlipped] = useState(false);
+  const [tracking, setTracking] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
   const c = COPY[lang];
   const rtl = lang === "ar";
+
+  const onMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const el = cardRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const x = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+    const y = Math.min(1, Math.max(0, (e.clientY - r.top) / r.height));
+    el.style.setProperty("--rx", `${(0.5 - y) * 22}deg`);
+    el.style.setProperty("--ry", `${(x - 0.5) * 26 * (flipped ? -1 : 1)}deg`);
+    el.style.setProperty("--mx", `${x * 100}%`);
+    el.style.setProperty("--my", `${y * 100}%`);
+    if (!tracking) setTracking(true);
+  };
+  const onLeave = () => {
+    const el = cardRef.current;
+    if (el) ["--rx", "--ry", "--mx", "--my"].forEach((v) => el.style.removeProperty(v));
+    setTracking(false);
+  };
+  const onCardClick = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest("a")) return;
+    setFlipped((f) => !f);
+  };
+
   return (
-    <div lang={lang} dir={rtl ? "rtl" : "ltr"} className="links-page min-h-screen bg-background text-foreground">
-      <main className="links-layout mx-auto max-w-2xl px-6 pb-8">
-        <div className="links-topline flex items-center justify-end py-4">
-          <Button variant="ghost" onClick={() => setLang(lang === "en" ? "ar" : "en")} className="gap-2 text-xs font-bold"><Languages className="h-4 w-4" />{c.toggle}</Button>
+    <div lang={lang} dir={rtl ? "rtl" : "ltr"} className="links-page min-h-screen overflow-hidden bg-background text-foreground">
+      <main className="tc-stage mx-auto max-w-md px-5 pb-10">
+        <div className="flex items-center justify-between py-4">
+          <BrandLogo showWordmark={false} className="h-7 w-7 object-contain" />
+          <Button variant="ghost" onClick={() => setLang(rtl ? "en" : "ar")} className="gap-2 text-xs font-bold"><Languages className="h-4 w-4" />{c.toggle}</Button>
         </div>
-        <header className="links-identity relative pt-7 pb-7">
-          <div className="links-clockline" aria-hidden dir="ltr">
-            <span className="links-clock-track">
-              <span className="links-clock-fill">
-                <span className="links-clock-dot" />
-              </span>
-              <span className="links-clock-ticks">
-                {Array.from({ length: 9 }, (_, i) => <i key={i} style={{ left: `${(i + 1) * 10}%`, animationDelay: `${0.9 + i * 0.35}s` }} />)}
-              </span>
-            </span>
+
+        <div className="tc-deal mt-4">
+          <div
+            ref={cardRef}
+            role="button"
+            tabIndex={0}
+            aria-pressed={flipped}
+            aria-label={flipped ? c.flipBack : c.flip}
+            onPointerMove={onMove}
+            onPointerLeave={onLeave}
+            onPointerCancel={onLeave}
+            onClick={onCardClick}
+            onKeyDown={(e) => { if ((e.key === "Enter" || e.key === " ") && e.target === e.currentTarget) { e.preventDefault(); setFlipped((f) => !f); } }}
+            className={`tc-card ${flipped ? "is-flipped" : ""} ${tracking ? "is-tracking" : "is-idle"}`}
+          >
+            <section className="tc-face tc-front" inert={flipped}>
+              <div className="tc-art"><div className="tc-rays" /></div>
+              <img src={logo.url} alt={c.name} className="tc-logo" />
+              <div className="tc-rating"><b>99</b><span>{c.rating}</span></div>
+              <div className="tc-edition"><div>{c.edition}</div><div>{c.serial}</div></div>
+              <div className="tc-plate">
+                <h1>{c.name}</h1>
+                <p>{c.tag}</p>
+                <div className="tc-rule" />
+                <div className="tc-stats">
+                  {c.stats.map(([v, l], i) => <div key={l} style={{ animationDelay: `${0.9 + i * 0.08}s` }}><b>{v}</b><span>{l}</span></div>)}
+                </div>
+              </div>
+              <div className="tc-hint"><i>↻</i> {c.hint}</div>
+              <div className="tc-frame" />
+              <div className="tc-sparkle" />
+              <div className="tc-foil" />
+              <div className="tc-glare" />
+            </section>
+
+            <section className="tc-face tc-back" inert={!flipped}>
+              <div className="tc-back-inner">
+                <div className="tc-back-head">
+                  <div><h2 className="text-2xl font-black">{c.backTitle}</h2><span className="text-xs font-bold text-primary" dir="ltr">{HANDLE}</span></div>
+                  <img src={logo.url} alt="" className="h-11 w-11 object-contain" />
+                </div>
+                <div className="tc-rule" style={{ width: "100%" }} />
+                <nav className="flex flex-1 flex-col justify-center" aria-label={c.backTitle}>
+                  {c.links.map((l, i) => (
+                    <a key={l.key} href={l.href} target={l.key === "mail" ? undefined : "_blank"} rel="noreferrer" className={`tc-link tc-link-${l.key}`} style={{ animationDelay: `${0.25 + i * 0.07}s` }}>
+                      <span className="tc-link-icon"><LinkIcon k={l.key} /></span>
+                      <span className="min-w-0 flex-1"><span className="block text-base font-black">{l.title}</span><span className="block truncate text-xs text-muted-foreground" dir={l.key === "app" ? undefined : "ltr"}>{l.desc}</span></span>
+                      <ArrowUpRight className={`h-4 w-4 shrink-0 text-muted-foreground ${rtl ? "-scale-x-100" : ""}`} />
+                    </a>
+                  ))}
+                </nav>
+                <p className="text-center text-[10px] font-bold text-muted-foreground">{c.by}</p>
+              </div>
+              <div className="tc-frame" />
+              <div className="tc-foil" />
+              <div className="tc-glare" />
+            </section>
           </div>
-          <img src={logo.url} alt={c.name} className="links-original-logo mb-5 h-24 w-24 object-contain" />
-          <h1 className="links-name font-black">{c.name}<span>.</span></h1>
-          <p className="mt-2 text-base font-bold">{c.tag}</p>
-          <p className="mt-1 text-xs text-muted-foreground">{c.sub}</p>
-        </header>
-        <a href={APP_STORE} target="_blank" rel="noreferrer" className="links-app links-destination group relative block overflow-hidden p-6 text-primary-foreground">
-          <div aria-hidden className="links-app-stripes" />
-          <div className="relative flex items-start justify-between gap-4">
-            <AppleLogo className="h-8 w-8 shrink-0" />
-            <span className="text-xs font-bold">{c.platform}</span>
-          </div>
-          <div className="relative mt-5 flex items-end justify-between gap-3">
-            <div><span className="text-xs opacity-80">{c.appStore.kicker}</span><h2 className="text-3xl font-black">{c.appStore.title}</h2></div>
-            <ArrowUpRight className="links-arrow h-8 w-8 shrink-0" />
-          </div>
-          <div className="relative mt-4 flex items-center justify-between gap-3 border-t border-primary-foreground/25 pt-3">
-            <span className="max-w-[65%] text-xs opacity-80">{c.appStore.desc}</span>
-            <span className="text-xs font-bold">{c.appStore.cta}</span>
-          </div>
-        </a>
-        <nav className="links-destinations mt-6" aria-label={rtl ? "الروابط" : "Links"}>
-          {c.items.map((item, i) => {
-            const Icon = item.icon;
-            return <a key={item.href} href={item.href} target={i === 0 ? "_blank" : undefined} rel="noreferrer" className="links-row links-destination group flex items-center gap-4 border-b border-border py-5">
-              <span className="text-[10px] text-muted-foreground">{new Intl.NumberFormat(rtl ? "ar-KW" : "en", { minimumIntegerDigits: 2 }).format(i + 2)}</span>
-              <Icon className="h-5 w-5 shrink-0 text-primary" />
-              <div className="min-w-0 flex-1"><h2 className="text-xl font-black">{item.title}</h2><span className="text-xs text-muted-foreground" dir="ltr">{item.meta}</span></div>
-              <ArrowUpRight className="links-arrow h-5 w-5 shrink-0" />
-            </a>;
-          })}
-        </nav>
-        <section className="mt-8">
-          <div className="flex items-center justify-between"><h2 className="text-xs font-bold text-muted-foreground">{c.socialTitle}</h2><span className="text-xs font-bold" dir="ltr">{HANDLE}</span></div>
-          <div className="mt-4 grid grid-cols-2 gap-5">
-            {c.social.map((item, i) => <a key={item.href} href={item.href} target="_blank" rel="noreferrer" className={`links-network links-destination group border-t-2 pt-4 ${i === 0 ? "links-network-ig" : "links-network-x"}`}>
-              <div className="flex items-center justify-between">{i === 0 ? <Instagram className="h-6 w-6" /> : <XLogo className="h-5 w-5" />}<ArrowUpRight className="links-arrow h-4 w-4" /></div>
-              <h3 className="mt-4 text-base font-black">{item.name}</h3><p className="mt-1 text-xs text-muted-foreground">{item.desc}</p>
-            </a>)}
-          </div>
-        </section>
-        <footer className="mt-10 flex items-center gap-3 border-t border-border pt-5"><BrandLogo showWordmark={false} className="h-7 w-7 object-contain" /><p className="text-[10px] text-muted-foreground">{c.by}</p></footer>
+        </div>
+        <div className="tc-shadow" aria-hidden />
+
+        <div className="tc-actions mt-6 flex flex-col items-center gap-3">
+          <Button onClick={() => setFlipped((f) => !f)} variant="outline" className="gap-2 rounded-full px-6 font-bold">
+            <RotateCw className="h-4 w-4" />{flipped ? c.flipBack : c.flip}
+          </Button>
+          <a href={APP_STORE} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-bold text-background">
+            <AppleLogo className="h-4 w-4" />{c.links[0].title}
+          </a>
+        </div>
       </main>
     </div>
   );
