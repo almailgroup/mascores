@@ -1,7 +1,8 @@
 # Roadmap
-- [x] Zain PL historical standings from RSSSF with place labels (final rows)
-- [x] Hide Team of the Round / Stats for past seasons
-- [x] Awards filtered per season (hide on old seasons)
-- [x] Teams tab works for past seasons
-- [x] Fill missing historical match dates where source allows
-- [x] Title history as tap-to-open scrollable pop-up
+- [x] 2025/26 Zain PL match results (other source)
+- [x] AFC qualification labels in historical standings
+- [x] Per-group share button in standings
+- [x] Remove duplicate group name in table header
+- [x] Fix cut-off group names in standings share image
+- [x] Standings header "Competition season" linking to league (team/match pages)
+- [x] Fix title history pop-up error

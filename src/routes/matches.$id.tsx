@@ -854,7 +854,7 @@ function MatchStandings({ competitionId, season, liveTeamIds, highlightIds }: { 
     },
   });
   if (!q.data?.length) return <EmptyState title={tx("No standings yet")} />;
-  return <StandingsTable rows={q.data} labels={labels.data ?? []} highlightTeamIds={highlightIds} liveTeamIds={liveTeamIds} />;
+  return <StandingsTable showCompetition rows={q.data} labels={labels.data ?? []} highlightTeamIds={highlightIds} liveTeamIds={liveTeamIds} />;
 }
 
 
