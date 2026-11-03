@@ -39,12 +39,14 @@ export function useMatchGroupLabels(data: MatchWithTeams[]) {
   const map = q.data ?? {};
   return (m: MatchWithTeams) => {
     if (isKnockoutRound(m.round)) return null;
+    // Stage names (Regular Stage, Championship/Relegation Group) already say where the match belongs.
+    if (/regular|championship|relegation|stage/i.test(m.round ?? "")) return null;
     const season = m.season ?? "";
-    for (const teamId of [m.home_team_id, m.away_team_id]) {
-      if (!teamId) continue;
-      const hit = map[`${m.competition_id}|${season}|${teamId}`] ?? map[`${m.competition_id}||${teamId}`];
-      if (hit) return hit;
-    }
+    const groupOf = (teamId: string | null) => teamId ? (map[`${m.competition_id}|${season}|${teamId}`] ?? map[`${m.competition_id}||${teamId}`] ?? null) : null;
+    const home = groupOf(m.home_team_id), away = groupOf(m.away_team_id);
+    // Only label a group when both clubs are in it, so a cross-group fixture is never mislabelled.
+    if (home && (home === away || !m.away_team_id)) return home;
+    if (away && !m.home_team_id) return away;
     return null;
   };
 }

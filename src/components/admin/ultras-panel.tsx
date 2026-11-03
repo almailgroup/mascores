@@ -55,7 +55,7 @@ export function UltrasPanel({ isOwner = false }: { isOwner?: boolean }) {
             {isOwner && p.status !== "approved" && <button className={btnGhost} onClick={() => setStatus(p.id, "approved")}><Check className="h-3.5 w-3.5" /> Approve</button>}
             {isOwner && p.status !== "rejected" && <button className={btnGhost} onClick={() => setStatus(p.id, "rejected")}><X className="h-3.5 w-3.5" /> Reject</button>}
             <button className={btnGhost} onClick={() => setEditing(p)}>Edit</button>
-            <button className={btnDanger} onClick={async () => { await supabase.from("ultras_posts").delete().eq("id", p.id); refresh(); }}><Trash2 className="h-3.5 w-3.5" /></button>
+            <button className={btnDanger} onClick={async () => { if (!confirm("Delete this Rabta post?")) return; const { error, data } = await supabase.from("ultras_posts").delete().eq("id", p.id).select("id"); if (error || !data?.length) alert(error?.message ?? "You can’t delete this post."); qc.setQueryData<Post[]>(["ultras-posts"], (old) => (old ?? []).filter((x) => x.id !== p.id || !!error || !data?.length)); refresh(); qc.invalidateQueries({ queryKey: ["team-ultras"] }); }}><Trash2 className="h-3.5 w-3.5" /></button>
           </div>
         ))}
         {!posts.isLoading && (posts.data ?? []).length === 0 && <p className="text-sm text-muted-foreground">No ultras posts yet.</p>}

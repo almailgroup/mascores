@@ -144,7 +144,7 @@
   --radius: 0.625rem;
   --event-ink: oklch(0.2 0.03 260);
   --match-foreground: oklch(0.98 0.005 240);
-  --match-live: oklch(0.78 0.14 250);
+  --match-live: oklch(0.66 0.23 25);
   --lineup-turf: oklch(0.48 0.13 150);
   --lineup-turf-stripe: oklch(0.51 0.13 150);
   --lineup-marking: oklch(0.98 0.005 150 / 35%);
@@ -481,3 +481,21 @@ a, button, [role="button"] {
   a:active { filter: brightness(0.82); }
   .dark a:active { filter: brightness(1.25); }
 }
+
+/* Link page always renders in the light palette, whatever the app theme. */
+.links-page {
+  color-scheme: light;
+  --background: oklch(0.975 0.012 85);
+  --foreground: oklch(0.18 0.05 260);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.05 260);
+  --primary: oklch(0.55 0.22 260);
+  --primary-foreground: oklch(0.985 0.005 240);
+  --muted: oklch(0.95 0.015 85);
+  --muted-foreground: oklch(0.48 0.03 255);
+  --border: oklch(0.88 0.02 85);
+  --links-pitch: oklch(0.55 0.22 260 / 0.09);
+}
+@keyframes links-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.links-rise { animation: links-rise 0.6s cubic-bezier(.2,.8,.2,1) both; }
+@media (prefers-reduced-motion: reduce) { .links-rise { animation: none; } }

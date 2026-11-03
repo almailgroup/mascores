@@ -15,7 +15,7 @@ const ART: Record<string, string> = {
   penalty_miss: penaltyMiss.url, missed_penalty: penaltyMiss.url, own_goal: ownGoal.url,
   yellow: yellowCard.url, red: redCard.url, substitution: substitution.url, sub: substitution.url,
   injury_sub: injurySub.url, injury_substitution: injurySub.url,
-  var: varArt.url, VAR: varArt.url, note: noteArt.url, notes: noteArt.url,
+  var: varArt.url, VAR: varArt.url, goal_disallowed: varArt.url, red_cancelled: varArt.url, yellow_cancelled: varArt.url, penalty_cancelled: varArt.url, penalty_awarded: varArt.url, note: noteArt.url, notes: noteArt.url,
 };
 export function hasEventArt(type: string) { return type === "assist" || type === "second_yellow" || type in ART; }
 

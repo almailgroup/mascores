@@ -74,7 +74,36 @@ function FormStrip({ results }: { results: ("W" | "D" | "L")[] }) {
   );
 }
 
-export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds, liveTeamIds, modern = true, showCompetition = false }: {
+type LiveMatch = { home_team_id: string | null; away_team_id: string | null; home_score: number | null; away_score: number | null };
+
+/** Adds in-progress results to the table so points and positions move live; returns movement per team. */
+export function applyLiveResults(rows: PublicStandingRow[], live: LiveMatch[]) {
+  const moves = new Map<string, number>();
+  if (!live.length || rows.some((r) => (r as { is_final?: boolean }).is_final)) return { rows, moves, liveIds: [] as string[] };
+  const liveIds: string[] = [];
+  const next = rows.map((r) => ({ ...r }));
+  for (const m of live) {
+    const h = next.find((r) => r.team_id === m.home_team_id);
+    const a = next.find((r) => r.team_id === m.away_team_id && r.group_label === h?.group_label);
+    if (!h || !a) continue;
+    const hs = m.home_score ?? 0, as = m.away_score ?? 0;
+    liveIds.push(h.team_id, a.team_id);
+    h.played++; a.played++; h.gf += hs; h.ga += as; a.gf += as; a.ga += hs;
+    if (hs > as) { h.won++; a.lost++; h.points += 3; } else if (hs < as) { a.won++; h.lost++; a.points += 3; } else { h.drawn++; a.drawn++; h.points++; a.points++; }
+  }
+  if (!liveIds.length) return { rows, moves, liveIds };
+  const out: PublicStandingRow[] = [];
+  for (const [, groupRows] of grouped(rows)) {
+    const before = groupRows.map((r) => r.team_id);
+    const sorted = next.filter((r) => (r.group_label ?? null) === (groupRows[0].group_label ?? null))
+      .sort((x, y) => (y.points + (y.points_adjust ?? 0)) - (x.points + (x.points_adjust ?? 0)) || (y.gf - y.ga) - (x.gf - x.ga) || y.gf - x.gf || before.indexOf(x.team_id) - before.indexOf(y.team_id));
+    sorted.forEach((r, i) => { const d = before.indexOf(r.team_id) - i; if (d) moves.set(r.team_id, d); });
+    out.push(...sorted);
+  }
+  return { rows: out, moves, liveIds };
+}
+
+export function StandingsTable({ rows: savedRows, labels, highlightTeamId, highlightTeamIds, liveTeamIds, modern = true, showCompetition = false }: {
   showCompetition?: boolean;
   rows: PublicStandingRow[];
   labels: Label[];
@@ -85,6 +114,18 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
 }) {
   const tx = useTx();
   const num = useNum();
+  const liveQ = useQuery({
+    enabled: !!savedRows[0]?.competition_id,
+    queryKey: ["standings-live", savedRows[0]?.competition_id, savedRows[0]?.season],
+    refetchInterval: 30_000,
+    queryFn: async () => {
+      let q = supabase.from("matches").select("home_team_id,away_team_id,home_score,away_score").eq("competition_id", savedRows[0].competition_id).in("status", ["live", "ht"]);
+      if (savedRows[0].season) q = q.eq("season", savedRows[0].season);
+      return ((await q).data ?? []) as LiveMatch[];
+    },
+  });
+  const { rows, moves, liveIds } = applyLiveResults(savedRows, liveQ.data ?? []);
+  liveTeamIds = [...new Set([...(liveTeamIds ?? []), ...liveIds])];
   const [view, setView] = useState<View>("short");
   const shotRef = useRef<HTMLDivElement>(null);
   const form = useForm(rows, view === "form");
@@ -179,11 +220,12 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
                 <span className="flex items-center gap-1" title={label ? tx(label.label) : undefined}>
                   <span aria-label={label ? tx(label.label) : undefined} className="h-5 w-1 shrink-0 rounded-full" style={{ backgroundColor: label?.color ?? "transparent" }} />
                   <span className={`grid h-5 min-w-4 place-items-center ${modern ? "" : "rounded-full bg-muted"} text-[0.7rem] font-semibold tabular-nums`}>{num(index + 1)}</span>
+                  {moves.get(row.team_id) ? <span className={`text-[0.6rem] font-black leading-none ${moves.get(row.team_id)! > 0 ? "text-emerald-500" : "text-match-live"}`} aria-label={moves.get(row.team_id)! > 0 ? "Moved up" : "Moved down"}>{moves.get(row.team_id)! > 0 ? "▲" : "▼"}</span> : null}
                 </span>
                 <span className="flex min-w-0 items-center gap-1.5">
                   <TeamCrest name={row.team?.name} logo={row.team?.logo_url ?? null} className={modern && view === "short" ? "h-5 w-5 shrink-0" : "h-6 w-6 shrink-0"} />
                   <span className={`${modern ? "truncate text-[0.75rem]" : "truncate text-sm"} font-semibold`}>{tx((view === "full" ? row.team?.short_name || row.team?.name : row.team?.name || row.team?.short_name) || "—")}</span>
-                  {live && <span className="shrink-0 rounded-full bg-primary/20 px-1.5 py-0.5 text-[0.55rem] font-bold uppercase text-primary">{tx("Live")}</span>}
+                  {live && <span className="shrink-0 rounded-full bg-match-live px-1.5 py-0.5 text-[0.55rem] font-bold uppercase text-match-foreground">{tx("Live")}</span>}
                 </span>
                 {view === "full" && <>
                   <span className="text-center text-xs tabular-nums text-muted-foreground">{num(row.played)}</span>
@@ -203,7 +245,7 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
                   <span className="text-center text-xs font-black tabular-nums text-primary">{num(row.points + row.points_adjust)}</span>
                 </>}
               </>;
-              const cls = `grid ${cols} items-center gap-1 px-3 ${modern ? "py-2" : "py-2.5"} active:bg-muted/60 ${live ? "bg-primary/15" : selected ? "bg-primary/10" : ""}`;
+              const cls = `grid ${cols} items-center gap-1 px-3 ${modern ? "py-2" : "py-2.5"} active:bg-muted/60 ${live ? "bg-match-live/10" : selected ? "bg-primary/10" : ""}`;
               return row.team
                 ? <Link key={row.id} to="/teams/$id" params={{ id: row.team.id }} className={cls}>{inner}</Link>
                 : <div key={row.id} className={cls}>{inner}</div>;

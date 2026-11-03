@@ -8,6 +8,7 @@ import { useI18n, type Lang } from "@/lib/i18n";
 import { BrandLogo } from "@/components/brand-logo";
 import { Button } from "@/components/ui/button";
 import { useTx } from "@/lib/auto-translate";
+import { isNativeApp } from "@/lib/native-notify";
 
 const COMPLETED = "mas.setup.completed";
 
@@ -23,7 +24,8 @@ export function FirstRunSetup({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       // Existing installations with a saved language should not receive a new welcome.
-      if (localStorage.getItem(COMPLETED) || localStorage.getItem("mas.lang")) {
+      // The welcome is app-only; the website opens straight to the content.
+      if (!isNativeApp() || localStorage.getItem(COMPLETED) || localStorage.getItem("mas.lang")) {
         localStorage.setItem(COMPLETED, "1");
         setStage("done");
       } else setStage("teams");

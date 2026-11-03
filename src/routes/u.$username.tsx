@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { Loader2, Lock, BadgeCheck, UserRound, Settings, Grid3X3, Repeat2 } from 'lucide-react';
+import { Loader2, Lock, BadgeCheck, UserRound, Settings, Grid3X3, Repeat2, Mail, Phone } from 'lucide-react';
 import { AppShell, BackButton } from '@/components/app-shell';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/use-auth';
@@ -93,4 +93,4 @@ function ProfilePage() {
   </AppShell>;
 }
 
-function PublicContacts({userId}:{userId:string}){const q=useQuery({queryKey:['profile','contacts',userId],queryFn:async()=>{const {data}=await supabase.rpc('public_contacts',{_user:userId});return (data as {phone:string|null;email:string|null}[]|null)?.[0]??null;}});const c=q.data;if(!c||(!c.phone&&!c.email))return null;return <div className="mt-2 flex flex-col gap-1 text-sm" data-no-gesture>{c.phone&&<a href={`tel:${c.phone}`} className="text-primary break-all">📞 {c.phone}</a>}{c.email&&<a href={`mailto:${c.email}`} className="text-primary break-all">✉️ {c.email}</a>}</div>;}
+function PublicContacts({userId}:{userId:string}){const q=useQuery({queryKey:['profile','contacts',userId],queryFn:async()=>{const {data}=await supabase.rpc('public_contacts',{_user:userId});return (data as {phone:string|null;email:string|null}[]|null)?.[0]??null;}});const c=q.data;if(!c||(!c.phone&&!c.email))return null;return <div className="mt-2 flex flex-col gap-1 text-sm" data-no-gesture>{c.phone&&<a href={`tel:${c.phone}`} className="inline-flex items-center gap-1.5 text-primary break-all"><Phone className="h-4 w-4 shrink-0"/>{c.phone}</a>}{c.email&&<a href={`mailto:${c.email}`} className="inline-flex items-center gap-1.5 text-primary break-all"><Mail className="h-4 w-4 shrink-0"/>{c.email}</a>}</div>;}
