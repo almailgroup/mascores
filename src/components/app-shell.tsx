@@ -140,7 +140,7 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
       <div data-browse-glow className="pointer-events-none fixed inset-0 opacity-40 transition-opacity [background:radial-gradient(circle_at_10%_-10%,color-mix(in_oklab,var(--primary)_25%,transparent),transparent_55%),radial-gradient(circle_at_100%_100%,color-mix(in_oklab,var(--primary)_15%,transparent),transparent_60%)]" />
 
       <div data-browse-page>
-      {!bare && <header data-shell-header className={`${hideHeader ? "hidden md:block " : ""}sticky top-0 z-40 border-b border-border/60 bg-background/90 pt-[env(safe-area-inset-top)] backdrop-blur-md`}>
+      {!bare && <header data-shell-header className={`${hideHeader ? "relative hidden md:block" : "sticky top-0"} z-40 border-b border-border/60 bg-background/90 pt-[env(safe-area-inset-top)] backdrop-blur-md`}>
         <div dir="ltr" className="mx-auto grid min-h-16 max-w-7xl grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 py-2 sm:px-6">
           <div className="col-start-3 row-start-1 flex items-center gap-1"><Link to="/voice" aria-label={t("nav.voice")} className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-border bg-card text-primary"><Radio className="h-5 w-5" /></Link>{user && <SocialActivityButton />}<Link to="/settings" aria-label={t("nav.settings")} className="col-start-3 row-start-1 grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full border border-border bg-card text-sm font-bold text-primary">
             {user && profile.data?.avatar_url ? <img src={profile.data.avatar_url} alt="" className="h-full w-full object-cover" /> : user ? <span>{initials}</span> : <User className="h-6 w-6" />}
