@@ -481,3 +481,18 @@ a, button, [role="button"] {
   a:active { filter: brightness(0.82); }
   .dark a:active { filter: brightness(1.25); }
 }
+
+/* Link page always renders in the light palette, whatever the app theme. */
+.links-page {
+  color-scheme: light;
+  --background: oklch(0.975 0.012 85);
+  --foreground: oklch(0.18 0.05 260);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.05 260);
+  --primary: oklch(0.55 0.22 260);
+  --primary-foreground: oklch(0.985 0.005 240);
+  --muted: oklch(0.95 0.015 85);
+  --muted-foreground: oklch(0.48 0.03 255);
+  --border: oklch(0.88 0.02 85);
+  --links-pitch: oklch(0.55 0.22 260 / 0.09);
+}
