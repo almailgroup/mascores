@@ -70,3 +70,4 @@
 - iOS hides the web-only keyboard form-assistant bar via `FormAssistantBarHider` in ios/App/App/SceneDelegate.swift (WKContentView class swap — WKWebView has no public API for it); it only runs in the native shell, never in Safari, and any new iOS source file must be registered in project.pbxproj (existing files are already listed).
 
 - Android shell lives in android/ (Capacitor 8, appId com.almailgroup.mascores, target SDK 36); `cap add/sync android` needs MAS_APP_URL set; release builds sign with android/keystore.properties (key outside VCS under android/keystore/) — never commit or rotate that key casually, every Play upload must reuse it.
+- Links-page motion stays CSS-driven, scoped to `.links-page`, and respects reduced-motion preferences to keep animation lightweight and isolated.

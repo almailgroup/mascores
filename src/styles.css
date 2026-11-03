@@ -501,24 +501,81 @@ a, button, [role="button"] {
   --links-ig-b: oklch(0.7 0.21 350);
   --links-ig-c: oklch(0.55 0.22 305);
   --links-x-bg: oklch(0.17 0.02 260);
+  --links-lime: oklch(0.78 0.18 135);
+  --links-ink: oklch(1 0 0);
+  --links-card-shadow: 0 16px 32px -20px color-mix(in oklab, var(--primary) 42%, transparent);
+  --links-feature-shadow: 0 22px 44px -20px color-mix(in oklab, var(--primary) 80%, transparent);
+  --links-logo-shadow: 0 18px 40px -18px color-mix(in oklab, var(--primary) 45%, transparent);
+  letter-spacing: 0;
 }
 @keyframes links-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 .links-rise { animation: links-rise 0.6s cubic-bezier(.2,.8,.2,1) both; }
-/* Floodlight glow behind the header. */
-.links-glow {
-  background: radial-gradient(60rem 28rem at 50% -12rem, color-mix(in oklab, var(--primary) 14%, transparent), transparent 72%);
-}
 /* Sheen across the featured App Store card. */
 .links-shine {
   background: radial-gradient(24rem 14rem at 110% -30%, color-mix(in oklab, var(--primary-foreground) 38%, transparent), transparent 70%);
 }
 /* Instagram brand gradient and X badge; white glyphs stay legible on both. */
 .links-ig {
-  color: oklch(1 0 0);
+  color: var(--links-ink);
   background: linear-gradient(135deg, var(--links-ig-a), var(--links-ig-b) 55%, var(--links-ig-c));
 }
 .links-x {
-  color: oklch(1 0 0);
+  color: var(--links-ink);
   background: var(--links-x-bg);
 }
-@media (prefers-reduced-motion: reduce) { .links-rise { animation: none; } }
+@keyframes links-orbit { to { transform: rotate(360deg); } }
+@keyframes links-logo-float {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  50% { transform: translateY(-6px) rotate(3deg); }
+}
+@keyframes links-logo-pop {
+  0% { transform: scale(.65) rotate(-16deg); opacity: 0; }
+  65% { transform: scale(1.07) rotate(3deg); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes links-letter {
+  from { opacity: 0; transform: translateY(24px) rotate(8deg); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes links-sweep {
+  0%, 65% { transform: translateX(-180%) skewX(-20deg); }
+  100% { transform: translateX(480%) skewX(-20deg); }
+}
+@keyframes links-ticker { to { transform: translateX(-50%); } }
+.links-emblem { animation: links-logo-pop .85s cubic-bezier(.2,.8,.2,1) both; }
+.links-emblem-ring { position: absolute; inset: 0; border: 1px dashed var(--border); border-radius: 50%; }
+.links-orbit { position: absolute; inset: 0; z-index: 2; pointer-events: none; animation: links-orbit 18s linear infinite; }
+.links-orbit-ball { position: absolute; top: -7px; left: calc(50% - 13px); display: grid; width: 26px; height: 26px; place-items: center; font-size: 20px; background: var(--background); border-radius: 50%; }
+.links-logo { box-shadow: var(--links-logo-shadow); animation: links-logo-float 6s ease-in-out 1s infinite; }
+.links-logo:hover { background: var(--card); }
+.links-logo:active { scale: .92; }
+.links-wordmark span { display: inline-block; animation: links-letter .65s cubic-bezier(.2,.8,.2,1) both; }
+.links-wordmark span:nth-child(2) { animation-delay: 50ms; }
+.links-wordmark span:nth-child(3) { animation-delay: 100ms; }
+.links-wordmark span:nth-child(4) { animation-delay: 150ms; }
+.links-wordmark span:nth-child(5) { animation-delay: 200ms; }
+.links-wordmark span:nth-child(6) { animation-delay: 250ms; }
+.links-wordmark span:nth-child(7) { animation-delay: 300ms; }
+.links-wordmark span:nth-child(8) { animation-delay: 350ms; }
+.links-field { animation: links-letter 1.2s ease both; }
+.links-feature { box-shadow: var(--links-feature-shadow); }
+.links-feature::after { content: ""; position: absolute; inset-block: 0; left: 0; width: 28%; background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--primary-foreground) 16%, transparent), transparent); pointer-events: none; animation: links-sweep 7s ease-in-out 1.5s infinite; }
+.links-interactive { transition: translate .35s cubic-bezier(.2,.8,.2,1), scale .25s ease, box-shadow .35s ease, border-color .35s ease; }
+.links-interactive:active { scale: .97; }
+.links-interactive:focus-visible { outline: 3px solid var(--primary); outline-offset: 4px; }
+.links-ticket::before { content: ""; position: absolute; inset-block: 18%; inset-inline-start: 0; width: 3px; background: var(--links-lime); transform: scaleY(0); transition: transform .3s ease; }
+.links-social > div:first-child { transition: transform .5s cubic-bezier(.2,.8,.2,1); }
+.links-language svg { transition: transform .45s ease; }
+.links-language:active svg { transform: rotate(25deg); }
+.links-ticker-track { animation: links-ticker 28s linear infinite; }
+.links-ticker-star { color: var(--links-lime); font-size: 18px; }
+.links-ticker:hover .links-ticker-track { animation-play-state: paused; }
+@media (hover: hover) {
+  .links-interactive:hover { translate: 0 -4px; box-shadow: var(--links-card-shadow); border-color: var(--primary); }
+  .links-feature:hover { box-shadow: var(--links-feature-shadow); }
+  .links-ticket:hover::before { transform: scaleY(1); }
+  .links-social:hover > div:first-child { transform: translateY(-3px) rotate(-8deg) scale(1.1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .links-page *, .links-page *::before, .links-page *::after { animation: none !important; transition: none !important; }
+}

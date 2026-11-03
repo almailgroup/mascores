@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Globe, Mail, ArrowUpRight, Instagram, Languages } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
+import { Button } from "@/components/ui/button";
 
 const APP_STORE = "https://apps.apple.com/kw/app/mascores/id6819263516";
 const HANDLE = "@mascoreslive";
@@ -83,36 +84,42 @@ export const Route = createFileRoute("/links")({
 
 function LinksPage() {
   const [lang, setLang] = useState<"en" | "ar">("en");
+  const [logoReplay, setLogoReplay] = useState(0);
   const c = COPY[lang];
   const rtl = lang === "ar";
   return (
     <div dir={rtl ? "rtl" : "ltr"} className="links-page relative min-h-screen overflow-hidden bg-background text-foreground">
-      {/* Centre-circle, halfway line and floodlight glow, like looking down at a pitch. */}
+      {/* A drawn centre circle gives the page its football identity. */}
       <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[36rem]">
-        <div className="links-glow absolute inset-0" />
-        <div className="absolute left-1/2 top-40 h-[26rem] w-[26rem] -translate-x-1/2 rounded-full border-[3px] border-[var(--links-pitch)]" />
+        <div className="links-field absolute left-1/2 top-40 h-[26rem] w-[26rem] -translate-x-1/2 rounded-full border-[3px] border-[var(--links-pitch)]" />
         <div className="absolute inset-x-0 top-[22.5rem] h-[3px] bg-[var(--links-pitch)]" />
         <div className="absolute left-1/2 top-[22.15rem] h-3 w-3 -translate-x-1/2 rounded-full bg-[var(--links-pitch)]" />
       </div>
 
       <main className="relative mx-auto flex min-h-screen max-w-md flex-col px-5 pb-10 pt-[calc(env(safe-area-inset-top)+1.25rem)]">
         <div className="flex justify-end">
-          <button onClick={() => setLang(lang === "en" ? "ar" : "en")} className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-bold shadow-sm active:scale-95 transition-transform">
+          <Button variant="outline" onClick={() => setLang(lang === "en" ? "ar" : "en")} className="links-language h-10 gap-2 rounded-full border-border bg-card px-4 text-sm font-bold shadow-sm">
             <Languages className="h-4 w-4 text-primary" />{c.toggle}
-          </button>
+          </Button>
         </div>
 
         <header className={`mt-7 flex flex-col items-center text-center transition-all duration-700 links-rise`}>
-          <div className="grid h-28 w-28 place-items-center rounded-[2rem] border border-border bg-card shadow-[0_18px_40px_-18px_color-mix(in_oklab,var(--primary)_45%,transparent)] rotate-[-4deg]">
-            <BrandLogo showWordmark={false} className="h-20 w-20 rotate-[4deg] object-contain" />
+          <div key={logoReplay} className="links-emblem relative grid h-36 w-36 place-items-center">
+            <span aria-hidden className="links-orbit"><span className="links-orbit-ball">⚽</span></span>
+            <span aria-hidden className="links-emblem-ring" />
+            <Button variant="ghost" aria-label="MaScores" onClick={() => setLogoReplay(value => value + 1)} className="links-logo h-28 w-28 rounded-[2rem] border border-border bg-card p-0">
+              <BrandLogo showWordmark={false} className="h-20 w-20 object-contain" />
+            </Button>
           </div>
-          <h1 className="mt-6 text-4xl font-black tracking-tight">MaScores</h1>
+          <h1 className="links-wordmark mt-3 text-4xl font-black" aria-label="MaScores" dir="ltr">
+            {"MaScores".split("").map((letter, i) => <span key={i} aria-hidden>{letter}</span>)}
+          </h1>
           <p className="mt-2 text-lg font-bold text-primary">{c.tag}</p>
           <p className="mt-1 text-sm text-muted-foreground">{c.sub}</p>
         </header>
 
         {/* Halfway-line divider with the match ball. */}
-        <div aria-hidden className="mt-9 flex items-center gap-3 links-rise" style={{ animationDelay: "80ms" }}>
+        <div aria-hidden className="links-kickoff mt-9 flex items-center gap-3 links-rise" style={{ animationDelay: "80ms" }}>
           <span className="h-px flex-1 bg-border" />
           <span className="grid h-7 w-7 place-items-center rounded-full border-2 border-border bg-card">
             <span className="h-2.5 w-2.5 rounded-full bg-primary" />
@@ -123,7 +130,7 @@ function LinksPage() {
         {/* Featured: App Store. */}
         <a href={APP_STORE} target="_blank" rel="noreferrer"
           style={{ animationDelay: "150ms" }}
-          className="links-rise group relative mt-6 block overflow-hidden rounded-[2rem] bg-primary p-5 text-primary-foreground shadow-[0_22px_44px_-20px_color-mix(in_oklab,var(--primary)_80%,transparent)] active:scale-[0.98] transition-transform">
+          className="links-feature links-interactive links-rise group relative mt-6 block overflow-hidden rounded-[2rem] bg-primary p-5 text-primary-foreground">
           <div aria-hidden className="links-shine pointer-events-none absolute inset-0" />
           <div className="relative flex items-center gap-4">
             <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-primary-foreground/15 ring-1 ring-inset ring-primary-foreground/25 backdrop-blur-sm">
@@ -151,7 +158,7 @@ function LinksPage() {
             return (
               <a key={item.href} href={item.href} target={item.href.startsWith("mailto") ? undefined : "_blank"} rel="noreferrer"
                 style={{ animationDelay: `${260 + i * 90}ms` }}
-                className={`group relative flex items-stretch overflow-hidden rounded-3xl border border-border bg-card transition-all duration-500 active:scale-[0.98] links-rise`}>
+                className={`links-ticket links-interactive group relative flex items-stretch overflow-hidden rounded-3xl border border-border bg-card links-rise`}>
                 <div className={`flex w-16 shrink-0 flex-col items-center justify-center gap-1 border-dashed ${rtl ? "border-l" : "border-r"} border-border`}>
                   <span className="text-[0.65rem] font-black tracking-widest text-muted-foreground">{item.n}</span>
                   <Icon className="h-6 w-6 text-primary" />
@@ -181,7 +188,7 @@ function LinksPage() {
               return (
                 <a key={item.href} href={item.href} target="_blank" rel="noreferrer"
                   style={{ animationDelay: `${500 + i * 90}ms` }}
-                  className="group links-rise relative overflow-hidden rounded-3xl border border-border bg-card p-4 text-center transition-transform active:scale-[0.98]">
+                  className="links-social links-interactive group links-rise relative overflow-hidden rounded-3xl border border-border bg-card p-4 text-center">
                   <div className={`mx-auto grid h-12 w-12 place-items-center rounded-2xl ${ig ? "links-ig" : "links-x"}`}>
                     {ig ? <Instagram className="h-6 w-6" /> : <XLogo className="h-5 w-5" />}
                   </div>
@@ -194,7 +201,12 @@ function LinksPage() {
           </div>
         </section>
 
-        <footer className="mt-auto pt-12 text-center text-xs font-semibold text-muted-foreground">{c.by}</footer>
+        <div aria-hidden className="links-ticker mt-8 overflow-hidden border-y border-border py-3" dir="ltr">
+          <div className="links-ticker-track flex w-max items-center gap-6 text-xs font-bold text-primary">
+            {Array.from({ length: 4 }, (_, i) => <span key={i} className="flex items-center gap-6"><span>MaScores</span><span className="links-ticker-star">✦</span><span>{HANDLE}</span><span className="links-ticker-star">✦</span></span>)}
+          </div>
+        </div>
+        <footer className="mt-auto pt-8 text-center text-xs font-semibold text-muted-foreground">{c.by}</footer>
       </main>
     </div>
   );
