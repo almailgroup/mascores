@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Globe, Mail, ArrowUpRight, Instagram, Languages } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { Button } from "@/components/ui/button";
+import logo from "@/assets/logo-mark-v2.png.asset.json";
 
 const APP_STORE = "https://apps.apple.com/kw/app/mascores/id6819263516";
 const HANDLE = "@mascoreslive";
@@ -25,6 +26,8 @@ function XLogo({ className }: { className?: string }) {
 
 const COPY = {
   en: {
+    name: "MaScores",
+    platform: "For iPhone",
     tag: "Kuwaiti football, live",
     sub: "Scores · Standings · Lineups · News",
     appStore: {
@@ -46,11 +49,13 @@ const COPY = {
     toggle: "العربية",
   },
   ar: {
+    name: "ما سكورز",
+    platform: "للآيفون",
     tag: "الكرة الكويتية مباشرة",
     sub: "النتائج · الترتيب · التشكيلات · الأخبار",
     appStore: {
       kicker: "حمّل التطبيق من",
-      title: "آب ستور",
+      title: "متجر آبل",
       desc: "تنبيهات الأهداف والنتائج المباشرة على آيفونك",
       cta: "احصل على التطبيق",
     },
@@ -84,36 +89,17 @@ export const Route = createFileRoute("/links")({
 
 function LinksPage() {
   const [lang, setLang] = useState<"en" | "ar">("en");
-  const [signal, setSignal] = useState(0);
   const c = COPY[lang];
   const rtl = lang === "ar";
   return (
-    <div dir={rtl ? "rtl" : "ltr"} className="links-page min-h-screen bg-background text-foreground">
+    <div lang={lang} dir={rtl ? "rtl" : "ltr"} className="links-page min-h-screen bg-background text-foreground">
       <main className="links-layout mx-auto max-w-2xl px-6 pb-8">
-        <div className="links-topline flex items-center justify-between border-b border-border py-4">
-          <span className="text-xs font-bold" dir="ltr">MA / KUWAIT</span>
+        <div className="links-topline flex items-center justify-end py-4">
           <Button variant="ghost" onClick={() => setLang(lang === "en" ? "ar" : "en")} className="gap-2 text-xs font-bold"><Languages className="h-4 w-4" />{c.toggle}</Button>
         </div>
         <header className="links-identity relative pt-7 pb-7">
-          <div key={signal} className="links-signal relative" dir="ltr">
-            <svg aria-hidden viewBox="0 0 600 230" className="links-signal-art">
-              <g className="links-signal-grid" fill="none" stroke="currentColor">
-                <path d="M0 36H600M0 115H600M0 194H600M70 0V230M300 0V230M530 0V230" />
-                <path d="M0 115H70L160 36H255L345 194H440L530 115H600" className="links-route-line" />
-              </g>
-              <g className="links-signal-mark" fill="none" stroke="currentColor" strokeWidth="20" strokeLinejoin="miter">
-                <path d="M170 174L205 55L248 115L299 55L264 174" />
-                <path d="M310 174L378 55L413 174M337 132H399" />
-              </g>
-              <path className="links-signal-accent" d="M426 158L446 174H422Z" />
-              <g className="links-signal-nodes"><circle cx="70" cy="115" r="5"/><circle cx="530" cy="115" r="5"/></g>
-            </svg>
-            <Button variant="ghost" className="links-replay absolute bottom-1 right-0 h-10 w-10 rounded-full border border-border p-0" aria-label={rtl ? "إعادة الحركة" : "Replay animation"} onClick={() => setSignal(value => value + 1)}><ArrowUpRight className="h-4 w-4" /></Button>
-          </div>
-          <div className="links-name-row mt-2 flex items-end justify-between gap-3">
-            <h1 className="links-name font-black" dir="ltr">MaScores<span>.</span></h1>
-            <span className="links-edition pb-2 text-[10px] font-bold" dir="ltr">EST. KUWAIT</span>
-          </div>
+          <img src={logo.url} alt={c.name} className="links-original-logo mb-5 h-24 w-24 object-contain" />
+          <h1 className="links-name font-black">{c.name}<span>.</span></h1>
           <p className="mt-2 text-base font-bold">{c.tag}</p>
           <p className="mt-1 text-xs text-muted-foreground">{c.sub}</p>
         </header>
@@ -121,7 +107,7 @@ function LinksPage() {
           <div aria-hidden className="links-app-stripes" />
           <div className="relative flex items-start justify-between gap-4">
             <AppleLogo className="h-8 w-8 shrink-0" />
-            <span className="text-[10px] font-bold" dir="ltr">01 / iOS</span>
+            <span className="text-xs font-bold">{c.platform}</span>
           </div>
           <div className="relative mt-5 flex items-end justify-between gap-3">
             <div><span className="text-xs opacity-80">{c.appStore.kicker}</span><h2 className="text-3xl font-black">{c.appStore.title}</h2></div>
@@ -136,7 +122,7 @@ function LinksPage() {
           {c.items.map((item, i) => {
             const Icon = item.icon;
             return <a key={item.href} href={item.href} target={i === 0 ? "_blank" : undefined} rel="noreferrer" className="links-row links-destination group flex items-center gap-4 border-b border-border py-5">
-              <span className="text-[10px] text-muted-foreground" dir="ltr">0{i + 2}</span>
+              <span className="text-[10px] text-muted-foreground">{new Intl.NumberFormat(rtl ? "ar-KW" : "en", { minimumIntegerDigits: 2 }).format(i + 2)}</span>
               <Icon className="h-5 w-5 shrink-0 text-primary" />
               <div className="min-w-0 flex-1"><h2 className="text-xl font-black">{item.title}</h2><span className="text-xs text-muted-foreground" dir="ltr">{item.meta}</span></div>
               <ArrowUpRight className="links-arrow h-5 w-5 shrink-0" />
