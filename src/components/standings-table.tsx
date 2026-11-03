@@ -125,9 +125,6 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
       });
   const groupList = grouped(rows);
   return <div ref={shotRef} className="space-y-4">
-    {showCompetition && competition.data && <Link to="/competitions/$slug" params={{ slug: competition.data.slug }} className="block text-base font-black hover:text-primary">
-      {tx(competition.data.name)}{rows[0]?.season ? ` ${num(rows[0].season)}` : ""}
-    </Link>}
     <div className="flex items-center justify-between gap-2">
     <div className={modern ? "inline-flex gap-1 text-xs font-semibold" : "inline-flex rounded-full border border-border bg-card p-1 text-xs font-semibold"}>
       {views.map((item) => (
