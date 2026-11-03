@@ -13,4 +13,5 @@
 - [x] Match standings show only the teams' group
 - [x] Link-in-bio page (light, EN/AR toggle, App Store link)
 - [x] 2025/26 relegation group: Kuwait SC vs Al Nasr mistake
-- [ ] Remove Team of the Round 'top rated players' pop-up
+- [x] Remove Team of the Round 'top rated players' pop-up
+- [x] Red tab underline on match page restored to blue

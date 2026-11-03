@@ -16,7 +16,6 @@ export function CompetitionRoundTeam({ competitionId, season }: { competitionId:
   const tx = useTx();
   const num = useNum();
   const [selected, setSelected] = useState("");
-  const [showInfo, setShowInfo] = useState(true);
   const rounds = useQuery({
     queryKey: ["competition-round-team", competitionId, season],
     queryFn: async () => {
