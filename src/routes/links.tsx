@@ -174,7 +174,7 @@ function LinksPage() {
                   {c.links.map((l, i) => (
                     <a key={l.key} href={l.href} target={l.key === "mail" ? undefined : "_blank"} rel="noreferrer" className={`tc-link tc-link-${l.key}`} style={{ animationDelay: `${0.25 + i * 0.07}s` }}>
                       <span className="tc-link-icon"><LinkIcon k={l.key} /></span>
-                      <span className="min-w-0 flex-1"><span className="block text-base font-black">{l.title}</span><span className="block truncate text-xs text-muted-foreground" dir={l.key === "app" ? undefined : "ltr"}>{l.desc}</span></span>
+                      <span className="min-w-0 flex-1"><span className="block text-base font-black">{l.title}</span><span className="block truncate text-xs text-muted-foreground"><bdi>{l.desc}</bdi></span></span>
                       <ArrowUpRight className={`h-4 w-4 shrink-0 text-muted-foreground ${rtl ? "-scale-x-100" : ""}`} />
                     </a>
                   ))}

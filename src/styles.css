@@ -554,14 +554,14 @@ a, button, [role="button"] {
 .tc-art {
   position: absolute; inset: 0 0 46% 0; overflow: hidden;
   background:
-    repeating-conic-gradient(from 0deg at 50% 62%, color-mix(in oklab, var(--primary) 16%, transparent) 0 6deg, transparent 6deg 12deg),
+    repeating-conic-gradient(from 0deg at 50% 55%, color-mix(in oklab, var(--primary) 16%, transparent) 0 6deg, transparent 6deg 12deg),
     radial-gradient(80% 80% at 50% 62%, color-mix(in oklab, var(--primary) 22%, var(--card)), var(--card));
 }
 .tc-art::after { content: ""; position: absolute; inset: auto 0 0; height: 40%; background: linear-gradient(to top, var(--card), transparent); }
 .tc-rays { position: absolute; inset: -40%; background: repeating-conic-gradient(from 0deg at 50% 50%, color-mix(in oklab, var(--tc-gold) 22%, transparent) 0 4deg, transparent 4deg 16deg); animation: tc-spin 40s linear infinite; }
 @keyframes tc-spin { to { transform: rotate(1turn); } }
-.tc-logo { position: absolute; left: 50%; top: 56%; width: 46%; transform: translate(-50%, -50%) translateZ(40px); filter: drop-shadow(0 14px 18px color-mix(in oklab, var(--primary) 40%, transparent)); animation: tc-float 4s ease-in-out infinite; }
-@keyframes tc-float { 50% { transform: translate(-50%, -54%) translateZ(40px); } }
+.tc-logo { position: absolute; left: 50%; top: 31%; width: 48%; transform: translate(-50%, -50%) translateZ(40px); filter: drop-shadow(0 14px 18px color-mix(in oklab, var(--primary) 40%, transparent)); animation: tc-float 4s ease-in-out infinite; }
+@keyframes tc-float { 50% { transform: translate(-50%, -56%) translateZ(40px); } }
 .tc-rating { position: absolute; top: 24px; inset-inline-start: 26px; z-index: 2; line-height: .9; text-align: center; }
 .tc-rating b { display: block; font-size: 46px; font-weight: 900; background: linear-gradient(160deg, var(--tc-gold-deep), var(--tc-gold), var(--tc-gold-deep)); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .tc-rating span { font-size: 11px; font-weight: 800; color: var(--muted-foreground); }
