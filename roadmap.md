@@ -6,3 +6,5 @@
 - [x] Fix cut-off group names in standings share image
 - [x] Standings header "Competition season" linking to league (team/match pages)
 - [x] Fix title history pop-up error
+- [x] Standings league name placed directly above the table like Sofascore (removed duplicate tiny header name)
+- [x] Season pickers sorted newest-first everywhere

@@ -125,9 +125,6 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
       });
   const groupList = grouped(rows);
   return <div ref={shotRef} className="space-y-4">
-    {showCompetition && competition.data && <Link to="/competitions/$slug" params={{ slug: competition.data.slug }} className="block text-base font-black hover:text-primary">
-      {tx(competition.data.name)}{rows[0]?.season ? ` ${num(rows[0].season)}` : ""}
-    </Link>}
     <div className="flex items-center justify-between gap-2">
     <div className={modern ? "inline-flex gap-1 text-xs font-semibold" : "inline-flex rounded-full border border-border bg-card p-1 text-xs font-semibold"}>
       {views.map((item) => (
@@ -143,6 +140,9 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
       render={() => renderCard(grouped(rows))}
     />
     </div>
+    {showCompetition && competition.data && <Link to="/competitions/$slug" params={{ slug: competition.data.slug }} className="block text-[1.35rem] font-black leading-tight hover:text-primary">
+      {tx(competition.data.name)}{rows[0]?.season ? ` ${num(rows[0].season)}` : ""}
+    </Link>}
     {groupList.map(([group, groupRows]) => {
       const positionLabel = (index: number) => labels.find((label) => (label.group_label ?? null) === group && label.position === index + 1)
         ?? labels.find((label) => !label.group_label && label.position === index + 1);
@@ -161,9 +161,9 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
           <div className={`grid ${cols} items-center gap-1 ${modern ? "bg-card" : "bg-muted/40"} px-3 py-2 text-[0.6rem] font-semibold text-muted-foreground`}>
             <span />
             <span className="flex min-w-0 items-center gap-1.5">
-              {competition.data
-                ? <Link to="/competitions/$slug" params={{ slug: competition.data.slug }} className="truncate text-[0.7rem] font-bold text-foreground hover:text-primary">{group ? tx(group) : `${tx(competition.data.name)}${rows[0]?.season ? ` ${num(rows[0].season)}` : ""}`}</Link>
-                : group && <span className="truncate text-[0.7rem] font-bold text-foreground">{tx(group)}</span>}
+              {group && (competition.data
+                ? <Link to="/competitions/$slug" params={{ slug: competition.data.slug }} className="truncate text-[0.7rem] font-bold text-foreground hover:text-primary">{tx(group)}</Link>
+                : <span className="truncate text-[0.7rem] font-bold text-foreground">{tx(group)}</span>)}
               {group && groupList.length > 1 && <ShareCardButton iconOnly onSurface title={`${shareTitle} · ${tx(group)}`} render={() => renderCard([[group, groupRows]])} />}
             </span>
             {view === "full" && <><span className="text-center">P</span><span className="text-center">W</span><span className="text-center">D</span><span className="text-center">L</span><span className="text-center">GLS</span><span className="text-center">GD</span><span className="text-center">PTS</span></>}

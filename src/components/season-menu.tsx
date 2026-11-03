@@ -7,7 +7,20 @@ import { useTx } from "@/lib/auto-translate";
 /**
  * In-app season picker. `onHero` renders it for placement on a coloured
  * competition hero, where the default card styling would disappear.
- */
+  */
+function seasonStartYear(season: string) {
+  const full = season.match(/^(\d{4})/);
+  if (full) return Number(full[1]);
+  const short = season.match(/^(\d{2})\s*[/-]/);
+  if (short) return 2000 + Number(short[1]);
+  return -1;
+}
+
+/** Newest-first season list, whatever order the caller supplies. */
+function sortedSeasons(seasons: string[]) {
+  return [...seasons].sort((a, b) => seasonStartYear(b) - seasonStartYear(a) || a.localeCompare(b));
+}
+
 export function SeasonMenu({ seasons, value, onChange, footer, onHero = false, label = "Season", formatValue, renderIcon, className = "" }: {
   seasons: string[];
   value: string | null | undefined;
@@ -32,7 +45,7 @@ export function SeasonMenu({ seasons, value, onChange, footer, onHero = false, l
     </DropdownMenuTrigger>
     <DropdownMenuContent align="start" sideOffset={8} collisionPadding={12} className="glass-picker glass-picker-menu z-[100] max-h-72 w-48 max-w-[70vw] overflow-y-auto rounded-lg p-1.5 text-popover-foreground">
       <div className="px-2.5 pb-2 pt-1 text-[0.65rem] font-semibold text-muted-foreground">{tx(label)}</div>
-      {seasons.map((season) => <DropdownMenuItem key={season} onSelect={() => onChange(season)} className={`min-h-9 gap-3 rounded-md px-2.5 text-xs ${season === value ? "bg-muted font-semibold" : "font-medium"}`}>
+      {sortedSeasons(seasons).map((season) => <DropdownMenuItem key={season} onSelect={() => onChange(season)} className={`min-h-9 gap-3 rounded-md px-2.5 text-xs ${season === value ? "bg-muted font-semibold" : "font-medium"}`}>
         {renderIcon?.(season)}
         <span dir={label === "Season" ? "ltr" : undefined} className="flex-1">{display(season)}</span>{season === value && <Check className="h-3.5 w-3.5 text-foreground" />}
       </DropdownMenuItem>)}
