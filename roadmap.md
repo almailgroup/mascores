@@ -1,10 +1,14 @@
 # Roadmap
-- [x] 2025/26 Zain PL match results (other source)
-- [x] AFC qualification labels in historical standings
-- [x] Per-group share button in standings
-- [x] Remove duplicate group name in table header
-- [x] Fix cut-off group names in standings share image
-- [x] Standings header "Competition season" linking to league (team/match pages)
-- [x] Fix title history pop-up error
-- [x] Standings league name placed directly above the table like Sofascore (removed duplicate tiny header name)
-- [x] Season pickers sorted newest-first everywhere
+- [ ] Rabta post notifications
+- [ ] Header always visible on desktop
+- [ ] Profile email/phone custom icons (not emoji)
+- [ ] Rabta delete issue
+- [ ] Competition Matches tab opens on current round
+- [ ] Event types: goal disallowed, red card cancelled, etc.
+- [ ] Admin player search: team players first + "include external players" button
+- [ ] Admin match clock: 45+X / 90+X stoppage time until admin changes phase
+- [ ] Live standings (live points, position arrows), LIVE red on match page
+- [ ] Home calendar "Today" button jumps to tomorrow
+- [ ] Team picker first-run app-only
+- [ ] Match standings show only the teams' group
+- [ ] Link-in-bio page (light, EN/AR toggle, App Store link)
