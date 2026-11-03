@@ -469,8 +469,9 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
   const [extraSquads, setExtraSquads] = useState<string[]>([]);
   const [tempName, setTempName] = useState("");
   const [anySearch, setAnySearch] = useState("");
+  const [anyExternal, setAnyExternal] = useState(false);
   const anyQ = useQuery({
-    enabled: anySearch.trim().length >= 2,
+    enabled: anyExternal && anySearch.trim().length >= 2,
     queryKey: ["admin", "lineup-any-player", anySearch.trim()],
     queryFn: async () => ((await supabase.from("players").select("*").ilike("name", `%${anySearch.trim()}%`).eq("is_temporary", false).order("name").limit(30)).data ?? []) as Player[],
   });
@@ -812,8 +813,9 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
             const related = relatedTeams(picker.teamId);
             return (
               <section className="space-y-2 rounded-xl border border-border bg-background/50 p-3">
-                <input className="h-9 w-full rounded-lg border border-border bg-background px-3 text-sm" placeholder="Search any player (former players, any club)…" value={anySearch} onChange={(e) => setAnySearch(e.target.value)} />
-                {anySearch.trim().length >= 2 && <div className="max-h-56 space-y-1 overflow-y-auto">
+                <input className="h-9 w-full rounded-lg border border-border bg-background px-3 text-sm" placeholder={anyExternal ? "Search all players (any club)…" : "Search players in this team…"} value={anySearch} onChange={(e) => setAnySearch(e.target.value)} />
+                <button type="button" onClick={() => setAnyExternal((v) => !v)} className={`w-full rounded-lg border px-3 py-2 text-xs font-semibold ${anyExternal ? "border-primary bg-primary/10 text-primary" : "border-border"}`}>{anyExternal ? "Showing external players · tap to hide" : "Include external players"}</button>
+                {anyExternal && anySearch.trim().length >= 2 && <div className="max-h-56 space-y-1 overflow-y-auto">
                   {(anyQ.data ?? []).map((p) => <button key={p.id} type="button" onClick={async () => { await assignSlot(picker.teamId, picker.slot, p.id); setAnySearch(""); setPicker(null); extraQ.refetch(); }} className="flex w-full items-center gap-2 rounded-lg border border-border bg-background p-2 text-left hover:border-primary">
                     <PlayerAvatar src={p.photo_url} name={p.name} size="sm" />
                     <span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{p.name}</span><span className="block truncate text-xs text-muted-foreground">{[p.position, teams.find((t) => t.id === p.team_id)?.name ?? "Free agent"].filter(Boolean).join(" · ")}</span></span>
@@ -833,7 +835,8 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
           })()}
           {picker && ["Goalkeeper", "Defender", "Midfielder", "Forward", "Unknown"].map((position) => {
             const allowed = new Set([picker.teamId, ...extraSquads.filter((id) => relatedTeams(picker.teamId).some((t) => t.id === id))]);
-            const pool = players.filter((player) => !player.is_temporary && allowed.has(player.team_id ?? "") && (player.position ?? "Unknown") === position).sort((a, b) => (a.shirt_number ?? 999) - (b.shirt_number ?? 999) || a.name.localeCompare(b.name));
+            const q = anySearch.trim().toLowerCase();
+            const pool = players.filter((player) => !player.is_temporary && allowed.has(player.team_id ?? "") && (player.position ?? "Unknown") === position && (!q || player.name.toLowerCase().includes(q) || String(player.shirt_number ?? "") === q)).sort((a, b) => (a.shirt_number ?? 999) - (b.shirt_number ?? 999) || a.name.localeCompare(b.name));
             if (pool.length === 0) return null;
             return <section key={position}><h4 className="mb-2 text-xs font-bold uppercase text-muted-foreground">{position}</h4><div className="grid gap-2">{pool.map((player) => { const other = player.team_id !== picker.teamId; return <button key={player.id} type="button" onClick={async () => { await assignSlot(picker.teamId, picker.slot, player.id); setPicker(null); }} className="flex items-center gap-3 rounded-lg border border-border bg-background p-2 text-left hover:border-primary"><PlayerAvatar src={player.photo_url} name={player.name} size="sm" className={other ? "ring-2 ring-primary" : ""} /><span className="w-8 text-center text-sm font-bold">{player.shirt_number ?? "—"}</span><span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{player.name}</span><span className="block text-xs text-muted-foreground">{player.position ?? "Unknown"}{other ? ` · ${teams.find((t) => t.id === player.team_id)?.age_group ?? teamName(player.team_id ?? "")}` : ""}</span></span></button>; })}</div></section>;
           })}
@@ -1108,13 +1111,14 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
 function PlayerPickField({ label, players, value, onChange }: { label: string; players: Player[]; value: string | null | undefined; onChange: (id: string | null) => void }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [external, setExternal] = useState(false);
   // Players picked from the global search that aren't in the squad pool — kept so the field can still show them.
   const [extras, setExtras] = useState<Player[]>([]);
   const all = [...players, ...extras.filter((e) => !players.some((p) => p.id === e.id))];
   const chosen = all.find((p) => p.id === value) ?? null;
   const groups = ["Goalkeeper", "Defender", "Midfielder", "Forward", "Unknown"];
   const searchQ = useQuery({
-    enabled: open && search.trim().length > 1,
+    enabled: open && external && search.trim().length > 1,
     queryKey: ["admin", "event-player-search", search.trim()],
     queryFn: async () => ((await supabase.from("players").select("*").ilike("name", `%${search.trim()}%`).eq("is_temporary", false).order("name").limit(30)).data ?? []) as Player[],
   });
@@ -1141,10 +1145,11 @@ function PlayerPickField({ label, players, value, onChange }: { label: string; p
       </button>
       <Modal open={open} onClose={() => setOpen(false)} title={label}>
         <div className="max-h-[70vh] space-y-4 overflow-y-auto">
-          <input autoFocus value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search any player…" className={inputCls} />
-          {search.trim().length > 1 && (
+          <input autoFocus value={search} onChange={(e) => setSearch(e.target.value)} placeholder={external ? "Search all players (any club)…" : "Search players in the team…"} className={inputCls} />
+          <button type="button" onClick={() => setExternal((v) => !v)} className={`w-full rounded-lg border px-3 py-2 text-xs font-semibold ${external ? "border-primary bg-primary/10 text-primary" : "border-border"}`}>{external ? "Showing external players · tap to hide" : "Include external players"}</button>
+          {external && search.trim().length > 1 && (
             <section>
-              <h4 className="mb-2 text-xs font-bold uppercase text-muted-foreground">All players</h4>
+              <h4 className="mb-2 text-xs font-bold uppercase text-muted-foreground">External players</h4>
               <div className="grid gap-2">
                 {searchQ.isLoading && <p className="text-xs text-muted-foreground">Searching…</p>}
                 {!searchQ.isLoading && results.length === 0 && <p className="text-xs text-muted-foreground">No other players match.</p>}
@@ -1160,7 +1165,8 @@ function PlayerPickField({ label, players, value, onChange }: { label: string; p
             </section>
           )}
           {groups.map((position) => {
-            const pool = players.filter((p) => (p.position ?? "Unknown") === position)
+            const q = search.trim().toLowerCase();
+            const pool = players.filter((p) => (p.position ?? "Unknown") === position && (!q || p.name.toLowerCase().includes(q) || String(p.shirt_number ?? "") === q))
               .sort((a, b) => (a.shirt_number ?? 999) - (b.shirt_number ?? 999) || a.name.localeCompare(b.name));
             if (pool.length === 0) return null;
             return (
