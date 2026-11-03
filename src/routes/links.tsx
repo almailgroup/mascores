@@ -156,7 +156,7 @@ function LinksPage() {
                   {c.stats.map(([v, l], i) => <div key={l} style={{ animationDelay: `${0.9 + i * 0.08}s` }}><b>{v}</b><span>{l}</span></div>)}
                 </div>
               </div>
-              <div className="tc-hint"><i>↻</i> {c.hint}</div>
+              <div className="tc-hint"><i><RotateCw className="inline h-3 w-3" /></i> {c.hint}</div>
               <div className="tc-frame" />
               <div className="tc-sparkle" />
               <div className="tc-foil" />
