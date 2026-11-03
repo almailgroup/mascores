@@ -479,10 +479,20 @@ function CompetitionMatches({ data }: { data: MatchWithTeams[] }) {
     if (byGroup) return byGroup;
     return a.order - b.order;
   });
+  // Open on the round being played now: first round with an unfinished match, else the last one.
+  const done = (m: MatchWithTeams) => ["ft", "aet", "pen", "finished", "cancelled", "abandoned", "awarded"].includes(String((m as { status?: string }).status ?? "").toLowerCase());
+  const currentKey = (list.find((b) => b.matches.some((m) => !done(m))) ?? list[list.length - 1])?.key;
+  const scrolled = useRef(false);
+  useEffect(() => {
+    if (scrolled.current || !currentKey) return;
+    scrolled.current = true;
+    const el = document.querySelector(`[data-round-key="${CSS.escape(currentKey)}"]`);
+    if (el) requestAnimationFrame(() => el.scrollIntoView({ block: "start" }));
+  }, [currentKey]);
   return (
     <div className="space-y-3">
       {list.map((bucket) => (
-        <div key={bucket.key || "all"} className="overflow-hidden rounded-2xl border border-border bg-card">
+        <div key={bucket.key || "all"} data-round-key={bucket.key} style={{ scrollMarginTop: "6rem" }} className="overflow-hidden rounded-2xl border border-border bg-card">
           <div className="border-b border-border px-4 py-3 text-sm font-bold">
             {[bucket.round.startsWith("#") ? `${tx("Round")} ${num(Number(bucket.round.slice(1)))}` : (tx(bucket.round) || tx("Matches")), bucket.group ? tx(bucket.group) : null].filter(Boolean).join(" · ")}
           </div>
