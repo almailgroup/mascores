@@ -140,6 +140,9 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
       render={() => renderCard(grouped(rows))}
     />
     </div>
+    {showCompetition && competition.data && <Link to="/competitions/$slug" params={{ slug: competition.data.slug }} className="block text-[1.35rem] font-black leading-tight hover:text-primary">
+      {tx(competition.data.name)}{rows[0]?.season ? ` ${num(rows[0].season)}` : ""}
+    </Link>}
     {groupList.map(([group, groupRows]) => {
       const positionLabel = (index: number) => labels.find((label) => (label.group_label ?? null) === group && label.position === index + 1)
         ?? labels.find((label) => !label.group_label && label.position === index + 1);
