@@ -53,6 +53,10 @@ export async function syncPushToken(): Promise<void> {
  */
 export async function initNativePush(onOpen?: (path: string) => void): Promise<void> {
   if (!isNative()) return;
+  // Android push needs Firebase (google-services.json); without it register()
+  // crashes the whole app natively, so skip push there until it's configured.
+  const { Capacitor } = await import("@capacitor/core");
+  if (Capacitor.getPlatform() === "android") return;
   if (onOpen) openNotification = onOpen;
 
   const { PushNotifications } = await import("@capacitor/push-notifications");
