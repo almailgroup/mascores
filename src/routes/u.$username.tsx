@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { Loader2, Lock, BadgeCheck, UserRound, Settings, Grid3X3, Repeat2 } from 'lucide-react';
+import { Loader2, Lock, BadgeCheck, UserRound, Settings, Grid3X3, Repeat2, Mail, Phone } from 'lucide-react';
 import { AppShell, BackButton } from '@/components/app-shell';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/use-auth';
