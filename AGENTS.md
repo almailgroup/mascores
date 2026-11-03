@@ -50,6 +50,7 @@
 - Shared card renderers finalize through one canvas export footer so every saved/shared image has consistent branding without obscuring content.
 - Edge functions must not import from src/; deploys bundle only supabase/functions, so a shared import silently keeps the old sender live.
 - Historical imports retain source attribution and label calculated ratings as estimates; validate fixture counts and starters with scripts/verify-rounds-1-6.sql to avoid fabricating future results. Source-calculated benches retain that distinction in match notes; scripts/mfsoccer_bench.py applies source participation/absence rules, and scripts/mfsoccer-bench-import.json records confirmed additions for repeatable auditing without inferring conflicting identities.
+- AFC historical imports retain source athlete IDs in their audit, verify name aliases before reuse, reconcile participant links consistently, and hold conflicting substitution sets back; this prevents shirt-number guesses from becoming false identities or duplicate events.
 - Sofascore statistics imports reconcile completed fixtures by round, team pair and score, update only explicit valid match statistics, and retain a source audit; impossible values and incomplete shot totals are omitted rather than inferred.
 - Possible lineups are read-only projections from the latest completed, published same-season competition lineup; never insert projections as confirmed match participants.
 - Missing-player records use the match admin permission boundary and remain distinct from participating lineup rows.
@@ -64,3 +65,6 @@
 
 - Shared match-result helpers decide shootout winners and standings eligibility across competition, match and club pages, keeping hidden cup tables and results consistent.
 - Shared group-stage helpers suppress inherited standings groups for knockout rounds; national squad links remain separate from players' actual club membership.
+- Push device handover uses an authenticated token-only RPC deriving ownership from auth.uid(); disconnect before sign-out and remove registrations on profile/account deletion so shared/reinstalled phones never retain deleted-account ownership.
+- Admin lineup selections update their query cache immediately, reconcile returned rows, and fetch only missing squad players; prevent conflicting pending selections so fast taps cannot create duplicate rows.
+- iOS hides the web-only keyboard form-assistant bar via `FormAssistantBarHider` in ios/App/App/SceneDelegate.swift (WKContentView class swap — WKWebView has no public API for it); it only runs in the native shell, never in Safari, and any new iOS source file must be registered in project.pbxproj (existing files are already listed).

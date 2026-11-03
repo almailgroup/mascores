@@ -1,4 +1,3 @@
-import { isOwnerEmail } from "@/lib/owner.functions";
 import { Link, useLocation, useRouter } from "@tanstack/react-router";
 import { Home, Search, Star, Newspaper, ArrowLeftRight, Ticket, Settings, LogIn, ArrowLeft, Radio, User, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -15,6 +14,8 @@ import { Button } from "@/components/ui/button";
 import { BrowseGestures } from "@/components/browse-gestures";
 import { suspensionMessage, useMySuspension } from "@/lib/suspension";
 import { SocialActivityButton } from "@/components/social-activity";
+import { isNativeApp } from "@/lib/native-notify";
+import { GlassTabBar } from "@/components/glass-tab-bar";
 
 /**
  * A restricted person cannot use the app at all: they only see why, and a box to
@@ -107,20 +108,14 @@ function scrollToNavTop(item: NavItem, currentPath: string, event: { preventDefa
 
 export function AppShell({ children, bare = false }: { children: ReactNode; bare?: boolean }) {
   const { user, loading } = useAuth();
-  const { data: hasGrants = false } = useQuery({
-    queryKey: ["has-admin-grants", user?.id],
-    enabled: !!user && !isOwnerEmail(user?.email),
-    queryFn: async () => {
-      const { count } = await supabase.from("admin_grants").select("id", { count: "exact", head: true }).eq("user_id", user!.id);
-      return (count ?? 0) > 0;
-    },
-  });
   const { t } = useI18n();
   const location = useLocation();
   const router = useRouter();
   const hideHeader = bare || location.pathname !== "/";
   useEffect(() => { void user; }, [user]);
   useEffect(() => { initTimeFormat(); }, []);
+  const [nativeApp, setNativeApp] = useState(false);
+  useEffect(() => { setNativeApp(isNativeApp()); }, []);
   useReminderAlerts();
   useLiveEventAlerts();
   useAskForAlerts();
@@ -142,10 +137,10 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
 
   return (
     <div data-browse-surface className="relative min-h-screen bg-background text-foreground">
-      <div className="pointer-events-none fixed inset-0 opacity-40 [background:radial-gradient(circle_at_10%_-10%,color-mix(in_oklab,var(--primary)_25%,transparent),transparent_55%),radial-gradient(circle_at_100%_100%,color-mix(in_oklab,var(--primary)_15%,transparent),transparent_60%)]" />
+      <div data-browse-glow className="pointer-events-none fixed inset-0 opacity-40 transition-opacity [background:radial-gradient(circle_at_10%_-10%,color-mix(in_oklab,var(--primary)_25%,transparent),transparent_55%),radial-gradient(circle_at_100%_100%,color-mix(in_oklab,var(--primary)_15%,transparent),transparent_60%)]" />
 
       <div data-browse-page>
-      {!hideHeader && <header data-shell-header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
+      {!hideHeader && <header data-shell-header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 pt-[env(safe-area-inset-top)] backdrop-blur-md">
         <div dir="ltr" className="mx-auto grid min-h-16 max-w-7xl grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 py-2 sm:px-6">
           <div className="col-start-3 row-start-1 flex items-center gap-1"><Link to="/voice" aria-label={t("nav.voice")} className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-border bg-card text-primary"><Radio className="h-5 w-5" /></Link>{user && <SocialActivityButton />}<Link to="/settings" aria-label={t("nav.settings")} className="col-start-3 row-start-1 grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full border border-border bg-card text-sm font-bold text-primary">
             {user && profile.data?.avatar_url ? <img src={profile.data.avatar_url} alt="" className="h-full w-full object-cover" /> : user ? <span>{initials}</span> : <User className="h-6 w-6" />}
@@ -169,15 +164,21 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
         }}
       >
 
-        {!hideHeader && (isOwnerEmail(user?.email) || hasGrants) && (
-          <Link to={isOwnerEmail(user?.email) ? "/secretadminsafha" : "/admin"} className="mb-3 flex items-center justify-center rounded-2xl border border-primary/40 bg-primary/10 px-4 py-2.5 text-sm font-semibold text-primary">Go to admin section</Link>
-        )}
         {children}
       </main>
       </div>
 
       <BrowseGestures />
-      {!bare && <nav data-no-gesture aria-label="Main navigation" className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/60 bg-background/95 backdrop-blur-xl md:hidden" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
+      {!bare && PRIMARY_NAV.some((item) => location.pathname === item.to || location.pathname === `${item.to}/`) && (nativeApp ? (
+        <nav data-no-gesture aria-label="Main navigation" className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3 md:hidden" style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}>
+          <GlassTabBar
+            items={PRIMARY_NAV}
+            activeIndex={PRIMARY_NAV.findIndex((item) => item.exact ? location.pathname === item.to : location.pathname.startsWith(item.to))}
+            label={(key) => t(key as never)}
+            onReselect={(item) => scrollToNavTop(item as NavItem, location.pathname, { preventDefault() {} })}
+          />
+        </nav>
+      ) : <nav data-no-gesture aria-label="Main navigation" className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/60 bg-background/95 backdrop-blur-xl md:hidden" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
         <div className="mx-auto flex max-w-7xl items-center justify-around px-2 py-2">
           {PRIMARY_NAV.map((item) => {
             const active = item.exact ? location.pathname === item.to : location.pathname.startsWith(item.to);
@@ -196,7 +197,7 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
             );
           })}
         </div>
-      </nav>}
+      </nav>)}
 
     </div>
   );

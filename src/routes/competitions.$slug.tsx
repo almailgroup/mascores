@@ -1,3 +1,4 @@
+import { getSeoInfo, seoHead } from "@/lib/seo-head";
 import { hasStandings } from "@/lib/match-result";
 import { TeamCrest } from "@/components/team-crest";
 import { useAuth } from "@/hooks/use-auth";
@@ -48,7 +49,8 @@ function groupsOf(rows: Row[]): [string | null, Row[]][] {
 }
 
 export const Route = createFileRoute("/competitions/$slug")({
-  head: ({ params }) => ({ meta: [{ title: `${params.slug} — MaScores` }, { name: "description", content: "Competition fixtures, standings, squads and statistics on MaScores." }, { property: "og:title", content: `${params.slug} — MaScores` }, { property: "og:description", content: "Competition fixtures, standings, squads and statistics on MaScores." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
+  loader: ({ params }) => (typeof window === "undefined" ? getSeoInfo({ data: { kind: "competition", id: params.slug } }) : null),
+  head: ({ params, loaderData }) => seoHead(loaderData, "Competition — MaScores", `/competitions/${params.slug}`),
   component: CompetitionPage,
 });
 

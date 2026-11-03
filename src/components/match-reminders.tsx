@@ -166,6 +166,8 @@ export function useReminderAlerts() {
       }
     };
     void tick();
+    // On the phone, server pushes deliver reminders; one clean-up pass is enough.
+    if (isNativeApp()) return;
     const timer = setInterval(tick, 30_000);
     const onVisible = () => { if (document.visibilityState === "visible") void tick(); };
     document.addEventListener("visibilitychange", onVisible);

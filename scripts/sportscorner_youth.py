@@ -52,10 +52,13 @@ def venue_of(raw):
     if not raw:
         return None, None
     raw = raw.translate(str.maketrans("٠١٢٣٤٥٦٧٨٩", "0123456789")).strip()
+    for prefix in ("استاد ", "ملعب "):
+        if raw.startswith(prefix):
+            raw = raw[len(prefix):].strip()
     if raw.endswith("2"):
         club = raw[:-1].strip()
         return f"{GROUND_NAMES[club]} Ground 2", None
-    return VENUES[raw]
+    return VENUES.get(raw, (raw, None))
 
 
 def normalize_fixture(raw, age):

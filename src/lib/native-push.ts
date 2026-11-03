@@ -5,43 +5,7 @@
  * @capacitor/push-notifications never lands in the browser bundle, and every
  * entry point bails out unless it is running inside the native app.
  */
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-
-/**
- * `device_tokens` is created by a migration that has not been applied to the
- * project `integrations/supabase/types.ts` was generated from, so the generated
- * Database type does not contain it yet. That file is regenerated from the live
- * schema, so describing the table here rather than editing it keeps this working
- * across regenerations. Once the migration is applied and types are regenerated,
- * this block and the `withDeviceTokens()` cast can both go.
- */
-type DeviceTokenInsert = {
-  user_id: string;
-  token: string;
-  platform: string;
-  locale: string;
-  updated_at: string;
-};
-
-type DeviceTokensDb = {
-  public: {
-    Tables: {
-      device_tokens: {
-        Row: DeviceTokenInsert & { id: string; created_at: string };
-        Insert: DeviceTokenInsert;
-        Update: Partial<DeviceTokenInsert>;
-        Relationships: [];
-      };
-    };
-    Views: Record<string, never>;
-    Functions: Record<string, never>;
-    Enums: Record<string, never>;
-    CompositeTypes: Record<string, never>;
-  };
-};
-
-const withDeviceTokens = () => supabase as unknown as SupabaseClient<DeviceTokensDb>;
 
 /** The APNs token for this device, once APNs has handed one over. */
 let deviceToken: string | null = null;
@@ -77,16 +41,8 @@ export async function syncPushToken(): Promise<void> {
   const { data } = await supabase.auth.getUser();
   if (!data.user) return;
 
-  await withDeviceTokens().from("device_tokens").upsert(
-    {
-      user_id: data.user.id,
-      token: deviceToken,
-      platform: "ios",
-      locale: currentLocale(),
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "token" },
-  );
+  const { error } = await supabase.rpc("register_push_device", { _token: deviceToken, _locale: currentLocale() });
+  if (error) throw new Error("Unable to register this phone for notifications");
 }
 
 /**
@@ -112,7 +68,7 @@ export async function initNativePush(onOpen?: (path: string) => void): Promise<v
   await PushNotifications.addListener("registration", (token) => {
     deviceToken = token.value;
     // The user may already be signed in by the time APNs answers.
-    void syncPushToken();
+    void syncPushToken().catch(() => { /* retry on sign-in, foreground or reconnect */ });
   });
 
   await PushNotifications.addListener("registrationError", (err) => {
@@ -132,5 +88,8 @@ export async function initNativePush(onOpen?: (path: string) => void): Promise<v
 /** Detaches this device so a signed-out account stops receiving its alerts. */
 export async function clearPushToken(): Promise<void> {
   if (!deviceToken) return;
-  await withDeviceTokens().from("device_tokens").delete().eq("token", deviceToken);
+  const { data } = await supabase.auth.getUser();
+  if (!data.user) return;
+  const { error } = await supabase.from("device_tokens").delete().eq("token", deviceToken).eq("user_id", data.user.id);
+  if (error) throw new Error("Unable to disconnect this phone's notifications");
 }

@@ -18,7 +18,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { ThemeProvider } from "../components/theme-provider";
 import { onNativeNotificationTap } from "../lib/native-notify";
-import { initNativePush, syncPushToken, clearPushToken } from "../lib/native-push";
+import { initNativePush, syncPushToken } from "../lib/native-push";
 import { syncBellsWithPermission } from "../lib/notification-permission";
 import { supabase } from "../integrations/supabase/client";
 import { I18nProvider, useI18n } from "../lib/i18n";
@@ -186,18 +186,20 @@ function RootComponent() {
     // No-op on the web; inside the iOS shell this asks for notification
     // permission and registers the device for match alerts. A tapped alert
     // carries the path to open, so a full navigation is the simplest handoff.
-    void initNativePush((path) => window.location.assign(path));
+    const retryPush = () => { void initNativePush((path) => window.location.assign(path)).then(() => syncPushToken()).catch(() => { /* retry on foreground/reconnect */ }); };
+    retryPush();
     void onNativeNotificationTap((path) => window.location.assign(path));
     // Notifications switched off in iPhone Settings turn every bell off on return.
     void syncBellsWithPermission();
-    const onVisible = () => { if (document.visibilityState === "visible") void syncBellsWithPermission(); };
+    const onVisible = () => { if (document.visibilityState === "visible") { retryPush(); void syncBellsWithPermission(); } };
     document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("online", retryPush);
 
     // The phone may register with Apple before the user signs in, so link the
     // device token to the account on sign-in and detach it on sign-out.
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN") { void syncPushToken(); void syncBellsWithPermission(); }
-      if (event === "SIGNED_OUT") void clearPushToken();
+      // Defer calls out of the auth callback so getUser never waits on its own auth lock.
+      if (event === "SIGNED_IN" || event === "INITIAL_SESSION") setTimeout(() => { retryPush(); void syncBellsWithPermission(); }, 0);
     });
 
     // After Google/Apple or an email link returns, the sign-in codes sit in the
@@ -208,7 +210,7 @@ function RootComponent() {
         window.history.replaceState(window.history.state, "", window.location.pathname + window.location.search);
       });
     }
-    return () => { sub.subscription.unsubscribe(); document.removeEventListener("visibilitychange", onVisible); };
+    return () => { sub.subscription.unsubscribe(); document.removeEventListener("visibilitychange", onVisible); window.removeEventListener("online", retryPush); };
   }, []);
 
   useEffect(() => {

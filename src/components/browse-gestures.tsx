@@ -1,9 +1,10 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useRouter } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
 
-let previousPage: HTMLElement | null = null;
+
+// Module-level so snapshots survive this component remounting on navigation.
+const SNAPS = { current: new Map<number, { node: HTMLElement; scroll: number }>() };
 
 /** Interactive gestures: navigation happens only after a completed drag is released. */
 export function BrowseGestures() {
@@ -14,26 +15,32 @@ export function BrowseGestures() {
   const [refreshing, setRefreshing] = useState(false);
   const [indicatorTop, setIndicatorTop] = useState(0);
   const busy = useRef(false);
-  useLayoutEffect(() => {
-    const surface = document.querySelector<HTMLElement>("[data-browse-surface]");
-    const capture = () => {
-      if (!surface) return;
-      const copy = surface.cloneNode(true) as HTMLElement;
-      copy.querySelectorAll("[data-gesture-ui]").forEach((node) => node.remove());
-      copy.removeAttribute("data-browse-surface");
-      copy.querySelectorAll("[id]").forEach((node) => node.removeAttribute("id"));
-      copy.style.transform = `translateY(${-window.scrollY}px)`;
-      copy.style.transition = "none";
-      copy.inert = true;
-      previousPage = copy;
+  // Static snapshots of recently visited pages, keyed by history index, shown under the back swipe.
+  const snaps = SNAPS;
+  const idx = () => Number((router.history.location.state as unknown as Record<string, unknown>)?.__TSR_index ?? 0);
+  useEffect(() => {
+    const index = idx();
+    const take = () => {
+      const page = document.querySelector<HTMLElement>("[data-browse-page]");
+      if (!page) return;
+      const node = page.cloneNode(true) as HTMLElement;
+      node.querySelectorAll("video,iframe,audio").forEach((n) => n.remove());
+      node.removeAttribute("data-browse-page");
+      snaps.current.set(index, { node, scroll: window.scrollY });
+      for (const k of snaps.current.keys()) if (k > index || k < index - 8) snaps.current.delete(k);
     };
-    const onClick = (event: MouseEvent) => {
-      if (event.target instanceof Element && event.target.closest('a[href]')) capture();
-    };
-    document.addEventListener("pointerdown", onClick, true);
-    return () => { document.removeEventListener("pointerdown", onClick, true); };
-  }, [location.pathname]);
-
+    const t = setTimeout(take, 150);
+    const t2 = setTimeout(take, 1200);
+    // Refresh right before any tap/click that may leave this page, so the snapshot is never stale or missing.
+    const onTap = (e: Event) => { if (!(e.target instanceof Element) || !e.target.closest("[data-browse-page]")) return; if (e.type === "touchstart" && ((e as TouchEvent).touches[0]?.clientX ?? 99) <= 28) return; take(); };
+    document.addEventListener("touchstart", onTap, { capture: true, passive: true });
+    document.addEventListener("mousedown", onTap, true);
+    let st: ReturnType<typeof setTimeout> | null = null;
+    const onScroll = () => { if (st) clearTimeout(st); st = setTimeout(take, 400); };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => { clearTimeout(t); clearTimeout(t2); document.removeEventListener("touchstart", onTap, true); document.removeEventListener("mousedown", onTap, true); if (st) clearTimeout(st); window.removeEventListener("scroll", onScroll); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.href]);
   useEffect(() => {
     const surface = document.querySelector<HTMLElement>("[data-browse-surface]");
     // Move the entire browsing page, including its header, but not the fixed tab bar.
@@ -47,19 +54,21 @@ export function BrowseGestures() {
     let axis: "back" | "refresh" | null = null;
     let underlay: HTMLDivElement | null = null;
     let timer: ReturnType<typeof setTimeout> | null = null;
+    let pullOn = false;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const reset = () => {
       timer = null;
       surface.style.transform = "";
       surface.style.transition = "";
-      surface.style.boxShadow = "";
       content.style.transform = "";
       content.style.transition = "";
       refreshContent.style.transform = "";
       refreshContent.style.transition = "";
       document.documentElement.style.overscrollBehaviorY = "";
+      surface.style.background = "";
+      const glowOff = surface.querySelector<HTMLElement>("[data-browse-glow]"); if (glowOff) glowOff.style.opacity = "";
       underlay?.remove(); underlay = null;
-      setPull(0);
+      setPull(0); pullOn = false;
     };
     const settle = () => {
       // A transform on the shell makes fixed navigation relative to the page.
@@ -72,7 +81,7 @@ export function BrowseGestures() {
         refreshContent.style.transition = reduced ? "none" : "transform 280ms cubic-bezier(.2,.8,.2,1)";
         refreshContent.style.transform = "";
       }
-      setPull(0);
+      setPull(0); pullOn = false;
       timer = setTimeout(reset, reduced ? 0 : 280);
     };
     const onStart = (event: TouchEvent) => {
@@ -88,7 +97,7 @@ export function BrowseGestures() {
       if (!touch) return;
       refreshContent = content.querySelector<HTMLElement>("[data-refresh-body]") ?? content;
       refreshHeader = content.querySelector<HTMLElement>("[data-refresh-header]");
-      start = { x: touch.clientX, y: touch.clientY, edge: touch.clientX <= 28 && router.history.canGoBack(), top: window.scrollY <= 0 };
+      start = { x: touch.clientX, y: touch.clientY, edge: touch.clientX <= 28 && router.history.canGoBack() && !["/","/favorites","/news","/transfers","/tickets"].includes(window.location.pathname.replace(/(.)\/$/, "$1")), top: window.scrollY <= 0 };
       setIndicatorTop(refreshHeader?.getBoundingClientRect().bottom ?? 0);
       distance = 0; axis = null;
     };
@@ -110,9 +119,13 @@ export function BrowseGestures() {
           underlay = document.createElement("div");
           underlay.className = "browse-back-underlay";
           underlay.setAttribute("aria-hidden", "true");
-          if (previousPage) underlay.append(previousPage.cloneNode(true));
+          const snap = snaps.current.get(idx() - 1);
+          if (snap) {
+            const inner = snap.node.cloneNode(true) as HTMLElement;
+            inner.style.transform = `translateY(${-snap.scroll}px)`;
+            underlay.append(inner);
+          }
           document.body.append(underlay);
-          surface.style.boxShadow = "-8px 0 24px var(--border)";
         }
         surface.style.transition = "none";
         surface.style.transform = `translateX(${distance}px)`;
@@ -122,7 +135,11 @@ export function BrowseGestures() {
         const offset = 110 * (1 - Math.exp(-distance / 230));
         refreshContent.style.transition = "none";
         refreshContent.style.transform = `translateY(${offset}px)`;
-        setPull(offset);
+        surface.style.background = "var(--background)";
+        const glow = surface.querySelector<HTMLElement>("[data-browse-glow]"); if (glow) glow.style.opacity = "0";
+        if (!pullOn) { pullOn = true; setPull(1); }
+        const ind = document.querySelector<HTMLElement>("[data-pull-indicator]");
+        if (ind) { ind.style.opacity = String(Math.min(1, offset / 70)); ind.style.setProperty("--spokes", String(Math.min(8, Math.ceil(offset / 11)))); }
       }
     };
     const onEnd = () => {
@@ -136,7 +153,19 @@ export function BrowseGestures() {
         if (underlay) { underlay.style.transition = "transform 200ms ease-out"; underlay.style.transform = "translateX(0px)"; }
         timer = setTimeout(() => { reset(); timer = null; busy.current = false; router.history.back(); }, reduced ? 0 : 200);
       } else if (axis === "refresh" && distance >= 180) {
-        busy.current = true; setRefreshing(true); setPull(64);
+        busy.current = true; setRefreshing(true);
+        // One light buzz the moment the refresh actually triggers, like iOS.
+        void (async () => {
+          try {
+            const { Capacitor } = await import("@capacitor/core");
+            if (Capacitor.isNativePlatform()) {
+              const { Haptics, ImpactStyle } = await import("@capacitor/haptics");
+              await Haptics.impact({ style: ImpactStyle.Light });
+              return;
+            }
+          } catch { /* fall through */ }
+          try { navigator.vibrate?.(10); } catch { /* unsupported */ }
+        })();
         refreshContent.style.transition = "transform 180ms ease-out";
         refreshContent.style.transform = "translateY(64px)";
         void Promise.all([qc.invalidateQueries(), router.invalidate(), new Promise((resolve) => setTimeout(resolve, 500))]).catch(() => {}).finally(() => {
@@ -162,5 +191,11 @@ export function BrowseGestures() {
     };
   }, [router, qc, location.pathname]);
   if (!pull && !refreshing) return null;
-  return <div data-gesture-ui role="status" aria-label={refreshing ? "Refreshing" : "Pull to refresh"} className="browse-refresh-indicator pointer-events-none fixed inset-x-0 z-20 flex justify-center" style={{ top: indicatorTop || "env(safe-area-inset-top)", height: refreshing ? 48 : Math.min(pull, 48) }}><Loader2 className={`h-5 w-5 self-center text-muted-foreground ${refreshing ? "animate-spin" : ""}`} style={{ transform: refreshing ? undefined : `rotate(${pull * 4}deg)`, opacity: Math.min(1, pull / 40) }} /></div>;
+  return (
+    <div data-gesture-ui role="status" aria-label={refreshing ? "Refreshing" : "Pull to refresh"} className="pointer-events-none fixed inset-x-0 z-20 flex h-12 items-center justify-center" style={{ top: indicatorTop || "env(safe-area-inset-top)" }}>
+      <div data-pull-indicator className={`ios-spinner ${refreshing ? "is-spinning" : ""}`} style={refreshing ? { opacity: 1 } : undefined}>
+        {Array.from({ length: 8 }, (_, i) => <span key={i} style={{ transform: `rotate(${i * 45}deg) translateY(-7px)`, ["--i" as string]: i }} />)}
+      </div>
+    </div>
+  );
 }
