@@ -122,7 +122,7 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
             highlight: highlights.includes(row.team_id),
           })),
         })),
-      }));
+      });
   const groupList = grouped(rows);
   return <div ref={shotRef} className="space-y-4">
     {showCompetition && competition.data && <Link to="/competitions/$slug" params={{ slug: competition.data.slug }} className="block text-base font-black hover:text-primary">
