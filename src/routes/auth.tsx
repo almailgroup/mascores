@@ -174,14 +174,16 @@ function AuthPage() {
               >
                 <GoogleIcon /> Continue with Google
               </button>
-              <button
-                type="button"
-                onClick={() => handleOAuth("apple")}
-                disabled={busy}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-border bg-background text-sm font-medium transition hover:bg-accent disabled:opacity-60"
-              >
-                <AppleIcon /> Continue with Apple
-              </button>
+              {!isAndroid && (
+                <button
+                  type="button"
+                  onClick={() => handleOAuth("apple")}
+                  disabled={busy}
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-border bg-background text-sm font-medium transition hover:bg-accent disabled:opacity-60"
+                >
+                  <AppleIcon /> Continue with Apple
+                </button>
+              )}
               <div className="my-4 flex items-center gap-3 text-xs uppercase tracking-widest text-muted-foreground">
                 <div className="h-px flex-1 bg-border" />
                 or
