@@ -45,11 +45,11 @@
 
 - Home match-calendar helpers centralize local-day keys and upcoming start boundaries so calendar markers and date filters agree across timezones.
 - Competition round ordering uses the shared comparison helper so missing or rescheduled kickoffs never move numbered rounds out of sequence.
-- Club match lists use one chronological sort key across competitions; undated fixtures receive list-only anchors from adjacent same-season rounds to preserve placement without inventing kickoff dates or inconsistent pairwise comparisons.
+- Club match lists use one chronological sort key; undated fixtures get list-only anchors from adjacent same-season rounds, never invented kickoff dates.
 - Announced date-only fixtures store kickoff_date with NULL kickoff_at; use shared schedule formatting and ordering so unconfirmed times never become real kickoff instants or reminders.
 - Shared card renderers finalize through one canvas export footer so every saved/shared image has consistent branding without obscuring content.
 - Edge functions must not import from src/; deploys bundle only supabase/functions, so a shared import silently keeps the old sender live.
-- Historical imports retain source attribution and label calculated ratings as estimates; validate fixture counts and starters with scripts/verify-rounds-1-6.sql to avoid fabricating future results. Source-calculated benches retain that distinction in match notes; scripts/mfsoccer_bench.py applies source participation/absence rules, and scripts/mfsoccer-bench-import.json records confirmed additions for repeatable auditing without inferring conflicting identities.
+- Historical imports retain source attribution and label calculated ratings as estimates; validate with scripts/verify-rounds-1-6.sql; bench additions follow scripts/mfsoccer_bench.py with confirmed entries recorded in scripts/mfsoccer-bench-import.json — never infer conflicting identities.
 - AFC historical imports retain source athlete IDs in their audit, verify name aliases before reuse, reconcile participant links consistently, and hold conflicting substitution sets back; this prevents shirt-number guesses from becoming false identities or duplicate events.
 - Sofascore statistics imports reconcile completed fixtures by round, team pair and score, update only explicit valid match statistics, and retain a source audit; impossible values and incomplete shot totals are omitted rather than inferred.
 - Possible lineups are read-only projections from the latest completed, published same-season competition lineup; never insert projections as confirmed match participants.
@@ -60,15 +60,15 @@
 - Possible-lineup status travels with share data into the canvas export so projected lineups are never labelled as confirmed.
 - Batch social-link AI only proposes existing squad IDs and exact supplied URLs; review and merge links without replacing unrelated networks.
 - AFC Champions League Two syncs through an admin-triggered preview/confirm server function using the free API-Football plan's yesterday–tomorrow window; it links events only to existing squad players and never creates or edits player profiles.
-- Youth historical imports use explicit senior-club identity maps plus age groups, an audited source snapshot and idempotent competition/season/round/team-pair matching; unknown kickoff times remain date-only and historical updates mute then restore alerts to avoid old-result pushes.
+- Youth historical imports use explicit senior-club identity maps plus age groups, audited source snapshots and idempotent season/round matching; unknown kickoff times stay date-only and updates mute then restore alerts.
 - Cup imports reuse existing clubs and retain the interrupted season; unresolved teams belong in knockout placeholders, never dummy club profiles, and stage-wide date windows stay in notes until individual fixture dates are confirmed.
 
 - Shared match-result helpers decide shootout winners and standings eligibility across competition, match and club pages, keeping hidden cup tables and results consistent.
 - Shared group-stage helpers suppress inherited standings groups for knockout rounds; national squad links remain separate from players' actual club membership.
 - Push device handover uses an authenticated token-only RPC deriving ownership from auth.uid(); disconnect before sign-out and remove registrations on profile/account deletion so shared/reinstalled phones never retain deleted-account ownership.
 - Admin lineup selections update their query cache immediately, reconcile returned rows, and fetch only missing squad players; prevent conflicting pending selections so fast taps cannot create duplicate rows.
-- iOS hides the web-only keyboard form-assistant bar via `FormAssistantBarHider` in ios/App/App/SceneDelegate.swift (WKContentView class swap — WKWebView has no public API for it); it only runs in the native shell, never in Safari, and any new iOS source file must be registered in project.pbxproj (existing files are already listed).
+- iOS hides the web-only keyboard form-assistant bar via `FormAssistantBarHider` in ios/App/App/SceneDelegate.swift (native shell only); new iOS source files must be registered in project.pbxproj.
 
-- Android shell lives in android/ (Capacitor 8, appId com.almailgroup.mascores, target SDK 36); `cap add/sync android` needs MAS_APP_URL set; release builds sign with android/keystore.properties (key outside VCS under android/keystore/) — never commit or rotate that key casually, every Play upload must reuse it.
-- Links-page motion stays CSS-driven (pointer handlers only set CSS variables), scoped to `.links-page`, and respects reduced-motion preferences to keep animation lightweight and isolated.
-- Android safe areas come from the Capacitor SystemBars plugin (`insetsHandling: "css"`, set in capacitor.config.ts) plus `EdgeToEdge.enable(this)` in android MainActivity; site CSS reads `--sa-*` variables that prefer the native-injected `--safe-area-inset-*` over `env()`, so iOS and web keep using env() unchanged.
+- Android shell lives in android/ (Capacitor 8, appId com.almailgroup.mascores, target SDK 36); `cap sync` needs MAS_APP_URL set; release builds sign with android/keystore.properties (key outside VCS — never commit) and every Play upload must reuse it.
+- Links-page motion stays CSS-driven via CSS variables, scoped to `.links-page`, and respects reduced-motion preferences.
+- Android safe areas: Capacitor SystemBars `insetsHandling: "css"` plus `EdgeToEdge.enable` in MainActivity; site CSS reads `--sa-*` vars that prefer injected `--safe-area-inset-*` over `env()` (iOS/web unchanged).
