@@ -65,6 +65,14 @@ const config: CapacitorConfig = {
     ],
   },
   plugins: {
+    SystemBars: {
+      // Android safe areas: the plugin injects the real status/navigation bar
+      // heights as --safe-area-inset-* CSS variables into the page (older
+      // Android WebViews report env(safe-area-inset-*) as 0).
+      insetsHandling: "css",
+      // The site always ships viewport-fit=cover; skip the first-paint shift.
+      initialViewportFitValueHint: "cover",
+    },
     SplashScreen: {
       launchShowDuration: 1200,
       backgroundColor: "#0a1628",
