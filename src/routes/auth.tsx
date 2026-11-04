@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
@@ -14,8 +14,13 @@ export const Route = createFileRoute("/auth")({
       { name: "description", content: "Sign in or create your MaScores account to follow live football scores, favorites, and personalized coverage." }, { property: "og:title", content: "Sign in — MaScores" }, { property: "og:description", content: "Sign in or create your MaScores account to follow live football scores, favorites, and personalized coverage." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }],
   }),
   validateSearch: (search: Record<string, unknown>): { redirect?: string } => ({ redirect: typeof search.redirect === "string" && search.redirect.startsWith("/") && !search.redirect.startsWith("//") ? search.redirect : undefined }),
-  component: AuthPage,
+  component: AuthRoute,
 });
+
+function AuthRoute() {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  return pathname === "/auth" || pathname === "/auth/" ? <AuthPage /> : <Outlet />;
+}
 
 type Mode = "signin" | "signup" | "forgot";
 

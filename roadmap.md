@@ -1,4 +1,5 @@
 # Roadmap
+- [x] Android Google sign-in black screen: register the native return link and test callback completion; new Android build and device retest required.
 - [x] Rabta post notifications
 - [x] Header always visible on desktop
 - [x] Profile email/phone custom icons (not emoji)
