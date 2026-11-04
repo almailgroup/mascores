@@ -44,9 +44,16 @@ function AuthPage() {
   // Inside the iOS app, web sign-in with Google/Apple escapes to Safari and
   // never returns, so only email sign-in is offered there.
   const [isNativeApp, setIsNativeApp] = useState(false);
+  // Apple sign-in is unsupported on Android devices (app or browser).
+  const [isAndroid, setIsAndroid] = useState(false);
   useEffect(() => {
-    const cap = (window as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor;
+    const cap = (window as { Capacitor?: { isNativePlatform?: () => boolean; getPlatform?: () => string } }).Capacitor;
     setIsNativeApp(cap?.isNativePlatform?.() === true);
+    setIsAndroid(
+      cap?.isNativePlatform?.() === true
+        ? cap?.getPlatform?.() === "android"
+        : typeof navigator !== "undefined" && /android/i.test(navigator.userAgent),
+    );
   }, []);
 
   useEffect(() => {
