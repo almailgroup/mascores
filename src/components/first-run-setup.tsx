@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Check, Search, ArrowRight, ArrowLeft, Shield, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -60,11 +61,12 @@ export function FirstRunSetup({ children }: { children: ReactNode }) {
   // Do not render welcome branding or step numbers before device storage is checked.
   if (stage === "done" || stage === "checking") return children;
   const ar = lang === "ar";
+  const android = (window as { Capacitor?: { getPlatform?: () => string } }).Capacitor?.getPlatform?.() === "android";
   const visible = visibleWelcomeTeams(teams.data?.catalogue ?? [], teams.data?.leagueTeamIds ?? [], query, tx);
   return <>
     <div hidden inert>{children}</div>
-    <div data-no-gesture className="fixed inset-0 z-[110] overflow-y-auto bg-background text-foreground" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
-      <div className="mx-auto flex min-h-dvh max-w-xl flex-col px-5 pb-[calc(1.5rem+var(--sa-bottom))] pt-[calc(1.5rem+var(--sa-top))]">
+    {createPortal(<div data-no-gesture className="fixed inset-0 z-[110] overflow-y-auto bg-background text-foreground" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
+      <div className={`mx-auto flex min-h-dvh max-w-xl flex-col px-5 pb-6 ${android ? "pt-6" : "pt-[calc(1.5rem+var(--sa-top))]"}`}>
         <div className="flex items-center justify-between"><BrandLogo showWordmark={false} className="h-12 w-12 object-contain" /><span className="text-xs font-semibold text-muted-foreground" dir="ltr">{stage === "language" ? "2 / 2" : "1 / 2"}</span></div>
         {stage === "teams" ? <>
           <h1 id="welcome-title" className="mt-8 text-3xl font-bold">{ar ? "اختر فرقك" : "Choose your teams"}</h1>
@@ -79,7 +81,7 @@ export function FirstRunSetup({ children }: { children: ReactNode }) {
               </Button>;
             })}
           </div>
-          <div className="sticky bottom-0 -mx-5 flex gap-3 border-t border-border bg-background px-5 pb-[calc(1rem+var(--sa-bottom))] pt-4">
+          <div className={`sticky bottom-0 -mx-5 flex gap-3 border-t border-border bg-background px-5 pt-4 ${android ? "pb-[calc(1rem+max(var(--sa-bottom),48px))]" : "pb-[calc(1rem+var(--sa-bottom))]"}`}>
             <Button variant="ghost" onClick={() => { setSelected([]); setStage("language"); }}>Skip / تخطي</Button>
             <Button className="h-11 flex-1" onClick={() => setStage("language")}>Continue / متابعة{selected.length > 0 && <span>({selected.length})</span>}<ArrowRight className="h-4 w-4" /></Button>
           </div>
@@ -95,6 +97,6 @@ export function FirstRunSetup({ children }: { children: ReactNode }) {
           <Button variant="ghost" className="self-start" disabled={saving} onClick={() => setStage("teams")}><ArrowLeft className="h-4 w-4" />Back / رجوع</Button>
         </>}
       </div>
-    </div>
+    </div>, document.body)}
   </>;
 }
