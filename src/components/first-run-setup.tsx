@@ -79,7 +79,7 @@ export function FirstRunSetup({ children }: { children: ReactNode }) {
               </Button>;
             })}
           </div>
-          <div className="sticky bottom-0 -mx-5 flex gap-3 border-t border-border bg-background px-5 py-4">
+          <div className="sticky bottom-0 -mx-5 flex gap-3 border-t border-border bg-background px-5 pb-[calc(1rem+var(--sa-bottom))] pt-4">
             <Button variant="ghost" onClick={() => { setSelected([]); setStage("language"); }}>Skip / تخطي</Button>
             <Button className="h-11 flex-1" onClick={() => setStage("language")}>Continue / متابعة{selected.length > 0 && <span>({selected.length})</span>}<ArrowRight className="h-4 w-4" /></Button>
           </div>
