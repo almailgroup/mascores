@@ -36,7 +36,7 @@ function ScannerPage() {
 
   return (
     <AppShell bare>
-      <div className="mx-auto max-w-xl px-4 pb-16 pt-[calc(1.5rem+env(safe-area-inset-top))]">
+      <div className="mx-auto max-w-xl px-4 pb-16 pt-[calc(1.5rem+var(--sa-top))]">
         <div className="mb-5 flex items-center justify-between gap-3">
           <BrandLogo className="h-9" />
           <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-[0.7rem] font-black uppercase tracking-widest text-primary">

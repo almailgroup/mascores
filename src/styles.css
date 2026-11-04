@@ -344,8 +344,8 @@
 
 /* Photo extraction menus and dragging are disabled; screenshots remain possible. */
 img { -webkit-user-drag: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
-.club-tabs { top: calc(4rem + env(safe-area-inset-top)); }
-@media (min-width: 768px) { .club-tabs { top: calc(6.5rem + env(safe-area-inset-top)); } }
+.club-tabs { top: calc(4rem + var(--sa-top)); }
+@media (min-width: 768px) { .club-tabs { top: calc(6.5rem + var(--sa-top)); } }
 a:has([aria-label*="match notifications"]):active { filter: none; transform: none; }
 [aria-label*="match notifications"]:active { filter: none !important; transform: none !important; }
 
@@ -362,12 +362,12 @@ a:has([aria-label*="match notifications"]):active { filter: none; transform: non
 ::view-transition-group(mas-search) { animation-duration: 280ms; animation-timing-function: cubic-bezier(.2,.8,.2,1); }
 ::view-transition-old(mas-search), ::view-transition-new(mas-search) { height: 100%; }
 ::view-transition-group(root) { animation-duration: 180ms; }
-.shell-no-header .club-tabs { top: env(safe-area-inset-top); }
+.shell-no-header .club-tabs { top: var(--sa-top); }
 /* On headerless pages the competition banner stretches up over the extra top
    clearance so its background reaches the very top of the screen. */
 .shell-no-header .comp-hero {
-  margin-top: calc(-1 * (env(safe-area-inset-top, 0px) + 2rem));
-  padding-top: calc(env(safe-area-inset-top, 0px) + 0.75rem);
+  margin-top: calc(-1 * (var(--sa-top) + 2rem));
+  padding-top: calc(var(--sa-top) + 0.75rem);
 }
 @media (min-width: 640px) {
   .shell-no-header .comp-hero { margin-top: -1.5rem; padding-top: 0.25rem; }
@@ -375,8 +375,8 @@ a:has([aria-label*="match notifications"]):active { filter: none; transform: non
 /* The search page's own bar stretches up over the shell's top clearance so
    its background (and watermark) fills the notch area instead of a blank gap. */
 .shell-no-header .search-hero {
-  margin-top: calc(-1 * (env(safe-area-inset-top, 0px) + 2rem));
-  padding-top: calc(env(safe-area-inset-top, 0px) + 2.25rem);
+  margin-top: calc(-1 * (var(--sa-top) + 2rem));
+  padding-top: calc(var(--sa-top) + 2.25rem);
 }
 @media (min-width: 640px) {
   .shell-no-header .search-hero { margin-top: -1.5rem; padding-top: 0.5rem; }
@@ -391,7 +391,7 @@ a:has([aria-label*="match notifications"]):active { filter: none; transform: non
 .brand-loading-track span { display: block; width: 50%; height: 100%; background: var(--primary); animation: brand-sweep 1.1s ease-in-out infinite alternate; }
 @keyframes brand-breathe { 50% { opacity: .65; transform: scale(.94); } }
 @keyframes brand-sweep { to { transform: translateX(100%); } }
-.match-hero { --collapse: 0; position: sticky; top: 0; z-index: 35; margin-top: calc(-1 * (env(safe-area-inset-top, 0px) + 2rem)); padding-top: calc(env(safe-area-inset-top, 0px) + .5rem); }
+.match-hero { --collapse: 0; position: sticky; top: 0; z-index: 35; margin-top: calc(-1 * (var(--sa-top) + 2rem)); padding-top: calc(var(--sa-top) + .5rem); }
 .match-hero-body { position: relative; padding-top: calc(8px * (1 - var(--collapse))); padding-bottom: calc(8px * (1 - var(--collapse))); }
 .match-score-row { min-height: calc(96px - 72px * var(--collapse)); transform: translateY(calc(-22px * var(--collapse))); margin-bottom: calc(-18px * var(--collapse)); margin-left: calc(28px * var(--collapse)); margin-right: calc(112px * var(--collapse)); gap: calc(10px - 6px * var(--collapse)); }
 .match-team-crest { height: calc(42px - 20px * var(--collapse)); width: calc(42px - 20px * var(--collapse)); }
@@ -403,7 +403,7 @@ a:has([aria-label*="match notifications"]):active { filter: none; transform: non
 .match-hero [role="img"] { color: var(--match-foreground); }
 .dark .event-art-ink, .match-hero .event-art-ink { filter: invert(1) hue-rotate(180deg); }
 .club-profile-header, .collapsing-comp-header { --collapse: 0; position: sticky; top: 0; z-index: 35; }
-.club-profile-header { margin-top: calc(-1 * (env(safe-area-inset-top, 0px) + 2rem)); padding-top: calc(env(safe-area-inset-top, 0px) + .5rem); }
+.club-profile-header { margin-top: calc(-1 * (var(--sa-top) + 2rem)); padding-top: calc(var(--sa-top) + .5rem); }
 .profile-expanded-identity { max-height: calc(88px * (1 - var(--collapse))); opacity: max(0, calc(1 - var(--collapse) * 2)); overflow: hidden; padding-top: calc(12px * (1 - var(--collapse))); padding-bottom: calc(12px * (1 - var(--collapse))); }
 .profile-compact-identity { opacity: max(0, calc(var(--collapse) * 2 - 1)); }
 @media (min-width: 640px) { .match-hero { margin-top: -1.5rem; } }
@@ -511,8 +511,8 @@ a, button, [role="button"] {
   perspective: 1400px;
   height: 100%;
   display: flex; flex-direction: column; justify-content: space-between;
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: max(12px, env(safe-area-inset-bottom));
+  padding-top: var(--sa-top);
+  padding-bottom: max(12px, var(--sa-bottom));
 }
 .tc-stage > div:first-child { padding-block: 8px; flex-shrink: 0; }
 .tc-deal { margin-top: 0; animation: tc-deal 1.1s cubic-bezier(.2,.9,.25,1.05) both; }
@@ -524,7 +524,7 @@ a, button, [role="button"] {
 .tc-tilt {
   --rx: 0deg; --ry: 0deg; --mx: 50%; --my: 50%;
   position: relative;
-  width: min(340px, calc(100vw - 48px), calc((100svh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 144px) * 5 / 7));
+  width: min(340px, calc(100vw - 48px), calc((100svh - var(--sa-top) - var(--sa-bottom) - 144px) * 5 / 7));
   aspect-ratio: 5 / 7; margin-inline: auto;
   transform-style: preserve-3d;
   -webkit-transform-style: preserve-3d;

@@ -276,7 +276,7 @@ function CreateRoom({ onClose, onCreated, matchId = null }: { onClose: () => voi
       {/* Scrolls inside itself and clears the phone tab bar so "Go live" is always reachable. */}
       <div
         className="max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-t-3xl border border-border bg-background p-5 sm:max-h-[85vh] sm:rounded-3xl"
-        style={{ paddingBottom: "calc(6rem + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: "calc(6rem + var(--sa-bottom))" }}
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-lg font-bold">{tx("Start a voice room")}</h2>
