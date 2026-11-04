@@ -28,7 +28,7 @@ export function LiveVoiceAlert() {
     })();
 
     const channel = supabase
-      .channel("voice-follow-alerts")
+      .channel(`voice-follow-alerts-${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "voice_rooms" }, async (payload) => {
         const room = payload.new as { id: string; host_id: string; title: string; status: string; visibility: string };
         if (room.status !== "live" || !following.includes(room.host_id)) return;

@@ -61,7 +61,7 @@ const EVENT_SOUND: Record<string, AlertEventKey> = {
   penalty_missed: "miss", missed_penalty: "miss", penalty_miss: "miss",
   yellow_card: "card", yellow: "card", second_yellow: "secondYellow", red_card: "redcard", red: "redcard",
   substitution: "sub", sub: "sub", injury_sub: "injury", injury: "injury",
-  var: "var", note: "note", assist: "scorer", save: "note",
+  var: "var", goal_disallowed: "var", red_cancelled: "var", yellow_cancelled: "var", penalty_cancelled: "var", penalty_awarded: "var", note: "note", assist: "scorer", save: "note",
 };
 type AlertPreferences = { goals?: boolean; cards?: boolean; kickoff?: boolean; final?: boolean; sound?: string; sounds?: AlertSoundMap };
 
@@ -208,7 +208,7 @@ export function useLiveEventAlerts() {
       void loadAlerts();
     };
     window.addEventListener("mas:alerts-changed", refreshExplicit);
-    const channel = supabase.channel("mas-live-alerts");
+    const channel = supabase.channel(`mas-live-alerts-${Math.random().toString(36).slice(2)}`);
     channel.on("postgres_changes" as never, { event: "INSERT", schema: "public", table: "match_events" },
       (payload: { new: EventRow }) => { void onEvent(payload.new); });
     channel.on("postgres_changes" as never, { event: "UPDATE", schema: "public", table: "matches" },

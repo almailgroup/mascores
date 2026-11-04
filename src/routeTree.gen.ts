@@ -14,6 +14,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ContributeRouteImport } from './routes/contribute'
 import { Route as FavoritesRouteImport } from './routes/favorites'
+import { Route as LinksRouteImport } from './routes/links'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as PrivacypolicyRouteImport } from './routes/privacypolicy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
@@ -67,6 +68,11 @@ const ContributeRoute = ContributeRouteImport.update({
 const FavoritesRoute = FavoritesRouteImport.update({
   id: '/favorites',
   path: '/favorites',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LinksRoute = LinksRouteImport.update({
+  id: '/links',
+  path: '/links',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NotificationsRoute = NotificationsRouteImport.update({
@@ -221,6 +227,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRouteWithChildren
   '/contribute': typeof ContributeRoute
   '/favorites': typeof FavoritesRoute
+  '/links': typeof LinksRoute
   '/notifications': typeof NotificationsRoute
   '/privacypolicy': typeof PrivacypolicyRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -257,6 +264,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRouteWithChildren
   '/contribute': typeof ContributeRoute
   '/favorites': typeof FavoritesRoute
+  '/links': typeof LinksRoute
   '/notifications': typeof NotificationsRoute
   '/privacypolicy': typeof PrivacypolicyRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -294,6 +302,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRouteWithChildren
   '/contribute': typeof ContributeRoute
   '/favorites': typeof FavoritesRoute
+  '/links': typeof LinksRoute
   '/notifications': typeof NotificationsRoute
   '/privacypolicy': typeof PrivacypolicyRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -332,6 +341,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/contribute'
     | '/favorites'
+    | '/links'
     | '/notifications'
     | '/privacypolicy'
     | '/reset-password'
@@ -368,6 +378,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/contribute'
     | '/favorites'
+    | '/links'
     | '/notifications'
     | '/privacypolicy'
     | '/reset-password'
@@ -404,6 +415,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/contribute'
     | '/favorites'
+    | '/links'
     | '/notifications'
     | '/privacypolicy'
     | '/reset-password'
@@ -441,6 +453,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRouteWithChildren
   ContributeRoute: typeof ContributeRoute
   FavoritesRoute: typeof FavoritesRoute
+  LinksRoute: typeof LinksRoute
   NotificationsRoute: typeof NotificationsRoute
   PrivacypolicyRoute: typeof PrivacypolicyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -505,6 +518,13 @@ declare module '@tanstack/react-router' {
       path: '/favorites'
       fullPath: '/favorites'
       preLoaderRoute: typeof FavoritesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/links': {
+      id: '/links'
+      path: '/links'
+      fullPath: '/links'
+      preLoaderRoute: typeof LinksRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/notifications': {
@@ -731,6 +751,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRouteWithChildren,
   ContributeRoute: ContributeRoute,
   FavoritesRoute: FavoritesRoute,
+  LinksRoute: LinksRoute,
   NotificationsRoute: NotificationsRoute,
   PrivacypolicyRoute: PrivacypolicyRoute,
   ResetPasswordRoute: ResetPasswordRoute,

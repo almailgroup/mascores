@@ -66,15 +66,45 @@ function useForm(rows: PublicStandingRow[], enabled: boolean) {
 function FormStrip({ results }: { results: ("W" | "D" | "L")[] }) {
   const tone = { W: "bg-success text-success-foreground", D: "bg-muted-foreground text-background", L: "bg-destructive text-destructive-foreground" } as const;
   return (
-    <span className="flex h-6 w-full max-w-[10rem] overflow-hidden rounded-md bg-muted">
+    <span className="flex h-6 w-full max-w-[10rem] overflow-hidden rounded-md">
       {results.map((result, index) => (
-        <span key={index} className={`grid w-7 shrink-0 place-items-center text-[0.65rem] font-bold ${tone[result]}`}>{result}</span>
+        <span key={index} className={`grid min-w-0 flex-1 place-items-center text-[0.65rem] font-bold ${tone[result]}`}>{result}</span>
       ))}
     </span>
   );
 }
 
-export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds, liveTeamIds, modern = true }: {
+type LiveMatch = { home_team_id: string | null; away_team_id: string | null; home_score: number | null; away_score: number | null };
+
+/** Adds in-progress results to the table so points and positions move live; returns movement per team. */
+export function applyLiveResults(rows: PublicStandingRow[], live: LiveMatch[]) {
+  const moves = new Map<string, number>();
+  if (!live.length || rows.some((r) => (r as { is_final?: boolean }).is_final)) return { rows, moves, liveIds: [] as string[] };
+  const liveIds: string[] = [];
+  const next = rows.map((r) => ({ ...r }));
+  for (const m of live) {
+    const h = next.find((r) => r.team_id === m.home_team_id);
+    const a = next.find((r) => r.team_id === m.away_team_id && r.group_label === h?.group_label);
+    if (!h || !a) continue;
+    const hs = m.home_score ?? 0, as = m.away_score ?? 0;
+    liveIds.push(h.team_id, a.team_id);
+    h.played++; a.played++; h.gf += hs; h.ga += as; a.gf += as; a.ga += hs;
+    if (hs > as) { h.won++; a.lost++; h.points += 3; } else if (hs < as) { a.won++; h.lost++; a.points += 3; } else { h.drawn++; a.drawn++; h.points++; a.points++; }
+  }
+  if (!liveIds.length) return { rows, moves, liveIds };
+  const out: PublicStandingRow[] = [];
+  for (const [, groupRows] of grouped(rows)) {
+    const before = groupRows.map((r) => r.team_id);
+    const sorted = next.filter((r) => (r.group_label ?? null) === (groupRows[0].group_label ?? null))
+      .sort((x, y) => (y.points + (y.points_adjust ?? 0)) - (x.points + (x.points_adjust ?? 0)) || (y.gf - y.ga) - (x.gf - x.ga) || y.gf - x.gf || before.indexOf(x.team_id) - before.indexOf(y.team_id));
+    sorted.forEach((r, i) => { const d = before.indexOf(r.team_id) - i; if (d) moves.set(r.team_id, d); });
+    out.push(...sorted);
+  }
+  return { rows: out, moves, liveIds };
+}
+
+export function StandingsTable({ rows: savedRows, labels, highlightTeamId, highlightTeamIds, liveTeamIds, modern = true, showCompetition = false }: {
+  showCompetition?: boolean;
   rows: PublicStandingRow[];
   labels: Label[];
   highlightTeamId?: string;
@@ -84,6 +114,18 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
 }) {
   const tx = useTx();
   const num = useNum();
+  const liveQ = useQuery({
+    enabled: !!savedRows[0]?.competition_id,
+    queryKey: ["standings-live", savedRows[0]?.competition_id, savedRows[0]?.season],
+    refetchInterval: 30_000,
+    queryFn: async () => {
+      let q = supabase.from("matches").select("home_team_id,away_team_id,home_score,away_score").eq("competition_id", savedRows[0].competition_id).in("status", ["live", "ht"]);
+      if (savedRows[0].season) q = q.eq("season", savedRows[0].season);
+      return ((await q).data ?? []) as LiveMatch[];
+    },
+  });
+  const { rows, moves, liveIds } = applyLiveResults(savedRows, liveQ.data ?? []);
+  liveTeamIds = [...new Set([...(liveTeamIds ?? []), ...liveIds])];
   const [view, setView] = useState<View>("short");
   const shotRef = useRef<HTMLDivElement>(null);
   const form = useForm(rows, view === "form");
@@ -91,18 +133,38 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
   const competitionId = rows[0]?.competition_id ?? null;
   const competition = useQuery({
     enabled: !!competitionId,
-    queryKey: ["standings-competition-name", competitionId],
+    queryKey: ["standings-competition-info", competitionId],
     queryFn: async () => {
       if (!competitionId) return null;
-      const { data } = await supabase.from("competitions").select("name").eq("id", competitionId).maybeSingle();
-      return data?.name ?? null;
+      const { data } = await supabase.from("competitions").select("name,slug").eq("id", competitionId).maybeSingle();
+      return data ?? null;
     },
   });
-  const shareTitle = competition.data ? tx(competition.data) : tx("Standings");
+  const shareTitle = competition.data ? tx(competition.data.name) : tx("Standings");
   const highlights = [...(highlightTeamIds ?? []), ...(highlightTeamId ? [highlightTeamId] : [])];
   const views: View[] = ["full", "form", "short"];
   const viewName: Record<View, string> = { full: tx("Full"), form: tx("Form"), short: tx("Short") };
 
+  const renderCard = (groups: ReturnType<typeof grouped>) => drawStandingsCard({
+        title: shareTitle,
+        subtitle: [tx("Standings"), rows[0]?.season ?? null].filter(Boolean).join(" · "),
+        withForm: view === "form",
+         withFull: view === "full",
+        groups: groups.map(([group, groupRows]) => ({
+          label: group ? tx(group) : null,
+          rows: groupRows.map((row, index) => ({
+            position: index + 1,
+            name: tx(row.team?.name) ?? "",
+            logo: row.team?.logo_url ?? null,
+            played: row.played, won: row.won, drawn: row.drawn, lost: row.lost, gf: row.gf, ga: row.ga,
+            goalDifference: row.gf - row.ga,
+            points: row.points + (row.points_adjust ?? 0),
+            form: (form.data?.[row.team_id] ?? []) as ("W" | "D" | "L")[],
+            highlight: highlights.includes(row.team_id),
+          })),
+        })),
+      });
+  const groupList = grouped(rows);
   return <div ref={shotRef} className="space-y-4">
     <div className="flex items-center justify-between gap-2">
     <div className={modern ? "inline-flex gap-1 text-xs font-semibold" : "inline-flex rounded-full border border-border bg-card p-1 text-xs font-semibold"}>
@@ -116,28 +178,13 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
     <ShareCardButton
       disabled={competition.isLoading}
       title={shareTitle}
-      render={() => drawStandingsCard({
-        title: shareTitle,
-        subtitle: [tx("Standings"), rows[0]?.season ?? null].filter(Boolean).join(" · "),
-        withForm: view === "form",
-         withFull: view === "full",
-        groups: grouped(rows).map(([group, groupRows]) => ({
-          label: group ? tx(group) : null,
-          rows: groupRows.map((row, index) => ({
-            position: index + 1,
-            name: tx(row.team?.name) ?? "",
-            logo: row.team?.logo_url ?? null,
-            played: row.played, won: row.won, drawn: row.drawn, lost: row.lost, gf: row.gf, ga: row.ga,
-            goalDifference: row.gf - row.ga,
-            points: row.points + (row.points_adjust ?? 0),
-            form: (form.data?.[row.team_id] ?? []) as ("W" | "D" | "L")[],
-            highlight: highlights.includes(row.team_id),
-          })),
-        })),
-      })}
+      render={() => renderCard(grouped(rows))}
     />
     </div>
-    {grouped(rows).map(([group, groupRows]) => {
+    {showCompetition && competition.data && <Link to="/competitions/$slug" params={{ slug: competition.data.slug }} className="block text-[1.35rem] font-black leading-tight hover:text-primary">
+      {tx(competition.data.name)}{rows[0]?.season ? ` ${num(rows[0].season)}` : ""}
+    </Link>}
+    {groupList.map(([group, groupRows]) => {
       const positionLabel = (index: number) => labels.find((label) => (label.group_label ?? null) === group && label.position === index + 1)
         ?? labels.find((label) => !label.group_label && label.position === index + 1);
       const rowLabel = (row: PublicStandingRow, index: number) => {
@@ -152,10 +199,14 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
         : modern ? "grid-cols-[1.5rem_minmax(0,1fr)_1.75rem_2rem_2rem]" : "grid-cols-[2.75rem_minmax(0,1fr)_2rem_2.25rem_2.5rem]";
       return <section key={group ?? "single"}>
         <div className={modern ? "overflow-hidden rounded-lg border border-border bg-card" : "overflow-hidden rounded-3xl border border-border bg-card shadow-sm"}>
-          {modern && group && <h3 className="px-3 pb-1.5 pt-3 text-[0.7rem] font-bold">{tx(group)}</h3>}
-          <div className={`grid ${cols} items-center gap-1 ${modern ? "bg-card" : "bg-muted/40"} px-3 py-1.5 text-[0.6rem] font-semibold text-muted-foreground`}>
-            <span>#</span>
-            <span>{group ? tx(group) : tx("Team")}</span>
+          <div className={`grid ${cols} items-center gap-1 ${modern ? "bg-card" : "bg-muted/40"} px-3 py-2 text-[0.6rem] font-semibold text-muted-foreground`}>
+            <span />
+            <span className="flex min-w-0 items-center gap-1.5">
+              {group && (competition.data
+                ? <Link to="/competitions/$slug" params={{ slug: competition.data.slug }} className="truncate text-[0.7rem] font-bold text-foreground hover:text-primary">{tx(group)}</Link>
+                : <span className="truncate text-[0.7rem] font-bold text-foreground">{tx(group)}</span>)}
+              {group && groupList.length > 1 && <ShareCardButton iconOnly onSurface title={`${shareTitle} · ${tx(group)}`} render={() => renderCard([[group, groupRows]])} />}
+            </span>
             {view === "full" && <><span className="text-center">P</span><span className="text-center">W</span><span className="text-center">D</span><span className="text-center">L</span><span className="text-center">GLS</span><span className="text-center">GD</span><span className="text-center">PTS</span></>}
             {view === "form" && <span className="text-end">{tx("Last 5")}</span>}
             {view === "short" && <><span className="text-center">P</span><span className="text-center">GD</span><span className="text-center">PTS</span></>}
@@ -169,11 +220,12 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
                 <span className="flex items-center gap-1" title={label ? tx(label.label) : undefined}>
                   <span aria-label={label ? tx(label.label) : undefined} className="h-5 w-1 shrink-0 rounded-full" style={{ backgroundColor: label?.color ?? "transparent" }} />
                   <span className={`grid h-5 min-w-4 place-items-center ${modern ? "" : "rounded-full bg-muted"} text-[0.7rem] font-semibold tabular-nums`}>{num(index + 1)}</span>
+                  {moves.get(row.team_id) ? <span className={`text-[0.6rem] font-black leading-none ${moves.get(row.team_id)! > 0 ? "text-emerald-500" : "text-match-live"}`} aria-label={moves.get(row.team_id)! > 0 ? "Moved up" : "Moved down"}>{moves.get(row.team_id)! > 0 ? "▲" : "▼"}</span> : null}
                 </span>
                 <span className="flex min-w-0 items-center gap-1.5">
                   <TeamCrest name={row.team?.name} logo={row.team?.logo_url ?? null} className={modern && view === "short" ? "h-5 w-5 shrink-0" : "h-6 w-6 shrink-0"} />
                   <span className={`${modern ? "truncate text-[0.75rem]" : "truncate text-sm"} font-semibold`}>{tx((view === "full" ? row.team?.short_name || row.team?.name : row.team?.name || row.team?.short_name) || "—")}</span>
-                  {live && <span className="shrink-0 rounded-full bg-primary/20 px-1.5 py-0.5 text-[0.55rem] font-bold uppercase text-primary">{tx("Live")}</span>}
+                  {live && <span className="shrink-0 rounded-full bg-match-live px-1.5 py-0.5 text-[0.55rem] font-bold uppercase text-match-foreground">{tx("Live")}</span>}
                 </span>
                 {view === "full" && <>
                   <span className="text-center text-xs tabular-nums text-muted-foreground">{num(row.played)}</span>
@@ -193,7 +245,7 @@ export function StandingsTable({ rows, labels, highlightTeamId, highlightTeamIds
                   <span className="text-center text-xs font-black tabular-nums text-primary">{num(row.points + row.points_adjust)}</span>
                 </>}
               </>;
-              const cls = `grid ${cols} items-center gap-1 px-3 ${modern ? "py-2" : "py-2.5"} active:bg-muted/60 ${live ? "bg-primary/15" : selected ? "bg-primary/10" : ""}`;
+              const cls = `grid ${cols} items-center gap-1 px-3 ${modern ? "py-2" : "py-2.5"} active:bg-muted/60 ${live ? "bg-match-live/10" : selected ? "bg-primary/10" : ""}`;
               return row.team
                 ? <Link key={row.id} to="/teams/$id" params={{ id: row.team.id }} className={cls}>{inner}</Link>
                 : <div key={row.id} className={cls}>{inner}</div>;

@@ -5,7 +5,7 @@ import { readStatsPhoto } from "@/lib/stats-photo.functions";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  supabase, STATUS_LABELS, matchClockSeconds, formatClock,
+  supabase, STATUS_LABELS, matchClockSeconds, formatClock, formatLiveClock, livePeriod,
   ratingClass, formatRating,
   type Match, type Team, type Player, type MatchEvent, type Lineup,
 } from "@/lib/db";
@@ -36,6 +36,11 @@ export const EVENT_TYPES = [
   { v: "substitution", l: "Substitution" },
   { v: "injury_sub", l: "Injury substitution" },
   { v: "var", l: "VAR" },
+  { v: "goal_disallowed", l: "Goal disallowed" },
+  { v: "penalty_awarded", l: "Penalty awarded" },
+  { v: "penalty_cancelled", l: "Penalty cancelled" },
+  { v: "red_cancelled", l: "Red card cancelled" },
+  { v: "yellow_cancelled", l: "Yellow card cancelled" },
   { v: "note", l: "Note" },
 ];
 
@@ -464,8 +469,9 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
   const [extraSquads, setExtraSquads] = useState<string[]>([]);
   const [tempName, setTempName] = useState("");
   const [anySearch, setAnySearch] = useState("");
+  const [anyExternal, setAnyExternal] = useState(false);
   const anyQ = useQuery({
-    enabled: anySearch.trim().length >= 2,
+    enabled: anyExternal && anySearch.trim().length >= 2,
     queryKey: ["admin", "lineup-any-player", anySearch.trim()],
     queryFn: async () => ((await supabase.from("players").select("*").ilike("name", `%${anySearch.trim()}%`).eq("is_temporary", false).order("name").limit(30)).data ?? []) as Player[],
   });
@@ -807,8 +813,9 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
             const related = relatedTeams(picker.teamId);
             return (
               <section className="space-y-2 rounded-xl border border-border bg-background/50 p-3">
-                <input className="h-9 w-full rounded-lg border border-border bg-background px-3 text-sm" placeholder="Search any player (former players, any club)…" value={anySearch} onChange={(e) => setAnySearch(e.target.value)} />
-                {anySearch.trim().length >= 2 && <div className="max-h-56 space-y-1 overflow-y-auto">
+                <input className="h-9 w-full rounded-lg border border-border bg-background px-3 text-sm" placeholder={anyExternal ? "Search all players (any club)…" : "Search players in this team…"} value={anySearch} onChange={(e) => setAnySearch(e.target.value)} />
+                <button type="button" onClick={() => setAnyExternal((v) => !v)} className={`w-full rounded-lg border px-3 py-2 text-xs font-semibold ${anyExternal ? "border-primary bg-primary/10 text-primary" : "border-border"}`}>{anyExternal ? "Showing external players · tap to hide" : "Include external players"}</button>
+                {anyExternal && anySearch.trim().length >= 2 && <div className="max-h-56 space-y-1 overflow-y-auto">
                   {(anyQ.data ?? []).map((p) => <button key={p.id} type="button" onClick={async () => { await assignSlot(picker.teamId, picker.slot, p.id); setAnySearch(""); setPicker(null); extraQ.refetch(); }} className="flex w-full items-center gap-2 rounded-lg border border-border bg-background p-2 text-left hover:border-primary">
                     <PlayerAvatar src={p.photo_url} name={p.name} size="sm" />
                     <span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{p.name}</span><span className="block truncate text-xs text-muted-foreground">{[p.position, teams.find((t) => t.id === p.team_id)?.name ?? "Free agent"].filter(Boolean).join(" · ")}</span></span>
@@ -828,7 +835,8 @@ function LineupsTab({ match, teams, onSaved }: { match: Match; teams: Team[]; on
           })()}
           {picker && ["Goalkeeper", "Defender", "Midfielder", "Forward", "Unknown"].map((position) => {
             const allowed = new Set([picker.teamId, ...extraSquads.filter((id) => relatedTeams(picker.teamId).some((t) => t.id === id))]);
-            const pool = players.filter((player) => !player.is_temporary && allowed.has(player.team_id ?? "") && (player.position ?? "Unknown") === position).sort((a, b) => (a.shirt_number ?? 999) - (b.shirt_number ?? 999) || a.name.localeCompare(b.name));
+            const q = anySearch.trim().toLowerCase();
+            const pool = players.filter((player) => !player.is_temporary && allowed.has(player.team_id ?? "") && (player.position ?? "Unknown") === position && (!q || player.name.toLowerCase().includes(q) || String(player.shirt_number ?? "") === q)).sort((a, b) => (a.shirt_number ?? 999) - (b.shirt_number ?? 999) || a.name.localeCompare(b.name));
             if (pool.length === 0) return null;
             return <section key={position}><h4 className="mb-2 text-xs font-bold uppercase text-muted-foreground">{position}</h4><div className="grid gap-2">{pool.map((player) => { const other = player.team_id !== picker.teamId; return <button key={player.id} type="button" onClick={async () => { await assignSlot(picker.teamId, picker.slot, player.id); setPicker(null); }} className="flex items-center gap-3 rounded-lg border border-border bg-background p-2 text-left hover:border-primary"><PlayerAvatar src={player.photo_url} name={player.name} size="sm" className={other ? "ring-2 ring-primary" : ""} /><span className="w-8 text-center text-sm font-bold">{player.shirt_number ?? "—"}</span><span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{player.name}</span><span className="block text-xs text-muted-foreground">{player.position ?? "Unknown"}{other ? ` · ${teams.find((t) => t.id === player.team_id)?.age_group ?? teamName(player.team_id ?? "")}` : ""}</span></span></button>; })}</div></section>;
           })}
@@ -966,7 +974,7 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
       <div>
         {/* Clock */}
         <div className="rounded-lg border border-border bg-background/50 p-4 text-center">
-          <div className="text-4xl font-black tabular-nums">{formatClock(seconds)}</div>
+          <div className="text-4xl font-black tabular-nums">{match.status === "live" ? formatLiveClock(match, seconds) : formatClock(seconds)}</div>
           <div className="mt-1 text-[0.65rem] uppercase tracking-widest text-muted-foreground">{minute}′ · {STATUS_LABELS[match.status] ?? match.status}</div>
           <div className="mt-3 flex flex-wrap justify-center gap-2">
             {match.timer_running
@@ -1103,13 +1111,14 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
 function PlayerPickField({ label, players, value, onChange }: { label: string; players: Player[]; value: string | null | undefined; onChange: (id: string | null) => void }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [external, setExternal] = useState(false);
   // Players picked from the global search that aren't in the squad pool — kept so the field can still show them.
   const [extras, setExtras] = useState<Player[]>([]);
   const all = [...players, ...extras.filter((e) => !players.some((p) => p.id === e.id))];
   const chosen = all.find((p) => p.id === value) ?? null;
   const groups = ["Goalkeeper", "Defender", "Midfielder", "Forward", "Unknown"];
   const searchQ = useQuery({
-    enabled: open && search.trim().length > 1,
+    enabled: open && external && search.trim().length > 1,
     queryKey: ["admin", "event-player-search", search.trim()],
     queryFn: async () => ((await supabase.from("players").select("*").ilike("name", `%${search.trim()}%`).eq("is_temporary", false).order("name").limit(30)).data ?? []) as Player[],
   });
@@ -1136,10 +1145,11 @@ function PlayerPickField({ label, players, value, onChange }: { label: string; p
       </button>
       <Modal open={open} onClose={() => setOpen(false)} title={label}>
         <div className="max-h-[70vh] space-y-4 overflow-y-auto">
-          <input autoFocus value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search any player…" className={inputCls} />
-          {search.trim().length > 1 && (
+          <input autoFocus value={search} onChange={(e) => setSearch(e.target.value)} placeholder={external ? "Search all players (any club)…" : "Search players in the team…"} className={inputCls} />
+          <button type="button" onClick={() => setExternal((v) => !v)} className={`w-full rounded-lg border px-3 py-2 text-xs font-semibold ${external ? "border-primary bg-primary/10 text-primary" : "border-border"}`}>{external ? "Showing external players · tap to hide" : "Include external players"}</button>
+          {external && search.trim().length > 1 && (
             <section>
-              <h4 className="mb-2 text-xs font-bold uppercase text-muted-foreground">All players</h4>
+              <h4 className="mb-2 text-xs font-bold uppercase text-muted-foreground">External players</h4>
               <div className="grid gap-2">
                 {searchQ.isLoading && <p className="text-xs text-muted-foreground">Searching…</p>}
                 {!searchQ.isLoading && results.length === 0 && <p className="text-xs text-muted-foreground">No other players match.</p>}
@@ -1155,7 +1165,8 @@ function PlayerPickField({ label, players, value, onChange }: { label: string; p
             </section>
           )}
           {groups.map((position) => {
-            const pool = players.filter((p) => (p.position ?? "Unknown") === position)
+            const q = search.trim().toLowerCase();
+            const pool = players.filter((p) => (p.position ?? "Unknown") === position && (!q || p.name.toLowerCase().includes(q) || String(p.shirt_number ?? "") === q))
               .sort((a, b) => (a.shirt_number ?? 999) - (b.shirt_number ?? 999) || a.name.localeCompare(b.name));
             if (pool.length === 0) return null;
             return (
@@ -1300,23 +1311,23 @@ function PeriodBoxes({ match, seconds, patchMatch }: { match: Match; seconds: nu
   const shootout = live && match.home_pen != null;
   const base = match.timer_elapsed_seconds ?? 0;
   const phase = shootout ? "pens"
-    : live ? (seconds >= 6300 ? "et2" : seconds >= 5400 ? "et1" : seconds >= 2700 ? "2h" : "1h")
+    : live ? livePeriod(match, seconds)
     : match.status === "ht" ? (base >= 5400 ? "etht" : "ht") : match.status;
-  const clock = formatClock(seconds);
-  const startAt = (from: number, extra: Partial<Match> = {}) => patchMatch({ status: "live", timer_running: true, timer_started_at: now(), timer_elapsed_seconds: from, home_pen: null, away_pen: null, ...extra });
-  const keep = (lo: number, hi: number) => (seconds >= lo && seconds < hi ? seconds : lo);
+  const clock = formatLiveClock(match, seconds);
+  const startAt = (from: number, period: string, extra: Partial<Match> = {}) => patchMatch({ status: "live", period, timer_running: true, timer_started_at: now(), timer_elapsed_seconds: from, home_pen: null, away_pen: null, ...extra });
+  const keep = (lo: number, k: string) => (phase === k && seconds >= lo ? seconds : lo);
   type B = { key: string; label: string; sub?: string; active: boolean; run: () => Promise<void> | void };
   const main: B[] = [
-    { key: "1h", label: "1st half", sub: phase === "1h" ? clock : "-", active: phase === "1h", run: () => startAt(phase === "1h" || phase === "ht" ? keep(0, 2700) : 0) },
+    { key: "1h", label: "1st half", sub: phase === "1h" ? clock : "-", active: phase === "1h", run: () => startAt(keep(0, "1h"), "1h") },
     { key: "ht", label: "HT", active: phase === "ht", run: () => patchMatch({ status: "ht", ...stop, timer_elapsed_seconds: 2700, live_minute: 45 }) },
-    { key: "2h", label: "2nd half", sub: phase === "2h" ? clock : "-", active: phase === "2h", run: () => startAt(keep(2700, 5400)) },
+    { key: "2h", label: "2nd half", sub: phase === "2h" ? clock : "-", active: phase === "2h", run: () => startAt(keep(2700, "2h"), "2h") },
     { key: "ft", label: "Confirm FT", active: match.status === "ft", run: () => patchMatch({ status: "ft", ...stop, timer_elapsed_seconds: 5400, home_pen: null, away_pen: null }) },
   ];
   const et: B[] = [
     { key: "etwait", label: "Waiting for extra time", active: match.status === "etwait", run: () => patchMatch({ status: "etwait", ...stop, timer_elapsed_seconds: 5400, live_minute: 90, home_pen: null, away_pen: null }) },
-    { key: "et1", label: "Extra time 1st half", sub: phase === "et1" ? clock : "-", active: phase === "et1", run: () => startAt(keep(5400, 6300)) },
+    { key: "et1", label: "Extra time 1st half", sub: phase === "et1" ? clock : "-", active: phase === "et1", run: () => startAt(keep(5400, "et1"), "et1") },
     { key: "etht", label: "Extra time break", active: phase === "etht", run: () => patchMatch({ status: "ht", ...stop, timer_elapsed_seconds: 6300, live_minute: 105 }) },
-    { key: "et2", label: "Extra time 2nd half", sub: phase === "et2" ? clock : "-", active: phase === "et2", run: () => startAt(keep(6300, 7200)) },
+    { key: "et2", label: "Extra time 2nd half", sub: phase === "et2" ? clock : "-", active: phase === "et2", run: () => startAt(keep(6300, "et2"), "et2") },
     { key: "aet", label: "Confirm FT after ET", active: match.status === "aet", run: () => patchMatch({ status: "aet", ...stop, timer_elapsed_seconds: 7200, home_pen: null, away_pen: null }) },
   ];
   const pens: B[] = [

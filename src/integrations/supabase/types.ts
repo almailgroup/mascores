@@ -1287,6 +1287,7 @@ export type Database = {
           live_minute: number | null
           momentum_minutes: number
           notes: string | null
+          period: string | null
           referee: string | null
           result_only: boolean
           round: string | null
@@ -1325,6 +1326,7 @@ export type Database = {
           live_minute?: number | null
           momentum_minutes?: number
           notes?: string | null
+          period?: string | null
           referee?: string | null
           result_only?: boolean
           round?: string | null
@@ -1363,6 +1365,7 @@ export type Database = {
           live_minute?: number | null
           momentum_minutes?: number
           notes?: string | null
+          period?: string | null
           referee?: string | null
           result_only?: boolean
           round?: string | null
@@ -2443,6 +2446,7 @@ export type Database = {
           gf: number
           group_label: string | null
           id: string
+          is_final: boolean
           lost: number
           played: number
           points: number
@@ -2462,6 +2466,7 @@ export type Database = {
           gf?: number
           group_label?: string | null
           id?: string
+          is_final?: boolean
           lost?: number
           played?: number
           points?: number
@@ -2481,6 +2486,7 @@ export type Database = {
           gf?: number
           group_label?: string | null
           id?: string
+          is_final?: boolean
           lost?: number
           played?: number
           points?: number

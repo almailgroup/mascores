@@ -12,7 +12,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { AppShell, BackButton, EmptyState, LoadingSkeleton, SwipeTabs } from "@/components/app-shell";
-import { supabase, STATUS_LABELS, roundLabel, matchClockSeconds, formatClock, eventLabel, ratingClass, formatRating, type Match, type Team, type MatchEvent, type Lineup, type Player, type StandingRow } from "@/lib/db";
+import { supabase, STATUS_LABELS, roundLabel, matchClockSeconds, formatClock, formatLiveClock, eventLabel, ratingClass, formatRating, type Match, type Team, type MatchEvent, type Lineup, type Player, type StandingRow } from "@/lib/db";
 import { useRealtime } from "@/lib/realtime";
 import { ChevronRight, MessageCircle, PlayCircle, Radio } from "lucide-react";
 import { useTx, useNum, useDates } from "@/lib/auto-translate";
@@ -242,7 +242,7 @@ function MatchPage() {
   const shareData = {
     competition: [tx(match.competition?.name) ?? "", roundLabel(match.round_number, match.round) ? tx(roundLabel(match.round_number, match.round)) : ""].filter(Boolean).join(" · "),
     kickoff: dates.kickoff(match.kickoff_at, match.kickoff_date),
-    status: match.status === "live" ? formatClock(clock) : match.status === "scheduled" ? dates.kickoff(match.kickoff_at, match.kickoff_date) : tx(STATUS_LABELS[match.status] ?? match.status) ?? match.status,
+    status: match.status === "live" ? formatLiveClock(match, clock) : match.status === "scheduled" ? dates.kickoff(match.kickoff_at, match.kickoff_date) : tx(STATUS_LABELS[match.status] ?? match.status) ?? match.status,
     home: { name: tx(match.home?.name) ?? "TBD", logo_url: match.home?.logo_url ?? null },
     away: { name: tx(match.away?.name) ?? "TBD", logo_url: match.away?.logo_url ?? null },
     homeScore: ["scheduled", "postponed", "cancelled"].includes(match.status) ? "" : String(match.home_score ?? 0),
@@ -298,7 +298,7 @@ function MatchPage() {
                 )}
                 <div className={`match-clock flex items-center justify-center gap-1.5 font-bold tabular-nums ${isLive ? "text-match-live" : "text-match-foreground/80"}`}>
                   {isLive && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-match-live" />}
-                  {match.status === "live" ? num(formatClock(clock)) : tx(STATUS_LABELS[match.status] ?? match.status)}
+                  {match.status === "live" ? num(formatLiveClock(match, clock)) : tx(STATUS_LABELS[match.status] ?? match.status)}
                 </div>
               </>}
           </div>
@@ -327,7 +327,7 @@ function MatchPage() {
         </div>
         <div className="match-tabs border-t border-match-foreground/10 px-1">
           <SwipeTabs className="gap-1.5 text-sm">
-            {tabs.map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 pb-3 pt-3 text-sm font-semibold capitalize ${tab === item ? "border-b-2 border-match-live text-match-foreground" : "text-match-foreground/55"}`}>{tx(item === "media" ? "Media" : item === "previous" ? "Matches" : item === "details" ? "Details" : item === "lineups" ? "Lineups" : item === "standings" ? "Standings" : "Stats")}</button>)}
+            {tabs.map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 pb-3 pt-3 text-sm font-semibold capitalize ${tab === item ? "border-b-2 border-match-tab text-match-foreground" : "text-match-foreground/55"}`}>{tx(item === "media" ? "Media" : item === "previous" ? "Matches" : item === "details" ? "Details" : item === "lineups" ? "Lineups" : item === "standings" ? "Standings" : "Stats")}</button>)}
           </SwipeTabs>
         </div>
       </div>
@@ -854,7 +854,10 @@ function MatchStandings({ competitionId, season, liveTeamIds, highlightIds }: { 
     },
   });
   if (!q.data?.length) return <EmptyState title={tx("No standings yet")} />;
-  return <StandingsTable rows={q.data} labels={labels.data ?? []} highlightTeamIds={highlightIds} liveTeamIds={liveTeamIds} />;
+  // Group competitions: show only the group(s) these two clubs are in.
+  const myGroups = new Set(q.data.filter((r) => highlightIds.includes(r.team_id)).map((r) => r.group_label ?? null));
+  const rows = myGroups.size ? q.data.filter((r) => myGroups.has(r.group_label ?? null)) : q.data;
+  return <StandingsTable showCompetition rows={rows} labels={labels.data ?? []} highlightTeamIds={highlightIds} liveTeamIds={liveTeamIds} />;
 }
 
 
