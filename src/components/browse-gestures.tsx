@@ -192,7 +192,7 @@ export function BrowseGestures() {
   }, [router, qc, location.pathname]);
   if (!pull && !refreshing) return null;
   return (
-    <div data-gesture-ui role="status" aria-label={refreshing ? "Refreshing" : "Pull to refresh"} className="pointer-events-none fixed inset-x-0 z-20 flex h-12 items-center justify-center" style={{ top: indicatorTop || "env(safe-area-inset-top)" }}>
+    <div data-gesture-ui role="status" aria-label={refreshing ? "Refreshing" : "Pull to refresh"} className="pointer-events-none fixed inset-x-0 z-20 flex h-12 items-center justify-center" style={{ top: indicatorTop || "var(--sa-top)" }}>
       <div data-pull-indicator className={`ios-spinner ${refreshing ? "is-spinning" : ""}`} style={refreshing ? { opacity: 1 } : undefined}>
         {Array.from({ length: 8 }, (_, i) => <span key={i} style={{ transform: `rotate(${i * 45}deg) translateY(-7px)`, ["--i" as string]: i }} />)}
       </div>

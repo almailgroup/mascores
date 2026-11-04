@@ -644,6 +644,6 @@ function TeamMatches({ data, teamId, nextId }: { data: MatchWithTeams[]; teamId:
   }, [targetId, teamId]);
   return <div ref={top} className="scroll-mt-40">
     <MatchGroups data={ordered} highlightTeamId={teamId} />
-    {showToday && <Button variant="outline" onClick={goToNext} className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] left-1/2 z-30 -translate-x-1/2 rounded-full border-border bg-background text-foreground shadow">{tx("Today")}</Button>}
+    {showToday && <Button variant="outline" onClick={goToNext} className="fixed bottom-[calc(6rem+var(--sa-bottom))] left-1/2 z-30 -translate-x-1/2 rounded-full border-border bg-background text-foreground shadow">{tx("Today")}</Button>}
   </div>;
 }

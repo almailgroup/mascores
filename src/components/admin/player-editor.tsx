@@ -98,7 +98,7 @@ export function PlayerEditor({ player, teamId, teamName, onClose }: { player: Pa
   // Portalled so page transforms can never push the editor off-screen; opens at the top instantly.
   return createPortal(
     <div data-no-gesture className="fixed inset-0 z-[120] overflow-y-auto overscroll-contain bg-background">
-      <div className="sticky top-0 z-10 border-b border-border bg-background/95 px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] backdrop-blur lg:px-8">
+      <div className="sticky top-0 z-10 border-b border-border bg-background/95 px-4 pb-3 pt-[calc(0.75rem+var(--sa-top))] backdrop-blur lg:px-8">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3">
           <button className={btnGhost} onClick={onClose}><ArrowLeft className="h-3.5 w-3.5" /> Back</button>
           <button className={btnPrimary} disabled={busy || photoUploading || !form.name?.trim()} onClick={save}>

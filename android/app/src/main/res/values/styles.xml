@@ -13,6 +13,8 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
+        <!-- Shows behind the transparent system bars in edge-to-edge mode. -->
+        <item name="android:windowBackground">@color/app_background</item>
     </style>
 
 

@@ -260,7 +260,7 @@ function TicketSheet({ ticket, onClose }: { ticket: MyTicket; onClose: () => voi
   const tx = useTx();
   return (
     <TicketOverlay><div role="dialog" aria-modal="true" aria-label={tx("Your ticket")} className="fixed inset-0 z-[90] flex items-end justify-center bg-foreground/60 sm:items-center sm:p-4" onClick={onClose}>
-      <div className="max-h-[calc(100dvh-env(safe-area-inset-top,0px)-1rem)] w-full max-w-md overflow-y-auto overscroll-contain rounded-t-3xl bg-background p-4 pb-[calc(2rem+env(safe-area-inset-bottom,0px))] sm:max-h-[85dvh] sm:rounded-3xl" onClick={(e) => e.stopPropagation()}>
+      <div className="max-h-[calc(100dvh-var(--sa-top)-1rem)] w-full max-w-md overflow-y-auto overscroll-contain rounded-t-3xl bg-background p-4 pb-[calc(2rem+var(--sa-bottom))] sm:max-h-[85dvh] sm:rounded-3xl" onClick={(e) => e.stopPropagation()}>
 
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground">{tx("Your ticket")}</h3>
@@ -474,7 +474,7 @@ function SellSheet({ ticket, onClose, onDone }: { ticket: MyTicket; onClose: () 
   const field = "h-11 w-full rounded-xl border border-border bg-background px-3 text-sm";
   return (
     <TicketOverlay><div className="fixed inset-0 z-[130] flex items-end justify-center bg-foreground/60 p-0 sm:items-center sm:p-4" onClick={onClose}>
-      <div className="max-h-[90dvh] w-full max-w-md overflow-y-auto overscroll-contain rounded-t-3xl border border-border bg-card p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] sm:rounded-3xl sm:pb-5" onClick={(e) => e.stopPropagation()}>
+      <div className="max-h-[90dvh] w-full max-w-md overflow-y-auto overscroll-contain rounded-t-3xl border border-border bg-card p-5 pb-[calc(1.25rem+var(--sa-bottom))] sm:rounded-3xl sm:pb-5" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between">
           <h3 className="text-base font-black">{tx("Sell this ticket")}</h3>
           <button className="grid h-8 w-8 place-items-center rounded-full border border-border" onClick={onClose}><X className="h-4 w-4" /></button>
