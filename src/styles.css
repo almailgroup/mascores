@@ -4,6 +4,17 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Safe-area insets. In the Android app the native shell injects the real
+   status/navigation bar heights as --safe-area-inset-* on <html> (older
+   Android WebViews report env(safe-area-inset-*) as 0), so prefer the
+   injected value and fall back to env() on iOS and the website. */
+:root {
+  --sa-top: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+  --sa-right: var(--safe-area-inset-right, env(safe-area-inset-right, 0px));
+  --sa-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+  --sa-left: var(--safe-area-inset-left, env(safe-area-inset-left, 0px));
+}
+
 @keyframes mas-logo-in {
   0% { opacity: 0; transform: scale(0.6); }
   60% { opacity: 1; transform: scale(1.05); }
