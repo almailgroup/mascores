@@ -1,4 +1,4 @@
-import { Capacitor, registerPlugin } from "@capacitor/core";
+import { Capacitor, registerPlugin, type PluginListenerHandle } from "@capacitor/core";
 import { App } from "@capacitor/app";
 import { Browser } from "@capacitor/browser";
 import { isNativeApp } from "@/lib/native-notify";
@@ -81,33 +81,38 @@ export async function nativeOAuthSignIn(provider: "google" | "apple"): Promise<{
 
   return new Promise((resolve) => {
     let settled = false;
+    let completing = false;
+    const handles: PluginListenerHandle[] = [];
     const finish = (result: { handled: boolean; error?: string }) => {
       if (settled) return;
       settled = true;
-      void listener.then((l) => l.remove());
+      handles.forEach((handle) => { void handle.remove(); });
       void Browser.close().catch(() => undefined);
       resolve(result);
     };
 
-    const listener = App.addListener("appUrlOpen", async ({ url }) => {
-      if (!url.startsWith(`${APP_SCHEME}://`)) return;
-      try {
-        finish(await finishWithReturnUrl(url));
-      } catch (e) {
-        finish({ handled: true, error: e instanceof Error ? e.message : "Sign-in failed" });
-      }
-    });
-
-    void Browser.open({ url: data.url, presentationStyle: "popover" }).catch(() => {
-      // Sheet unavailable: continue sign-in inside the app's own view.
-      settled = true;
-      void listener.then((l) => l.remove());
-      window.location.href = data.url;
-    });
-
-    // If the user dismisses the sheet without signing in, unblock the UI.
-    void Browser.addListener("browserFinished", () => {
-      finish({ handled: true, error: "Sign in was cancelled" });
+    // Register both listeners before opening the Android custom tab. The
+    // manifest routes this exact callback back to the existing app activity.
+    void (async () => {
+      handles.push(await App.addListener("appUrlOpen", async ({ url }) => {
+        if (settled || completing) return;
+        const parsed = new URL(url);
+        if (parsed.protocol !== `${APP_SCHEME}:` || parsed.hostname !== "auth" || parsed.pathname !== "/callback") return;
+        completing = true;
+        try {
+          finish(await finishWithReturnUrl(url));
+        } catch (e) {
+          finish({ handled: true, error: e instanceof Error ? e.message : "Sign-in failed" });
+        }
+      }));
+      handles.push(await Browser.addListener("browserFinished", () => {
+        if (!completing) finish({ handled: true, error: "Sign in was cancelled" });
+      }));
+      await Browser.open({ url: data.url, presentationStyle: "popover" });
+    })().catch((e) => {
+      // Never send native sign-in into the WebView: its browser storage and
+      // callback handling differ from the system authentication browser.
+      finish({ handled: true, error: e instanceof Error ? e.message : NATIVE_UPDATE_NEEDED });
     });
   });
 }
