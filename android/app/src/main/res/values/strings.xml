@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Mansour Almail Scores</string>
-    <string name="title_activity_main">Mansour Almail Scores</string>
+    <string name="app_name">MaScores</string>
+    <string name="title_activity_main">MaScores</string>
     <string name="package_name">com.almailgroup.mascores</string>
     <string name="custom_url_scheme">com.almailgroup.mascores</string>
 </resources>
