@@ -71,3 +71,4 @@
 
 - Android shell lives in android/ (Capacitor 8, appId com.almailgroup.mascores, target SDK 36); `cap add/sync android` needs MAS_APP_URL set; release builds sign with android/keystore.properties (key outside VCS under android/keystore/) — never commit or rotate that key casually, every Play upload must reuse it.
 - Links-page motion stays CSS-driven (pointer handlers only set CSS variables), scoped to `.links-page`, and respects reduced-motion preferences to keep animation lightweight and isolated.
+- Android safe areas come from the Capacitor SystemBars plugin (`insetsHandling: "css"`, set in capacitor.config.ts) plus `EdgeToEdge.enable(this)` in android MainActivity; site CSS reads `--sa-*` variables that prefer the native-injected `--safe-area-inset-*` over `env()`, so iOS and web keep using env() unchanged.
