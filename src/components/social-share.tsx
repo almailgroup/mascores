@@ -13,7 +13,7 @@ export function SocialShare({open,onOpenChange,title,url,onRepost}:{open:boolean
   const item='flex h-auto w-[88px] shrink-0 flex-col justify-start gap-3 rounded-none p-0 text-center hover:bg-transparent [&_svg]:size-8';
   const circle='flex h-16 w-16 shrink-0 items-center justify-center rounded-full';
   const text='block min-h-10 w-full text-center text-sm font-semibold leading-5 whitespace-normal';
-  return <Dialog open={open} onOpenChange={onOpenChange}><DialogContent aria-describedby={undefined} className="top-auto bottom-0 max-w-none translate-y-0 gap-5 rounded-t-lg border-x-0 border-b-0 px-0 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-6 sm:bottom-auto sm:top-1/2 sm:max-w-2xl sm:-translate-y-1/2 sm:rounded-lg">
+  return <Dialog open={open} onOpenChange={onOpenChange}><DialogContent aria-describedby={undefined} className="top-auto bottom-0 max-w-none translate-y-0 gap-5 rounded-t-lg border-x-0 border-b-0 px-0 pb-[max(1.5rem,var(--sa-bottom))] pt-6 sm:bottom-auto sm:top-1/2 sm:max-w-2xl sm:-translate-y-1/2 sm:rounded-lg">
     <DialogTitle className="px-6 text-center">{label('Share','مشاركة')}</DialogTitle>
     <div className="flex items-start gap-3 overflow-x-auto px-5 pb-1" data-no-gesture>
       {onRepost&&<Button variant="ghost" className={item} onClick={()=>{onRepost();onOpenChange(false);}}><span className={`${circle} bg-share-yellow text-share-white`}><Repeat2 className="h-9 w-9"/></span><span className={text}>{label('Repost','إعادة نشر')}</span></Button>}

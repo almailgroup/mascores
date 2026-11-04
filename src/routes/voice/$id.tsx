@@ -474,7 +474,7 @@ function VoiceRoomPage() {
       </div>
 
       {live && joined && (
-        <div className="fixed inset-x-0 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-40 mx-auto flex max-w-md items-center justify-center gap-2 px-4 md:bottom-6">
+        <div className="fixed inset-x-0 bottom-[calc(5rem+var(--sa-bottom))] z-40 mx-auto flex max-w-md items-center justify-center gap-2 px-4 md:bottom-6">
           <div className="flex w-full flex-wrap items-center justify-center gap-2 rounded-3xl border border-border bg-background/95 p-2 shadow-lg backdrop-blur">
 
             {role === "listener" ? (

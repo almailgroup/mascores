@@ -107,7 +107,7 @@ export function CompetitionsPanel({ onOpen }: { onOpen: (c: Competition) => void
   const header = (
     <div
       className="sticky top-0 z-10 flex items-center gap-1 border-b border-border/70 bg-background/85 px-2 backdrop-blur-xl"
-      style={{ paddingTop: "calc(0.375rem + env(safe-area-inset-top, 0px))", paddingBottom: "0.375rem" }}
+      style={{ paddingTop: "calc(0.375rem + var(--sa-top))", paddingBottom: "0.375rem" }}
     >
       <button
         type="button"

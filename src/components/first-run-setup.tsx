@@ -64,7 +64,7 @@ export function FirstRunSetup({ children }: { children: ReactNode }) {
   return <>
     <div hidden inert>{children}</div>
     <div data-no-gesture className="fixed inset-0 z-[110] overflow-y-auto bg-background text-foreground" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
-      <div className="mx-auto flex min-h-dvh max-w-xl flex-col px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-[calc(1.5rem+env(safe-area-inset-top))]">
+      <div className="mx-auto flex min-h-dvh max-w-xl flex-col px-5 pb-[calc(1.5rem+var(--sa-bottom))] pt-[calc(1.5rem+var(--sa-top))]">
         <div className="flex items-center justify-between"><BrandLogo showWordmark={false} className="h-12 w-12 object-contain" /><span className="text-xs font-semibold text-muted-foreground" dir="ltr">{stage === "language" ? "2 / 2" : "1 / 2"}</span></div>
         {stage === "teams" ? <>
           <h1 id="welcome-title" className="mt-8 text-3xl font-bold">{ar ? "اختر فرقك" : "Choose your teams"}</h1>

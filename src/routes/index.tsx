@@ -469,7 +469,7 @@ function TeamFilterDialog({ onClose, onPick, onPickPair }: {
   };
   return createPortal(
     <div data-no-gesture className="fixed inset-0 z-[120] overflow-y-auto bg-background text-foreground" role="dialog" aria-modal="true" aria-label={tx("Filter by team")}>
-      <div className="mx-auto flex min-h-dvh max-w-xl flex-col px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-[calc(1.5rem+env(safe-area-inset-top))]">
+      <div className="mx-auto flex min-h-dvh max-w-xl flex-col px-5 pb-[calc(1.5rem+var(--sa-bottom))] pt-[calc(1.5rem+var(--sa-top))]">
         <div className="flex items-center gap-2">
           <Button type="button" variant="ghost" size="icon" className="size-10 shrink-0" onClick={onClose} aria-label="Close">
             <ChevronLeft className="size-5 rtl:rotate-180" />

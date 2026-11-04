@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Area behind the transparent system bars in edge-to-edge mode (dark theme). -->
+    <color name="app_background">#060D1A</color>
+</resources>

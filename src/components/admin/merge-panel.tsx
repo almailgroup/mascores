@@ -145,7 +145,7 @@ function Profile({ kind, id, name }: { kind: Kind; id: string; name: string }) {
       <button type="button" onClick={() => setOpen(true)} className="mt-1 inline-block text-xs font-semibold text-primary">Open profile</button>
       {open && createPortal(
         <div className="fixed inset-0 z-[200] flex flex-col bg-background">
-          <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-4 pb-3" style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}>
+          <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-4 pb-3" style={{ paddingTop: "max(0.75rem, var(--sa-top))" }}>
             <b className="min-w-0 truncate text-sm">{name}</b>
             <button type="button" onClick={() => setOpen(false)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted" aria-label="Close profile"><X className="h-5 w-5" /></button>
           </div>

@@ -55,10 +55,10 @@ export function Modal({ open, onClose, title, children, wide, fullPage, onSave }
       <div
         role="dialog" aria-modal="true" aria-label={title}
         className={`${fullPage ? "min-h-[100dvh] max-w-full rounded-none" : `my-3 ${wide ? "max-w-4xl" : "max-w-lg"} rounded-3xl sm:my-8`} w-full min-w-0 max-w-full break-words border border-border bg-card p-4 shadow-2xl sm:p-6`}
-        style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: "calc(1rem + var(--sa-bottom))" }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className={`sticky z-10 -mx-4 mb-4 flex items-center justify-between border-b border-border bg-card px-4 pb-2 sm:-mx-6 sm:px-6 ${fullPage ? "-mt-4 top-0 sm:-mt-6" : "top-0 pt-1"}`} style={fullPage ? { paddingTop: "calc(0.75rem + env(safe-area-inset-top, 0px))" } : undefined}>
+        <div className={`sticky z-10 -mx-4 mb-4 flex items-center justify-between border-b border-border bg-card px-4 pb-2 sm:-mx-6 sm:px-6 ${fullPage ? "-mt-4 top-0 sm:-mt-6" : "top-0 pt-1"}`} style={fullPage ? { paddingTop: "calc(0.75rem + var(--sa-top))" } : undefined}>
           <h3 className="min-w-0 truncate text-base font-bold sm:text-lg">{title}</h3>
           {onSave && <button type="button" onClick={onSave} className={`${btnPrimary} ms-auto me-2`}>Save</button>}
           <button onClick={onClose} aria-label="Close" className="-me-1 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm text-muted-foreground hover:bg-accent"><X className="h-5 w-5" /></button>
