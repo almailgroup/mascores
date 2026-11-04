@@ -44,9 +44,16 @@ function AuthPage() {
   // Inside the iOS app, web sign-in with Google/Apple escapes to Safari and
   // never returns, so only email sign-in is offered there.
   const [isNativeApp, setIsNativeApp] = useState(false);
+  // Apple sign-in is unsupported on Android devices (app or browser).
+  const [isAndroid, setIsAndroid] = useState(false);
   useEffect(() => {
-    const cap = (window as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor;
+    const cap = (window as { Capacitor?: { isNativePlatform?: () => boolean; getPlatform?: () => string } }).Capacitor;
     setIsNativeApp(cap?.isNativePlatform?.() === true);
+    setIsAndroid(
+      cap?.isNativePlatform?.() === true
+        ? cap?.getPlatform?.() === "android"
+        : typeof navigator !== "undefined" && /android/i.test(navigator.userAgent),
+    );
   }, []);
 
   useEffect(() => {
@@ -167,14 +174,16 @@ function AuthPage() {
               >
                 <GoogleIcon /> Continue with Google
               </button>
-              <button
-                type="button"
-                onClick={() => handleOAuth("apple")}
-                disabled={busy}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-border bg-background text-sm font-medium transition hover:bg-accent disabled:opacity-60"
-              >
-                <AppleIcon /> Continue with Apple
-              </button>
+              {!isAndroid && (
+                <button
+                  type="button"
+                  onClick={() => handleOAuth("apple")}
+                  disabled={busy}
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-border bg-background text-sm font-medium transition hover:bg-accent disabled:opacity-60"
+                >
+                  <AppleIcon /> Continue with Apple
+                </button>
+              )}
               <div className="my-4 flex items-center gap-3 text-xs uppercase tracking-widest text-muted-foreground">
                 <div className="h-px flex-1 bg-border" />
                 or
