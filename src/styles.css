@@ -495,7 +495,7 @@ a, button, [role="button"] {
   .dark a:active { filter: brightness(1.25); }
 }
 
-/* The links page is a collectible MaScores trading card: tilt for foil, tap to flip for links. */
+/* The links page is a tactics board: each link is a player token, passes animate between them. */
 .links-page {
   color-scheme: light;
   --background: oklch(0.975 0.006 250);
@@ -506,137 +506,48 @@ a, button, [role="button"] {
   --muted: oklch(0.94 0.01 250);
   --muted-foreground: oklch(0.5 0.025 260);
   --border: oklch(0.88 0.012 250);
-  --tc-gold: oklch(0.8 0.13 85);
-  --tc-gold-deep: oklch(0.62 0.12 70);
-  --tc-ig: oklch(0.62 0.22 355);
-  --tc-foil: repeating-linear-gradient(115deg,
-    oklch(0.85 0.15 20) 0%, oklch(0.9 0.15 90) 8%, oklch(0.88 0.15 150) 16%,
-    oklch(0.85 0.13 220) 24%, oklch(0.8 0.15 300) 32%, oklch(0.85 0.15 20) 40%);
-  background:
-    radial-gradient(60% 40% at 50% 0%, color-mix(in oklab, var(--primary) 10%, transparent), transparent 70%),
-    var(--background);
-  letter-spacing: 0;
+  --tb-pitch: oklch(0.56 0.12 152);
+  --tb-pitch-dark: oklch(0.5 0.11 152);
+  --tb-chalk: oklch(0.98 0.01 150);
+  --tb-ink: oklch(0.86 0.15 95);
+  height: 100svh; min-height: 0;
+  background: radial-gradient(60% 40% at 50% 0%, color-mix(in oklab, var(--primary) 10%, transparent), transparent 70%), var(--background);
 }
-.links-page { height: 100svh; min-height: 0; }
-.tc-stage {
-  perspective: 1400px;
-  height: 100%;
-  display: flex; flex-direction: column; justify-content: space-between;
-  padding-top: var(--sa-top);
-  padding-bottom: max(12px, var(--sa-bottom));
+.tb-stage { height: 100%; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); }
+.tb-board {
+  position: relative; flex: 1; min-height: 0; border-radius: 22px; overflow: hidden;
+  background: repeating-linear-gradient(180deg, var(--tb-pitch) 0 10%, var(--tb-pitch-dark) 10% 20%);
+  box-shadow: 0 20px 40px -20px color-mix(in oklab, var(--tb-pitch) 70%, transparent), inset 0 0 0 1px color-mix(in oklab, var(--tb-chalk) 25%, transparent);
+  animation: tb-in .6s cubic-bezier(.2,.8,.2,1) both;
 }
-.tc-stage > div:first-child { padding-block: 8px; flex-shrink: 0; }
-.tc-deal { margin-top: 0; animation: tc-deal 1.1s cubic-bezier(.2,.9,.25,1.05) both; }
-@keyframes tc-deal {
-  0% { opacity: 0; transform: translateY(-120px) rotateX(55deg) rotateZ(-14deg) scale(.7); }
-  60% { opacity: 1; }
-  100% { opacity: 1; transform: none; }
+.tb-board svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.tb-lines * { fill: none; stroke: color-mix(in oklab, var(--tb-chalk) 70%, transparent); stroke-width: .5; vector-effect: non-scaling-stroke; }
+.tb-passes path { fill: none; stroke: var(--tb-ink); stroke-width: 2.4; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; vector-effect: non-scaling-stroke; marker-end: url(#tb-arrow); animation: tb-draw .7s ease-out forwards, tb-fade 6s 4s ease-in-out infinite; }
+.tb-passes marker path { fill: var(--tb-ink); stroke: none; animation: none; stroke-dasharray: none; }
+.tb-ball { position: absolute; width: 12px; height: 12px; margin: -6px; border-radius: 50%; background: var(--tb-chalk); box-shadow: 0 2px 6px oklch(0 0 0 / .35); offset-path: path("M0 0"); animation: tb-ball 7s 2.6s cubic-bezier(.45,0,.3,1) infinite both; }
+.tb-player { position: absolute; transform: translate(-50%, -30%); display: flex; flex-direction: column; align-items: center; text-align: center; color: var(--tb-chalk); width: 30%; animation: tb-pop .5s cubic-bezier(.34,1.56,.64,1) both; -webkit-tap-highlight-color: transparent; }
+.tb-token { position: relative; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: var(--card); color: var(--foreground); border: 3px solid var(--tb-chalk); box-shadow: 0 8px 16px -6px oklch(0 0 0 / .45); transition: transform .25s cubic-bezier(.34,1.56,.64,1); }
+.tb-token i { position: absolute; bottom: -6px; right: -6px; font-style: normal; font-size: 10px; font-weight: 900; min-width: 20px; height: 20px; line-height: 16px; border-radius: 10px; background: var(--primary); color: var(--primary-foreground); border: 2px solid var(--tb-chalk); }
+.tb-app .tb-token { background: var(--foreground); color: var(--background); }
+.tb-play .tb-token { color: var(--tb-pitch-dark); }
+.tb-ig .tb-token { color: oklch(0.6 0.22 355); }
+.tb-mail .tb-token { background: var(--tb-ink); }
+.tb-name { margin-top: 8px; font-size: 13px; font-weight: 900; text-shadow: 0 1px 3px oklch(0 0 0 / .4); }
+.tb-desc { font-size: 10px; font-weight: 700; opacity: .85; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tb-player:active .tb-token { transform: scale(.9); }
+@media (hover: hover) { .tb-player:hover .tb-token { transform: translateY(-3px) scale(1.06); } }
+.tb-player:focus-visible { outline: none; }
+.tb-player:focus-visible .tb-token { outline: 3px solid var(--tb-ink); outline-offset: 3px; }
+.tb-store { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 9999px; background: var(--foreground); color: var(--background); padding: 11px 12px; font-size: 13px; font-weight: 800; }
+@keyframes tb-in { from { opacity: 0; transform: translateY(16px) scale(.97); } }
+@keyframes tb-pop { from { opacity: 0; transform: translate(-50%, -30%) scale(.4); } }
+@keyframes tb-draw { to { stroke-dashoffset: 0; } }
+@keyframes tb-fade { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+@keyframes tb-ball {
+  0% { left: 50%; top: 84%; } 18% { left: 50%; top: 44%; } 34% { left: 22%; top: 64%; }
+  52% { left: 28%; top: 22%; } 70% { left: 72%; top: 22%; } 86% { left: 78%; top: 64%; } 100% { left: 50%; top: 84%; }
 }
-.tc-tilt {
-  --rx: 0deg; --ry: 0deg; --mx: 50%; --my: 50%;
-  position: relative;
-  width: min(340px, calc(100vw - 48px), calc((100svh - var(--sa-top) - var(--sa-bottom) - 144px) * 5 / 7));
-  aspect-ratio: 5 / 7; margin-inline: auto;
-  transform-style: preserve-3d;
-  -webkit-transform-style: preserve-3d;
-  transform: rotateX(var(--rx)) rotateY(var(--ry));
-  transition: transform .5s cubic-bezier(.2,.8,.2,1);
-  touch-action: pan-y; cursor: pointer; -webkit-tap-highlight-color: transparent;
-}
-.tc-tilt.is-tracking { transition: transform .18s ease-out; }
-.tc-card {
-  position: absolute; inset: 0;
-  transform-style: preserve-3d; -webkit-transform-style: preserve-3d;
-  transform: rotateY(0deg);
-  transition: transform 1.2s cubic-bezier(.45,0,.55,1);
-  will-change: transform;
-}
-.tc-card.is-flipped { transform: rotateY(180deg); }
-.tc-tilt.is-idle:not(.is-flipped) { animation: tc-sway 6s ease-in-out infinite; }
-@keyframes tc-sway {
-  0%, 100% { --rx: 4deg; --ry: -8deg; --mx: 30%; --my: 30%; }
-  50% { --rx: -4deg; --ry: 8deg; --mx: 70%; --my: 70%; }
-}
-@property --rx { syntax: "<angle>"; inherits: true; initial-value: 0deg; }
-@property --ry { syntax: "<angle>"; inherits: true; initial-value: 0deg; }
-@property --mx { syntax: "<percentage>"; inherits: true; initial-value: 50%; }
-@property --my { syntax: "<percentage>"; inherits: true; initial-value: 50%; }
-.tc-face {
-  position: absolute; inset: 0; border-radius: 26px; overflow: hidden;
-  backface-visibility: hidden; -webkit-backface-visibility: hidden;
-  transition: visibility 0s 1.2s;
-  background: var(--card);
-  box-shadow: 0 30px 60px -25px color-mix(in oklab, var(--foreground) 45%, transparent), 0 0 0 1px color-mix(in oklab, var(--tc-gold-deep) 35%, transparent);
-}
-.tc-front { transform: translateZ(1px); visibility: visible; transition-delay: 0s; }
-.tc-back { transform: rotateY(180deg) translateZ(1px); visibility: hidden; }
-.tc-card.is-flipped .tc-front { visibility: hidden; transition-delay: 1.2s; }
-.tc-card.is-flipped .tc-back { visibility: visible; transition-delay: 0s; }
-.tc-frame { position: absolute; inset: 9px; border-radius: 19px; border: 1.5px solid color-mix(in oklab, var(--tc-gold) 80%, transparent); pointer-events: none; z-index: 3; }
-.tc-frame::after { content: ""; position: absolute; inset: 4px; border-radius: 15px; border: 1px dashed color-mix(in oklab, var(--tc-gold-deep) 30%, transparent); }
-.tc-foil {
-  position: absolute; inset: 0; z-index: 4; pointer-events: none; mix-blend-mode: color-burn; opacity: .35;
-  background: var(--tc-foil); background-size: 300% 300%; background-position: var(--mx) var(--my);
-  mask-image: radial-gradient(70% 60% at var(--mx) var(--my), #000, transparent 85%);
-}
-.tc-glare { position: absolute; inset: 0; z-index: 5; pointer-events: none; mix-blend-mode: overlay;
-  background: radial-gradient(45% 35% at var(--mx) var(--my), color-mix(in oklab, var(--primary-foreground) 95%, transparent), transparent 70%); }
-.tc-sparkle { position: absolute; inset: 0; z-index: 4; pointer-events: none; opacity: .5; mix-blend-mode: soft-light;
-  background-image: radial-gradient(circle at 20% 30%, var(--primary-foreground) 0 1px, transparent 1.5px), radial-gradient(circle at 70% 60%, var(--primary-foreground) 0 1px, transparent 1.5px), radial-gradient(circle at 40% 80%, var(--primary-foreground) 0 1px, transparent 1.5px);
-  background-size: 37px 41px, 53px 47px, 29px 31px; background-position: calc(var(--mx) * .3) calc(var(--my) * .3); }
-.tc-art {
-  position: absolute; inset: 0 0 46% 0; overflow: hidden;
-  background:
-    repeating-conic-gradient(from 0deg at 50% 55%, color-mix(in oklab, var(--primary) 16%, transparent) 0 6deg, transparent 6deg 12deg),
-    radial-gradient(80% 80% at 50% 62%, color-mix(in oklab, var(--primary) 22%, var(--card)), var(--card));
-}
-.tc-art::after { content: ""; position: absolute; inset: auto 0 0; height: 40%; background: linear-gradient(to top, var(--card), transparent); }
-.tc-rays { position: absolute; inset: -40%; background: repeating-conic-gradient(from 0deg at 50% 50%, color-mix(in oklab, var(--tc-gold) 22%, transparent) 0 4deg, transparent 4deg 16deg); animation: tc-spin 40s linear infinite; }
-@keyframes tc-spin { to { transform: rotate(1turn); } }
-.tc-logo { position: absolute; left: 50%; top: 31%; width: 48%; transform: translate(-50%, -50%) translateZ(40px); filter: drop-shadow(0 14px 18px color-mix(in oklab, var(--primary) 40%, transparent)); animation: tc-float 4s ease-in-out infinite; }
-@keyframes tc-float { 50% { transform: translate(-50%, -56%) translateZ(40px); } }
-.tc-rating { position: absolute; top: 24px; inset-inline-start: 26px; z-index: 2; line-height: .9; text-align: center; }
-.tc-rating b { display: block; font-size: 46px; font-weight: 900; background: linear-gradient(160deg, var(--tc-gold-deep), var(--tc-gold), var(--tc-gold-deep)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-.tc-rating span { font-size: 11px; font-weight: 800; color: var(--muted-foreground); }
-.tc-edition { position: absolute; top: 28px; inset-inline-end: 26px; z-index: 2; font-size: 10px; font-weight: 800; color: var(--tc-gold-deep); text-align: end; }
-.tc-plate { position: absolute; inset: 54% 22px auto; z-index: 2; text-align: center; }
-.tc-plate h1 { font-size: 34px; font-weight: 900; line-height: 1.05; }
-.tc-plate p { margin-top: 2px; font-size: 12px; font-weight: 700; color: var(--primary); }
-.tc-rule { height: 1.5px; margin: 10px auto; width: 70%; background: linear-gradient(90deg, transparent, var(--tc-gold), transparent); }
-.tc-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px 4px; }
-.tc-stats div { display: flex; align-items: baseline; justify-content: center; gap: 5px; }
-.tc-stats b { font-size: 17px; font-weight: 900; }
-.tc-stats span { font-size: 10px; font-weight: 700; color: var(--muted-foreground); }
-.tc-stats div { animation: tc-pop .5s cubic-bezier(.3,1.6,.5,1) both; }
-@keyframes tc-pop { from { opacity: 0; transform: scale(.4); } }
-.tc-hint { position: absolute; bottom: 22px; inset-inline: 0; z-index: 2; text-align: center; font-size: 10px; font-weight: 800; color: var(--muted-foreground); }
-.tc-hint i { display: inline-block; animation: tc-hint 1.8s ease-in-out infinite; font-style: normal; }
-@keyframes tc-hint { 50% { transform: rotateY(180deg); } }
-.tc-back-inner { position: relative; z-index: 2; display: flex; flex-direction: column; height: 100%; padding: 26px 24px 22px; }
-.tc-back-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.tc-link { position: relative; display: flex; align-items: center; gap: 12px; padding: 11px 4px; border-bottom: 1px solid var(--border); transition: transform .25s ease; }
-.tc-link:last-child { border-bottom: 0; }
-.tc-link-icon { display: grid; place-items: center; width: 38px; height: 38px; flex-shrink: 0; border-radius: 12px; background: var(--muted); color: var(--primary); }
-.tc-link-app .tc-link-icon { background: var(--foreground); color: var(--background); }
-.tc-link-ig .tc-link-icon { color: var(--tc-ig); }
-.tc-link-x .tc-link-icon { color: var(--foreground); }
-.is-flipped .tc-link { animation: tc-slide .5s cubic-bezier(.2,.8,.2,1) both; }
-@keyframes tc-slide { from { opacity: 0; transform: translateX(18px); } }
-.tc-actions { margin-top: 0; flex-direction: row; justify-content: center; gap: 8px; flex-shrink: 0; animation: links-reveal .7s .9s cubic-bezier(.2,.8,.2,1) both; }
-.tc-actions > * { min-height: 40px; padding-inline: 14px; font-size: 12px; }
-@keyframes links-reveal { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
-.tc-shadow { width: 62%; height: 12px; margin: 0 auto; flex-shrink: 0; border-radius: 50%; background: radial-gradient(closest-side, color-mix(in oklab, var(--foreground) 22%, transparent), transparent); }
-@media (max-height: 650px) {
-  .tc-back-inner { padding: 20px 20px 16px; }
-  .tc-link { padding-block: 6px; gap: 8px; }
-  .tc-back-head h2 { font-size: 22px; }
-  .tc-back-head img { width: 34px; height: 34px; }
-  .tc-plate { inset-inline: 18px; }
-  .tc-plate h1 { font-size: 28px; }
-  .tc-hint { bottom: 18px; }
-}
-@media (hover: hover) { .tc-link:hover { transform: translateX(4px); } [dir="rtl"] .tc-link:hover { transform: translateX(-4px); } }
-.tc-link:focus-visible, .tc-tilt:focus-visible { outline: 3px solid var(--primary); outline-offset: 4px; }
 @media (prefers-reduced-motion: reduce) {
  .links-page *, .links-page *::before, .links-page *::after { animation: none !important; transition: none !important; }
+ .links-page .tb-passes path { stroke-dashoffset: 0; }
 }

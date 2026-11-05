@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useRef, useState } from "react";
-import { Globe, Mail, ArrowUpRight, Instagram, Languages, RotateCw } from "lucide-react";
+import { useState } from "react";
+import { Globe, Mail, Instagram, Languages } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { Button } from "@/components/ui/button";
-import logo from "@/assets/logo-mark-v2.png.asset.json";
 
 const APP_STORE = "https://apps.apple.com/kw/app/mascores/id6819263516";
+const GOOGLE_PLAY = "https://play.google.com/store/apps/details?id=com.almailgroup.mascores";
 const HANDLE = "@mascoreslive";
 
 function AppleLogo({ className }: { className?: string }) {
@@ -15,7 +15,13 @@ function AppleLogo({ className }: { className?: string }) {
     </svg>
   );
 }
-
+function PlayLogo({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden>
+      <path d="M3.6 1.8 13.4 12l-9.8 10.2c-.4-.2-.6-.7-.6-1.2V3c0-.5.2-1 .6-1.2Zm11 11.4 2.5 2.6-11.2 6.4 8.7-9Zm3.8-4.5 3 1.7c.9.5.9 1.8 0 2.3l-3 1.7-2.8-2.9 2.8-2.8ZM5.9 1.8l11.2 6.4-2.5 2.6-8.7-9Z" />
+    </svg>
+  );
+}
 function XLogo({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden>
@@ -24,45 +30,45 @@ function XLogo({ className }: { className?: string }) {
   );
 }
 
+// Formation positions on the pitch (percent of board width/height).
+const SPOTS: Record<string, { x: number; y: number; n: string }> = {
+  app: { x: 28, y: 22, n: "9" },
+  play: { x: 72, y: 22, n: "10" },
+  web: { x: 50, y: 44, n: "8" },
+  ig: { x: 22, y: 64, n: "7" },
+  x: { x: 78, y: 64, n: "11" },
+  mail: { x: 50, y: 84, n: "1" },
+};
+// Passing move drawn on the board, in order.
+const PASSES: [string, string][] = [["mail", "web"], ["web", "ig"], ["ig", "app"], ["web", "x"], ["x", "play"], ["app", "play"]];
+
 const COPY = {
   en: {
-    name: "MaScores",
     tag: "Kuwaiti football, live",
-    rating: "OVR",
-    edition: "Edition 2026/27",
-    serial: "No. 001",
-    stats: [["99", "LIVE"], ["98", "TABLES"], ["97", "LINEUPS"], ["99", "ALERTS"], ["96", "NEWS"], ["98", "STATS"]],
-    hint: "Tap the card to flip",
-    backTitle: "Find us",
-    flip: "Flip card",
-    flipBack: "Show front",
+    board: "Pick your position",
+    hint: "Tap a player to open",
     links: [
-      { key: "app", title: "App Store", desc: "MaScores for iPhone", href: APP_STORE },
+      { key: "app", title: "App Store", desc: "iPhone", href: APP_STORE },
+      { key: "play", title: "Google Play", desc: "Android", href: GOOGLE_PLAY },
       { key: "web", title: "Website", desc: "mascores.live", href: "https://mascores.live" },
       { key: "ig", title: "Instagram", desc: HANDLE, href: "https://instagram.com/mascoreslive" },
       { key: "x", title: "X", desc: HANDLE, href: "https://x.com/mascoreslive" },
-      { key: "mail", title: "Contact us", desc: "info@mascores.live", href: "mailto:info@mascores.live" },
+      { key: "mail", title: "Contact", desc: "info@mascores.live", href: "mailto:info@mascores.live" },
     ],
     by: "Made by Mansour Almail",
     toggle: "العربية",
   },
   ar: {
-    name: "ما سكورز",
     tag: "الكرة الكويتية مباشرة",
-    rating: "تقييم",
-    edition: "إصدار ٢٠٢٦/٢٧",
-    serial: "رقم ٠٠١",
-    stats: [["٩٩", "مباشر"], ["٩٨", "الترتيب"], ["٩٧", "التشكيلات"], ["٩٩", "التنبيهات"], ["٩٦", "الأخبار"], ["٩٨", "الإحصاءات"]],
-    hint: "اضغط على البطاقة لقلبها",
-    backTitle: "تجدنا هنا",
-    flip: "اقلب البطاقة",
-    flipBack: "الوجه الأمامي",
+    board: "اختر مركزك",
+    hint: "اضغط على لاعب للفتح",
     links: [
-      { key: "app", title: "متجر آبل", desc: "ما سكورز للآيفون", href: APP_STORE },
+      { key: "app", title: "متجر آبل", desc: "آيفون", href: APP_STORE },
+      { key: "play", title: "جوجل بلاي", desc: "أندرويد", href: GOOGLE_PLAY },
       { key: "web", title: "الموقع", desc: "mascores.live", href: "https://mascores.live" },
       { key: "ig", title: "إنستغرام", desc: HANDLE, href: "https://instagram.com/mascoreslive" },
       { key: "x", title: "إكس", desc: HANDLE, href: "https://x.com/mascoreslive" },
-      { key: "mail", title: "تواصل معنا", desc: "info@mascores.live", href: "mailto:info@mascores.live" },
+      { key: "mail", title: "تواصل", desc: "info@mascores.live", href: "mailto:info@mascores.live" },
     ],
     by: "من صنع منصور المعيل",
     toggle: "English",
@@ -73,9 +79,9 @@ export const Route = createFileRoute("/links")({
   head: () => ({
     meta: [
       { title: "MaScores — Links | Kuwaiti football live" },
-      { name: "description", content: "All MaScores links: website, iPhone app on the App Store, Instagram and X (@mascoreslive), and contact. Kuwaiti football scores, standings and lineups." },
+      { name: "description", content: "All MaScores links: iPhone app on the App Store, Android app on Google Play, website, Instagram and X (@mascoreslive), and contact." },
       { property: "og:title", content: "MaScores — Links" },
-      { property: "og:description", content: "Website, iPhone app, Instagram and X for MaScores, Kuwaiti football live." },
+      { property: "og:description", content: "App Store, Google Play, website, Instagram and X for MaScores, Kuwaiti football live." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -85,6 +91,7 @@ export const Route = createFileRoute("/links")({
 
 function LinkIcon({ k }: { k: string }) {
   if (k === "app") return <AppleLogo className="h-5 w-5" />;
+  if (k === "play") return <PlayLogo className="h-5 w-5" />;
   if (k === "web") return <Globe className="h-5 w-5" />;
   if (k === "ig") return <Instagram className="h-5 w-5" />;
   if (k === "x") return <XLogo className="h-4 w-4" />;
@@ -93,112 +100,67 @@ function LinkIcon({ k }: { k: string }) {
 
 function LinksPage() {
   const [lang, setLang] = useState<"en" | "ar">("en");
-  const [flipped, setFlipped] = useState(false);
-  const [tracking, setTracking] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
   const c = COPY[lang];
   const rtl = lang === "ar";
 
-  const onMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    const el = cardRef.current;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    const x = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
-    const y = Math.min(1, Math.max(0, (e.clientY - r.top) / r.height));
-    el.style.setProperty("--rx", `${(0.5 - y) * 22}deg`);
-    el.style.setProperty("--ry", `${(x - 0.5) * 26 * (flipped ? -1 : 1)}deg`);
-    el.style.setProperty("--mx", `${x * 100}%`);
-    el.style.setProperty("--my", `${y * 100}%`);
-    if (!tracking) setTracking(true);
-  };
-  const onLeave = () => {
-    const el = cardRef.current;
-    if (el) ["--rx", "--ry", "--mx", "--my"].forEach((v) => el.style.removeProperty(v));
-    setTracking(false);
-  };
-  const onCardClick = (e: React.MouseEvent) => {
-    if ((e.target as HTMLElement).closest("a")) return;
-    setFlipped((f) => !f);
-  };
-
   return (
-    <div lang={lang} dir={rtl ? "rtl" : "ltr"} className="links-page min-h-screen overflow-hidden bg-background text-foreground">
-      <main className="tc-stage mx-auto max-w-md px-5 pb-10">
-        <div className="flex items-center justify-between py-4">
-          <BrandLogo showWordmark={false} className="h-7 w-7 object-contain" />
+    <div lang={lang} dir={rtl ? "rtl" : "ltr"} className="links-page overflow-hidden bg-background text-foreground">
+      <main className="tb-stage mx-auto max-w-md px-5">
+        <div className="flex items-center justify-between py-3">
+          <div className="flex items-center gap-2">
+            <BrandLogo showWordmark={false} className="h-8 w-8 object-contain" />
+            <div><div className="text-base font-black leading-none">MaScores</div><div className="text-[11px] font-bold text-muted-foreground">{c.tag}</div></div>
+          </div>
           <Button variant="ghost" onClick={() => setLang(rtl ? "en" : "ar")} className="gap-2 text-xs font-bold"><Languages className="h-4 w-4" />{c.toggle}</Button>
         </div>
 
-        <div className="tc-deal mt-4">
-          <div
-            ref={cardRef}
-            role="button"
-            tabIndex={0}
-            aria-pressed={flipped}
-            aria-label={flipped ? c.flipBack : c.flip}
-            onPointerMove={onMove}
-            onPointerLeave={onLeave}
-            onPointerCancel={onLeave}
-            onClick={onCardClick}
-            onKeyDown={(e) => { if ((e.key === "Enter" || e.key === " ") && e.target === e.currentTarget) { e.preventDefault(); setFlipped((f) => !f); } }}
-            className={`tc-tilt ${flipped ? "is-flipped" : ""} ${tracking ? "is-tracking" : "is-idle"}`}
-          >
-            <div className={`tc-card ${flipped ? "is-flipped" : ""}`}>
-            <section className="tc-face tc-front" inert={flipped} aria-hidden={flipped}>
-              <div className="tc-art"><div className="tc-rays" /></div>
-              <img src={logo.url} alt={c.name} className="tc-logo" />
-              <div className="tc-rating"><b>99</b><span>{c.rating}</span></div>
-              <div className="tc-edition"><div>{c.edition}</div><div>{c.serial}</div></div>
-              <div className="tc-plate">
-                <h1>{c.name}</h1>
-                <p>{c.tag}</p>
-                <div className="tc-rule" />
-                <div className="tc-stats">
-                  {c.stats.map(([v, l], i) => <div key={l} style={{ animationDelay: `${0.9 + i * 0.08}s` }}><b>{v}</b><span>{l}</span></div>)}
-                </div>
-              </div>
-              <div className="tc-hint"><i><RotateCw className="inline h-3 w-3" /></i> {c.hint}</div>
-              <div className="tc-frame" />
-              <div className="tc-sparkle" />
-              <div className="tc-foil" />
-              <div className="tc-glare" />
-            </section>
-
-            <section className="tc-face tc-back" inert={!flipped} aria-hidden={!flipped}>
-              <div className="tc-back-inner">
-                <div className="tc-back-head">
-                  <div><h2 className="text-2xl font-black">{c.backTitle}</h2><span className="text-xs font-bold text-primary" dir="ltr">{HANDLE}</span></div>
-                  <img src={logo.url} alt="" className="h-11 w-11 object-contain" />
-                </div>
-                <div className="tc-rule" style={{ width: "100%" }} />
-                <nav className="flex flex-1 flex-col justify-center" aria-label={c.backTitle}>
-                  {c.links.map((l, i) => (
-                    <a key={l.key} href={l.href} target={l.key === "mail" ? undefined : "_blank"} rel="noreferrer" className={`tc-link tc-link-${l.key}`} style={{ animationDelay: `${0.25 + i * 0.07}s` }}>
-                      <span className="tc-link-icon"><LinkIcon k={l.key} /></span>
-                      <span className="min-w-0 flex-1"><span className="block text-base font-black">{l.title}</span><span className="block truncate text-xs text-muted-foreground"><bdi>{l.desc}</bdi></span></span>
-                      <ArrowUpRight className={`h-4 w-4 shrink-0 text-muted-foreground ${rtl ? "-scale-x-100" : ""}`} />
-                    </a>
-                  ))}
-                </nav>
-                <p className="text-center text-[10px] font-bold text-muted-foreground">{c.by}</p>
-              </div>
-              <div className="tc-frame" />
-              <div className="tc-foil" />
-              <div className="tc-glare" />
-            </section>
-            </div>
-          </div>
+        <div className="flex items-baseline justify-between px-1 pb-2">
+          <h1 className="text-xl font-black">{c.board}</h1>
+          <span className="text-[11px] font-bold text-muted-foreground">{c.hint}</span>
         </div>
-        <div className="tc-shadow" aria-hidden />
 
-        <div className="tc-actions mt-6 flex flex-col items-center gap-3">
-          <Button onClick={() => setFlipped((f) => !f)} variant="outline" className="gap-2 rounded-full px-6 font-bold">
-            <RotateCw className="h-4 w-4" />{flipped ? c.flipBack : c.flip}
-          </Button>
-          <a href={APP_STORE} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-bold text-background">
-            <AppleLogo className="h-4 w-4" />{c.links[0].title}
-          </a>
+        {/* The board itself stays left-to-right so the formation never mirrors. */}
+        <div className="tb-board" dir="ltr">
+          <svg className="tb-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
+            <rect x="3" y="3" width="94" height="94" rx="2" />
+            <line x1="3" y1="50" x2="97" y2="50" />
+            <circle cx="50" cy="50" r="11" />
+            <rect x="28" y="3" width="44" height="14" />
+            <rect x="28" y="83" width="44" height="14" />
+            <rect x="40" y="3" width="20" height="5" />
+            <rect x="40" y="92" width="20" height="5" />
+          </svg>
+          <svg className="tb-passes" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
+            <defs>
+              <marker id="tb-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0 0 10 5 0 10z" /></marker>
+            </defs>
+            {PASSES.map(([a, b], i) => {
+              const p = SPOTS[a], q = SPOTS[b];
+              const mx = (p.x + q.x) / 2 + (q.y - p.y) * 0.18, my = (p.y + q.y) / 2 - (q.x - p.x) * 0.18;
+              return <path key={i} d={`M${p.x} ${p.y} Q${mx} ${my} ${q.x} ${q.y}`} markerEnd="url(#tb-arrow)" pathLength={1} style={{ animationDelay: `${0.5 + i * 0.35}s` }} />;
+            })}
+          </svg>
+          <div className="tb-ball" aria-hidden />
+          <nav aria-label={c.board} dir={rtl ? "rtl" : "ltr"}>
+            {c.links.map((l, i) => {
+              const s = SPOTS[l.key];
+              return (
+                <a key={l.key} href={l.href} target={l.key === "mail" ? undefined : "_blank"} rel="noreferrer"
+                  className={`tb-player tb-${l.key}`} style={{ left: `${s.x}%`, top: `${s.y}%`, animationDelay: `${0.1 + i * 0.08}s` }}>
+                  <span className="tb-token"><LinkIcon k={l.key} /><i>{s.n}</i></span>
+                  <span className="tb-name">{l.title}</span>
+                  <span className="tb-desc"><bdi>{l.desc}</bdi></span>
+                </a>
+              );
+            })}
+          </nav>
         </div>
+
+        <div className="flex gap-2 py-3">
+          <a href={APP_STORE} target="_blank" rel="noreferrer" className="tb-store"><AppleLogo className="h-5 w-5" /><span>App Store</span></a>
+          <a href={GOOGLE_PLAY} target="_blank" rel="noreferrer" className="tb-store"><PlayLogo className="h-5 w-5" /><span>Google Play</span></a>
+        </div>
+        <p className="pb-3 text-center text-[10px] font-bold text-muted-foreground">{c.by}</p>
       </main>
     </div>
   );
