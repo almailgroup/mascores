@@ -95,10 +95,103 @@ public class AuthSheetPlugin: CAPPlugin, CAPBridgedPlugin, ASWebAuthenticationPr
     }
 }
 
+// Real iOS tab bar (Liquid Glass on iOS 26, including hold-and-swipe between
+// tabs). The website still draws its own bar; the app asks this plugin to show
+// the system one on primary pages and hides it everywhere else.
+final class PassthroughView: UIView {
+    weak var bar: UIView?
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        guard let bar, !isHidden else { return nil }
+        let p = convert(point, to: bar)
+        return bar.point(inside: p, with: event) ? bar.hitTest(p, with: event) : nil
+    }
+}
+
+@objc(NativeTabBar)
+public class NativeTabBarPlugin: CAPPlugin, CAPBridgedPlugin, UITabBarControllerDelegate {
+    public let identifier = "NativeTabBarPlugin"
+    public let jsName = "NativeTabBar"
+    public let pluginMethods = [
+        CAPPluginMethod(name: "show", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "hide", returnType: CAPPluginReturnPromise),
+    ]
+    private var tbc: UITabBarController?
+    private var container: PassthroughView?
+    private var signature = ""
+
+    private func setup(in host: UIViewController) -> (UITabBarController, PassthroughView) {
+        if let tbc, let container { return (tbc, container) }
+        let wrap = PassthroughView()
+        wrap.translatesAutoresizingMaskIntoConstraints = false
+        wrap.backgroundColor = .clear
+        host.view.addSubview(wrap)
+        NSLayoutConstraint.activate([
+            wrap.leadingAnchor.constraint(equalTo: host.view.leadingAnchor),
+            wrap.trailingAnchor.constraint(equalTo: host.view.trailingAnchor),
+            wrap.bottomAnchor.constraint(equalTo: host.view.bottomAnchor),
+            wrap.topAnchor.constraint(equalTo: host.view.safeAreaLayoutGuide.bottomAnchor, constant: -110),
+        ])
+        let controller = UITabBarController()
+        controller.delegate = self
+        host.addChild(controller)
+        controller.view.backgroundColor = .clear
+        controller.view.translatesAutoresizingMaskIntoConstraints = false
+        wrap.addSubview(controller.view)
+        NSLayoutConstraint.activate([
+            controller.view.leadingAnchor.constraint(equalTo: wrap.leadingAnchor),
+            controller.view.trailingAnchor.constraint(equalTo: wrap.trailingAnchor),
+            controller.view.topAnchor.constraint(equalTo: wrap.topAnchor),
+            controller.view.bottomAnchor.constraint(equalTo: wrap.bottomAnchor),
+        ])
+        controller.didMove(toParent: host)
+        wrap.bar = controller.tabBar
+        tbc = controller; container = wrap
+        return (controller, wrap)
+    }
+
+    @objc func show(_ call: CAPPluginCall) {
+        let items = call.getArray("items", JSObject.self) ?? []
+        let selected = call.getInt("selected") ?? 0
+        let dark = call.getBool("dark") ?? false
+        DispatchQueue.main.async {
+            guard let host = self.bridge?.viewController else { call.reject("No screen"); return }
+            let (controller, wrap) = self.setup(in: host)
+            host.overrideUserInterfaceStyle = dark ? .dark : .light
+            let sig = items.map { "\($0["title"] as? String ?? "")|\($0["icon"] as? String ?? "")" }.joined(separator: ",")
+            if sig != self.signature {
+                self.signature = sig
+                controller.viewControllers = items.map { item in
+                    let vc = UIViewController()
+                    vc.view.backgroundColor = .clear
+                    vc.view.isUserInteractionEnabled = false
+                    let icon = item["icon"] as? String ?? "circle"
+                    vc.tabBarItem = UITabBarItem(title: item["title"] as? String, image: UIImage(systemName: icon), selectedImage: UIImage(systemName: icon))
+                    return vc
+                }
+            }
+            if selected >= 0 && selected < (controller.viewControllers?.count ?? 0) { controller.selectedIndex = selected }
+            wrap.isHidden = false
+            host.view.bringSubviewToFront(wrap)
+            call.resolve()
+        }
+    }
+
+    @objc func hide(_ call: CAPPluginCall) {
+        DispatchQueue.main.async { self.container?.isHidden = true; call.resolve() }
+    }
+
+    public func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
+        let index = tabBarController.viewControllers?.firstIndex(of: viewController) ?? 0
+        notifyListeners("select", data: ["index": index, "reselect": index == tabBarController.selectedIndex])
+        return true
+    }
+}
+
 class MASBridgeViewController: CAPBridgeViewController {
     override func capacitorDidLoad() {
         bridge?.registerPluginInstance(PhotoLibraryPlugin())
         bridge?.registerPluginInstance(AuthSheetPlugin())
+        bridge?.registerPluginInstance(NativeTabBarPlugin())
         // Remove the web-only keyboard form assistant bar (arrows + Done).
         FormAssistantBarHider.start(over: webView)
     }
