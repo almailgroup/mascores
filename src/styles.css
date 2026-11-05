@@ -520,7 +520,7 @@ a, button, [role="button"] {
   box-shadow: 0 20px 40px -20px color-mix(in oklab, var(--tb-pitch) 70%, transparent), inset 0 0 0 1px color-mix(in oklab, var(--tb-chalk) 25%, transparent);
   animation: tb-in .6s cubic-bezier(.2,.8,.2,1) both;
 }
-.tb-board svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.tb-board > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
 .tb-lines * { fill: none; stroke: color-mix(in oklab, var(--tb-chalk) 70%, transparent); stroke-width: .5; vector-effect: non-scaling-stroke; }
 .tb-passes path { fill: none; stroke: var(--tb-ink); stroke-width: 2.4; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; vector-effect: non-scaling-stroke; marker-end: url(#tb-arrow); animation: tb-draw .7s ease-out forwards, tb-fade 6s 4s ease-in-out infinite; }
 .tb-passes marker path { fill: var(--tb-ink); stroke: none; animation: none; stroke-dasharray: none; }
