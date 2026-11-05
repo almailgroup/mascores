@@ -520,18 +520,15 @@ a, button, [role="button"] {
   box-shadow: 0 20px 40px -20px color-mix(in oklab, var(--tb-pitch) 70%, transparent), inset 0 0 0 1px color-mix(in oklab, var(--tb-chalk) 25%, transparent);
   animation: tb-in .6s cubic-bezier(.2,.8,.2,1) both;
 }
-.tb-board svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.tb-board > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
 .tb-lines * { fill: none; stroke: color-mix(in oklab, var(--tb-chalk) 70%, transparent); stroke-width: .5; vector-effect: non-scaling-stroke; }
 .tb-passes path { fill: none; stroke: var(--tb-ink); stroke-width: 2.4; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; vector-effect: non-scaling-stroke; marker-end: url(#tb-arrow); animation: tb-draw .7s ease-out forwards, tb-fade 6s 4s ease-in-out infinite; }
 .tb-passes marker path { fill: var(--tb-ink); stroke: none; animation: none; stroke-dasharray: none; }
 .tb-ball { position: absolute; width: 12px; height: 12px; margin: -6px; border-radius: 50%; background: var(--tb-chalk); box-shadow: 0 2px 6px oklch(0 0 0 / .35); animation: tb-ball 7s 2.6s cubic-bezier(.45,0,.3,1) infinite both; }
 .tb-player { position: absolute; transform: translate(-50%, -30%); display: flex; flex-direction: column; align-items: center; text-align: center; color: var(--tb-chalk); width: 30%; animation: tb-pop .5s cubic-bezier(.34,1.56,.64,1) both; -webkit-tap-highlight-color: transparent; }
-.tb-token { position: relative; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: var(--card); color: var(--foreground); border: 3px solid var(--tb-chalk); box-shadow: 0 8px 16px -6px oklch(0 0 0 / .45); transition: transform .25s cubic-bezier(.34,1.56,.64,1); }
-.tb-token i { position: absolute; bottom: -6px; right: -6px; font-style: normal; font-size: 10px; font-weight: 900; min-width: 20px; height: 20px; line-height: 16px; border-radius: 10px; background: var(--primary); color: var(--primary-foreground); border: 2px solid var(--tb-chalk); }
-.tb-app .tb-token { background: var(--foreground); color: var(--background); }
-.tb-play .tb-token { color: var(--tb-pitch-dark); }
-.tb-ig .tb-token { color: oklch(0.6 0.22 355); }
-.tb-mail .tb-token { background: var(--tb-ink); }
+.tb-token { position: relative; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: none; color: var(--tb-chalk); border: 0; box-shadow: none; filter: drop-shadow(0 2px 4px oklch(0 0 0 / .55)); transition: transform .25s cubic-bezier(.34,1.56,.64,1); }
+.tb-token i { position: absolute; top: -4px; right: -4px; font-style: normal; font-size: 12px; font-weight: 900; color: var(--tb-chalk); text-shadow: 0 1px 2px oklch(0 0 0 / .95), 0 0 5px oklch(0 0 0 / .8); }
+.tb-app .tb-token, .tb-play .tb-token, .tb-ig .tb-token, .tb-mail .tb-token { background: none; color: var(--tb-chalk); }
 .tb-name { margin-top: 8px; font-size: 13px; font-weight: 900; text-shadow: 0 1px 3px oklch(0 0 0 / .4); }
 .tb-desc { font-size: 10px; font-weight: 700; opacity: .85; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tb-player:active .tb-token { transform: scale(.9); }
