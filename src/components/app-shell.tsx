@@ -16,6 +16,7 @@ import { suspensionMessage, useMySuspension } from "@/lib/suspension";
 import { SocialActivityButton } from "@/components/social-activity";
 import { isNativeApp } from "@/lib/native-notify";
 import { GlassTabBar } from "@/components/glass-tab-bar";
+import { useNativeTabBar } from "@/lib/native-tab-bar";
 
 /**
  * A restricted person cannot use the app at all: they only see why, and a box to
@@ -94,6 +95,7 @@ const PRIMARY_NAV: NavItem[] = [
   { to: "/tickets", labelKey: "nav.tickets", icon: Ticket },
 ];
 const NAV: NavItem[] = [...PRIMARY_NAV];
+const SF_ICONS: Record<string, string> = { "/": "house.fill", "/favorites": "star.fill", "/news": "newspaper.fill", "/transfers": "arrow.left.arrow.right", "/tickets": "ticket.fill" };
 
 /** Tapping a nav tab goes back to the top: smooth when already on that page (navigation cancelled), instant when switching pages. */
 function scrollToNavTop(item: NavItem, currentPath: string, event: { preventDefault: () => void }) {
@@ -116,6 +118,20 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
   useEffect(() => { initTimeFormat(); }, []);
   const [nativeApp, setNativeApp] = useState(false);
   useEffect(() => { setNativeApp(isNativeApp()); }, []);
+  const onPrimary = !bare && PRIMARY_NAV.some((item) => location.pathname === item.to || location.pathname === `${item.to}/`);
+  const activeTab = PRIMARY_NAV.findIndex((item) => item.exact ? location.pathname === item.to : location.pathname.startsWith(item.to));
+  const systemBar = useNativeTabBar({
+    enabled: nativeApp,
+    visible: onPrimary,
+    items: PRIMARY_NAV.map((item) => ({ title: t(item.labelKey as never), icon: SF_ICONS[item.to] ?? "circle" })),
+    selected: activeTab,
+    onSelect: (index, reselect) => {
+      const item = PRIMARY_NAV[index];
+      if (!item) return;
+      if (reselect) window.scrollTo({ top: 0, behavior: "smooth" });
+      else { window.scrollTo(0, 0); void router.navigate({ to: item.to }); }
+    },
+  });
   useReminderAlerts();
   useLiveEventAlerts();
   useAskForAlerts();
@@ -169,7 +185,7 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
       </div>
 
       <BrowseGestures />
-      {!bare && PRIMARY_NAV.some((item) => location.pathname === item.to || location.pathname === `${item.to}/`) && (nativeApp ? (
+      {onPrimary && !systemBar && (nativeApp ? (
         <nav data-no-gesture aria-label="Main navigation" className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3 md:hidden" style={{ paddingBottom: "max(0.5rem, var(--sa-bottom))" }}>
           <GlassTabBar
             items={PRIMARY_NAV}
