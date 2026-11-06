@@ -72,7 +72,7 @@ export function MatchGroups({ data, highlightTeamId }: { data: MatchWithTeams[];
         <div key={run.key} className="overflow-hidden rounded-2xl border border-border bg-card">
           <CompHeader m={run.matches[0]} />
           <div className="divide-y divide-border">
-            {run.matches.map((m) => <MatchRow key={m.id} m={m} highlightTeamId={highlightTeamId} />)}
+            {run.matches.map((m) => <MatchRow key={m.id} m={m} fixtures={data} highlightTeamId={highlightTeamId} />)}
           </div>
         </div>
       ))}

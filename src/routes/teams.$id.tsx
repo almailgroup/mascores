@@ -241,7 +241,7 @@ function TeamPage() {
           {featured ? (
             <section className="overflow-hidden rounded-2xl border border-border bg-card">
               <div className="border-b border-border px-4 py-2.5 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{tx(featured.status === "scheduled" ? "Next match" : "Featured match")}</div>
-              <MatchRow m={featured} highlightTeamId={id} />
+              <MatchRow m={featured} fixtures={matches.data ?? []} highlightTeamId={id} />
             </section>
           ) : null}
 

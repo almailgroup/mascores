@@ -497,7 +497,7 @@ function CompetitionMatches({ data }: { data: MatchWithTeams[] }) {
             {[bucket.round.startsWith("#") ? `${tx("Round")} ${num(Number(bucket.round.slice(1)))}` : (tx(bucket.round) || tx("Matches")), bucket.group ? tx(bucket.group) : null].filter(Boolean).join(" · ")}
           </div>
           <div className="divide-y divide-border">
-            {bucket.matches.map((m) => <MatchRow key={m.id} m={m} />)}
+            {bucket.matches.map((m) => <MatchRow key={m.id} m={m} fixtures={data} />)}
           </div>
         </div>
       ))}

@@ -34,6 +34,7 @@ import { MatchHighlightCard } from "@/components/match-highlight-card";
 import { displayShortName } from "@/lib/short-name";
 import { FavoriteButton, MatchNotificationButton, useFavorites } from "@/hooks/use-favorites";
 import { useCollapsingHeader } from "@/hooks/use-collapsing-header";
+import { estimatedFixtureDate, fixtureTime } from "@/lib/competition-match-order";
 
 /** Crest + name used inside the slim match hero. The follow star sits on the
  *  outer edge of each club: home star on the left, away star on the right. */
