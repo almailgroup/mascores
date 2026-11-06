@@ -1,4 +1,5 @@
 # Roadmap
+- [x] Zain Premier League: added 31 missing mfsoccer fixtures; all 132 verified with no duplicates
 - [x] Head-to-head: show every completed meeting, independent of club-history limits
 - [x] Fixture display: 12 PM for missing times and clearly labelled estimated dates app-wide
 - [x] Android safe area: edge-to-edge + SystemBars-injected safe-area insets (new Android build required, v1.0.1)
