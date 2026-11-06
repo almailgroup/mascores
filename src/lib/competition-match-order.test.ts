@@ -67,4 +67,16 @@ describe("club fixture ordering", () => {
     expect(sortTeamFixtures([fx(7, "2026-12-20T17:00:00Z"), fx(8, "2026-11-08T17:00:00Z")])
       .map((m) => m.round_number)).toEqual([7, 8]);
   });
+  it("estimates a missing date from adjacent rounds without changing the fixture", () => {
+    const target = fx(7, null);
+    const fixtures = [fx(6, null, "2026-11-30"), target, fx(8, "2026-12-14T17:00:00Z")];
+    expect(estimatedFixtureDate(fixtures, target)).toBe("2026-12-07");
+    expect(target.kickoff_at).toBeNull();
+    expect(target.kickoff_date).toBeNull();
+  });
+  it("never estimates across competitions or seasons", () => {
+    const target = { ...fx(7, null), season: "26/27" };
+    const other = { ...fx(6, "2026-11-30T17:00:00Z"), competition_id: "cup", season: "26/27" };
+    expect(estimatedFixtureDate([target, other], target)).toBeNull();
+  });
 });

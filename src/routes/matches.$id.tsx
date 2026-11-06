@@ -218,6 +218,7 @@ function MatchPage() {
   if (m.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;
   if (!m.data) return <AppShell><EmptyState title={tx("Match not found")} /></AppShell>;
   const match = m.data;
+  const estimatedDate = match.kickoff_at || match.kickoff_date ? null : estimatedFixtureDate(schedulePeers.data ?? [], match);
   const isLive = ["live", "ht"].includes(match.status);
   const hasStarted = !["scheduled", "postponed", "cancelled"].includes(match.status);
   const isPossible = mainAdmin.data === true && !match.lineups_published && possibleLineupWindow(match.status,match.kickoff_at,match.kickoff_date) && (possible.data?.rows.length ?? 0) > 0;
