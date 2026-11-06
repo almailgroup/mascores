@@ -20,6 +20,7 @@ def v(x):
     if x == "null": return None
     if x.startswith("'"): return x[1:-1].replace("''", "'")
     if x in ("true", "false"): return x == "true"
+    if not re.fullmatch(r"-?[0-9.]+", x): return x
     return float(x) if "." in x else int(x)
 
 def vals(st): return [v(t) for t in re.findall(r"'(?:[^']|'')*'|[^,]+", st)]
