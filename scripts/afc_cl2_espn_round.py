@@ -15,6 +15,17 @@ for p in PRIOR["new_players"]:
     SRC2PID.setdefault(p["source_id"], p["id"])
 
 def summary(gid):
+    import os, time
+    path = f"/tmp/espn-cache/{gid}.json"
+    if os.path.exists(path):
+        return json.load(open(path))
+    os.makedirs("/tmp/espn-cache", exist_ok=True)
+    time.sleep(1.5)
+    data = _fetch(gid)
+    json.dump(data, open(path, "w"))
+    return data
+
+def _fetch(gid):
     return json.load(urllib.request.urlopen(urllib.request.Request(f"https://site.api.espn.com/apis/site/v2/sports/soccer/all/summary?event={gid}", headers={"User-Agent": "curl/8"})))
 
 def build_posmap():
