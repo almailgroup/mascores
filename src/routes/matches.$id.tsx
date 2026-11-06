@@ -745,16 +745,10 @@ function PreviousMatchesInner({ home, away, currentId }: {
 
   const focusId = mode === "away" ? awayId : homeId;
   const all = q.data ?? [];
-  const rows = all.filter((m) => {
-    if (mode === "h2h") {
-      const pair = [m.home_team_id, m.away_team_id];
-      if (!(pair.includes(homeId) && pair.includes(awayId))) return false;
-    } else if (!focusId || (m.home_team_id !== focusId && m.away_team_id !== focusId)) return false;
-    return true;
-  });
+  const h2h = meetings.data ?? [];
+  const rows = mode === "h2h" ? h2h : all.filter((m) => !!focusId && (m.home_team_id === focusId || m.away_team_id === focusId));
 
-  // Head-to-head summary of the last 10 meetings.
-  const h2h = all.filter((m) => [m.home_team_id, m.away_team_id].includes(homeId) && [m.home_team_id, m.away_team_id].includes(awayId)).slice(0, 10);
+  // Every completed meeting counts, independently of either club's history limit.
   let homeWins = 0, awayWins = 0, draws = 0;
   for (const m of h2h) {
     if (m.home_score == null || m.away_score == null) continue;
