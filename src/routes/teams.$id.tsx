@@ -430,15 +430,15 @@ function RecentForm({ matches, teamId }: { matches: MatchWithTeams[]; teamId: st
             const opp = home ? m.away : m.home;
             const result = own > other ? "w" : own === other ? "d" : "l";
             return (
-              <Link key={m.id} to="/matches/$id" params={{ id: m.id }} className="flex w-12 flex-col items-center gap-2">
+              <Link key={m.id} to="/matches/$id" params={{ id: m.id }} className="flex min-w-0 flex-col items-center gap-2">
                 <TeamCrest name={opp?.name} logo={opp?.logo_url} className="h-8 w-8" />
                 <span className="flex h-28 w-full flex-col justify-center">
                   <span className="flex h-1/2 items-end justify-center">
-                    {result === "w" && <span className="h-full w-8 rounded-t-sm bg-success" />}
+                    {result === "w" && <span className="h-full w-full max-w-12 rounded-t-sm bg-success" />}
                   </span>
                   <span className="flex h-1/2 items-start justify-center">
-                    {result === "l" && <span className="h-full w-8 rounded-b-sm bg-destructive" />}
-                    {result === "d" && <span className="h-1.5 w-8 rounded-sm bg-muted-foreground/50" />}
+                    {result === "l" && <span className="h-full w-full max-w-12 rounded-b-sm bg-destructive" />}
+                    {result === "d" && <span className="h-1.5 w-full max-w-12 rounded-sm bg-muted-foreground/50" />}
                   </span>
                 </span>
               </Link>
