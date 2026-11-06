@@ -26,7 +26,7 @@ def summary(gid):
     return data
 
 def _fetch(gid):
-    return json.load(urllib.request.urlopen(urllib.request.Request(f"https://site.api.espn.com/apis/site/v2/sports/soccer/all/summary?event={gid}", headers={"User-Agent": "curl/8"})))
+    return json.load(urllib.request.urlopen(urllib.request.Request(f"https://site.web.api.espn.com/apis/site/v2/sports/soccer/afc.cup/summary?event={gid}", headers={"User-Agent": "Mozilla/5.0"})))
 
 def build_posmap():
     pm = {}
