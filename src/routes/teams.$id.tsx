@@ -415,14 +415,14 @@ function RecentForm({ matches, teamId }: { matches: MatchWithTeams[]; teamId: st
     .map((m) => ({ m, t: Date.parse((m.kickoff_at ?? (m as { kickoff_date?: string | null }).kickoff_date ?? "") as string) || 0 }))
     .sort((a, b) => b.t - a.t)
     .map(({ m }) => m)
-    .slice(0, 10)
+    .slice(0, 5)
     .reverse();
   if (played.length === 0) return null;
   return (
     <section className="rounded-2xl border border-border bg-card p-4">
       <h2 className="text-center text-sm font-bold">{tx("Recent form")}</h2>
-      <div className="mt-3 overflow-x-auto rounded-2xl bg-muted/50 p-3">
-        <div className="flex min-w-max items-stretch gap-2">
+      <div className="mt-3 rounded-2xl bg-muted/50 p-3">
+        <div className="grid grid-cols-5 items-stretch gap-2">
           {played.map((m) => {
             const home = m.home_team_id === teamId;
             const own = (home ? m.home_score : m.away_score) ?? 0;
