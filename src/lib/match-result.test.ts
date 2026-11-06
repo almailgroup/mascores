@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hasStandings, matchWinner } from "./match-result";
+import { hasStandings, headToHeadSummary, matchWinner } from "./match-result";
 describe("cup results", () => {
   it("recognizes Khaitan as the 3–1 shootout winner of a 1–1 match", () => {
     expect(matchWinner({ status: "pen", home_score: 1, away_score: 1, home_pen: 1, away_pen: 3 })).toBe("away");

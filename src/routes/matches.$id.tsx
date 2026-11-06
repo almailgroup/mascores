@@ -1,6 +1,6 @@
 import { getSeoInfo, seoHead } from "@/lib/seo-head";
 import { possibleLineupWindow } from "@/lib/possible-lineup";
-import { hasStandings, matchWinner } from "@/lib/match-result";
+import { hasStandings, headToHeadSummary, matchWinner } from "@/lib/match-result";
 import { eventPlayers } from "@/lib/event-players";
 import { MatchMissingPlayers } from "@/components/match-missing-players";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -34,7 +34,7 @@ import { MatchHighlightCard } from "@/components/match-highlight-card";
 import { displayShortName } from "@/lib/short-name";
 import { FavoriteButton, MatchNotificationButton, useFavorites } from "@/hooks/use-favorites";
 import { useCollapsingHeader } from "@/hooks/use-collapsing-header";
-import { estimatedFixtureDate, fixtureTime } from "@/lib/competition-match-order";
+import { compareTeamFixtures, estimatedFixtureDate } from "@/lib/competition-match-order";
 
 /** Crest + name used inside the slim match hero. The follow star sits on the
  *  outer edge of each club: home star on the left, away star on the right. */
