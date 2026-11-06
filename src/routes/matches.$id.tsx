@@ -121,6 +121,18 @@ function MatchPage() {
       return data as (Match & { home: Team | null; away: Team | null; competition: { id: string; name: string; name_ar: string | null; slug: string; logo_url: string | null; sport: string; country: string | null; country_code: string | null; format?: string | null; hidden_tabs?: string[] | null; video_thumbnail_url?: string | null } | null }) | null;
     },
   });
+  const schedulePeers = useQuery({
+    enabled: !!m.data && !m.data.kickoff_at && !m.data.kickoff_date && !!m.data.competition_id,
+    queryKey: ["match-date-estimate", id, m.data?.competition_id, m.data?.season],
+    queryFn: async () => {
+      const match = m.data!;
+      let query = supabase.from("matches").select("id,competition_id,season,round_number,kickoff_at,kickoff_date").eq("competition_id", match.competition_id);
+      query = match.season == null ? query.is("season", null) : query.eq("season", match.season);
+      const { data, error } = await query;
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
   const heroRef = useCollapsingHeader(`${id}:${m.isLoading}`, 180);
   const events = useQuery({
     queryKey: ["match-events", id],
@@ -772,7 +784,7 @@ function PreviousMatchesInner({ home, away, currentId }: {
       {h2h.length > 0 && (
         <div className="rounded-2xl border border-border bg-card p-4 text-center">
           <h3 className="text-sm font-bold">{tx("Head-to-head")}</h3>
-          <p className="mt-1 text-xs text-muted-foreground">{tx("Last")} {num(h2h.length)} {tx("matches")}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{num(h2h.length)} {tx("matches")}</p>
           <div className="mt-3 grid grid-cols-3 items-center gap-2">
             <div className="flex min-w-0 items-center gap-2">
               <TeamCrest name={home?.name} logo={home?.logo_url} className="h-9 w-9 shrink-0" />
@@ -815,7 +827,7 @@ function PreviousMatchesInner({ home, away, currentId }: {
               return (
                 <Link key={m.id} to="/matches/$id" params={{ id: m.id }} className="flex items-center gap-3 border-t border-border px-4 py-2.5 first:border-0 hover:bg-accent/50">
                   <span className="w-16 shrink-0 text-[0.7rem] leading-tight text-muted-foreground">
-                    <span className={`block ${off ? "line-through" : ""}`}>{num(dates.kickoff(m.kickoff_at))}</span>
+                    <span className={`block ${off ? "line-through" : ""}`}>{num(dates.kickoff(m.kickoff_at, m.kickoff_date))}</span>
                     <span className="block">{off ? "" : tx(STATUS_LABELS[m.status] ?? m.status)}</span>
                   </span>
                   <span className="min-w-0 flex-1 space-y-1">

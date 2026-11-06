@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { compareCompetitionRounds, compareTeamFixtures, fixtureTime, sortTeamFixtures } from "./competition-match-order";
+import { compareCompetitionRounds, compareTeamFixtures, estimatedFixtureDate, fixtureTime, sortTeamFixtures } from "./competition-match-order";
 
 const bucket = (round: number, kickoff: string | null) => ({ round: `#${round}`, matches: [{ kickoff_at: kickoff }], order: 0 });
 
