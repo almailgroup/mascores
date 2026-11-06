@@ -415,14 +415,14 @@ function RecentForm({ matches, teamId }: { matches: MatchWithTeams[]; teamId: st
     .map((m) => ({ m, t: Date.parse((m.kickoff_at ?? (m as { kickoff_date?: string | null }).kickoff_date ?? "") as string) || 0 }))
     .sort((a, b) => b.t - a.t)
     .map(({ m }) => m)
-    .slice(0, 10)
+    .slice(0, 5)
     .reverse();
   if (played.length === 0) return null;
   return (
     <section className="rounded-2xl border border-border bg-card p-4">
       <h2 className="text-center text-sm font-bold">{tx("Recent form")}</h2>
-      <div className="mt-3 overflow-x-auto rounded-2xl bg-muted/50 p-3">
-        <div className="flex min-w-max items-stretch gap-2">
+      <div className="mt-3 rounded-2xl bg-muted/50 p-3">
+        <div className="grid grid-cols-5 items-stretch gap-2">
           {played.map((m) => {
             const home = m.home_team_id === teamId;
             const own = (home ? m.home_score : m.away_score) ?? 0;
@@ -430,15 +430,15 @@ function RecentForm({ matches, teamId }: { matches: MatchWithTeams[]; teamId: st
             const opp = home ? m.away : m.home;
             const result = own > other ? "w" : own === other ? "d" : "l";
             return (
-              <Link key={m.id} to="/matches/$id" params={{ id: m.id }} className="flex w-12 flex-col items-center gap-2">
+              <Link key={m.id} to="/matches/$id" params={{ id: m.id }} className="flex min-w-0 flex-col items-center gap-2">
                 <TeamCrest name={opp?.name} logo={opp?.logo_url} className="h-8 w-8" />
                 <span className="flex h-28 w-full flex-col justify-center">
                   <span className="flex h-1/2 items-end justify-center">
-                    {result === "w" && <span className="h-full w-8 rounded-t-sm bg-success" />}
+                    {result === "w" && <span className="h-full w-full max-w-12 rounded-t-sm bg-success" />}
                   </span>
                   <span className="flex h-1/2 items-start justify-center">
-                    {result === "l" && <span className="h-full w-8 rounded-b-sm bg-destructive" />}
-                    {result === "d" && <span className="h-1.5 w-8 rounded-sm bg-muted-foreground/50" />}
+                    {result === "l" && <span className="h-full w-full max-w-12 rounded-b-sm bg-destructive" />}
+                    {result === "d" && <span className="h-1.5 w-full max-w-12 rounded-sm bg-muted-foreground/50" />}
                   </span>
                 </span>
               </Link>
