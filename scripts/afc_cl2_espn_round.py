@@ -15,7 +15,7 @@ for p in PRIOR["new_players"]:
     SRC2PID.setdefault(p["source_id"], p["id"])
 
 def summary(gid):
-    return json.load(urllib.request.urlopen(f"https://site.api.espn.com/apis/site/v2/sports/soccer/all/summary?event={gid}"))
+    return json.load(urllib.request.urlopen(urllib.request.Request(f"https://site.api.espn.com/apis/site/v2/sports/soccer/all/summary?event={gid}", headers={"User-Agent": "curl/8"})))
 
 def build_posmap():
     pm = {}
