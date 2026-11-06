@@ -1,0 +1,290 @@
+{
+  "source": "https://mfsoccer.com/api/doc/2026-2027",
+  "source_updated": "2026-11-06T18:38:45.421Z",
+  "source_last_update": "الجولة 8",
+  "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+  "season": "2026/2027",
+  "scope": "31 absent league fixtures: Al Jahra vs Kuwait SC in round 14 and every fixture in rounds 15–19",
+  "time_rule": "Source kickoff times are blank; kickoff_date is stored and kickoff_at remains NULL.",
+  "matches": [
+    {
+      "source_match_number": 90,
+      "round_number": 14,
+      "kickoff_date": "2027-02-27",
+      "home_source": "الجهراء",
+      "away_source": "الكويت",
+      "home_team_id": "91915327-7b03-4ccf-b968-52a1dae28a9f",
+      "away_team_id": "539cc6fb-d79a-449b-be23-1271355bd727"
+    },
+    {
+      "source_match_number": 94,
+      "round_number": 15,
+      "kickoff_date": "2027-03-12",
+      "home_source": "الكويت",
+      "away_source": "النصر",
+      "home_team_id": "539cc6fb-d79a-449b-be23-1271355bd727",
+      "away_team_id": "2986f4c3-8906-483b-b021-dae5ddf46c2a"
+    },
+    {
+      "source_match_number": 95,
+      "round_number": 15,
+      "kickoff_date": "2027-03-12",
+      "home_source": "الجهراء",
+      "away_source": "الصليبخات",
+      "home_team_id": "91915327-7b03-4ccf-b968-52a1dae28a9f",
+      "away_team_id": "e62bea24-9251-4e69-b03b-b0f3fae6618f"
+    },
+    {
+      "source_match_number": 96,
+      "round_number": 15,
+      "kickoff_date": "2027-03-12",
+      "home_source": "القادسية",
+      "away_source": "التضامن",
+      "home_team_id": "8d6cb3fe-6e3d-4cdc-af60-ea9de938d174",
+      "away_team_id": "666d9085-19bc-476a-a70a-e778d088eb23"
+    },
+    {
+      "source_match_number": 97,
+      "round_number": 15,
+      "kickoff_date": "2027-03-12",
+      "home_source": "العربي",
+      "away_source": "كاظمة",
+      "home_team_id": "598d82e7-8002-4423-9468-d58ec371907c",
+      "away_team_id": "a7166bc6-b129-47bb-bc4e-e085b1a2dfcd"
+    },
+    {
+      "source_match_number": 98,
+      "round_number": 15,
+      "kickoff_date": "2027-03-12",
+      "home_source": "الفحيحيل",
+      "away_source": "الساحل",
+      "home_team_id": "073cfa17-037f-4b8b-a79a-aeb5dbee9a40",
+      "away_team_id": "e834859a-a97d-47b8-88cc-6e58d04060e7"
+    },
+    {
+      "source_match_number": 99,
+      "round_number": 15,
+      "kickoff_date": "2027-03-12",
+      "home_source": "الشباب",
+      "away_source": "السالمية",
+      "home_team_id": "bc2e4358-851e-4dc2-a8aa-ee755c6dd447",
+      "away_team_id": "4f941a6e-7ce2-416e-b293-7f010c901415"
+    },
+    {
+      "source_match_number": 100,
+      "round_number": 16,
+      "kickoff_date": "2027-03-20",
+      "home_source": "الصليبخات",
+      "away_source": "الكويت",
+      "home_team_id": "e62bea24-9251-4e69-b03b-b0f3fae6618f",
+      "away_team_id": "539cc6fb-d79a-449b-be23-1271355bd727"
+    },
+    {
+      "source_match_number": 101,
+      "round_number": 16,
+      "kickoff_date": "2027-03-20",
+      "home_source": "التضامن",
+      "away_source": "النصر",
+      "home_team_id": "666d9085-19bc-476a-a70a-e778d088eb23",
+      "away_team_id": "2986f4c3-8906-483b-b021-dae5ddf46c2a"
+    },
+    {
+      "source_match_number": 102,
+      "round_number": 16,
+      "kickoff_date": "2027-03-20",
+      "home_source": "كاظمة",
+      "away_source": "الجهراء",
+      "home_team_id": "a7166bc6-b129-47bb-bc4e-e085b1a2dfcd",
+      "away_team_id": "91915327-7b03-4ccf-b968-52a1dae28a9f"
+    },
+    {
+      "source_match_number": 103,
+      "round_number": 16,
+      "kickoff_date": "2027-03-20",
+      "home_source": "الساحل",
+      "away_source": "القادسية",
+      "home_team_id": "e834859a-a97d-47b8-88cc-6e58d04060e7",
+      "away_team_id": "8d6cb3fe-6e3d-4cdc-af60-ea9de938d174"
+    },
+    {
+      "source_match_number": 104,
+      "round_number": 16,
+      "kickoff_date": "2027-03-20",
+      "home_source": "السالمية",
+      "away_source": "العربي",
+      "home_team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
+      "away_team_id": "598d82e7-8002-4423-9468-d58ec371907c"
+    },
+    {
+      "source_match_number": 105,
+      "round_number": 16,
+      "kickoff_date": "2027-03-20",
+      "home_source": "الشباب",
+      "away_source": "الفحيحيل",
+      "home_team_id": "bc2e4358-851e-4dc2-a8aa-ee755c6dd447",
+      "away_team_id": "073cfa17-037f-4b8b-a79a-aeb5dbee9a40"
+    },
+    {
+      "source_match_number": 106,
+      "round_number": 17,
+      "kickoff_date": "2027-04-02",
+      "home_source": "الكويت",
+      "away_source": "التضامن",
+      "home_team_id": "539cc6fb-d79a-449b-be23-1271355bd727",
+      "away_team_id": "666d9085-19bc-476a-a70a-e778d088eb23"
+    },
+    {
+      "source_match_number": 107,
+      "round_number": 17,
+      "kickoff_date": "2027-04-02",
+      "home_source": "الصليبخات",
+      "away_source": "كاظمة",
+      "home_team_id": "e62bea24-9251-4e69-b03b-b0f3fae6618f",
+      "away_team_id": "a7166bc6-b129-47bb-bc4e-e085b1a2dfcd"
+    },
+    {
+      "source_match_number": 108,
+      "round_number": 17,
+      "kickoff_date": "2027-04-02",
+      "home_source": "النصر",
+      "away_source": "الساحل",
+      "home_team_id": "2986f4c3-8906-483b-b021-dae5ddf46c2a",
+      "away_team_id": "e834859a-a97d-47b8-88cc-6e58d04060e7"
+    },
+    {
+      "source_match_number": 109,
+      "round_number": 17,
+      "kickoff_date": "2027-04-02",
+      "home_source": "الجهراء",
+      "away_source": "السالمية",
+      "home_team_id": "91915327-7b03-4ccf-b968-52a1dae28a9f",
+      "away_team_id": "4f941a6e-7ce2-416e-b293-7f010c901415"
+    },
+    {
+      "source_match_number": 110,
+      "round_number": 17,
+      "kickoff_date": "2027-04-02",
+      "home_source": "القادسية",
+      "away_source": "الشباب",
+      "home_team_id": "8d6cb3fe-6e3d-4cdc-af60-ea9de938d174",
+      "away_team_id": "bc2e4358-851e-4dc2-a8aa-ee755c6dd447"
+    },
+    {
+      "source_match_number": 111,
+      "round_number": 17,
+      "kickoff_date": "2027-04-02",
+      "home_source": "الفحيحيل",
+      "away_source": "العربي",
+      "home_team_id": "073cfa17-037f-4b8b-a79a-aeb5dbee9a40",
+      "away_team_id": "598d82e7-8002-4423-9468-d58ec371907c"
+    },
+    {
+      "source_match_number": 112,
+      "round_number": 18,
+      "kickoff_date": "2027-04-17",
+      "home_source": "كاظمة",
+      "away_source": "الكويت",
+      "home_team_id": "a7166bc6-b129-47bb-bc4e-e085b1a2dfcd",
+      "away_team_id": "539cc6fb-d79a-449b-be23-1271355bd727"
+    },
+    {
+      "source_match_number": 113,
+      "round_number": 18,
+      "kickoff_date": "2027-04-17",
+      "home_source": "التضامن",
+      "away_source": "الساحل",
+      "home_team_id": "666d9085-19bc-476a-a70a-e778d088eb23",
+      "away_team_id": "e834859a-a97d-47b8-88cc-6e58d04060e7"
+    },
+    {
+      "source_match_number": 114,
+      "round_number": 18,
+      "kickoff_date": "2027-04-17",
+      "home_source": "الصليبخات",
+      "away_source": "السالمية",
+      "home_team_id": "e62bea24-9251-4e69-b03b-b0f3fae6618f",
+      "away_team_id": "4f941a6e-7ce2-416e-b293-7f010c901415"
+    },
+    {
+      "source_match_number": 115,
+      "round_number": 18,
+      "kickoff_date": "2027-04-17",
+      "home_source": "النصر",
+      "away_source": "الشباب",
+      "home_team_id": "2986f4c3-8906-483b-b021-dae5ddf46c2a",
+      "away_team_id": "bc2e4358-851e-4dc2-a8aa-ee755c6dd447"
+    },
+    {
+      "source_match_number": 116,
+      "round_number": 18,
+      "kickoff_date": "2027-04-17",
+      "home_source": "الجهراء",
+      "away_source": "الفحيحيل",
+      "home_team_id": "91915327-7b03-4ccf-b968-52a1dae28a9f",
+      "away_team_id": "073cfa17-037f-4b8b-a79a-aeb5dbee9a40"
+    },
+    {
+      "source_match_number": 117,
+      "round_number": 18,
+      "kickoff_date": "2027-04-17",
+      "home_source": "القادسية",
+      "away_source": "العربي",
+      "home_team_id": "8d6cb3fe-6e3d-4cdc-af60-ea9de938d174",
+      "away_team_id": "598d82e7-8002-4423-9468-d58ec371907c"
+    },
+    {
+      "source_match_number": 118,
+      "round_number": 19,
+      "kickoff_date": "2027-04-30",
+      "home_source": "الساحل",
+      "away_source": "الكويت",
+      "home_team_id": "e834859a-a97d-47b8-88cc-6e58d04060e7",
+      "away_team_id": "539cc6fb-d79a-449b-be23-1271355bd727"
+    },
+    {
+      "source_match_number": 119,
+      "round_number": 19,
+      "kickoff_date": "2027-04-30",
+      "home_source": "السالمية",
+      "away_source": "كاظمة",
+      "home_team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
+      "away_team_id": "a7166bc6-b129-47bb-bc4e-e085b1a2dfcd"
+    },
+    {
+      "source_match_number": 120,
+      "round_number": 19,
+      "kickoff_date": "2027-04-30",
+      "home_source": "الشباب",
+      "away_source": "التضامن",
+      "home_team_id": "bc2e4358-851e-4dc2-a8aa-ee755c6dd447",
+      "away_team_id": "666d9085-19bc-476a-a70a-e778d088eb23"
+    },
+    {
+      "source_match_number": 121,
+      "round_number": 19,
+      "kickoff_date": "2027-04-30",
+      "home_source": "الفحيحيل",
+      "away_source": "الصليبخات",
+      "home_team_id": "073cfa17-037f-4b8b-a79a-aeb5dbee9a40",
+      "away_team_id": "e62bea24-9251-4e69-b03b-b0f3fae6618f"
+    },
+    {
+      "source_match_number": 122,
+      "round_number": 19,
+      "kickoff_date": "2027-04-30",
+      "home_source": "العربي",
+      "away_source": "النصر",
+      "home_team_id": "598d82e7-8002-4423-9468-d58ec371907c",
+      "away_team_id": "2986f4c3-8906-483b-b021-dae5ddf46c2a"
+    },
+    {
+      "source_match_number": 123,
+      "round_number": 19,
+      "kickoff_date": "2027-04-30",
+      "home_source": "الجهراء",
+      "away_source": "القادسية",
+      "home_team_id": "91915327-7b03-4ccf-b968-52a1dae28a9f",
+      "away_team_id": "8d6cb3fe-6e3d-4cdc-af60-ea9de938d174"
+    }
+  ]
+}
