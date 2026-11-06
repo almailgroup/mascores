@@ -86,9 +86,10 @@ export const STATUS_LABELS: Record<string, string> = {
   interrupted: "Interrupted",
 };
 
-export function formatKickoff(iso: string | null | undefined, locale?: string, announcedDate?: string | null): string {
-  if (!iso && announcedDate) return formatAnnouncedDate(announcedDate, locale);
-  if (!iso) return locale?.startsWith("ar") ? "لم يُحدد" : "TBD";
+export function formatKickoff(iso: string | null | undefined, locale?: string, announcedDate?: string | null, estimatedDate?: string | null): string {
+  if (!iso && announcedDate) return formatAnnouncedDate(announcedDate, locale, false, getTimeFormat() === "12");
+  if (!iso && estimatedDate) return formatAnnouncedDate(estimatedDate, locale, true, getTimeFormat() === "12");
+  if (!iso) return locale?.startsWith("ar") ? "التاريخ التقديري غير متاح · ١٢:٠٠ م" : "Estimated date TBD · 12:00 PM";
   const d = new Date(iso);
   return d.toLocaleString(locale, { timeZone: getMatchTimezone(), weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit", hour12: getTimeFormat() === "12" });
 }
