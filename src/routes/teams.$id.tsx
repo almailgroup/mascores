@@ -411,6 +411,10 @@ function RecentForm({ matches, teamId }: { matches: MatchWithTeams[]; teamId: st
   const tx = useTx();
   const played = matches
     .filter((m) => ["ft", "aet", "pen", "awarded"].includes(m.status))
+    // Date-only historical fixtures have no kickoff_at; sort every played match by its real day.
+    .map((m) => ({ m, t: Date.parse((m.kickoff_at ?? (m as { kickoff_date?: string | null }).kickoff_date ?? "") as string) || 0 }))
+    .sort((a, b) => b.t - a.t)
+    .map(({ m }) => m)
     .slice(0, 10)
     .reverse();
   if (played.length === 0) return null;
