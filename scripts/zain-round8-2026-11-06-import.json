@@ -7,7 +7,8 @@
   "date": "2026-11-06",
   "statistics_sources": [
     "https://scoresivo.com/match/59438-al-fahaheel-vs-al-salibikhaet",
-    "https://www.syria-scores.com/ar/match/6018587/Al-Shabab-vs-Al-Tadamon"
+    "https://www.syria-scores.com/ar/match/6018587/Al-Shabab-vs-Al-Tadamon",
+    "https://www.teleskor.com.tr/mac/al-fahaheel-sc-al-salibikhaet-2738447"
   ],
   "note": "Lineups, formations, events and absences from mfsoccer. Published statistics cross-checked against the listed match pages; Sofascore endpoints returned HTTP 403. No ratings invented.",
   "new_players": [
@@ -1375,6 +1376,18 @@
       "shirt_number": 3,
       "player_id": null,
       "description": "Red card review"
+    },
+    {
+      "id": "70723e6f-9509-5478-ae21-5ea66111f189",
+      "match_id": "ade11709-6dcf-421b-afbb-ec0ae7215fa7",
+      "team_id": "073cfa17-037f-4b8b-a79a-aeb5dbee9a40",
+      "minute": 90,
+      "extra": 5,
+      "type": "yellow",
+      "source_name": null,
+      "shirt_number": null,
+      "player_id": null,
+      "description": "Player not named by source"
     }
   ],
   "stats": [
