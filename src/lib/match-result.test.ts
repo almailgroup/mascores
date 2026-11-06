@@ -14,4 +14,13 @@ describe("cup results", () => {
   it("honors hidden standings on match pages too", () => {
     expect(hasStandings({ format: "cup", hidden_tabs: ["standings"] })).toBe(false);
   });
+  it("counts all 80 Al Qadsia–Kuwait meetings without a club-history cutoff", () => {
+    const meetings = Array.from({ length: 80 }, (_, index) => ({
+      home_team_id: index % 2 ? "kuwait" : "qadsia",
+      home_score: index % 3,
+      away_score: (index + 1) % 3,
+    }));
+    expect(headToHeadSummary(meetings, "qadsia").meetings).toBe(80);
+    expect(headToHeadSummary(meetings, "qadsia").homeWins + headToHeadSummary(meetings, "qadsia").awayWins + headToHeadSummary(meetings, "qadsia").draws).toBe(80);
+  });
 });

@@ -750,7 +750,7 @@ function PreviousMatchesInner({ home, away, currentId }: {
         .neq("id", currentId)
         .in("status", ["ft", "aet", "pen", "awarded"]);
       if (error) throw error;
-      return ((data ?? []) as unknown as PastRow[]).sort((a, b) => fixtureTime(b) - fixtureTime(a));
+      return ((data ?? []) as unknown as PastRow[]).sort(compareTeamFixtures);
     },
   });
 
@@ -762,13 +762,7 @@ function PreviousMatchesInner({ home, away, currentId }: {
   const rows = mode === "h2h" ? h2h : all.filter((m) => !!focusId && (m.home_team_id === focusId || m.away_team_id === focusId));
 
   // Every completed meeting counts, independently of either club's history limit.
-  let homeWins = 0, awayWins = 0, draws = 0;
-  for (const m of h2h) {
-    if (m.home_score == null || m.away_score == null) continue;
-    if (m.home_score === m.away_score) draws++;
-    else if ((m.home_score > m.away_score) === (m.home_team_id === homeId)) homeWins++;
-    else awayWins++;
-  }
+  const { homeWins, awayWins, draws } = headToHeadSummary(h2h, homeId ?? "");
 
   // Group the visible list by competition, keeping the newest-first order.
   const groups: { key: string; comp: PastRow["competition"]; list: PastRow[] }[] = [];
