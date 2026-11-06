@@ -7,8 +7,10 @@ export function scheduleTime(fixture: Schedule): number {
   return Number.isFinite(time) ? time : Infinity;
 }
 
-export function formatAnnouncedDate(date: string, locale?: string): string {
+export function formatAnnouncedDate(date: string, locale?: string, estimated = false, hour12 = false): string {
   const day = new Date(`${date}T12:00:00`);
   const label = day.toLocaleDateString(locale, { weekday: "short", month: "short", day: "numeric" });
-  return `${label} · ${locale?.startsWith("ar") ? "الوقت لم يُحدد" : "Time TBD"}`;
+  const time = day.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit", hour12 });
+  const prefix = estimated ? (locale?.startsWith("ar") ? "تقديري: " : "Est. ") : "";
+  return `${prefix}${label} · ${time}`;
 }

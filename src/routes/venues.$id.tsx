@@ -112,7 +112,7 @@ function VenuePage() {
         <h2 className="mb-3 text-sm font-bold uppercase text-muted-foreground">{tx("Matches at this stadium")}</h2>
         {matches.data && matches.data.length > 0 ? (
           <div className="overflow-hidden rounded-2xl border border-border bg-card divide-y divide-border">
-            {matches.data.map((m) => <MatchRow key={m.id} m={m} />)}
+            {matches.data.map((m) => <MatchRow key={m.id} m={m} fixtures={matches.data} />)}
           </div>
         ) : <EmptyState title={tx("No matches yet")} />}
       </section>

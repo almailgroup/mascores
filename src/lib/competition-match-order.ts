@@ -34,33 +34,40 @@ export function compareTeamFixtures(a: TeamFixture, b: TeamFixture) {
   return timeB - timeA;
 }
 
-/**
- * Give undated rounds a list-only anchor between nearby dated rounds, then sort
- * every fixture by a single key. Never turn this anchor into a displayed kickoff.
- * Pairwise round/date comparisons are not transitive across competitions.
- */
+/** Estimate only from dated rounds in the same competition and season. */
+export function estimatedFixtureTime<T extends TeamFixture>(fixtures: T[], fixture: T): number {
+  if (Number.isFinite(fixtureTime(fixture)) || !fixture.competition_id || fixture.round_number == null) return Infinity;
+  const round = fixture.round_number;
+  const peers = fixtures.filter((peer) => peer.competition_id === fixture.competition_id
+    && peer.season === fixture.season && peer.round_number != null
+    && Number.isFinite(fixtureTime(peer)));
+  const before = peers.filter((peer) => (peer.round_number ?? 0) < round)
+    .sort((a, b) => (b.round_number ?? 0) - (a.round_number ?? 0))[0];
+  const after = peers.filter((peer) => (peer.round_number ?? 0) > round)
+    .sort((a, b) => (a.round_number ?? 0) - (b.round_number ?? 0))[0];
+  if (before && after) {
+    const low = before.round_number ?? round;
+    const high = after.round_number ?? round;
+    return fixtureTime(before) + (fixtureTime(after) - fixtureTime(before)) * (round - low) / (high - low);
+  }
+  if (before) return fixtureTime(before) + (round - (before.round_number ?? round)) * 86_400_000;
+  if (after) return fixtureTime(after) - ((after.round_number ?? round) - round) * 86_400_000;
+  return Infinity;
+}
+
+/** A display-only estimated calendar day; it never becomes a stored kickoff. */
+export function estimatedFixtureDate<T extends TeamFixture>(fixtures: T[], fixture: T): string | null {
+  const time = estimatedFixtureTime(fixtures, fixture);
+  if (!Number.isFinite(time)) return null;
+  const day = new Date(time);
+  return `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`;
+}
+
+/** Keep undated rounds between nearby dated rounds without storing an invented kickoff. */
 export function sortTeamFixtures<T extends TeamFixture>(fixtures: T[]): T[] {
   const anchored = fixtures.map((fixture, index) => {
-    let time = fixtureTime(fixture);
-    const round = fixture.round_number;
-    if (!Number.isFinite(time) && fixture.competition_id && round != null) {
-      const peers = fixtures.filter((peer) => peer.competition_id === fixture.competition_id
-        && peer.season === fixture.season && peer.round_number != null
-        && Number.isFinite(fixtureTime(peer)));
-      const before = peers.filter((peer) => (peer.round_number ?? 0) < round)
-        .sort((a, b) => (b.round_number ?? 0) - (a.round_number ?? 0))[0];
-      const after = peers.filter((peer) => (peer.round_number ?? 0) > round)
-        .sort((a, b) => (a.round_number ?? 0) - (b.round_number ?? 0))[0];
-      if (before && after) {
-        const low = before.round_number ?? round;
-        const high = after.round_number ?? round;
-        time = fixtureTime(before) + (fixtureTime(after) - fixtureTime(before)) * (round - low) / (high - low);
-      } else if (before) {
-        time = fixtureTime(before) + round - (before.round_number ?? round);
-      } else if (after) {
-        time = fixtureTime(after) - ((after.round_number ?? round) - round);
-      }
-    }
+    const actual = fixtureTime(fixture);
+    const time = Number.isFinite(actual) ? actual : estimatedFixtureTime(fixtures, fixture);
     return { fixture, time, index };
   });
   anchored.sort((a, b) => {

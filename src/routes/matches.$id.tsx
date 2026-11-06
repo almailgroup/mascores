@@ -1,6 +1,6 @@
 import { getSeoInfo, seoHead } from "@/lib/seo-head";
 import { possibleLineupWindow } from "@/lib/possible-lineup";
-import { hasStandings, matchWinner } from "@/lib/match-result";
+import { hasStandings, headToHeadSummary, matchWinner } from "@/lib/match-result";
 import { eventPlayers } from "@/lib/event-players";
 import { MatchMissingPlayers } from "@/components/match-missing-players";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -34,6 +34,7 @@ import { MatchHighlightCard } from "@/components/match-highlight-card";
 import { displayShortName } from "@/lib/short-name";
 import { FavoriteButton, MatchNotificationButton, useFavorites } from "@/hooks/use-favorites";
 import { useCollapsingHeader } from "@/hooks/use-collapsing-header";
+import { compareTeamFixtures, estimatedFixtureDate } from "@/lib/competition-match-order";
 
 /** Crest + name used inside the slim match hero. The follow star sits on the
  *  outer edge of each club: home star on the left, away star on the right. */
@@ -118,6 +119,18 @@ function MatchPage() {
         .select("*, home:home_team_id(id,name,logo_url,is_national), away:away_team_id(id,name,logo_url,is_national), competition:competition_id(id,name,name_ar,slug,logo_url,sport,country,country_code,format,hidden_tabs,video_thumbnail_url)")
         .eq("id", id).maybeSingle();
       return data as (Match & { home: Team | null; away: Team | null; competition: { id: string; name: string; name_ar: string | null; slug: string; logo_url: string | null; sport: string; country: string | null; country_code: string | null; format?: string | null; hidden_tabs?: string[] | null; video_thumbnail_url?: string | null } | null }) | null;
+    },
+  });
+  const schedulePeers = useQuery({
+    enabled: !!m.data && !m.data.kickoff_at && !m.data.kickoff_date && !!m.data.competition_id,
+    queryKey: ["match-date-estimate", id, m.data?.competition_id, m.data?.season],
+    queryFn: async () => {
+      const match = m.data!;
+      let query = supabase.from("matches").select("id,competition_id,season,round_number,kickoff_at,kickoff_date").eq("competition_id", match.competition_id);
+      query = match.season == null ? query.is("season", null) : query.eq("season", match.season);
+      const { data, error } = await query;
+      if (error) throw error;
+      return data ?? [];
     },
   });
   const heroRef = useCollapsingHeader(`${id}:${m.isLoading}`, 180);
@@ -205,6 +218,7 @@ function MatchPage() {
   if (m.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;
   if (!m.data) return <AppShell><EmptyState title={tx("Match not found")} /></AppShell>;
   const match = m.data;
+  const estimatedDate = match.kickoff_at || match.kickoff_date ? null : estimatedFixtureDate(schedulePeers.data ?? [], match);
   const isLive = ["live", "ht"].includes(match.status);
   const hasStarted = !["scheduled", "postponed", "cancelled"].includes(match.status);
   const isPossible = mainAdmin.data === true && !match.lineups_published && possibleLineupWindow(match.status,match.kickoff_at,match.kickoff_date) && (possible.data?.rows.length ?? 0) > 0;
@@ -241,8 +255,8 @@ function MatchPage() {
     .map((row) => ({ number: row.shirt_number ? String(row.shirt_number) : "", name: tx(displayShortName(row.player?.short_name, row.player?.name)) ?? "" }));
   const shareData = {
     competition: [tx(match.competition?.name) ?? "", roundLabel(match.round_number, match.round) ? tx(roundLabel(match.round_number, match.round)) : ""].filter(Boolean).join(" · "),
-    kickoff: dates.kickoff(match.kickoff_at, match.kickoff_date),
-    status: match.status === "live" ? formatLiveClock(match, clock) : match.status === "scheduled" ? dates.kickoff(match.kickoff_at, match.kickoff_date) : tx(STATUS_LABELS[match.status] ?? match.status) ?? match.status,
+    kickoff: dates.kickoff(match.kickoff_at, match.kickoff_date, estimatedDate),
+    status: match.status === "live" ? formatLiveClock(match, clock) : match.status === "scheduled" ? dates.kickoff(match.kickoff_at, match.kickoff_date, estimatedDate) : tx(STATUS_LABELS[match.status] ?? match.status) ?? match.status,
     home: { name: tx(match.home?.name) ?? "TBD", logo_url: match.home?.logo_url ?? null },
     away: { name: tx(match.away?.name) ?? "TBD", logo_url: match.away?.logo_url ?? null },
     homeScore: ["scheduled", "postponed", "cancelled"].includes(match.status) ? "" : String(match.home_score ?? 0),
@@ -306,7 +320,7 @@ function MatchPage() {
         </div>
 
         {penaltyWinner && <div className="match-fading-detail px-2 text-center text-xs font-bold text-match-foreground">{tx(penaltyWinner.name)} · {tx("Won on penalties")}</div>}
-        <div className="match-fading-detail px-2 text-center text-[0.65rem] font-semibold uppercase text-match-foreground/70">{match.status === "postponed" ? tx("Postponed") : num(dates.kickoff(match.kickoff_at, match.kickoff_date))}</div>
+        <div className="match-fading-detail px-2 text-center text-[0.65rem] font-semibold uppercase text-match-foreground/70">{match.status === "postponed" ? tx("Postponed") : num(dates.kickoff(match.kickoff_at, match.kickoff_date, estimatedDate))}</div>
 
         <div className="match-fading-detail mt-3 grid grid-cols-2 gap-8 px-5 text-center">
           <div className="min-w-0">
@@ -405,7 +419,7 @@ function MatchPage() {
           <div className="overflow-hidden rounded-2xl border border-border bg-card">
             <div className="border-b border-border bg-muted/40 px-4 py-2.5 text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Match information")}</div>
             <dl className="grid gap-3 p-4 text-sm sm:grid-cols-2">
-              {([["Competition", tx(match.competition?.name)], ["Date & time", num(dates.kickoff(match.kickoff_at, match.kickoff_date))], ["Stadium", tx(match.venue)], ["City", tx(match.city)], ["Referee", tx(match.referee)]] as [string, string | null | undefined][]).filter((item): item is [string, string] => !!item[1]).map(([k, v]) => (
+              {([["Competition", tx(match.competition?.name)], ["Date & time", num(dates.kickoff(match.kickoff_at, match.kickoff_date, estimatedDate))], ["Stadium", tx(match.venue)], ["City", tx(match.city)], ["Referee", tx(match.referee)]] as [string, string | null | undefined][]).filter((item): item is [string, string] => !!item[1]).map(([k, v]) => (
                 <div key={k} className="min-w-0">
                   <dt className="flex items-center gap-1 text-[0.65rem] uppercase tracking-wide text-muted-foreground">{k === "Stadium" ? <MapPin className="h-3 w-3" /> : k === "Referee" ? <Users className="h-3 w-3" /> : null}{tx(k)}</dt>
                   <dd className="mt-0.5 break-words font-semibold">{v}</dd>
@@ -726,28 +740,29 @@ function PreviousMatchesInner({ home, away, currentId }: {
       return (data ?? []) as unknown as PastRow[];
     },
   });
+  const meetings = useQuery({
+    enabled: !!homeId && !!awayId,
+    queryKey: ["head-to-head", homeId, awayId, currentId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("matches")
+        .select("*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url), competition:competition_id(id,name,logo_url,country,country_code)")
+        .or(`and(home_team_id.eq.${homeId},away_team_id.eq.${awayId}),and(home_team_id.eq.${awayId},away_team_id.eq.${homeId})`)
+        .neq("id", currentId)
+        .in("status", ["ft", "aet", "pen", "awarded"]);
+      if (error) throw error;
+      return ((data ?? []) as unknown as PastRow[]).sort(compareTeamFixtures);
+    },
+  });
 
   if (!homeId && !awayId) return <p className="text-sm text-muted-foreground">{tx("Teams are needed to show matches.")}</p>;
 
   const focusId = mode === "away" ? awayId : homeId;
   const all = q.data ?? [];
-  const rows = all.filter((m) => {
-    if (mode === "h2h") {
-      const pair = [m.home_team_id, m.away_team_id];
-      if (!(pair.includes(homeId) && pair.includes(awayId))) return false;
-    } else if (!focusId || (m.home_team_id !== focusId && m.away_team_id !== focusId)) return false;
-    return true;
-  });
+  const h2h = meetings.data ?? [];
+  const rows = mode === "h2h" ? h2h : all.filter((m) => !!focusId && (m.home_team_id === focusId || m.away_team_id === focusId));
 
-  // Head-to-head summary of the last 10 meetings.
-  const h2h = all.filter((m) => [m.home_team_id, m.away_team_id].includes(homeId) && [m.home_team_id, m.away_team_id].includes(awayId)).slice(0, 10);
-  let homeWins = 0, awayWins = 0, draws = 0;
-  for (const m of h2h) {
-    if (m.home_score == null || m.away_score == null) continue;
-    if (m.home_score === m.away_score) draws++;
-    else if ((m.home_score > m.away_score) === (m.home_team_id === homeId)) homeWins++;
-    else awayWins++;
-  }
+  // Every completed meeting counts, independently of either club's history limit.
+  const { homeWins, awayWins, draws } = headToHeadSummary(h2h, homeId ?? "");
 
   // Group the visible list by competition, keeping the newest-first order.
   const groups: { key: string; comp: PastRow["competition"]; list: PastRow[] }[] = [];
@@ -764,7 +779,7 @@ function PreviousMatchesInner({ home, away, currentId }: {
       {h2h.length > 0 && (
         <div className="rounded-2xl border border-border bg-card p-4 text-center">
           <h3 className="text-sm font-bold">{tx("Head-to-head")}</h3>
-          <p className="mt-1 text-xs text-muted-foreground">{tx("Last")} {num(h2h.length)} {tx("matches")}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{num(h2h.length)} {tx("matches")}</p>
           <div className="mt-3 grid grid-cols-3 items-center gap-2">
             <div className="flex min-w-0 items-center gap-2">
               <TeamCrest name={home?.name} logo={home?.logo_url} className="h-9 w-9 shrink-0" />
@@ -807,7 +822,7 @@ function PreviousMatchesInner({ home, away, currentId }: {
               return (
                 <Link key={m.id} to="/matches/$id" params={{ id: m.id }} className="flex items-center gap-3 border-t border-border px-4 py-2.5 first:border-0 hover:bg-accent/50">
                   <span className="w-16 shrink-0 text-[0.7rem] leading-tight text-muted-foreground">
-                    <span className={`block ${off ? "line-through" : ""}`}>{num(dates.kickoff(m.kickoff_at))}</span>
+                    <span className={`block ${off ? "line-through" : ""}`}>{num(dates.kickoff(m.kickoff_at, m.kickoff_date))}</span>
                     <span className="block">{off ? "" : tx(STATUS_LABELS[m.status] ?? m.status)}</span>
                   </span>
                   <span className="min-w-0 flex-1 space-y-1">

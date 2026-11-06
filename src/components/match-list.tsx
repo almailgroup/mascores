@@ -9,6 +9,7 @@ import { useDates, useNum, useTx } from "@/lib/auto-translate";
 import type { Match, Team } from "@/lib/db";
 import { matchWinner } from "@/lib/match-result";
 import { isKnockoutRound } from "@/lib/group-order";
+import { estimatedFixtureDate } from "@/lib/competition-match-order";
 
 export type MatchWithTeams = Match & {
   home: Team | null;
@@ -71,7 +72,7 @@ export function MatchGroups({ data, highlightTeamId }: { data: MatchWithTeams[];
         <div key={run.key} className="overflow-hidden rounded-2xl border border-border bg-card">
           <CompHeader m={run.matches[0]} />
           <div className="divide-y divide-border">
-            {run.matches.map((m) => <MatchRow key={m.id} m={m} highlightTeamId={highlightTeamId} />)}
+            {run.matches.map((m) => <MatchRow key={m.id} m={m} fixtures={data} highlightTeamId={highlightTeamId} />)}
           </div>
         </div>
       ))}
@@ -104,7 +105,7 @@ export function CompHeader({ m, group }: { m: MatchWithTeams; group?: string | n
 }
 
 /** One compact fixture row: kickoff / status on the left, teams stacked, score or favourite on the right. */
-export function MatchRow({ m, highlightTeamId }: { m: MatchWithTeams; highlightTeamId?: string }) {
+export function MatchRow({ m, fixtures = [m], highlightTeamId }: { m: MatchWithTeams; fixtures?: MatchWithTeams[]; highlightTeamId?: string }) {
   const tx = useTx();
   const num = useNum();
   const dates = useDates();
@@ -122,10 +123,12 @@ export function MatchRow({ m, highlightTeamId }: { m: MatchWithTeams; highlightT
       {started && <span className="shrink-0 text-[0.8rem] font-bold tabular-nums">{num(score ?? 0)}{m.status === "pen" && pens != null && <span className="ms-1 text-[0.7rem] text-muted-foreground">({num(pens)})</span>}</span>}
     </div>
   );
+  const estimatedDate = estimatedFixtureDate(fixtures, m);
+  const displayDate = m.kickoff_date ?? estimatedDate;
   const shortDate = m.kickoff_at
     ? num(dates.date(m.kickoff_at, { day: "2-digit", month: "2-digit", year: "2-digit" }))
-    : m.kickoff_date ? num(dates.date(`${m.kickoff_date}T12:00:00Z`, { day: "2-digit", month: "2-digit", year: "2-digit" })) : "—";
-  const timeOnly = m.kickoff_at ? num(dates.time(m.kickoff_at)) : "";
+    : displayDate ? `${estimatedDate ? "~" : ""}${num(dates.date(`${displayDate}T12:00:00`, { day: "2-digit", month: "2-digit", year: "2-digit" }))}` : tx("Estimated");
+  const timeOnly = m.kickoff_at ? num(dates.time(m.kickoff_at)) : num(dates.time(`${displayDate ?? "2000-01-01"}T12:00:00`));
   return (
     <Link data-fixture-id={m.id} to="/matches/$id" params={{ id: m.id }} className="flex items-center gap-2.5 px-3.5 py-2 hover:bg-accent">
       <div className="w-[3.6rem] shrink-0 text-center text-[0.65rem] leading-tight text-muted-foreground">
