@@ -124,7 +124,7 @@ def main():
             if ast: pts[ast] += 0.6
         bt = {}
         for c in s["boxscore"]["teams"]:
-            bt[side[c["team"]["id"]]] = {x["name"]: x["displayValue"] for x in c["statistics"]}
+            bt[side[c["team"]["id"]]] = {x["name"]: x["displayValue"] for x in c.get("statistics", [])}
         h, a = bt.get(j["home_team_id"], {}), bt.get(j["away_team_id"], {})
         for i, (k, label, suf) in enumerate(STATS):
             if k in h and k in a and h[k] != "" and a[k] != "":
