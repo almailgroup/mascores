@@ -1,4 +1,6 @@
 # Roadmap
+- [ ] Head-to-head: show every completed meeting, independent of club-history limits
+- [ ] Fixture display: 12 PM for missing times and clearly labelled estimated dates app-wide
 - [x] Android safe area: edge-to-edge + SystemBars-injected safe-area insets (new Android build required, v1.0.1)
 - [x] Android Google sign-in black screen: register the native return link and test callback completion; new Android build and device retest required.
 - [x] Rabta post notifications
