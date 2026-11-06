@@ -15,7 +15,18 @@ for p in PRIOR["new_players"]:
     SRC2PID.setdefault(p["source_id"], p["id"])
 
 def summary(gid):
-    return json.load(urllib.request.urlopen(f"https://site.api.espn.com/apis/site/v2/sports/soccer/all/summary?event={gid}"))
+    import os, time
+    path = f"/tmp/espn-cache/{gid}.json"
+    if os.path.exists(path):
+        return json.load(open(path))
+    os.makedirs("/tmp/espn-cache", exist_ok=True)
+    time.sleep(1.5)
+    data = _fetch(gid)
+    json.dump(data, open(path, "w"))
+    return data
+
+def _fetch(gid):
+    return json.load(urllib.request.urlopen(urllib.request.Request(f"https://site.web.api.espn.com/apis/site/v2/sports/soccer/afc.cup/summary?event={gid}", headers={"User-Agent": "Mozilla/5.0"})))
 
 def build_posmap():
     pm = {}
@@ -29,6 +40,11 @@ def build_posmap():
                 c = lu[m["id"]].get(p["athlete"]["id"])
                 if p.get("starter") and c:
                     pm[(r.get("formation"), p.get("formationPlace"))] = c
+    # Formations not present in earlier rounds, placed from the sheet's own position labels.
+    for f, places in {"3-4-3": {"1": "GK", "4": "L1-1", "5": "L1-2", "6": "L1-3", "3": "L2-1", "8": "L2-2", "7": "L2-3", "2": "L2-4", "11": "L3-1", "9": "L3-2", "10": "L3-3"},
+                      "3-1-4-2": {"1": "GK", "6": "L1-1", "4": "L1-2", "5": "L1-3", "8": "L2-1", "3": "L3-1", "11": "L3-2", "7": "L3-3", "2": "L3-4", "10": "L4-1", "9": "L4-2"}}.items():
+        for k, v in places.items():
+            pm.setdefault((f, k), v)
     return pm
 
 def norm(n):
@@ -67,6 +83,15 @@ def main():
             t = j["home_team_id"] if c["homeAway"] == "home" else j["away_team_id"]
             side[c["team"]["id"]] = t; score[c["homeAway"]] = int(c["score"])
         mid = j["id"]
+        complete = all(sum(1 for p in r["roster"] if p.get("starter")) == 11 for r in s.get("rosters", [])) and len(s.get("rosters", [])) == 2
+        if not complete:
+            hs = next(int(c["score"]) for c in comp["competitors"] if c["homeAway"] == "home")
+            as_ = next(int(c["score"]) for c in comp["competitors"] if c["homeAway"] == "away")
+            out.append(f"update matches set alerts_muted=true where id={q(mid)};")
+            out.append(f"update matches set home_score={hs}, away_score={as_}, status='ft', period=null, timer_running=false, live_minute=null, completed_at=coalesce(completed_at, {q(comp.get('date'))}::timestamptz + interval '115 minutes') where id={q(mid)};")
+            out.append(f"update matches set alerts_muted=false where id={q(mid)};")
+            audit.append(f"result only {mid}: source lineup incomplete"); continue
+        list_mode = False
         squad = {t: {norm(n): pid for pid, n in j["players"].get(t, [])} for t in (j["home_team_id"], j["away_team_id"])}
         ath = {}
         played = set(); starters = set()
@@ -84,7 +109,7 @@ def main():
                     audit.append(f"new player {nm} ({sid}) team {t}")
                 SRC2PID[sid] = pid; ath[sid] = (pid, t)
                 code = posmap.get((f, p.get("formationPlace"))) if p.get("starter") else None
-                if p.get("starter") and not code: audit.append(f"no position map {f} {p.get('formationPlace')}")
+                if p.get("starter") and not code: list_mode = True; audit.append(f"no position map {f} {p.get('formationPlace')}")
                 if p.get("starter"): starters.add(pid); played.add(pid)
                 if p.get("subbedIn"): played.add(pid)
                 out.append(f"insert into match_lineups (match_id, team_id, player_id, is_starting, shirt_number, position_code) values ({q(mid)},{q(t)},{q(pid)},{q(bool(p.get('starter')))},{q(int(p['jersey']) if p.get('jersey','').isdigit() else None)},{q(code)});")
@@ -113,7 +138,7 @@ def main():
             if ast: pts[ast] += 0.6
         bt = {}
         for c in s["boxscore"]["teams"]:
-            bt[side[c["team"]["id"]]] = {x["name"]: x["displayValue"] for x in c["statistics"]}
+            bt[side[c["team"]["id"]]] = {x["name"]: x["displayValue"] for x in c.get("statistics", [])}
         h, a = bt.get(j["home_team_id"], {}), bt.get(j["away_team_id"], {})
         for i, (k, label, suf) in enumerate(STATS):
             if k in h and k in a and h[k] != "" and a[k] != "":
@@ -129,7 +154,7 @@ def main():
             r = round(min(9.6, max(4.5, r)), 1)
             out.append(f"insert into player_ratings (player_id, match_id, competition_id, rating) select {q(pid)},{q(mid)},competition_id,{r} from matches where id={q(mid)};")
         ko = comp.get("date")
-        out.append(f"update matches set home_score={hs}, away_score={as_}, status='ft', period=null, timer_running=false, live_minute=null, kickoff_at=coalesce({q(ko)}::timestamptz, kickoff_at), completed_at=coalesce(completed_at, {q(ko)}::timestamptz + interval '115 minutes'), home_formation={q(form.get(j['home_team_id']))}, away_formation={q(form.get(j['away_team_id']))}, lineups_published=true, lineup_mode='formation' where id={q(mid)};")
+        out.append(f"update matches set home_score={hs}, away_score={as_}, status='ft', period=null, timer_running=false, live_minute=null, kickoff_at=coalesce({q(ko)}::timestamptz, kickoff_at), completed_at=coalesce(completed_at, {q(ko)}::timestamptz + interval '115 minutes'), home_formation={q(form.get(j['home_team_id']))}, away_formation={q(form.get(j['away_team_id']))}, lineups_published=true, lineup_mode={q('list' if list_mode else 'formation')} where id={q(mid)};")
         out.append(f"update matches set alerts_muted=false where id={q(mid)};")
     out.append("commit;")
     print("\n".join(out))
