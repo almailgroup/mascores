@@ -592,7 +592,7 @@ function CompetitionOverviewInner({ c, season, teams, titleHolder, titles, divis
             </div>
             <CalendarDays className="h-4 w-4 shrink-0 text-muted-foreground" />
           </div>
-          <MatchRow m={featured} />
+          <MatchRow m={featured} fixtures={matches} />
         </section>
       )}
 

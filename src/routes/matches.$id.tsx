@@ -727,6 +727,19 @@ function PreviousMatchesInner({ home, away, currentId }: {
       return (data ?? []) as unknown as PastRow[];
     },
   });
+  const meetings = useQuery({
+    enabled: !!homeId && !!awayId,
+    queryKey: ["head-to-head", homeId, awayId, currentId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("matches")
+        .select("*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url), competition:competition_id(id,name,logo_url,country,country_code)")
+        .or(`and(home_team_id.eq.${homeId},away_team_id.eq.${awayId}),and(home_team_id.eq.${awayId},away_team_id.eq.${homeId})`)
+        .neq("id", currentId)
+        .in("status", ["ft", "aet", "pen", "awarded"]);
+      if (error) throw error;
+      return ((data ?? []) as unknown as PastRow[]).sort((a, b) => fixtureTime(b) - fixtureTime(a));
+    },
+  });
 
   if (!homeId && !awayId) return <p className="text-sm text-muted-foreground">{tx("Teams are needed to show matches.")}</p>;
 

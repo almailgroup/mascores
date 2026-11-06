@@ -105,7 +105,7 @@ export function CompHeader({ m, group }: { m: MatchWithTeams; group?: string | n
 }
 
 /** One compact fixture row: kickoff / status on the left, teams stacked, score or favourite on the right. */
-export function MatchRow({ m, highlightTeamId }: { m: MatchWithTeams; highlightTeamId?: string }) {
+export function MatchRow({ m, fixtures = [m], highlightTeamId }: { m: MatchWithTeams; fixtures?: MatchWithTeams[]; highlightTeamId?: string }) {
   const tx = useTx();
   const num = useNum();
   const dates = useDates();
