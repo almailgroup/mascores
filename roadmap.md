@@ -1,8 +1,8 @@
 # Roadmap
 - [x] Restored Al Arabi–Al Nasr's 47′ “Penalty missed” event; final score and other events unchanged.
 - [ ] Replace Al Arabi–Al Nasr match statistics with final verified Sofascore values.
-- [ ] Assign the 47′ missed penalty to Anayo Iwuala and add final MFSoccer player ratings.
-- [ ] Add Al Qadsia–Al Jahra confirmed lineups and both benches from MFSoccer.
+- [x] Assigned the 47′ missed penalty to Anayo Iwuala and added 30 final MFSoccer player ratings; verified in preview.
+- [ ] Correct Al Qadsia–Al Jahra lineups and benches to the uploaded official club screenshots.
 - [x] Fill verified Round 7–8 statistics and Al Arabi–Al Nasr Round 8 lineups/events/current live clock; verified in preview. Unpublished or inconsistent categories omitted.
 - [x] Add Al Arabi–Al Nasr bench from the source and verify both clubs (11 each).
 - [x] Zain Premier League: added 31 missing mfsoccer fixtures; all 132 verified with no duplicates
