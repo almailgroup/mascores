@@ -1,0 +1,187 @@
+{
+  "source": "https://mfsoccer.com (matchRatings for Al Arabi–Al Nasr, 2026-11-07)",
+  "match_id": "4c4d50ce-7f7a-4ebd-84b0-94a5dcdb8629",
+  "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+  "ratings": [
+    {
+      "source_name": "زيد قنبر",
+      "player_id": "643911e1-9ddb-43b7-b212-b1b333c25ee5",
+      "rating": 7.6,
+      "minutes": 78
+    },
+    {
+      "source_name": "علي الدوخي",
+      "player_id": "c1570a8d-d0c7-4b8c-ad71-7012b0db96e1",
+      "rating": 7.6,
+      "minutes": 22
+    },
+    {
+      "source_name": "وليد ولد الشيخ",
+      "player_id": "eef07411-e107-4bd4-82b4-e01304886150",
+      "rating": 7.3,
+      "minutes": 22
+    },
+    {
+      "source_name": "حمد الحربي",
+      "player_id": "95edfade-c364-402e-8ccd-bb82329b717d",
+      "rating": 6.8,
+      "minutes": 100
+    },
+    {
+      "source_name": "كينان ماليكو",
+      "player_id": "977456de-d8da-4337-87ca-c7c241628f4f",
+      "rating": 6.8,
+      "minutes": 100
+    },
+    {
+      "source_name": "عبدالوهاب العوضي",
+      "player_id": "c06d55d7-1155-47d9-bc12-e9dea3bffa5e",
+      "rating": 6.7,
+      "minutes": 100
+    },
+    {
+      "source_name": "جمعة عبود",
+      "player_id": "464cd2ce-2221-4401-bb27-3b38651dfd88",
+      "rating": 6.7,
+      "minutes": 100
+    },
+    {
+      "source_name": "بدر الدين سوياد",
+      "player_id": "19751bcf-1831-426c-b88e-48cdb092d7c4",
+      "rating": 6.7,
+      "minutes": 100
+    },
+    {
+      "source_name": "يوسف ماجد",
+      "player_id": "0626d6b0-0f55-44db-b3ad-b3927c4fea31",
+      "rating": 6.7,
+      "minutes": 87
+    },
+    {
+      "source_name": "علي خلف",
+      "player_id": "e3a8d897-b70c-487f-888d-082ccff5bcfe",
+      "rating": 6.7,
+      "minutes": 78
+    },
+    {
+      "source_name": "احمد عادي",
+      "player_id": "c33fa399-fa9a-47d7-bbe7-ae86ee6c56c6",
+      "rating": 6.6,
+      "minutes": 100
+    },
+    {
+      "source_name": "عبدالله عمار",
+      "player_id": "de23a9f9-43b5-4e12-a49b-0f0f03530646",
+      "rating": 6.6,
+      "minutes": 50
+    },
+    {
+      "source_name": "عزيز نصاري",
+      "player_id": "ed97bdd2-b0ce-4ba9-8f5f-797438223f06",
+      "rating": 6.5,
+      "minutes": 50
+    },
+    {
+      "source_name": "بندر السلامة",
+      "player_id": "0013de0b-3722-4c1c-a8a6-c92ae8fa7383",
+      "rating": 6.5,
+      "minutes": 13
+    },
+    {
+      "source_name": "ايوالا",
+      "player_id": "a5d3c943-181e-44f3-9b29-07160862601b",
+      "rating": 6.2,
+      "minutes": 100
+    },
+    {
+      "source_name": "موريبا ديارا",
+      "player_id": "2bb730f8-8c73-49ba-ae19-015016179160",
+      "rating": 7.9,
+      "minutes": 100
+    },
+    {
+      "source_name": "محمد حمد",
+      "player_id": "f60354ab-d18d-4448-aff9-ee281d5bcc0d",
+      "rating": 6.5,
+      "minutes": 90
+    },
+    {
+      "source_name": "هاشم نجيب",
+      "player_id": "55128b12-bed8-4e66-a726-03379c01908f",
+      "rating": 6.5,
+      "minutes": 95
+    },
+    {
+      "source_name": "حازم الحاج حسن",
+      "player_id": "b7527867-106e-4fe2-8fa4-54691bd74464",
+      "rating": 6.5,
+      "minutes": 72
+    },
+    {
+      "source_name": "مسفر العدواني",
+      "player_id": "69371ec2-3996-4bcc-9504-4c7a119f36da",
+      "rating": 6.5,
+      "minutes": 90
+    },
+    {
+      "source_name": "يوسف ثامر",
+      "player_id": "49e925e5-d5b8-4270-b2c9-b2f7a54831ee",
+      "rating": 6.4,
+      "minutes": 100
+    },
+    {
+      "source_name": "سيدي يعقوب",
+      "player_id": "e21ecfdd-f224-4d27-99dc-77950b7ba5fe",
+      "rating": 6.4,
+      "minutes": 100
+    },
+    {
+      "source_name": "عبدالعزيز الشمري",
+      "player_id": "be6b5a6f-b22e-46e7-980e-b2cfd0e6ae1e",
+      "rating": 6.4,
+      "minutes": 72
+    },
+    {
+      "source_name": "على حسن",
+      "player_id": "83cedf21-0c32-41ec-8d14-5ce89076702b",
+      "rating": 6.4,
+      "minutes": 28
+    },
+    {
+      "source_name": "ايمن لقجع",
+      "player_id": "0e1f357b-370b-461f-bbc8-6458edbafee4",
+      "rating": 6.4,
+      "minutes": 28
+    },
+    {
+      "source_name": "سلمان بورميه",
+      "player_id": "ba2dd1ae-837a-417a-bbfb-e788084348f2",
+      "rating": 6.4,
+      "minutes": 10
+    },
+    {
+      "source_name": "علي عبدالله الظفيري",
+      "player_id": "2679fb71-1e0d-424a-bcfb-f5aa6e303042",
+      "rating": 6.4,
+      "minutes": 10
+    },
+    {
+      "source_name": "عبدالرحمن كوكو",
+      "player_id": "767dde1f-f7f3-4855-9804-72dbd716aff7",
+      "rating": 6.3,
+      "minutes": 100
+    },
+    {
+      "source_name": "ناصر خضر",
+      "player_id": "c8947e2e-a503-4fe6-952f-5a0a444b692d",
+      "rating": 6.3,
+      "minutes": 100
+    },
+    {
+      "source_name": "خالد عجاجي",
+      "player_id": "f2325191-20a3-4aae-a73b-2ef3d3a468b0",
+      "rating": 6.1,
+      "minutes": 100
+    }
+  ]
+}
