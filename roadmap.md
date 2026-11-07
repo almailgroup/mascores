@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Restore Al Arabi–Al Nasr's 47′ “Penalty missed” event without changing the final score or other events.
 - [x] Fill verified Round 7–8 statistics and Al Arabi–Al Nasr Round 8 lineups/events/current live clock; verified in preview. Unpublished or inconsistent categories omitted.
 - [x] Add Al Arabi–Al Nasr bench from the source and verify both clubs (11 each).
 - [x] Zain Premier League: added 31 missing mfsoccer fixtures; all 132 verified with no duplicates
