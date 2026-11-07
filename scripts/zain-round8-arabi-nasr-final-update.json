@@ -106,6 +106,10 @@
     "player": "Ali Al Doukhi",
     "assist": "Walid Ould Chikh"
   },
-  "removed_outdated_event": "Unnamed 47th-minute penalty miss no longer present in final source report",
+  "restored_user_confirmed_event": {
+    "minute": 47,
+    "type": "penalty_miss",
+    "description": "Penalty missed"
+  },
   "substitutions_added": 8
 }
