@@ -1,4 +1,6 @@
 # Roadmap
+- [x] Fill verified Round 7–8 statistics and Al Arabi–Al Nasr Round 8 lineups/events/current live clock; verified in preview. Unpublished or inconsistent categories omitted.
+- [x] Add Al Arabi–Al Nasr bench from the source and verify both clubs (11 each).
 - [x] Zain Premier League: added 31 missing mfsoccer fixtures; all 132 verified with no duplicates
 - [x] Head-to-head: show every completed meeting, independent of club-history limits
 - [x] Fixture display: 12 PM for missing times and clearly labelled estimated dates app-wide

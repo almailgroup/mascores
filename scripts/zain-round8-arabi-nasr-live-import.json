@@ -1,0 +1,446 @@
+{
+  "source": "https://mfsoccer.com/api/doc/2026-2027",
+  "source_updated": "2026-11-07T14:51:22.103Z",
+  "source_match": {
+    "n": 55,
+    "round": 8,
+    "comp": "الدوري",
+    "date": "2026-11-07",
+    "time": "17:25",
+    "venue": "صباح السالم",
+    "home": "العربي",
+    "away": "النصر",
+    "note": "",
+    "ref": "سعود السمحان",
+    "refs": {
+      "ar1": "علي كرم",
+      "ar2": "عمر الشطي",
+      "fourth": "عيسى المتروك",
+      "var": "يوسف نصار",
+      "avar": "محمد العطار"
+    },
+    "tv": "القناة الثالثة الرياضية",
+    "status": "h1",
+    "pst": 1794061545208,
+    "add1": 0,
+    "add2": 0,
+    "abs": [
+      {
+        "c": "العربي",
+        "p": "سليمان عبدالغفور"
+      },
+      {
+        "c": "العربي",
+        "p": "خادم رسول"
+      },
+      {
+        "c": "العربي",
+        "p": "علي عزيز"
+      },
+      {
+        "c": "العربي",
+        "p": "خالد المرشد"
+      },
+      {
+        "c": "العربي",
+        "p": "طلال القيسي"
+      },
+      {
+        "c": "العربي",
+        "p": "عمر العازمي"
+      },
+      {
+        "c": "العربي",
+        "p": "حسين كنكوني"
+      },
+      {
+        "c": "العربي",
+        "p": "حسين العريان"
+      },
+      {
+        "c": "العربي",
+        "p": "عايد ماجد"
+      },
+      {
+        "c": "العربي",
+        "p": "سعود العنبري"
+      },
+      {
+        "c": "العربي",
+        "p": "حسين اشكناني"
+      },
+      {
+        "c": "العربي",
+        "p": "صالح الرويضان"
+      },
+      {
+        "c": "النصر",
+        "p": "خالد محمد"
+      },
+      {
+        "c": "النصر",
+        "p": "فواز المبيلش"
+      },
+      {
+        "c": "النصر",
+        "p": "حمود حزمي السهليي"
+      },
+      {
+        "c": "النصر",
+        "p": "احمد الرشيدي"
+      },
+      {
+        "c": "النصر",
+        "p": "محمد عجاج"
+      }
+    ],
+    "hg": 0,
+    "ag": 1
+  },
+  "lineups": [
+    {
+      "id": "2965fc64-b1fc-502c-a71e-e3d9f15b0e9d",
+      "match_id": "4c4d50ce-7f7a-4ebd-84b0-94a5dcdb8629",
+      "team_id": "598d82e7-8002-4423-9468-d58ec371907c",
+      "player_id": "0626d6b0-0f55-44db-b3ad-b3927c4fea31",
+      "source_name": "يوسف ماجد",
+      "shirt_number": 19,
+      "is_starting": true,
+      "position_code": "L2-1"
+    },
+    {
+      "id": "cdf037be-0575-578a-9899-20c0cdf7d08c",
+      "match_id": "4c4d50ce-7f7a-4ebd-84b0-94a5dcdb8629",
+      "team_id": "598d82e7-8002-4423-9468-d58ec371907c",
+      "player_id": "95edfade-c364-402e-8ccd-bb82329b717d",
+      "source_name": "حمد الحربي",
+      "shirt_number": 12,
+      "is_starting": true,
+      "position_code": "L2-2"
+    },
+    {
+      "id": "cf83c72a-bbbe-51c1-8812-415073095995",
+      "match_id": "4c4d50ce-7f7a-4ebd-84b0-94a5dcdb8629",
+      "team_id": "598d82e7-8002-4423-9468-d58ec371907c",
+      "player_id": "977456de-d8da-4337-87ca-c7c241628f4f",
+      "source_name": "كينان ماليكو",
+      "shirt_number": 18,
+      "is_starting": true,
+      "position_code": "L2-3"
+    },
+    {
+      "id": "87ad0823-edb6-5b75-85b0-e6b0da9a2eed",
+      "match_id": "4c4d50ce-7f7a-4ebd-84b0-94a5dcdb8629",
+      "team_id": "598d82e7-8002-4423-9468-d58ec371907c",
+      "player_id": "a5d3c943-181e-44f3-9b29-07160862601b",
+      "source_name": "ايوالا",
+      "shirt_number": 7,
+      "is_starting": true,
+      "position_code": "L2-4"
+    },
+    {
+      "id": "4ee460bf-2bfb-5fac-ae54-a47a21a4bc0b",
+      "match_id": "4c4d50ce-7f7a-4ebd-84b0-94a5dcdb8629",
+      "team_id": "598d82e7-8002-4423-9468-d58ec371907c",
+      "player_id": "643911e1-9ddb-43b7-b212-b1b333c25ee5",
+      "source_name": "زيد قنبر",
+      "shirt_number": 98,
+      "is_starting": true,
+      "position_code": "L3-1"
+    },
+    {
+      "id": "84271a3a-1cc4-59f1-98a0-5fc4eb9e2445",
+      "match_id": "4c4d50ce-7f7a-4ebd-84b0-94a5dcdb8629",
+      "team_id": "598d82e7-8002-4423-9468-d58ec371907c",
+      "player_id": "e3a8d897-b70c-487f-888d-082ccff5bcfe",
+      "source_name": "علي خلف",
+      "shirt_number": 17,
+      "is_starting": true,
+      "position_code": "L3-2"
+    },
+    {
+      "id": "ac196742-ea32-5589-8eef-da76ab91058f",
+      "match_id": "4c4d50ce-7f7a-4ebd-84b0-94a5dcdb8629",
+      "team_id": "598d82e7-8002-4423-9468-d58ec371907c",
+      "player_id": "c06d55d7-1155-47d9-bc12-e9dea3bffa5e",
+      "source_name": "عبدالوهاب العوضي",
+      "shirt_number": 2,
+      "is_starting": true,
+      "position_code": "L1-1"
+    },
+    {
+      "id": "fab395d4-e43d-5ab5-947c-20cfe4c6878e",
+      "match_id": "4c4d50ce-7f7a-4ebd-84b0-94a5dcdb8629",
+      "team_id": "598d82e7-8002-4423-9468-d58ec371907c",
+      "player_id": "464cd2ce-2221-4401-bb27-3b38651dfd88",
+      "source_name": "جمعة عبود",
+      "shirt_number": 5,
+      "is_starting": true,
+      "position_code": "L1-2"
+    },
+    {
+      "id": "9eab7249-732a-5921-babc-bd3263cba125",
+      "match_id": "4c4d50ce-7f7a-4ebd-84b0-94a5dcdb8629",
+      "team_id": "598d82e7-8002-4423-9468-d58ec371907c",
+      "player_id": "19751bcf-1831-426c-b88e-48cdb092d7c4",
+      "source_name": "بدر الدين سوياد",
+      "shirt_number": 27,
+      "is_starting": true,
+      "position_code": "L1-3"
+    },
+    {
+      "id": "3a22ff43-5d89-5640-ad09-e4a680f0c68c",
+      "match_id": "4c4d50ce-7f7a-4ebd-84b0-94a5dcdb8629",
+      "team_id": "598d82e7-8002-4423-9468-d58ec371907c",
+      "player_id": "ed97bdd2-b0ce-4ba9-8f5f-797438223f06",
+      "source_name": "عزيز نصاري",
+      "shirt_number": 21,
+      "is_starting": true,
+      "position_code": "L1-4"
+    },
+    {
+      "id": "8f9e2dcb-a825-5c76-8e4c-3209c93ab24c",
+      "match_id": "4c4d50ce-7f7a-4ebd-84b0-94a5dcdb8629",
+      "team_id": "598d82e7-8002-4423-9468-d58ec371907c",
+      "player_id": "c33fa399-fa9a-47d7-bbe7-ae86ee6c56c6",
+      "source_name": "احمد عادي",
+      "shirt_number": 26,
+      "is_starting": true,
+      "position_code": "GK"
+    },
+    {
+      "id": "39205a48-a6b5-50e3-b7ca-281eb4a38e2c",
+      "match_id": "4c4d50ce-7f7a-4ebd-84b0-94a5dcdb8629",
+      "team_id": "2986f4c3-8906-483b-b021-dae5ddf46c2a",
+      "player_id": "f2325191-20a3-4aae-a73b-2ef3d3a468b0",
+      "source_name": "خالد عجاجي",
+      "shirt_number": 33,
+      "is_starting": true,
+      "position_code": "GK"
+    },
+    {
+      "id": "ed085813-66ab-55a5-afb9-eaa3cbe88a7d",
+      "match_id": "4c4d50ce-7f7a-4ebd-84b0-94a5dcdb8629",
+      "team_id": "2986f4c3-8906-483b-b021-dae5ddf46c2a",
+      "player_id": "be6b5a6f-b22e-46e7-980e-b2cfd0e6ae1e",
+      "source_name": "عبدالعزيز الشمري",
+      "shirt_number": 26,
+      "is_starting": true,
+      "position_code": "L1-1"
+    },
+    {
+      "id": "fbc6715a-b558-566e-ad2e-271767a533d0",
+      "match_id": "4c4d50ce-7f7a-4ebd-84b0-94a5dcdb8629",
+      "team_id": "2986f4c3-8906-483b-b021-dae5ddf46c2a",
+      "player_id": "2bb730f8-8c73-49ba-ae19-015016179160",
+      "source_name": "موريبا ديارا",
+      "shirt_number": 4,
+      "is_starting": true,
+      "position_code": "L1-2"
+    },
+    {
+      "id": "cf275114-702e-5f05-bb84-fdb370c3a2cb",
+      "match_id": "4c4d50ce-7f7a-4ebd-84b0-94a5dcdb8629",
+      "team_id": "2986f4c3-8906-483b-b021-dae5ddf46c2a",
+      "player_id": "767dde1f-f7f3-4855-9804-72dbd716aff7",
+      "source_name": "عبدالرحمن كوكو",
+      "shirt_number": 6,
+      "is_starting": true,
+      "position_code": "L1-3"
+    },
+    {
+      "id": "3f4a86ff-2e64-5013-aa96-309e8781b73b",
+      "match_id": "4c4d50ce-7f7a-4ebd-84b0-94a5dcdb8629",
+      "team_id": "2986f4c3-8906-483b-b021-dae5ddf46c2a",
+      "player_id": "c8947e2e-a503-4fe6-952f-5a0a444b692d",
+      "source_name": "ناصر خضر",
+      "shirt_number": 2,
+      "is_starting": true,
+      "position_code": "L1-4"
+    },
+    {
+      "id": "9e4c75ac-977e-57d2-b48e-95b2ea064361",
+      "match_id": "4c4d50ce-7f7a-4ebd-84b0-94a5dcdb8629",
+      "team_id": "2986f4c3-8906-483b-b021-dae5ddf46c2a",
+      "player_id": "f60354ab-d18d-4448-aff9-ee281d5bcc0d",
+      "source_name": "محمد حمد",
+      "shirt_number": 77,
+      "is_starting": true,
+      "position_code": "L2-1"
+    },
+    {
+      "id": "641c3672-4ec2-5b28-a675-7410b4871a22",
+      "match_id": "4c4d50ce-7f7a-4ebd-84b0-94a5dcdb8629",
+      "team_id": "2986f4c3-8906-483b-b021-dae5ddf46c2a",
+      "player_id": "55128b12-bed8-4e66-a726-03379c01908f",
+      "source_name": "هاشم نجيب",
+      "shirt_number": 19,
+      "is_starting": true,
+      "position_code": "L2-2"
+    },
+    {
+      "id": "dc45b1c8-58a0-5ded-a8e0-1cec1ddd1d65",
+      "match_id": "4c4d50ce-7f7a-4ebd-84b0-94a5dcdb8629",
+      "team_id": "2986f4c3-8906-483b-b021-dae5ddf46c2a",
+      "player_id": "e21ecfdd-f224-4d27-99dc-77950b7ba5fe",
+      "source_name": "سيدي يعقوب",
+      "shirt_number": 24,
+      "is_starting": true,
+      "position_code": "L2-3"
+    },
+    {
+      "id": "3ad23bd7-86df-525e-8b22-7079feb8c696",
+      "match_id": "4c4d50ce-7f7a-4ebd-84b0-94a5dcdb8629",
+      "team_id": "2986f4c3-8906-483b-b021-dae5ddf46c2a",
+      "player_id": "49e925e5-d5b8-4270-b2c9-b2f7a54831ee",
+      "source_name": "يوسف ثامر",
+      "shirt_number": 11,
+      "is_starting": true,
+      "position_code": "L2-4"
+    },
+    {
+      "id": "5ef30ad1-ca93-5530-ba24-cc506e30f08d",
+      "match_id": "4c4d50ce-7f7a-4ebd-84b0-94a5dcdb8629",
+      "team_id": "2986f4c3-8906-483b-b021-dae5ddf46c2a",
+      "player_id": "b7527867-106e-4fe2-8fa4-54691bd74464",
+      "source_name": "حازم الحاج حسن",
+      "shirt_number": 99,
+      "is_starting": true,
+      "position_code": "L3-1"
+    },
+    {
+      "id": "83f96315-2bb3-5a6e-a766-9b31711f284e",
+      "match_id": "4c4d50ce-7f7a-4ebd-84b0-94a5dcdb8629",
+      "team_id": "2986f4c3-8906-483b-b021-dae5ddf46c2a",
+      "player_id": "69371ec2-3996-4bcc-9504-4c7a119f36da",
+      "source_name": "مسفر العدواني",
+      "shirt_number": 50,
+      "is_starting": true,
+      "position_code": "L3-2"
+    }
+  ],
+  "source_shapes": [
+    {
+      "r": 8,
+      "comp": "الدوري",
+      "club": "العربي",
+      "f": "4-4-2",
+      "pos": {
+        "يوسف ماجد": {
+          "x": 20,
+          "y": 38
+        },
+        "ايوالا": {
+          "x": 80,
+          "y": 38
+        },
+        "حمد الحربي": {
+          "y": 38,
+          "x": 40
+        },
+        "كينان ماليكو": {
+          "y": 38,
+          "x": 60
+        },
+        "زيد قنبر": {
+          "x": 33,
+          "y": 12
+        },
+        "بدر الدين سوياد": {
+          "x": 60,
+          "y": 64
+        },
+        "عبدالوهاب العوضي": {
+          "x": 20,
+          "y": 64
+        },
+        "احمد عادي": {
+          "x": 50,
+          "y": 90
+        },
+        "علي خلف": {
+          "x": 67,
+          "y": 12
+        },
+        "عزيز نصاري": {
+          "y": 64,
+          "x": 80
+        },
+        "جمعة عبود": {
+          "x": 40,
+          "y": 64
+        }
+      }
+    },
+    {
+      "r": 8,
+      "comp": "الدوري",
+      "club": "النصر",
+      "f": "4-4-2",
+      "pos": {
+        "خالد عجاجي": {
+          "x": 50,
+          "y": 90
+        },
+        "عبدالعزيز الشمري": {
+          "x": 10,
+          "y": 62
+        },
+        "موريبا ديارا": {
+          "x": 35,
+          "y": 66
+        },
+        "عبدالرحمن كوكو": {
+          "x": 65,
+          "y": 66
+        },
+        "ناصر خضر": {
+          "x": 90,
+          "y": 62
+        },
+        "محمد حمد": {
+          "x": 12,
+          "y": 38
+        },
+        "هاشم نجيب": {
+          "x": 37,
+          "y": 42
+        },
+        "سيدي يعقوب": {
+          "x": 63,
+          "y": 42
+        },
+        "يوسف ثامر": {
+          "x": 88,
+          "y": 38
+        },
+        "حازم الحاج حسن": {
+          "x": 35,
+          "y": 12
+        },
+        "مسفر العدواني": {
+          "x": 65,
+          "y": 12
+        }
+      }
+    }
+  ],
+  "events": [
+    {
+      "r": 8,
+      "comp": "الدوري",
+      "sc": "النصر",
+      "cd": "العربي",
+      "p": "موريبا ديارا",
+      "a": "",
+      "m": 24,
+      "x": 0,
+      "cat": "لعب مفتوح",
+      "det": "متابعة كرة مرتدة",
+      "bp": "القدم اليسرى",
+      "zone": "منطقة المرمى - يسار",
+      "og": "",
+      "uid": "mw6ism3p168cf"
+    }
+  ]
+}
