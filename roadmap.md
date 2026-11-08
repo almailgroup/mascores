@@ -1,11 +1,11 @@
 # Roadmap
-- [ ] Import Al Sahel–Kuwait SC and Kazma–Al Salmiya Round 8 lineups, confirmed benches, events and published ratings; use MFSoccer where available with private attribution only.
-- [ ] Fill missing final statistics for finished Round 8 fixtures from accessible published sources and verify each match page.
+- [x] Import Al Sahel–Kuwait SC and Al Salmiya–Kazma: final results, 44 starters, 19 used substitutes, 40 events and 63 published source ratings; verified in match pages, attribution private. Unused benches remain unconfirmed and were not inferred.
+- [x] Fill verified final statistics across all six finished Round 8 fixtures from Derbista; verified every Stats tab, preserved credible conflicting prior values, removed Al Arabi's stale live off-target row.
 - [x] Add Team administrator and Head of football staff options; both selectable in the signed-in editor.
 - [x] Import 13 published Al Qadsia–Al Jahra statistics from BallWhizz; verify saved values and match-page display.
 - [x] Check visible app source and stored match descriptions, events, source notes and content: no MFSoccer mentions remain; retain private audit attribution only.
 - [x] Restored Al Arabi–Al Nasr's 47′ “Penalty missed” event; final score and other events unchanged.
-- [ ] Replace Al Arabi–Al Nasr match statistics with final verified Sofascore values — blocked by Sofascore HTTP 403; needs a date-specific event link or accessible response.
+- [x] Replace Al Arabi–Al Nasr's early live statistics with published final Derbista values under the user's permission to use any accessible published source.
 - [x] Assigned the 47′ missed penalty to Anayo Iwuala and added 30 final MFSoccer player ratings; verified in preview.
 - [x] Corrected Al Qadsia–Al Jahra to the official club screenshots: 22 starters, 9 Jahra substitutes, 11 Qadsia substitutes, Christ Afalna #16; verified in preview.
 - [x] Fill verified Round 7–8 statistics and Al Arabi–Al Nasr Round 8 lineups/events/current live clock; verified in preview. Unpublished or inconsistent categories omitted.
