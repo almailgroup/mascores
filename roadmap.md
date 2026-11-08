@@ -1,7 +1,7 @@
 # Roadmap
-- [ ] Add Team administrator and Head of football staff options.
-- [ ] Import published Al Qadsia–Al Jahra match statistics and verify them.
-- [ ] Remove every visible MFSoccer mention from the app, retaining private audit attribution.
+- [x] Add Team administrator and Head of football staff options; both selectable in the signed-in editor.
+- [x] Import 13 published Al Qadsia–Al Jahra statistics from BallWhizz; verify saved values and match-page display.
+- [x] Check visible app source and stored match descriptions, events, source notes and content: no MFSoccer mentions remain; retain private audit attribution only.
 - [x] Restored Al Arabi–Al Nasr's 47′ “Penalty missed” event; final score and other events unchanged.
 - [ ] Replace Al Arabi–Al Nasr match statistics with final verified Sofascore values — blocked by Sofascore HTTP 403; needs a date-specific event link or accessible response.
 - [x] Assigned the 47′ missed penalty to Anayo Iwuala and added 30 final MFSoccer player ratings; verified in preview.
