@@ -1,0 +1,1864 @@
+{
+  "source": "https://mfsoccer.com/api/doc/2026-2027",
+  "ratings_method": "Live Chromium page.evaluate: matchRatings(m, club); values and full parts/ctx retained unmodified in raw.browser_matches",
+  "matches": [
+    {
+      "id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+      "source_match": {
+        "n": 56,
+        "round": 8,
+        "comp": "الدوري",
+        "date": "2026-11-08",
+        "time": "17:25",
+        "venue": "ثامر",
+        "home": "السالمية",
+        "away": "كاظمة",
+        "note": "",
+        "ref": "جورجي كرواشفيلي",
+        "refs": {
+          "ar1": "سعود الرشيدي",
+          "ar2": "مشاري الفوزان",
+          "fourth": "عباس حسين",
+          "var": "كوبا ريفاز افيلي",
+          "avar": "علي كرم"
+        },
+        "tv": "القناة الثالثة الرياضية",
+        "status": "ft",
+        "add1": 5,
+        "add2": 6,
+        "abs": [
+          {
+            "c": "السالمية",
+            "p": "احمد بو مريوم"
+          },
+          {
+            "c": "السالمية",
+            "p": "عمر علي عمر"
+          },
+          {
+            "c": "السالمية",
+            "p": "خالد العثمان"
+          },
+          {
+            "c": "السالمية",
+            "p": "احمد منصور"
+          },
+          {
+            "c": "السالمية",
+            "p": "احمد عيدان"
+          },
+          {
+            "c": "السالمية",
+            "p": "عبدالله الايوب"
+          },
+          {
+            "c": "كاظمة",
+            "p": "خليفة رحيل"
+          },
+          {
+            "c": "كاظمة",
+            "p": "ضاري المسري"
+          },
+          {
+            "c": "كاظمة",
+            "p": "ناصر محمدوه"
+          },
+          {
+            "c": "كاظمة",
+            "p": "جراح الهليلي"
+          },
+          {
+            "c": "كاظمة",
+            "p": "عثمان الشمري"
+          },
+          {
+            "c": "كاظمة",
+            "p": "باتريك روبسون"
+          }
+        ],
+        "hg": 3,
+        "ag": 2
+      },
+      "lineups": [
+        {
+          "id": "0537bff5-b0d9-5d0a-a963-3a550f9bdfd5",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
+          "player_id": "8023c9ab-bb65-4322-927c-65c0d5c0d68d",
+          "is_starting": true,
+          "position_code": "GK",
+          "shirt_number": 22,
+          "source_name": "يوسف الكندري",
+          "existing_name": "Yousef Al Kandari"
+        },
+        {
+          "id": "a9666853-7e89-5014-a714-22d67498e2e3",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
+          "player_id": "a55cbd8f-01e7-434a-9583-0d506aca181e",
+          "is_starting": true,
+          "position_code": "L2-1",
+          "shirt_number": 2,
+          "source_name": "عبدالله الجزاف",
+          "existing_name": "Abdullah Al Jazzaf"
+        },
+        {
+          "id": "88ab27ad-a0b8-5ea1-9ac6-424400a6458c",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
+          "player_id": "568fb255-56c7-4646-9448-9d2622777afc",
+          "is_starting": true,
+          "position_code": "L1-2",
+          "shirt_number": 4,
+          "source_name": "شاهزود",
+          "existing_name": "Shakhzod Azmiddinov"
+        },
+        {
+          "id": "55961d99-d5a3-5ff4-87d2-47bb4d06124d",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
+          "player_id": "0e3589ec-6739-4600-825f-b9ce2f7aa32e",
+          "is_starting": true,
+          "position_code": "L1-3",
+          "shirt_number": 29,
+          "source_name": "تريسور",
+          "existing_name": "Trésor Yamba"
+        },
+        {
+          "id": "e5e84219-0196-5cd6-b4ca-bf97be7a5439",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
+          "player_id": "3926e80e-12c5-482d-87b5-a614abc52cb9",
+          "is_starting": true,
+          "position_code": "L1-4",
+          "shirt_number": 27,
+          "source_name": "عيسى وليد",
+          "existing_name": "Eissa Waleed"
+        },
+        {
+          "id": "06f783c5-eea0-50f7-a887-e6742674bb1a",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
+          "player_id": "cfd7bd4f-8124-4321-a812-7f8efed8e54b",
+          "is_starting": true,
+          "position_code": "L2-2",
+          "shirt_number": 8,
+          "source_name": "محمدالهويدي",
+          "existing_name": "Mohammed Al Huwaidi"
+        },
+        {
+          "id": "bca7da87-566a-58de-a52c-d40ad534cae7",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
+          "player_id": "6c53b429-a6b8-442d-8040-038b8903409b",
+          "is_starting": true,
+          "position_code": "L3-2",
+          "shirt_number": 10,
+          "source_name": "فواز عايض",
+          "existing_name": "Fawaz Ayedh"
+        },
+        {
+          "id": "4f754183-29b6-5d87-a9c0-c5c84061f99b",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
+          "player_id": "44d0de20-1b58-4cb3-82cd-2216e10cd1e0",
+          "is_starting": true,
+          "position_code": "L1-1",
+          "shirt_number": 3,
+          "source_name": "عبد الرحمن الخضر",
+          "existing_name": "Abdulrahman Al Khudher"
+        },
+        {
+          "id": "46cfbb23-2381-5525-aa3c-b1bc790963eb",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
+          "player_id": "ef81d963-094a-4e2e-8413-85b2eab5566d",
+          "is_starting": true,
+          "position_code": "L3-1",
+          "shirt_number": 11,
+          "source_name": "نايف زويد",
+          "existing_name": "Naif Zuwaid"
+        },
+        {
+          "id": "05c17678-eebf-5e14-9eef-5558965377cc",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
+          "player_id": "4a5e3a79-7707-4d40-a44f-a335bae57171",
+          "is_starting": true,
+          "position_code": "L3-3",
+          "shirt_number": 26,
+          "source_name": "مبارك الفنيني",
+          "existing_name": "Mubarak Al Faneni"
+        },
+        {
+          "id": "b2b00a81-c14b-5255-8335-2869fe9592ec",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
+          "player_id": "ef05230b-ca35-4a79-af41-aa0ca3d25f94",
+          "is_starting": true,
+          "position_code": "L4-1",
+          "shirt_number": 19,
+          "source_name": "معاذ الاصيمع",
+          "existing_name": "Moaath Al Enezi"
+        },
+        {
+          "id": "5b45b61e-3c06-5de8-9d3e-4326f7c5f270",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
+          "player_id": "2593f1e8-9686-4586-9e86-78a55ccd3334",
+          "is_starting": false,
+          "position_code": null,
+          "shirt_number": 7,
+          "source_name": "محمود الأســود",
+          "existing_name": "Mahmoud Al Aswad"
+        },
+        {
+          "id": "8df2128c-2e6f-5ce5-bd37-68815eb1c46f",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
+          "player_id": "bf31b5e0-4ab5-4247-b4a9-4ead985c0365",
+          "is_starting": false,
+          "position_code": null,
+          "shirt_number": 16,
+          "source_name": "مهدي دشتي",
+          "existing_name": "Mahdi Dashti "
+        },
+        {
+          "id": "a7668bf4-11c7-5a71-b7fe-88b5b7ae81ab",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
+          "player_id": "7efa6100-e084-4e3b-9eca-0718496543fa",
+          "is_starting": false,
+          "position_code": null,
+          "shirt_number": 9,
+          "source_name": "عبد الله يوسف",
+          "existing_name": "Abdullah Al Yusuf"
+        },
+        {
+          "id": "61d8689a-99a4-5c69-be71-fcec8f22dd1a",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
+          "player_id": "5f319623-ef19-410b-82b1-a71457765a5c",
+          "is_starting": false,
+          "position_code": null,
+          "shirt_number": 77,
+          "source_name": "ديفيــد سامبيسا",
+          "existing_name": "David Sambissa"
+        },
+        {
+          "id": "b129fc02-c854-58b1-ab4b-e7a7c92aa618",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
+          "player_id": "5ff13ec4-f9a0-4d3a-a694-668db7f9fcc3",
+          "is_starting": false,
+          "position_code": null,
+          "shirt_number": 14,
+          "source_name": "احمد خورشيد",
+          "existing_name": "Ahmed Khorsheed"
+        },
+        {
+          "id": "98cb0551-69f6-5e65-9c1e-4bd844f69d53",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "team_id": "a7166bc6-b129-47bb-bc4e-e085b1a2dfcd",
+          "player_id": "48bcd48a-b35f-4e10-a561-f3afebb877dc",
+          "is_starting": true,
+          "position_code": "GK",
+          "shirt_number": 1,
+          "source_name": "حسين كنكوني",
+          "existing_name": "Hussain Kankone"
+        },
+        {
+          "id": "84d31d16-a7c9-5489-8dc3-970a8171c84a",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "team_id": "a7166bc6-b129-47bb-bc4e-e085b1a2dfcd",
+          "player_id": "bda15ab1-b241-4d1c-be20-9f1b67c0e195",
+          "is_starting": true,
+          "position_code": "L1-1",
+          "shirt_number": 2,
+          "source_name": "صالح المحطب",
+          "existing_name": "Saleh Faisal Al Mehtab"
+        },
+        {
+          "id": "d333fa1e-f62c-53c1-8905-387f37d959a6",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "team_id": "a7166bc6-b129-47bb-bc4e-e085b1a2dfcd",
+          "player_id": "f376a8cf-068a-4f8e-8fb4-9db1b64c97d2",
+          "is_starting": true,
+          "position_code": "L1-2",
+          "shirt_number": 4,
+          "source_name": "فهد الهاجري",
+          "existing_name": "Fahad Al Hajeri"
+        },
+        {
+          "id": "7779e978-c222-51ef-99dd-42e5c6cc4d64",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "team_id": "a7166bc6-b129-47bb-bc4e-e085b1a2dfcd",
+          "player_id": "e5f0c9a1-6811-464c-a402-0c0aab4463b2",
+          "is_starting": true,
+          "position_code": "L1-3",
+          "shirt_number": 97,
+          "source_name": "ادريس شعيبي",
+          "existing_name": "Drice Chaabi"
+        },
+        {
+          "id": "fa8cf647-295c-516e-b9ab-f0166dad93f8",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "team_id": "a7166bc6-b129-47bb-bc4e-e085b1a2dfcd",
+          "player_id": "e7e489a9-252a-4cf6-a1a9-4d54e46ae620",
+          "is_starting": true,
+          "position_code": "L1-4",
+          "shirt_number": 66,
+          "source_name": "بندر البرازي",
+          "existing_name": "Bandar Al Barazi"
+        },
+        {
+          "id": "5041f708-601d-5479-9b21-0437e68636ce",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "team_id": "a7166bc6-b129-47bb-bc4e-e085b1a2dfcd",
+          "player_id": "90b03a46-ef52-4177-8575-24f4d092dcc3",
+          "is_starting": true,
+          "position_code": "L2-2",
+          "shirt_number": 30,
+          "source_name": "سلطان العنزي",
+          "existing_name": "Sultan Al Enezi"
+        },
+        {
+          "id": "aa369e60-2106-5e4c-8f05-223d898c3ae4",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "team_id": "a7166bc6-b129-47bb-bc4e-e085b1a2dfcd",
+          "player_id": "256a3e19-e343-4820-a00d-c6e652b16841",
+          "is_starting": true,
+          "position_code": "L2-1",
+          "shirt_number": 8,
+          "source_name": "ناصر فالح",
+          "existing_name": "Nasser Falah Lafi"
+        },
+        {
+          "id": "67f5985a-66fa-5c2f-82bd-ac37bfff2022",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "team_id": "a7166bc6-b129-47bb-bc4e-e085b1a2dfcd",
+          "player_id": "fc8c1f2f-9c17-4d92-8637-fffee03faf6a",
+          "is_starting": true,
+          "position_code": "L2-3",
+          "shirt_number": 19,
+          "source_name": "اماث نداو",
+          "existing_name": "Amath Ndaw"
+        },
+        {
+          "id": "dfbf9a3c-1520-50d0-bb73-e782f0345565",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "team_id": "a7166bc6-b129-47bb-bc4e-e085b1a2dfcd",
+          "player_id": "deb57723-11da-43b2-8e1c-bf7725e0ba75",
+          "is_starting": true,
+          "position_code": "L3-1",
+          "shirt_number": 11,
+          "source_name": "مشعل الشمري",
+          "existing_name": "Meshaal Al Shammari"
+        },
+        {
+          "id": "fc9359dd-2f9b-53e6-a4a7-390e00f25806",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "team_id": "a7166bc6-b129-47bb-bc4e-e085b1a2dfcd",
+          "player_id": "99196a9e-181e-4b4e-8a4c-02ca3e967cf7",
+          "is_starting": true,
+          "position_code": "L4-1",
+          "shirt_number": 10,
+          "source_name": "شبيب الخالدي",
+          "existing_name": "Shabib Al Khaldi"
+        },
+        {
+          "id": "10a9cf6b-30ff-5eba-bd3f-3119a5fa1e9e",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "team_id": "a7166bc6-b129-47bb-bc4e-e085b1a2dfcd",
+          "player_id": "54163a69-d0ea-4904-b01d-39a1b313f726",
+          "is_starting": true,
+          "position_code": "L4-2",
+          "shirt_number": 99,
+          "source_name": "تروليس كنول",
+          "existing_name": "Törles Knöll"
+        },
+        {
+          "id": "feb70eaa-2b47-5c05-ba34-99c8f1bb4998",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "team_id": "a7166bc6-b129-47bb-bc4e-e085b1a2dfcd",
+          "player_id": "3c1e048c-b385-4bd3-b6e4-a8dc9c992b15",
+          "is_starting": false,
+          "position_code": null,
+          "shirt_number": 29,
+          "source_name": "احمد الزنكي",
+          "existing_name": "Ahmad Zanki"
+        },
+        {
+          "id": "ab480411-6ed4-5cf1-84c7-4ffb956cc985",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "team_id": "a7166bc6-b129-47bb-bc4e-e085b1a2dfcd",
+          "player_id": "127178c8-1e0e-4703-8eeb-5d9e19732a2b",
+          "is_starting": false,
+          "position_code": null,
+          "shirt_number": 12,
+          "source_name": "محمد عنتر",
+          "existing_name": "Mohamed Anter"
+        },
+        {
+          "id": "579f22bb-e0e2-5381-809d-c344c29331a7",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "team_id": "a7166bc6-b129-47bb-bc4e-e085b1a2dfcd",
+          "player_id": "2a076289-59ed-464b-bdf5-77b53ac1e44b",
+          "is_starting": false,
+          "position_code": null,
+          "shirt_number": 77,
+          "source_name": "بدر طارق",
+          "existing_name": "Bader Tareq"
+        },
+        {
+          "id": "2f90c947-d0d8-56dd-89b0-06decb688077",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "team_id": "a7166bc6-b129-47bb-bc4e-e085b1a2dfcd",
+          "player_id": "3a7722e2-948d-4278-8f14-b573938126cb",
+          "is_starting": false,
+          "position_code": null,
+          "shirt_number": 9,
+          "source_name": "بندر بورسلي",
+          "existing_name": "Bandar Boursli"
+        }
+      ],
+      "ratings": [
+        {
+          "id": "42284dcd-bd41-533d-9dd3-9726d25e3ff2",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "player_id": "8023c9ab-bb65-4322-927c-65c0d5c0d68d",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.4,
+          "source_name": "يوسف الكندري"
+        },
+        {
+          "id": "a7d69225-93ae-5ec3-9cea-ddcc37e5eb8d",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "player_id": "a55cbd8f-01e7-434a-9583-0d506aca181e",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 7.5,
+          "source_name": "عبدالله الجزاف"
+        },
+        {
+          "id": "79d59481-ba01-5cd4-9a45-b2df07c2c1c7",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "player_id": "568fb255-56c7-4646-9448-9d2622777afc",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.6,
+          "source_name": "شاهزود"
+        },
+        {
+          "id": "38a5d89e-a37f-5de0-bbc1-7967e2ac77fb",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "player_id": "0e3589ec-6739-4600-825f-b9ce2f7aa32e",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 8.2,
+          "source_name": "تريسور"
+        },
+        {
+          "id": "02b5a9c3-e584-54ca-8729-3d7c88e8044d",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "player_id": "3926e80e-12c5-482d-87b5-a614abc52cb9",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.6,
+          "source_name": "عيسى وليد"
+        },
+        {
+          "id": "0b190d19-88f2-504c-bf5d-46ddc6de5840",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "player_id": "cfd7bd4f-8124-4321-a812-7f8efed8e54b",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.7,
+          "source_name": "محمدالهويدي"
+        },
+        {
+          "id": "92e95134-8012-5625-acea-253c48b0162f",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "player_id": "6c53b429-a6b8-442d-8040-038b8903409b",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.5,
+          "source_name": "فواز عايض"
+        },
+        {
+          "id": "ec278348-a379-5342-85d2-51871970557d",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "player_id": "44d0de20-1b58-4cb3-82cd-2216e10cd1e0",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.4,
+          "source_name": "عبد الرحمن الخضر"
+        },
+        {
+          "id": "e94d285b-5db4-5cf6-a2fd-70434cf45e1c",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "player_id": "ef81d963-094a-4e2e-8413-85b2eab5566d",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 8.2,
+          "source_name": "نايف زويد"
+        },
+        {
+          "id": "e99bd1cd-eb85-5c94-85cf-74d7a9629748",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "player_id": "4a5e3a79-7707-4d40-a44f-a335bae57171",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.5,
+          "source_name": "مبارك الفنيني"
+        },
+        {
+          "id": "541dbbb6-a2f6-5393-82a9-1de60660819e",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "player_id": "ef05230b-ca35-4a79-af41-aa0ca3d25f94",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 7.5,
+          "source_name": "معاذ الاصيمع"
+        },
+        {
+          "id": "2f250fdb-ab0b-5589-bbb6-f7d16ccd4070",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "player_id": "2593f1e8-9686-4586-9e86-78a55ccd3334",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.6,
+          "source_name": "محمود الأســود"
+        },
+        {
+          "id": "f2669671-c154-5677-b6aa-02d5acb32375",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "player_id": "bf31b5e0-4ab5-4247-b4a9-4ead985c0365",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.3,
+          "source_name": "مهدي دشتي"
+        },
+        {
+          "id": "644ee435-e3ba-5552-86e7-e2b98ccfadab",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "player_id": "7efa6100-e084-4e3b-9eca-0718496543fa",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.6,
+          "source_name": "عبد الله يوسف"
+        },
+        {
+          "id": "81bcc16b-377f-5de5-8491-823380f66dca",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "player_id": "5f319623-ef19-410b-82b1-a71457765a5c",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.3,
+          "source_name": "ديفيــد سامبيسا"
+        },
+        {
+          "id": "63db8326-b7ef-56a3-b1ed-d8b34c9fd31a",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "player_id": "5ff13ec4-f9a0-4d3a-a694-668db7f9fcc3",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.5,
+          "source_name": "احمد خورشيد"
+        },
+        {
+          "id": "c2a53660-593d-55d6-b03e-24b3821c7c4d",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "player_id": "48bcd48a-b35f-4e10-a561-f3afebb877dc",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 5.9,
+          "source_name": "حسين كنكوني"
+        },
+        {
+          "id": "48e3a8b3-cd4d-5fef-839d-2af7cbc1e37c",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "player_id": "bda15ab1-b241-4d1c-be20-9f1b67c0e195",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6,
+          "source_name": "صالح المحطب"
+        },
+        {
+          "id": "92f9c699-6dc8-5214-8a34-02d1d25446be",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "player_id": "f376a8cf-068a-4f8e-8fb4-9db1b64c97d2",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.2,
+          "source_name": "فهد الهاجري"
+        },
+        {
+          "id": "dfc7fedd-824c-572c-9dbd-9143371eed50",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "player_id": "e5f0c9a1-6811-464c-a402-0c0aab4463b2",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.2,
+          "source_name": "ادريس شعيبي"
+        },
+        {
+          "id": "0158f883-753e-50db-90c1-880fc0c2b582",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "player_id": "e7e489a9-252a-4cf6-a1a9-4d54e46ae620",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 7.8,
+          "source_name": "بندر البرازي"
+        },
+        {
+          "id": "17ef97cc-63ce-55f5-9837-1ee9ea0bf8a8",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "player_id": "90b03a46-ef52-4177-8575-24f4d092dcc3",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.4,
+          "source_name": "سلطان العنزي"
+        },
+        {
+          "id": "5ea04980-a8be-5a4e-8f85-bbac8c134f53",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "player_id": "256a3e19-e343-4820-a00d-c6e652b16841",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.1,
+          "source_name": "ناصر فالح"
+        },
+        {
+          "id": "73b8035d-6f10-5604-8c90-83b8ef0078a3",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "player_id": "fc8c1f2f-9c17-4d92-8637-fffee03faf6a",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.4,
+          "source_name": "اماث نداو"
+        },
+        {
+          "id": "a6185f8b-e2de-51f5-8607-d82686bd5723",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "player_id": "deb57723-11da-43b2-8e1c-bf7725e0ba75",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.4,
+          "source_name": "مشعل الشمري"
+        },
+        {
+          "id": "c935eb71-6c20-5bee-b035-eeba6eef247f",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "player_id": "99196a9e-181e-4b4e-8a4c-02ca3e967cf7",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 7.4,
+          "source_name": "شبيب الخالدي"
+        },
+        {
+          "id": "1a0b45cf-b25c-58da-8b7b-56fa475cb14b",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "player_id": "54163a69-d0ea-4904-b01d-39a1b313f726",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 7.2,
+          "source_name": "تروليس كنول"
+        },
+        {
+          "id": "32ea282b-351d-517f-8077-1ee820112a52",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "player_id": "3c1e048c-b385-4bd3-b6e4-a8dc9c992b15",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.4,
+          "source_name": "احمد الزنكي"
+        },
+        {
+          "id": "7b22e3da-6ed0-5a6f-a909-f8ed2cc5fa78",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "player_id": "127178c8-1e0e-4703-8eeb-5d9e19732a2b",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.5,
+          "source_name": "محمد عنتر"
+        },
+        {
+          "id": "17bb1eee-a237-5e26-b087-423332d9ab99",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "player_id": "2a076289-59ed-464b-bdf5-77b53ac1e44b",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.5,
+          "source_name": "بدر طارق"
+        },
+        {
+          "id": "62edf5a2-de13-5dd9-a524-0bb64c8d5e3e",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "player_id": "3a7722e2-948d-4278-8f14-b573938126cb",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.5,
+          "source_name": "بندر بورسلي"
+        }
+      ],
+      "events": [
+        {
+          "id": "a1368118-171b-57b7-b696-d19606621df3",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "minute": 5,
+          "extra": 0,
+          "team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
+          "player_id": "ef81d963-094a-4e2e-8413-85b2eab5566d",
+          "assist_player_id": null,
+          "sub_out_player_id": null,
+          "type": "penalty_goal",
+          "description": null
+        },
+        {
+          "id": "fc9c034b-5399-5387-823e-253032dec502",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "minute": 17,
+          "extra": 0,
+          "team_id": "a7166bc6-b129-47bb-bc4e-e085b1a2dfcd",
+          "player_id": "99196a9e-181e-4b4e-8a4c-02ca3e967cf7",
+          "assist_player_id": "54163a69-d0ea-4904-b01d-39a1b313f726",
+          "sub_out_player_id": null,
+          "type": "goal",
+          "description": null
+        },
+        {
+          "id": "ceff0017-feb7-5a86-8d1a-b4c538e0971f",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "minute": 22,
+          "extra": 0,
+          "team_id": "a7166bc6-b129-47bb-bc4e-e085b1a2dfcd",
+          "player_id": "e7e489a9-252a-4cf6-a1a9-4d54e46ae620",
+          "assist_player_id": null,
+          "sub_out_player_id": null,
+          "type": "goal",
+          "description": null
+        },
+        {
+          "id": "421d7a5c-4ead-5ba7-96d1-2ac4a70e6fa5",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "minute": 28,
+          "extra": 0,
+          "team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
+          "player_id": "ef81d963-094a-4e2e-8413-85b2eab5566d",
+          "assist_player_id": "a55cbd8f-01e7-434a-9583-0d506aca181e",
+          "sub_out_player_id": null,
+          "type": "goal",
+          "description": null
+        },
+        {
+          "id": "5a5e1f71-b105-58bf-8d60-47e47e880265",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "minute": 34,
+          "extra": 0,
+          "team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
+          "player_id": "0e3589ec-6739-4600-825f-b9ce2f7aa32e",
+          "assist_player_id": "ef05230b-ca35-4a79-af41-aa0ca3d25f94",
+          "sub_out_player_id": null,
+          "type": "goal",
+          "description": null
+        },
+        {
+          "id": "a3ee9191-1c63-526e-9bc5-d69d8f4aaa8f",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "minute": 28,
+          "extra": 0,
+          "team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
+          "player_id": "ef81d963-094a-4e2e-8413-85b2eab5566d",
+          "assist_player_id": null,
+          "sub_out_player_id": null,
+          "type": "yellow",
+          "description": null
+        },
+        {
+          "id": "0afbcdd3-52bc-55c4-8668-fb11612177bc",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "minute": 30,
+          "extra": 0,
+          "team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
+          "player_id": "a55cbd8f-01e7-434a-9583-0d506aca181e",
+          "assist_player_id": null,
+          "sub_out_player_id": null,
+          "type": "yellow",
+          "description": null
+        },
+        {
+          "id": "2369aff9-f1f3-553c-8d86-ad11899957d8",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "minute": 37,
+          "extra": 0,
+          "team_id": "a7166bc6-b129-47bb-bc4e-e085b1a2dfcd",
+          "player_id": "bda15ab1-b241-4d1c-be20-9f1b67c0e195",
+          "assist_player_id": null,
+          "sub_out_player_id": null,
+          "type": "yellow",
+          "description": null
+        },
+        {
+          "id": "5652534d-18aa-54dd-8a19-63bad95e2e07",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "minute": 45,
+          "extra": 3,
+          "team_id": "a7166bc6-b129-47bb-bc4e-e085b1a2dfcd",
+          "player_id": "256a3e19-e343-4820-a00d-c6e652b16841",
+          "assist_player_id": null,
+          "sub_out_player_id": null,
+          "type": "yellow",
+          "description": null
+        },
+        {
+          "id": "f8813c28-917b-5169-89c6-2e946ddaf49b",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "minute": 48,
+          "extra": 0,
+          "team_id": "a7166bc6-b129-47bb-bc4e-e085b1a2dfcd",
+          "player_id": "99196a9e-181e-4b4e-8a4c-02ca3e967cf7",
+          "assist_player_id": null,
+          "sub_out_player_id": null,
+          "type": "yellow",
+          "description": null
+        },
+        {
+          "id": "7e7dc7cd-53a2-5360-a05c-9bd760b7f1ec",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "minute": 59,
+          "extra": 0,
+          "team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
+          "player_id": "44d0de20-1b58-4cb3-82cd-2216e10cd1e0",
+          "assist_player_id": null,
+          "sub_out_player_id": null,
+          "type": "yellow",
+          "description": null
+        },
+        {
+          "id": "1e6ada50-4157-589b-bc09-62a4e5926074",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "minute": 90,
+          "extra": 0,
+          "team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
+          "player_id": "5f319623-ef19-410b-82b1-a71457765a5c",
+          "assist_player_id": null,
+          "sub_out_player_id": null,
+          "type": "yellow",
+          "description": null
+        },
+        {
+          "id": "46bfb01e-cd7b-5fa7-9e28-10416b7a90ba",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "minute": 90,
+          "extra": 0,
+          "team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
+          "player_id": "bf31b5e0-4ab5-4247-b4a9-4ead985c0365",
+          "assist_player_id": null,
+          "sub_out_player_id": null,
+          "type": "yellow",
+          "description": null
+        },
+        {
+          "id": "923876c1-b653-54d5-8331-45dea11ac34d",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "minute": 46,
+          "extra": 0,
+          "team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
+          "player_id": "2593f1e8-9686-4586-9e86-78a55ccd3334",
+          "assist_player_id": null,
+          "sub_out_player_id": "6c53b429-a6b8-442d-8040-038b8903409b",
+          "type": "substitution",
+          "description": null
+        },
+        {
+          "id": "480a10e4-1c27-5e1b-a3ee-8edf57235f07",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "minute": 46,
+          "extra": 0,
+          "team_id": "a7166bc6-b129-47bb-bc4e-e085b1a2dfcd",
+          "player_id": "3c1e048c-b385-4bd3-b6e4-a8dc9c992b15",
+          "assist_player_id": null,
+          "sub_out_player_id": "54163a69-d0ea-4904-b01d-39a1b313f726",
+          "type": "substitution",
+          "description": null
+        },
+        {
+          "id": "156d5a55-969b-5d53-a7e2-a939cc220f32",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "minute": 62,
+          "extra": 0,
+          "team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
+          "player_id": "bf31b5e0-4ab5-4247-b4a9-4ead985c0365",
+          "assist_player_id": null,
+          "sub_out_player_id": "4a5e3a79-7707-4d40-a44f-a335bae57171",
+          "type": "substitution",
+          "description": null
+        },
+        {
+          "id": "a6e99e05-e0b0-5c91-be61-7f1f6120bdbb",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "minute": 60,
+          "extra": 0,
+          "team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
+          "player_id": "7efa6100-e084-4e3b-9eca-0718496543fa",
+          "assist_player_id": null,
+          "sub_out_player_id": "ef81d963-094a-4e2e-8413-85b2eab5566d",
+          "type": "substitution",
+          "description": null
+        },
+        {
+          "id": "322007ef-594c-58f5-877a-0199d7c3f4e0",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "minute": 72,
+          "extra": 0,
+          "team_id": "a7166bc6-b129-47bb-bc4e-e085b1a2dfcd",
+          "player_id": "127178c8-1e0e-4703-8eeb-5d9e19732a2b",
+          "assist_player_id": null,
+          "sub_out_player_id": "e7e489a9-252a-4cf6-a1a9-4d54e46ae620",
+          "type": "substitution",
+          "description": null
+        },
+        {
+          "id": "58702bf3-230c-5908-9678-8f85dc58280b",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "minute": 73,
+          "extra": 0,
+          "team_id": "a7166bc6-b129-47bb-bc4e-e085b1a2dfcd",
+          "player_id": "2a076289-59ed-464b-bdf5-77b53ac1e44b",
+          "assist_player_id": null,
+          "sub_out_player_id": "256a3e19-e343-4820-a00d-c6e652b16841",
+          "type": "substitution",
+          "description": null
+        },
+        {
+          "id": "4613b9cb-ec17-58d4-9311-aad2d1f83cdd",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "minute": 73,
+          "extra": 0,
+          "team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
+          "player_id": "5f319623-ef19-410b-82b1-a71457765a5c",
+          "assist_player_id": null,
+          "sub_out_player_id": "ef05230b-ca35-4a79-af41-aa0ca3d25f94",
+          "type": "substitution",
+          "description": null
+        },
+        {
+          "id": "454e8bcd-6ce4-5614-aec0-62fedfbded58",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "minute": 78,
+          "extra": 0,
+          "team_id": "a7166bc6-b129-47bb-bc4e-e085b1a2dfcd",
+          "player_id": "3a7722e2-948d-4278-8f14-b573938126cb",
+          "assist_player_id": null,
+          "sub_out_player_id": "deb57723-11da-43b2-8e1c-bf7725e0ba75",
+          "type": "substitution",
+          "description": null
+        },
+        {
+          "id": "2582bdab-26cc-5de2-97ff-657cfe0d6e10",
+          "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+          "minute": 84,
+          "extra": 0,
+          "team_id": "4f941a6e-7ce2-416e-b293-7f010c901415",
+          "player_id": "5ff13ec4-f9a0-4d3a-a694-668db7f9fcc3",
+          "assist_player_id": null,
+          "sub_out_player_id": "cfd7bd4f-8124-4321-a812-7f8efed8e54b",
+          "type": "substitution",
+          "description": null
+        }
+      ]
+    },
+    {
+      "id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+      "source_match": {
+        "n": 57,
+        "round": 8,
+        "comp": "الدوري",
+        "date": "2026-11-08",
+        "time": "19:40",
+        "venue": "الصداقة والسلام",
+        "home": "الساحل",
+        "away": "الكويت",
+        "note": "",
+        "ref": "عبد الله جمالي",
+        "refs": {
+          "ar1": "علي جراق",
+          "ar2": "موسى الخياط",
+          "fourth": "ياسين حسن يوسف",
+          "var": "سعود السمحان",
+          "avar": "سالم الشطي"
+        },
+        "tv": "القناة الثالثة الرياضية",
+        "status": "ft",
+        "add1": 3,
+        "add2": 2,
+        "abs": [
+          {
+            "c": "الساحل",
+            "p": "لوكاس دي سوزا"
+          },
+          {
+            "c": "الساحل",
+            "p": "جواو"
+          },
+          {
+            "c": "الساحل",
+            "p": "فيصل المكيمي"
+          },
+          {
+            "c": "الساحل",
+            "p": "محمد العتيبي"
+          },
+          {
+            "c": "الساحل",
+            "p": "عمر الهنودي"
+          },
+          {
+            "c": "الكويت",
+            "p": "سعود الحوشان"
+          },
+          {
+            "c": "الكويت",
+            "p": "عمر غونزاليس"
+          },
+          {
+            "c": "الكويت",
+            "p": "حسن حمدان"
+          },
+          {
+            "c": "الكويت",
+            "p": "مشاري غنام"
+          },
+          {
+            "c": "الكويت",
+            "p": "محسن فلاح"
+          },
+          {
+            "c": "الكويت",
+            "p": "المهدي برحمة"
+          },
+          {
+            "c": "الكويت",
+            "p": "فينيسيوس"
+          },
+          {
+            "c": "الكويت",
+            "p": "ابراهيم كميل"
+          },
+          {
+            "c": "الكويت",
+            "p": "سلمان العوضي"
+          },
+          {
+            "c": "الساحل",
+            "p": "عبدالعزيز العنزي"
+          }
+        ],
+        "hg": 0,
+        "ag": 3
+      },
+      "lineups": [
+        {
+          "id": "e3b1b189-05f5-5caa-b308-54682df3d42c",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "e834859a-a97d-47b8-88cc-6e58d04060e7",
+          "player_id": "801ed6e4-002c-42f8-9508-d554088715b8",
+          "is_starting": true,
+          "position_code": "GK",
+          "shirt_number": 22,
+          "source_name": "فواز الدوسري",
+          "existing_name": "Fawaz Al Dosari"
+        },
+        {
+          "id": "c2be2d5d-b555-5f20-bb93-c08458f41206",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "e834859a-a97d-47b8-88cc-6e58d04060e7",
+          "player_id": "bd6f2351-ba09-4d2f-8aab-b337a8b6929e",
+          "is_starting": true,
+          "position_code": "L1-1",
+          "shirt_number": 28,
+          "source_name": "محمد الراشد",
+          "existing_name": "Mohammed Al Rashed"
+        },
+        {
+          "id": "3a9dc246-a9e6-5a15-a686-1684e19e7da1",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "e834859a-a97d-47b8-88cc-6e58d04060e7",
+          "player_id": "d2ed6231-a41a-43a7-b511-971edbc1dcbc",
+          "is_starting": true,
+          "position_code": "L1-2",
+          "shirt_number": 5,
+          "source_name": "عبدالرحمن الديحاني",
+          "existing_name": "Abdulrahman Al Daihani"
+        },
+        {
+          "id": "116e8157-7d62-587a-9b5b-0638a45d0960",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "e834859a-a97d-47b8-88cc-6e58d04060e7",
+          "player_id": "9fb05813-0731-4cea-bc52-9202851a05b4",
+          "is_starting": true,
+          "position_code": "L1-3",
+          "shirt_number": 15,
+          "source_name": "موريسيو",
+          "existing_name": "Mauricio Moraes"
+        },
+        {
+          "id": "f2305ffb-b54c-5c73-bd0e-2f95a4adf217",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "e834859a-a97d-47b8-88cc-6e58d04060e7",
+          "player_id": "c6f9e545-bd38-48d7-bb05-5f2a0a222e27",
+          "is_starting": true,
+          "position_code": "L1-4",
+          "shirt_number": 44,
+          "source_name": "بدر الزايد",
+          "existing_name": "Bader Al Zayed"
+        },
+        {
+          "id": "6a5b5b54-1830-5fd3-a888-7f38fcd019cb",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "e834859a-a97d-47b8-88cc-6e58d04060e7",
+          "player_id": "3d31cda0-a2d0-4b0c-91c6-e84d53cc177e",
+          "is_starting": true,
+          "position_code": "L2-1",
+          "shirt_number": 4,
+          "source_name": "عمر العنزي",
+          "existing_name": "Omar Al Enezi"
+        },
+        {
+          "id": "e9a15f49-a989-5418-a7ee-fce653903f0e",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "e834859a-a97d-47b8-88cc-6e58d04060e7",
+          "player_id": "c47ec56a-1043-4a54-a71f-fcb8a41f92b3",
+          "is_starting": true,
+          "position_code": "L2-2",
+          "shirt_number": 14,
+          "source_name": "ناصر القحطاني",
+          "existing_name": "Nasser Al Qahtani"
+        },
+        {
+          "id": "2268c03b-dbc5-5d08-9f31-21d87c3b98ca",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "e834859a-a97d-47b8-88cc-6e58d04060e7",
+          "player_id": "91334ef2-f15a-48ac-92b3-28730ab5827b",
+          "is_starting": true,
+          "position_code": "L3-1",
+          "shirt_number": 27,
+          "source_name": "كليتون",
+          "existing_name": "Cleiton Padilha"
+        },
+        {
+          "id": "c350d581-d061-50a8-bc5a-d5e189ef2fb1",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "e834859a-a97d-47b8-88cc-6e58d04060e7",
+          "player_id": "38348bba-26a3-486d-adc3-245cc456d112",
+          "is_starting": true,
+          "position_code": "L3-2",
+          "shirt_number": 87,
+          "source_name": "غازي العتيبي",
+          "existing_name": "Ghazi Al Otaibi"
+        },
+        {
+          "id": "66637fed-7a54-57c5-bbea-19ff8fe839d2",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "e834859a-a97d-47b8-88cc-6e58d04060e7",
+          "player_id": "95017289-1c0d-4dd1-99e8-104589141940",
+          "is_starting": true,
+          "position_code": "L3-3",
+          "shirt_number": 19,
+          "source_name": "جابر العجاجي",
+          "existing_name": "Jaber Al Ajaji"
+        },
+        {
+          "id": "d2f83f91-421a-5003-82e5-f581cf5acef8",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "e834859a-a97d-47b8-88cc-6e58d04060e7",
+          "player_id": "a979e2fe-07bd-4d16-8688-b03ffa3a8bdb",
+          "is_starting": true,
+          "position_code": "L4-1",
+          "shirt_number": 29,
+          "source_name": "ألن دي سوزا",
+          "existing_name": "Allan Paulista"
+        },
+        {
+          "id": "275acfe4-f5dc-5b29-b6a0-5b2725b6cc53",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "e834859a-a97d-47b8-88cc-6e58d04060e7",
+          "player_id": "3e63903d-1f58-44ad-ba32-f28c4370dd76",
+          "is_starting": false,
+          "position_code": null,
+          "shirt_number": 20,
+          "source_name": "فاضل الصراف",
+          "existing_name": "Fadhel Al Sarraf"
+        },
+        {
+          "id": "612ad1e8-2949-599b-b305-8a44599fa2da",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "e834859a-a97d-47b8-88cc-6e58d04060e7",
+          "player_id": "73584dcf-3861-4033-a0d8-9aea1034d6e8",
+          "is_starting": false,
+          "position_code": null,
+          "shirt_number": 7,
+          "source_name": "محمد العلاطي",
+          "existing_name": "Mohammed Al Alati"
+        },
+        {
+          "id": "f06ef6a2-5931-5501-8084-235005cc466f",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "e834859a-a97d-47b8-88cc-6e58d04060e7",
+          "player_id": "7501053f-626d-4ba3-83cd-44e3197d5b91",
+          "is_starting": false,
+          "position_code": null,
+          "shirt_number": 8,
+          "source_name": "أحمد غازي",
+          "existing_name": "Ahmad Ghazi"
+        },
+        {
+          "id": "f775d175-9da4-5854-b9d8-3d4fce7d7ac5",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "e834859a-a97d-47b8-88cc-6e58d04060e7",
+          "player_id": "9a6b375d-a4d6-49ec-8db2-55287e758120",
+          "is_starting": false,
+          "position_code": null,
+          "shirt_number": 6,
+          "source_name": "يوسف بادي",
+          "existing_name": "Yousef Badi"
+        },
+        {
+          "id": "3f64bdb1-742c-5e8c-9a1e-49989fe5e256",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "e834859a-a97d-47b8-88cc-6e58d04060e7",
+          "player_id": "f4cc9148-9766-42fa-bdc9-177079e11519",
+          "is_starting": false,
+          "position_code": null,
+          "shirt_number": 9,
+          "source_name": "فيصل عجب",
+          "existing_name": "Faisal Ajab"
+        },
+        {
+          "id": "2ed8c197-1ef5-57ca-89ba-6467ea29d7f3",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "539cc6fb-d79a-449b-be23-1271355bd727",
+          "player_id": "25caa895-5904-4a10-977a-048f14a982ac",
+          "is_starting": true,
+          "position_code": "GK",
+          "shirt_number": 1,
+          "source_name": "خالد الرشيدي",
+          "existing_name": "Khaled Al Rashidi"
+        },
+        {
+          "id": "dee0de47-b4f1-57ea-bbe5-3407425247c7",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "539cc6fb-d79a-449b-be23-1271355bd727",
+          "player_id": "f6741c6f-192f-4dd5-be3c-633cf3cb38e5",
+          "is_starting": true,
+          "position_code": "L1-1",
+          "shirt_number": 2,
+          "source_name": "سامي الصانع",
+          "existing_name": "Sami Al Sanea"
+        },
+        {
+          "id": "9908f375-00c1-5d62-8ea2-3ed1dbf2bac1",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "539cc6fb-d79a-449b-be23-1271355bd727",
+          "player_id": "e0f99a91-4be5-4047-8b52-2c063f5fe08a",
+          "is_starting": true,
+          "position_code": "L1-2",
+          "shirt_number": 35,
+          "source_name": "زولا",
+          "existing_name": "Malik Zola"
+        },
+        {
+          "id": "6593e7e2-3491-55a0-8276-4033fa288cc4",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "539cc6fb-d79a-449b-be23-1271355bd727",
+          "player_id": "68d0ff83-99f8-42f8-a8d8-9333b5eee5c7",
+          "is_starting": true,
+          "position_code": "L1-3",
+          "shirt_number": 13,
+          "source_name": "فهد حمود",
+          "existing_name": "Fahad Hamoud"
+        },
+        {
+          "id": "aa2c4eab-9579-5799-a022-1c12cc094d81",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "539cc6fb-d79a-449b-be23-1271355bd727",
+          "player_id": "397c8278-18de-4767-ae0d-4a278277fd41",
+          "is_starting": true,
+          "position_code": "L1-4",
+          "shirt_number": 21,
+          "source_name": "علي حسين",
+          "existing_name": "Ali Pourdara"
+        },
+        {
+          "id": "e1d1813d-fe6a-5447-b090-3ce9ce2f984f",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "539cc6fb-d79a-449b-be23-1271355bd727",
+          "player_id": "703f4a74-5637-4c5b-9988-5e73c077e3c9",
+          "is_starting": true,
+          "position_code": "L2-1",
+          "shirt_number": 5,
+          "source_name": "رضا هاني",
+          "existing_name": "Reda Hani"
+        },
+        {
+          "id": "5ed3dc13-b9e9-5f0d-b104-bace0d7bda2e",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "539cc6fb-d79a-449b-be23-1271355bd727",
+          "player_id": "4811d6c3-c972-4194-bc8b-a4e2b18a052a",
+          "is_starting": true,
+          "position_code": "L2-2",
+          "shirt_number": 88,
+          "source_name": "عبدالله القرزعي",
+          "existing_name": "Abdullah Al Qarzaei"
+        },
+        {
+          "id": "c553ff21-156f-5117-bc87-e932cda752df",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "539cc6fb-d79a-449b-be23-1271355bd727",
+          "player_id": "b13184de-206c-4bb7-919d-a8c94097aab5",
+          "is_starting": true,
+          "position_code": "L3-1",
+          "shirt_number": 26,
+          "source_name": "محمد مرهون",
+          "existing_name": "Mohammed Marhoon"
+        },
+        {
+          "id": "d9257a80-27ee-5b21-a9ea-2248d7062f5b",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "539cc6fb-d79a-449b-be23-1271355bd727",
+          "player_id": "9f12ff61-8e53-4bfe-bcb8-30ce0b28a5d2",
+          "is_starting": true,
+          "position_code": "L3-2",
+          "shirt_number": 9,
+          "source_name": "فيصل زايد",
+          "existing_name": "Faisal Zaid"
+        },
+        {
+          "id": "7ea49b3b-fae8-538d-8624-006abe9b3054",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "539cc6fb-d79a-449b-be23-1271355bd727",
+          "player_id": "1d971412-f049-4966-854e-6c0da9ddaac9",
+          "is_starting": true,
+          "position_code": "L3-3",
+          "shirt_number": 10,
+          "source_name": "عموري",
+          "existing_name": "Amr Abdulfattah"
+        },
+        {
+          "id": "2df3a18f-2756-517a-aa80-29d97a8fa270",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "539cc6fb-d79a-449b-be23-1271355bd727",
+          "player_id": "25c2b77e-847a-4501-96e2-df3b21cf05e1",
+          "is_starting": true,
+          "position_code": "L4-1",
+          "shirt_number": 27,
+          "source_name": "ياسين الخنيسي",
+          "existing_name": "Yassine Khenissi"
+        },
+        {
+          "id": "216eba4d-b80e-5ee4-ba6c-30108cd9ecec",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "539cc6fb-d79a-449b-be23-1271355bd727",
+          "player_id": "d55ea43f-7d32-482c-afd5-84350d9823d0",
+          "is_starting": false,
+          "position_code": null,
+          "shirt_number": 20,
+          "source_name": "يوسف ناصر",
+          "existing_name": "Yousef Nasser"
+        },
+        {
+          "id": "6dace83b-7435-548f-aa31-cb5461b78ea4",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "539cc6fb-d79a-449b-be23-1271355bd727",
+          "player_id": "b445f275-8417-46a0-8955-4a5cb721e7f4",
+          "is_starting": false,
+          "position_code": null,
+          "shirt_number": 8,
+          "source_name": "احمد الظفيري",
+          "existing_name": "Ahmad Al Dhefiri"
+        },
+        {
+          "id": "e57e0868-6bb8-5b41-9cac-7e99ef7cd226",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "539cc6fb-d79a-449b-be23-1271355bd727",
+          "player_id": "4ceee15e-a222-489c-b205-f9e8fc33ea0a",
+          "is_starting": false,
+          "position_code": null,
+          "shirt_number": 23,
+          "source_name": "محمد فريح",
+          "existing_name": "Mohammad Freih"
+        },
+        {
+          "id": "a31a8e87-2d09-5ef3-8d23-1de1c33e7cd3",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "539cc6fb-d79a-449b-be23-1271355bd727",
+          "player_id": "97b24dde-8910-4ec7-bbc7-d0a21568d126",
+          "is_starting": false,
+          "position_code": null,
+          "shirt_number": 72,
+          "source_name": "حمود السنعوسي",
+          "existing_name": "Humoud Al Sanousi"
+        },
+        {
+          "id": "5eaf9895-010f-545c-8e8e-0ca585cc6e1f",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "team_id": "539cc6fb-d79a-449b-be23-1271355bd727",
+          "player_id": "c8873457-5652-444d-aa22-3189b588f853",
+          "is_starting": false,
+          "position_code": null,
+          "shirt_number": 28,
+          "source_name": "مهند المحاميد",
+          "existing_name": "Muhanned Al Mahamid"
+        }
+      ],
+      "ratings": [
+        {
+          "id": "5b6b319a-e6fe-5b89-948e-c946c7b47e5f",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "801ed6e4-002c-42f8-9508-d554088715b8",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 5.9,
+          "source_name": "فواز الدوسري"
+        },
+        {
+          "id": "11b9b5fc-4392-592c-988d-52e1e43cac30",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "bd6f2351-ba09-4d2f-8aab-b337a8b6929e",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 4.9,
+          "source_name": "محمد الراشد"
+        },
+        {
+          "id": "30f78db1-fc75-5a0e-bc86-41eba85cda87",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "d2ed6231-a41a-43a7-b511-971edbc1dcbc",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.2,
+          "source_name": "عبدالرحمن الديحاني"
+        },
+        {
+          "id": "599581c6-6226-509a-bda3-e7865c852707",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "9fb05813-0731-4cea-bc52-9202851a05b4",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6,
+          "source_name": "موريسيو"
+        },
+        {
+          "id": "55dcd3ab-48c5-5870-ba4b-b550db4f39db",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "c6f9e545-bd38-48d7-bb05-5f2a0a222e27",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.3,
+          "source_name": "بدر الزايد"
+        },
+        {
+          "id": "5790d2f6-4294-5f9a-a2c8-04c8b12da264",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "3d31cda0-a2d0-4b0c-91c6-e84d53cc177e",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.4,
+          "source_name": "عمر العنزي"
+        },
+        {
+          "id": "12e2c4fc-5baa-5ef8-9490-1b66fcee24d7",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "c47ec56a-1043-4a54-a71f-fcb8a41f92b3",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.4,
+          "source_name": "ناصر القحطاني"
+        },
+        {
+          "id": "b0f8b549-4d6a-5ca0-aecd-85bb721eea96",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "91334ef2-f15a-48ac-92b3-28730ab5827b",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.4,
+          "source_name": "كليتون"
+        },
+        {
+          "id": "bd2cded9-603c-506f-8701-371bc859dbea",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "38348bba-26a3-486d-adc3-245cc456d112",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.4,
+          "source_name": "غازي العتيبي"
+        },
+        {
+          "id": "557701f5-644c-575c-af92-f80df0c39381",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "95017289-1c0d-4dd1-99e8-104589141940",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.4,
+          "source_name": "جابر العجاجي"
+        },
+        {
+          "id": "a47c4e1f-312c-5fc3-9a0c-a43c4b5b01b9",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "a979e2fe-07bd-4d16-8688-b03ffa3a8bdb",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 5.9,
+          "source_name": "ألن دي سوزا"
+        },
+        {
+          "id": "95687828-b520-5669-ba51-43fe1bd7a6c6",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "3e63903d-1f58-44ad-ba32-f28c4370dd76",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.3,
+          "source_name": "فاضل الصراف"
+        },
+        {
+          "id": "dafe8813-b015-589f-9dad-f8e69b7070cf",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "73584dcf-3861-4033-a0d8-9aea1034d6e8",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.3,
+          "source_name": "محمد العلاطي"
+        },
+        {
+          "id": "ee1f358c-f9fe-54a9-a64a-d3ec874a3bfc",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "7501053f-626d-4ba3-83cd-44e3197d5b91",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.4,
+          "source_name": "أحمد غازي"
+        },
+        {
+          "id": "3cdabe29-1e04-5df2-879c-158d10c20ab9",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "9a6b375d-a4d6-49ec-8db2-55287e758120",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.4,
+          "source_name": "يوسف بادي"
+        },
+        {
+          "id": "c5c0f787-4cdf-5041-a58e-5e5a77f8afa4",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "f4cc9148-9766-42fa-bdc9-177079e11519",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.5,
+          "source_name": "فيصل عجب"
+        },
+        {
+          "id": "bebeba7c-b3f2-524e-80ea-f996d895b599",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "25caa895-5904-4a10-977a-048f14a982ac",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 8.4,
+          "source_name": "خالد الرشيدي"
+        },
+        {
+          "id": "dd86ff30-65f0-51d6-bb03-cf5803fb1887",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "f6741c6f-192f-4dd5-be3c-633cf3cb38e5",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.6,
+          "source_name": "سامي الصانع"
+        },
+        {
+          "id": "57d4263b-acdf-5fd2-a8ae-3ccb643ba58f",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "e0f99a91-4be5-4047-8b52-2c063f5fe08a",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 7.8,
+          "source_name": "زولا"
+        },
+        {
+          "id": "d210b9b8-2f32-5227-acb9-d980416cc138",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "68d0ff83-99f8-42f8-a8d8-9333b5eee5c7",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 7.6,
+          "source_name": "فهد حمود"
+        },
+        {
+          "id": "baf358d6-9570-5e79-a2dc-aac6b702b9a6",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "397c8278-18de-4767-ae0d-4a278277fd41",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 7,
+          "source_name": "علي حسين"
+        },
+        {
+          "id": "acf46fa6-9628-51df-891f-a9049e56f1b9",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "703f4a74-5637-4c5b-9988-5e73c077e3c9",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.3,
+          "source_name": "رضا هاني"
+        },
+        {
+          "id": "ba419d5b-eba3-59cc-b6de-88874f33230e",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "4811d6c3-c972-4194-bc8b-a4e2b18a052a",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.9,
+          "source_name": "عبدالله القرزعي"
+        },
+        {
+          "id": "2afd19b8-39c1-5a8c-bfe8-b409d2bc14ff",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "b13184de-206c-4bb7-919d-a8c94097aab5",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 9,
+          "source_name": "محمد مرهون"
+        },
+        {
+          "id": "17848e02-fb2d-53b1-9c92-ff62f5094f6f",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "9f12ff61-8e53-4bfe-bcb8-30ce0b28a5d2",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 7,
+          "source_name": "فيصل زايد"
+        },
+        {
+          "id": "a4190fbd-83b2-5b96-a7d6-5ebabd1c1f4e",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "1d971412-f049-4966-854e-6c0da9ddaac9",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 7.4,
+          "source_name": "عموري"
+        },
+        {
+          "id": "c47b4b43-b5c3-52f6-9864-4a051f439aef",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "25c2b77e-847a-4501-96e2-df3b21cf05e1",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.8,
+          "source_name": "ياسين الخنيسي"
+        },
+        {
+          "id": "0d3c2745-78d7-5cd2-856e-b32306a4a284",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "d55ea43f-7d32-482c-afd5-84350d9823d0",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 8.5,
+          "source_name": "يوسف ناصر"
+        },
+        {
+          "id": "c687931f-730e-5200-aa38-0915a6ea3edb",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "b445f275-8417-46a0-8955-4a5cb721e7f4",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.6,
+          "source_name": "احمد الظفيري"
+        },
+        {
+          "id": "f9a9601a-870d-5804-b8c3-13a07dab052b",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "4ceee15e-a222-489c-b205-f9e8fc33ea0a",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.6,
+          "source_name": "محمد فريح"
+        },
+        {
+          "id": "514396cc-e4cb-54a0-a883-9a2417ed2bb4",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "97b24dde-8910-4ec7-bbc7-d0a21568d126",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.5,
+          "source_name": "حمود السنعوسي"
+        },
+        {
+          "id": "cd99b2c5-4fda-5e79-8b71-5e2f223346a9",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "player_id": "c8873457-5652-444d-aa22-3189b588f853",
+          "competition_id": "792f150e-1c25-4f3c-878f-75536c7edd5b",
+          "rating": 6.5,
+          "source_name": "مهند المحاميد"
+        }
+      ],
+      "events": [
+        {
+          "id": "20d906cd-2550-57a1-89c1-6fed0e6e6081",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "minute": 45,
+          "extra": 1,
+          "team_id": "539cc6fb-d79a-449b-be23-1271355bd727",
+          "player_id": "b13184de-206c-4bb7-919d-a8c94097aab5",
+          "assist_player_id": "1d971412-f049-4966-854e-6c0da9ddaac9",
+          "sub_out_player_id": null,
+          "type": "goal",
+          "description": null
+        },
+        {
+          "id": "8487ac0b-4424-5537-a2f4-0b1681d55d9f",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "minute": 60,
+          "extra": 0,
+          "team_id": "539cc6fb-d79a-449b-be23-1271355bd727",
+          "player_id": "d55ea43f-7d32-482c-afd5-84350d9823d0",
+          "assist_player_id": "b13184de-206c-4bb7-919d-a8c94097aab5",
+          "sub_out_player_id": null,
+          "type": "goal",
+          "description": null
+        },
+        {
+          "id": "2b1f0c80-b352-53aa-9bcb-4e9f78ae77f1",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "minute": 86,
+          "extra": 0,
+          "team_id": "539cc6fb-d79a-449b-be23-1271355bd727",
+          "player_id": "d55ea43f-7d32-482c-afd5-84350d9823d0",
+          "assist_player_id": null,
+          "sub_out_player_id": null,
+          "type": "penalty_goal",
+          "description": null
+        },
+        {
+          "id": "829bc91d-a9c2-51d3-9414-7121e6ecea74",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "minute": 23,
+          "extra": 0,
+          "team_id": "539cc6fb-d79a-449b-be23-1271355bd727",
+          "player_id": "703f4a74-5637-4c5b-9988-5e73c077e3c9",
+          "assist_player_id": null,
+          "sub_out_player_id": null,
+          "type": "yellow",
+          "description": null
+        },
+        {
+          "id": "7c34b3a3-cedf-57a0-b2e1-d487544acd42",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "minute": 38,
+          "extra": 0,
+          "team_id": "e834859a-a97d-47b8-88cc-6e58d04060e7",
+          "player_id": "bd6f2351-ba09-4d2f-8aab-b337a8b6929e",
+          "assist_player_id": null,
+          "sub_out_player_id": null,
+          "type": "yellow",
+          "description": null
+        },
+        {
+          "id": "b3734665-c0f6-54f8-9a8a-508e5759e944",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "minute": 45,
+          "extra": 3,
+          "team_id": "e834859a-a97d-47b8-88cc-6e58d04060e7",
+          "player_id": "bd6f2351-ba09-4d2f-8aab-b337a8b6929e",
+          "assist_player_id": null,
+          "sub_out_player_id": null,
+          "type": "red",
+          "description": null
+        },
+        {
+          "id": "aeb9d128-a517-5fda-8ca8-7b9c9d994216",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "minute": 71,
+          "extra": 0,
+          "team_id": "e834859a-a97d-47b8-88cc-6e58d04060e7",
+          "player_id": "9fb05813-0731-4cea-bc52-9202851a05b4",
+          "assist_player_id": null,
+          "sub_out_player_id": null,
+          "type": "yellow",
+          "description": null
+        },
+        {
+          "id": "cdfd2b74-78ee-5234-ba73-bc0096795e43",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "minute": 77,
+          "extra": 0,
+          "team_id": "539cc6fb-d79a-449b-be23-1271355bd727",
+          "player_id": "68d0ff83-99f8-42f8-a8d8-9333b5eee5c7",
+          "assist_player_id": null,
+          "sub_out_player_id": null,
+          "type": "yellow",
+          "description": null
+        },
+        {
+          "id": "6a41d09e-1190-5828-a1ee-1cb5597108c9",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "minute": 46,
+          "extra": 0,
+          "team_id": "e834859a-a97d-47b8-88cc-6e58d04060e7",
+          "player_id": "3e63903d-1f58-44ad-ba32-f28c4370dd76",
+          "assist_player_id": null,
+          "sub_out_player_id": "95017289-1c0d-4dd1-99e8-104589141940",
+          "type": "substitution",
+          "description": null
+        },
+        {
+          "id": "6b7883d5-9800-5923-ab15-9ad31aeb46ed",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "minute": 46,
+          "extra": 0,
+          "team_id": "e834859a-a97d-47b8-88cc-6e58d04060e7",
+          "player_id": "73584dcf-3861-4033-a0d8-9aea1034d6e8",
+          "assist_player_id": null,
+          "sub_out_player_id": "38348bba-26a3-486d-adc3-245cc456d112",
+          "type": "substitution",
+          "description": null
+        },
+        {
+          "id": "542ee52c-762d-50cb-94b0-303cb5de448a",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "minute": 46,
+          "extra": 0,
+          "team_id": "539cc6fb-d79a-449b-be23-1271355bd727",
+          "player_id": "d55ea43f-7d32-482c-afd5-84350d9823d0",
+          "assist_player_id": null,
+          "sub_out_player_id": "1d971412-f049-4966-854e-6c0da9ddaac9",
+          "type": "substitution",
+          "description": null
+        },
+        {
+          "id": "f791c3e4-e6dd-57f0-a2d1-3e119b676053",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "minute": 46,
+          "extra": 0,
+          "team_id": "539cc6fb-d79a-449b-be23-1271355bd727",
+          "player_id": "b445f275-8417-46a0-8955-4a5cb721e7f4",
+          "assist_player_id": null,
+          "sub_out_player_id": "703f4a74-5637-4c5b-9988-5e73c077e3c9",
+          "type": "substitution",
+          "description": null
+        },
+        {
+          "id": "6cb0507b-c617-5e27-aa7b-9c7393490db4",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "minute": 57,
+          "extra": 0,
+          "team_id": "539cc6fb-d79a-449b-be23-1271355bd727",
+          "player_id": "4ceee15e-a222-489c-b205-f9e8fc33ea0a",
+          "assist_player_id": null,
+          "sub_out_player_id": "f6741c6f-192f-4dd5-be3c-633cf3cb38e5",
+          "type": "substitution",
+          "description": null
+        },
+        {
+          "id": "065ebc26-9f0c-51b7-9595-339430124408",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "minute": 66,
+          "extra": 0,
+          "team_id": "539cc6fb-d79a-449b-be23-1271355bd727",
+          "player_id": "97b24dde-8910-4ec7-bbc7-d0a21568d126",
+          "assist_player_id": null,
+          "sub_out_player_id": "4811d6c3-c972-4194-bc8b-a4e2b18a052a",
+          "type": "substitution",
+          "description": null
+        },
+        {
+          "id": "fb7050b7-75fe-5a1c-8a18-e355d36f913d",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "minute": 68,
+          "extra": 0,
+          "team_id": "e834859a-a97d-47b8-88cc-6e58d04060e7",
+          "player_id": "7501053f-626d-4ba3-83cd-44e3197d5b91",
+          "assist_player_id": null,
+          "sub_out_player_id": "3d31cda0-a2d0-4b0c-91c6-e84d53cc177e",
+          "type": "substitution",
+          "description": null
+        },
+        {
+          "id": "660d5642-52c4-506e-a27f-a154a009a416",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "minute": 68,
+          "extra": 0,
+          "team_id": "e834859a-a97d-47b8-88cc-6e58d04060e7",
+          "player_id": "9a6b375d-a4d6-49ec-8db2-55287e758120",
+          "assist_player_id": null,
+          "sub_out_player_id": "c47ec56a-1043-4a54-a71f-fcb8a41f92b3",
+          "type": "substitution",
+          "description": null
+        },
+        {
+          "id": "18d14261-50ca-58be-8357-2688e1ae3765",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "minute": 76,
+          "extra": 0,
+          "team_id": "539cc6fb-d79a-449b-be23-1271355bd727",
+          "player_id": "c8873457-5652-444d-aa22-3189b588f853",
+          "assist_player_id": null,
+          "sub_out_player_id": "25c2b77e-847a-4501-96e2-df3b21cf05e1",
+          "type": "substitution",
+          "description": null
+        },
+        {
+          "id": "6d5375d3-f814-5a4e-b683-48a38a8786c4",
+          "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+          "minute": 80,
+          "extra": 0,
+          "team_id": "e834859a-a97d-47b8-88cc-6e58d04060e7",
+          "player_id": "f4cc9148-9766-42fa-bdc9-177079e11519",
+          "assist_player_id": null,
+          "sub_out_player_id": "c6f9e545-bd38-48d7-bb05-5f2a0a222e27",
+          "type": "substitution",
+          "description": null
+        }
+      ]
+    }
+  ],
+  "bench_note": "Only actual used substitutes imported; unconfirmed fantasy-exclusion reserves not published as official bench."
+}
