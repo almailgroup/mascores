@@ -1,6 +1,6 @@
 # Roadmap
-- [ ] Add every unused substitute to both benches for Al Salmiya–Kazma and Al Sahel–Kuwait SC; preserve all starters, ratings, events and results.
-- [x] Import Al Sahel–Kuwait SC and Al Salmiya–Kazma: final results, 44 starters, 19 used substitutes, 40 events and 63 published source ratings; verified in match pages, attribution private. Unused benches remain unconfirmed and were not inferred.
+- [x] Added all 21 unused substitutes to both benches for Al Salmiya–Kazma and Al Sahel–Kuwait SC; verified home and away bench views, with starters, ratings, events and results unchanged.
+- [x] Import Al Sahel–Kuwait SC and Al Salmiya–Kazma: final results, 44 starters, 19 used substitutes, 40 events and 63 published source ratings; verified in match pages, attribution private.
 - [x] Fill verified final statistics across all six finished Round 8 fixtures from Derbista; verified every Stats tab, preserved credible conflicting prior values, removed Al Arabi's stale live off-target row.
 - [x] Add Team administrator and Head of football staff options; both selectable in the signed-in editor.
 - [x] Import 13 published Al Qadsia–Al Jahra statistics from BallWhizz; verify saved values and match-page display.
