@@ -1,4 +1,6 @@
 # Roadmap
+- [ ] Import Al Sahel–Kuwait SC and Kazma–Al Salmiya Round 8 lineups, confirmed benches, events and published ratings; use MFSoccer where available with private attribution only.
+- [ ] Fill missing final statistics for finished Round 8 fixtures from accessible published sources and verify each match page.
 - [x] Add Team administrator and Head of football staff options; both selectable in the signed-in editor.
 - [x] Import 13 published Al Qadsia–Al Jahra statistics from BallWhizz; verify saved values and match-page display.
 - [x] Check visible app source and stored match descriptions, events, source notes and content: no MFSoccer mentions remain; retain private audit attribution only.
