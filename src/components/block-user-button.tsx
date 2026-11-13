@@ -25,7 +25,7 @@ export function BlockUserButton({ targetUserId, name }: { targetUserId: string; 
   };
   return <>
     <Button variant="ghost" size="icon" aria-label={blocked ? label('Unblock', 'إلغاء الحظر') : label('Block', 'حظر')} title={blocked ? label('Unblock', 'إلغاء الحظر') : label('Block', 'حظر')} onClick={() => { if (!user) { signIn(); return; } setOpen(true); }}><Ban className={`h-4 w-4 ${blocked ? 'text-destructive' : ''}`} /></Button>
-    <Dialog open={open} onOpenChange={setOpen}><DialogContent dir={lang === "ar" ? "rtl" : "ltr"} className="z-[150] max-h-[90dvh] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-lg p-6 sm:p-7" aria-describedby="block-description">
+    <Dialog open={open} onOpenChange={setOpen}><DialogContent overlayClassName="z-[149] bg-foreground/50 backdrop-blur-sm" dir={lang === "ar" ? "rtl" : "ltr"} className="z-[150] max-h-[90dvh] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-lg p-6 sm:p-7" aria-describedby="block-description">
       <DialogTitle>{blocked ? label(`Unblock ${name}?`, `إلغاء حظر ${name}؟`) : label(`Block ${name}?`, `حظر ${name}؟`)}</DialogTitle>
       <DialogDescription id="block-description">{blocked
         ? label('They will be able to follow you and comment on your recordings again.', 'سيتمكن من متابعتك والتعليق على تسجيلاتك مجددًا.')
