@@ -3,6 +3,13 @@ type Fixture = { kickoff_at: string | null; kickoff_date?: string | null };
 type TeamFixture = Fixture & { competition_id?: string | null; season?: string | null; round_number?: number | null };
 type RoundBucket = { round: string; matches: Fixture[]; order: number };
 
+/** Postponed old rounds remain listed but cannot become the initial round. */
+export function currentCompetitionRound<T extends { matches: (Fixture & { status: string })[] }>(rounds: T[]): T | undefined {
+  return rounds.find(round => round.matches.some(match => ["live", "ht", "etwait", "interrupted"].includes(match.status)))
+    ?? rounds.find(round => round.matches.some(match => match.status === "scheduled"))
+    ?? rounds.at(-1);
+}
+
 function numberedRound(label: string) {
   const match = /^(#|round\s+|qualification\s+round\s+)(\d+)$/i.exec(label.trim());
   return match ? { stage: match[1].toLowerCase().replace(/^round\s+$/, "#"), number: Number(match[2]) } : null;

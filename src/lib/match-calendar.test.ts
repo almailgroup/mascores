@@ -14,9 +14,9 @@ describe("match calendar", () => {
     expect(dates.has("2026-10-23")).toBe(true);
     expect(dates.has("2026-10-24")).toBe(false);
   });
-  it("shows upcoming matches from now when Today is selected", () => {
+  it("keeps today's scheduled matches until they become live, even after kickoff", () => {
     const now = new Date(2026, 9, 22, 13, 45);
-    expect(upcomingStart(new Date(2026, 9, 22), now)).toBe(now.toISOString());
+    expect(upcomingStart(new Date(2026, 9, 22), now)).toBe(new Date(2026, 9, 22).toISOString());
   });
   it("starts at midnight on a picked future date", () => {
     const selected = new Date(2026, 9, 25, 17);
