@@ -652,7 +652,6 @@ function TeamMatches({ data, teamId, nextId }: { data: MatchWithTeams[]; teamId:
     return () => { cancelAnimationFrame(firstFrame); cancelAnimationFrame(secondFrame); window.removeEventListener("scroll", onScroll); };
   }, [targetId, teamId]);
   return <div ref={top} className="scroll-mt-40">
-    <div className="mb-3"><SeasonMenu seasons={seasons} value={selected} onChange={setSelected} formatValue={seasonIdentity} /></div>
     <MatchGroups data={ordered} highlightTeamId={teamId} />
     {showToday && <Button variant="outline" onClick={goToNext} className="fixed bottom-[calc(6rem+var(--sa-bottom))] left-1/2 z-30 -translate-x-1/2 rounded-full border-border bg-background text-foreground shadow">{tx("Today")}</Button>}
   </div>;
