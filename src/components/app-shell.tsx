@@ -119,7 +119,7 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
   useEffect(() => { initTimeFormat(); }, []);
   const [nativeApp, setNativeApp] = useState(false);
   const [iosApp, setIosApp] = useState(false);
-  useEffect(() => { setNativeApp(isNativeApp()); setIosApp(isNativeApp() && Capacitor.getPlatform() === "ios"); }, []);
+  useEffect(() => { setNativeApp(isNativeApp()); setIosApp(isNativeApp() && Capacitor.getPlatform() !== "android" && !/android/i.test(navigator.userAgent)); }, []);
   const onPrimary = !bare && PRIMARY_NAV.some((item) => location.pathname === item.to || location.pathname === `${item.to}/`);
   const activeTab = PRIMARY_NAV.findIndex((item) => item.exact ? location.pathname === item.to : location.pathname.startsWith(item.to));
   const systemBar = useNativeTabBar({
