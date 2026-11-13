@@ -72,3 +72,6 @@
 - Android shell lives in android/ (Capacitor 8, appId com.almailgroup.mascores, target SDK 36); `cap sync` needs MAS_APP_URL set; release builds sign with android/keystore.properties (key outside VCS — never commit) and every Play upload must reuse it.
 - Links-page motion stays CSS-driven via CSS variables, scoped to `.links-page`, and respects reduced-motion preferences.
 - Android safe areas: Capacitor SystemBars `insetsHandling: "css"` plus `EdgeToEdge.enable` in MainActivity, called only after `setTheme(AppTheme_NoActionBar)` (else the splash theme leaves a white bar); site CSS reads `--sa-*` vars preferring injected `--safe-area-inset-*` over `env()`.
+- Native saving shares an add-only PhotoLibrary contract; Android uses MediaStore without gallery reads.
+- Tab indices stay logical with explicit RTL; shared rows own content swipes while excluding edges and scrolling controls.
+- Club totals and fixtures share season normalization; grant uniqueness treats null targets equally and reconciliation compares scope/club tuples.

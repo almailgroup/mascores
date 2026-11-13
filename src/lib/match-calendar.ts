@@ -8,7 +8,9 @@ export function matchDateKey(date: Date): string {
 export function upcomingStart(day: Date, now = new Date()): string {
   const start = new Date(day);
   start.setHours(0, 0, 0, 0);
-  return new Date(Math.max(start.getTime(), now.getTime())).toISOString();
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+  return new Date(Math.max(start.getTime(), today.getTime())).toISOString();
 }
 
 export function matchDates(fixtures: { kickoff_at: string | null; kickoff_date?: string | null }[]): Set<string> {

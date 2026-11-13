@@ -82,15 +82,13 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [], onModerati
     try {
       micPubRef.current = await room.localParticipant.publishTrack(mic, { source: Track.Source.Microphone, dtx: true, red: true });
       if (mutedRef.current) await micPubRef.current.mute();
-    } catch (error) { console.warn("Voice publish failed", error); }
+    } catch (error) { setMicError("Your microphone could not connect. Tap Retry microphone."); throw error; }
   }, []);
 
   const startMicrophone = useCallback(async () => {
-    if (localRef.current?.getAudioTracks().length) { await publishMic(); return true; }
+    if (localRef.current?.getAudioTracks().length) { try { await publishMic(); return true; } catch { return false; } }
     if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
-      setMicError(/Safari\/604/.test(navigator.userAgent) && (window as unknown as { Capacitor?: unknown }).Capacitor
-        ? "This installed app version can't use the microphone yet. Install the newest TestFlight build, then allow the microphone."
-        : "This browser cannot capture the microphone here. Open the site over https and try again.");
+      setMicError("Microphone capture is unavailable. Update the app or open the secure website, then allow microphone access.");
       return false;
     }
     try {
@@ -165,7 +163,7 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [], onModerati
         if (cancelled) { void room.disconnect(); return; }
         setAudioUp(true);
         room.remoteParticipants.forEach((p) => p.audioTrackPublications.forEach((pub) => { if (pub.track) addTrack(pub.track, p); }));
-        if (res.canPublish) await publishMic();
+        if (res.canPublish) await publishMic().catch(() => { /* mic error is surfaced without reconnecting an already connected room */ });
       } catch (error) {
         console.warn("Voice connect failed", error);
         if (!cancelled) retry = window.setTimeout(() => void connect(), 3000);
@@ -271,8 +269,8 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [], onModerati
     if (!ready) return;
     localRef.current?.getAudioTracks().forEach((t) => { t.enabled = true; });
     mutedRef.current = false;
-    await micPubRef.current?.unmute().catch(() => undefined);
-    setMuted(false);
+    try { await micPubRef.current?.unmute(); setMuted(false); }
+    catch { localRef.current?.getAudioTracks().forEach(t => { t.enabled = false; }); mutedRef.current = true; setMicError("Could not unmute your microphone. Tap Retry microphone."); }
   }, [startMicrophone]);
 
   const forceMute = useCallback(() => {

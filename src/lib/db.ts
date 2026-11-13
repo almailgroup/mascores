@@ -50,10 +50,10 @@ export function formatClock(seconds: number): string {
 const PERIOD_CAP: Record<string, number> = { "1h": 2700, "2h": 5400, et1: 6300, et2: 7200 };
 const PERIOD_START: Record<string, number> = { "1h": 0, "2h": 2700, et1: 5400, et2: 6300 };
 
-/** Running period, from the admin's stored choice (falls back to the clock for older rows). */
-export function livePeriod(m: { period?: string | null }, seconds: number): string {
+/** Period changes are explicit; an unassigned legacy clock remains in the first half. */
+export function livePeriod(m: { period?: string | null }, _seconds: number): string {
   if (m.period && m.period in PERIOD_CAP) return m.period;
-  return seconds >= 6300 ? "et2" : seconds >= 5400 ? "et1" : seconds >= 2700 ? "2h" : "1h";
+  return "1h";
 }
 
 /** Live clock that stays in its period: past 45:00 in the 1st half shows "45+2'" until the admin starts the next one. */

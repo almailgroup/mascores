@@ -1,4 +1,6 @@
 import { getSeoInfo, seoHead } from "@/lib/seo-head";
+import { ShareCardButton } from "@/components/share-image";
+import { drawPlayerCard } from "@/lib/share-cards";
 import { TeamCrest } from "@/components/team-crest";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
@@ -51,7 +53,7 @@ function PlayerPage() {
   const dates = useDates();
   const { id } = Route.useParams();
   const { nt } = Route.useSearch();
-  const { t: tr } = useI18n();
+  const { t: tr, lang } = useI18n();
   const { currency } = useCurrency();
   const { heightUnit } = useHeightUnit();
   const [tab, setTab] = useState<Tab>("details");
@@ -122,6 +124,14 @@ function PlayerPage() {
       <div className="relative flex h-10 items-center justify-between">
         <BackButton iconOnly className="text-match-foreground" />
         <div data-no-gesture className="relative z-10 flex items-center gap-1 [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-current">
+          <ShareCardButton iconOnly title={tx(p.name)} label={lang === "ar" ? "مشاركة اللاعب" : "Share player"} render={() => drawPlayerCard({ name: tx(p.name), photo: callUp?.photo_url ?? p.photo_url, club: p.team ? tx(p.team.name) : tr("player.freeAgent"), rtl: lang === "ar", facts: [
+            { label: tx("Nationality"), value: tx(p.nationality) ?? "—" },
+            { label: tx("Position"), value: tx(p.position) ?? "—" },
+            { label: tx("Age"), value: p.dob ? num(age(p.dob) ?? "—") : "—" },
+            { label: tx("Height"), value: formatHeight(p.height_cm, heightUnit) },
+            { label: tx("Shirt number"), value: num(callUp?.shirt_number ?? p.shirt_number ?? "—") },
+            { label: tx("Market value"), value: formatMoney(p.market_value, currency) },
+          ] })} />
           <PlayerNotificationButton playerId={p.id} />
           <FavoriteButton kind="player" id={p.id} size="md" onFavoriteChange={(active) => {
             void qc.cancelQueries({ queryKey: ["player-followers", id] });
@@ -159,7 +169,7 @@ function PlayerPage() {
         )}
       </div>
 
-      <SwipeTabs className="mb-4 gap-1 border-b border-border text-[0.85rem]">
+      <SwipeTabs tabs={["details", "matches", "media", "news"] as const} value={tab} onChange={setTab} className="mb-4 gap-1 border-b border-border text-[0.85rem]">
         {(["details", "matches", "media", "news"] as const).map((k) => (
            <button key={k} onClick={() => setTab(k)}
             className={`relative whitespace-nowrap px-4 pb-2.5 pt-2 font-semibold ${tab === k ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
@@ -169,6 +179,7 @@ function PlayerPage() {
         ))}
       </SwipeTabs>
 
+      <div data-tab-panels>
       {tab === "details" && (
         <>
           <div className="grid grid-cols-3 gap-y-4 rounded-2xl border border-border bg-card px-2 py-4 text-center">
@@ -230,6 +241,7 @@ function PlayerPage() {
       )}
 
       {tab === "news" && <LinkedNews kind="player" id={p.id} />}
+      </div>
     </AppShell>
   );
 }

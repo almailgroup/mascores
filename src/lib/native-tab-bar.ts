@@ -3,7 +3,7 @@ import { Capacitor, registerPlugin, type PluginListenerHandle } from "@capacitor
 
 type Item = { title: string; icon: string };
 interface NativeTabBarPlugin {
-  show(opts: { items: Item[]; selected: number; dark: boolean }): Promise<void>;
+  show(opts: { items: Item[]; selected: number; dark: boolean; rtl: boolean }): Promise<void>;
   hide(): Promise<void>;
   addListener(event: "select", cb: (e: { index: number; reselect: boolean }) => void): Promise<PluginListenerHandle>;
 }
@@ -20,7 +20,7 @@ export function hasNativeTabBar(): boolean {
 }
 
 /** Drives Apple's own tab bar: shown on primary pages, hidden elsewhere. */
-export function useNativeTabBar(opts: { enabled: boolean; visible: boolean; items: Item[]; selected: number; onSelect: (index: number, reselect: boolean) => void }) {
+export function useNativeTabBar(opts: { enabled: boolean; visible: boolean; items: Item[]; selected: number; rtl: boolean; onSelect: (index: number, reselect: boolean) => void }) {
   const [available, setAvailable] = useState(false);
   const onSelect = useRef(opts.onSelect);
   onSelect.current = opts.onSelect;
@@ -38,10 +38,10 @@ export function useNativeTabBar(opts: { enabled: boolean; visible: boolean; item
     if (!available) return;
     if (opts.visible) {
       const dark = document.documentElement.classList.contains("dark");
-      void NativeTabBar.show({ items: opts.items, selected: opts.selected, dark }).catch(() => {});
+      void NativeTabBar.show({ items: opts.items, selected: opts.selected, dark, rtl: opts.rtl }).catch(() => {});
     } else void NativeTabBar.hide().catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [available, opts.visible, opts.selected, key]);
+  }, [available, opts.visible, opts.selected, opts.rtl, key]);
 
   return available;
 }

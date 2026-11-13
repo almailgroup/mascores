@@ -498,6 +498,13 @@
       "when": 1793745797459,
       "tag": "0070_match_period",
       "breakpoints": true
+    },
+    {
+      "idx": 71,
+      "version": "7",
+      "when": 1794567415061,
+      "tag": "0071_unique_admin_grants_including_global_scopes",
+      "breakpoints": true
     }
   ]
 }

@@ -43,8 +43,8 @@ export function LinkedNews({ kind, id }: { kind: Kind; id: string }) {
       {posts.map((p) => (
         <Link key={p.id} to="/news/$slug" params={{ slug: p.slug }} className="flex gap-3 rounded-2xl border border-border bg-card p-3 hover:border-primary/50">
           {p.cover_url && (
-            <div className="relative flex h-20 w-28 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-muted">
-              <img src={p.cover_url} alt="" className="h-full w-full object-contain" />
+            <div className="relative w-28 shrink-0 self-start overflow-hidden rounded-lg">
+              <img src={p.cover_url} alt="" className="block h-auto w-full" />
             </div>
           )}
 

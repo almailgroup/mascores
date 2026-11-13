@@ -17,6 +17,7 @@ import { SocialActivityButton } from "@/components/social-activity";
 import { isNativeApp } from "@/lib/native-notify";
 import { GlassTabBar } from "@/components/glass-tab-bar";
 import { useNativeTabBar } from "@/lib/native-tab-bar";
+import { Capacitor } from "@capacitor/core";
 
 /**
  * A restricted person cannot use the app at all: they only see why, and a box to
@@ -110,14 +111,15 @@ function scrollToNavTop(item: NavItem, currentPath: string, event: { preventDefa
 
 export function AppShell({ children, bare = false }: { children: ReactNode; bare?: boolean }) {
   const { user, loading } = useAuth();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const location = useLocation();
   const router = useRouter();
   const hideHeader = bare || location.pathname !== "/";
   useEffect(() => { void user; }, [user]);
   useEffect(() => { initTimeFormat(); }, []);
   const [nativeApp, setNativeApp] = useState(false);
-  useEffect(() => { setNativeApp(isNativeApp()); }, []);
+  const [iosApp, setIosApp] = useState(false);
+  useEffect(() => { setNativeApp(isNativeApp()); setIosApp(isNativeApp() && Capacitor.getPlatform() === "ios"); }, []);
   const onPrimary = !bare && PRIMARY_NAV.some((item) => location.pathname === item.to || location.pathname === `${item.to}/`);
   const activeTab = PRIMARY_NAV.findIndex((item) => item.exact ? location.pathname === item.to : location.pathname.startsWith(item.to));
   const systemBar = useNativeTabBar({
@@ -125,6 +127,7 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
     visible: onPrimary,
     items: PRIMARY_NAV.map((item) => ({ title: t(item.labelKey as never), icon: SF_ICONS[item.to] ?? "circle" })),
     selected: activeTab,
+    rtl: lang === "ar",
     onSelect: (index, reselect) => {
       const item = PRIMARY_NAV[index];
       if (!item) return;
@@ -185,7 +188,7 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
       </div>
 
       <BrowseGestures />
-      {onPrimary && !systemBar && (nativeApp ? (
+      {onPrimary && !systemBar && (iosApp ? (
         <nav data-no-gesture aria-label="Main navigation" className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3 md:hidden" style={{ paddingBottom: "max(0.5rem, var(--sa-bottom))" }}>
           <GlassTabBar
             items={PRIMARY_NAV}
@@ -267,11 +270,60 @@ export function LoadingSkeleton({ count = 4, className = "h-24" }: { count?: num
  * Wraps a horizontally scrollable tab row with a quiet hint that there is more
  * to the side: soft edge fades and a small arrow, no animation or nagging pill.
  */
-export function SwipeTabs({ children, className = "" }: { children: ReactNode; className?: string }) {
+export function SwipeTabs<T extends string>({ children, className = "", tabs, value, onChange }: { children: ReactNode; className?: string; tabs?: readonly T[]; value?: T; onChange?: (tab: T) => void }) {
   const { lang } = useI18n();
   const ref = useRef<HTMLDivElement | null>(null);
   const [edge, setEdge] = useState({ start: false, end: false });
   const [moved, setMoved] = useState(false);
+
+  useEffect(() => {
+    if (!tabs || !value || !onChange) return;
+    let start: { x: number; y: number; time: number; node: HTMLElement } | null = null;
+    let dx = 0;
+    let horizontal = false;
+    const begin = (event: TouchEvent) => {
+      start = null; dx = 0; horizontal = false;
+      const target = event.target instanceof Element ? event.target : null;
+      const node = target?.closest<HTMLElement>("[data-tab-panels]");
+      const touch = event.touches[0];
+      if (!node || !touch || event.touches.length !== 1 || touch.clientX <= 28 || touch.clientX >= window.innerWidth - 28 || target?.closest('input,textarea,select,button,[role="dialog"],[data-no-gesture]')) return;
+      for (let el = target; el && el !== node; el = el.parentElement) {
+        if (el.scrollWidth > el.clientWidth + 2 && /auto|scroll/.test(getComputedStyle(el).overflowX)) return;
+      }
+      start = { x: touch.clientX, y: touch.clientY, time: performance.now(), node };
+    };
+    const move = (event: TouchEvent) => {
+      const touch = event.touches[0];
+      if (!start || !touch) return;
+      dx = touch.clientX - start.x;
+      const dy = touch.clientY - start.y;
+      if (!horizontal) {
+        if (Math.abs(dy) > 10 && Math.abs(dy) >= Math.abs(dx)) { start = null; return; }
+        if (Math.abs(dx) < 12 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+        horizontal = true;
+      }
+      if (event.cancelable) event.preventDefault();
+      start.node.style.transform = `translateX(${dx * 0.2}px)`;
+    };
+    const end = (cancelled = false) => {
+      if (!start) return;
+      const { node, time } = start;
+      const step = (dx < 0 ? 1 : -1) * (lang === "ar" ? -1 : 1);
+      const next = tabs[tabs.indexOf(value) + step];
+      const commit = !cancelled && horizontal && next && (Math.abs(dx) > 65 || (Math.abs(dx) > 30 && performance.now() - time < 250));
+      node.style.transform = "";
+      if (commit) onChange(next);
+      if (horizontal && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) node.animate([{ transform: `translateX(${commit ? step * (lang === "ar" ? -1 : 1) * 24 : dx * .2}px)`, opacity: commit ? .75 : 1 }, { transform: "translateX(0)", opacity: 1 }], { duration: 280, easing: "cubic-bezier(.2,.8,.2,1)" });
+      start = null;
+    };
+    const finish = () => end();
+    const cancel = () => end(true);
+    document.addEventListener("touchstart", begin, { passive: true });
+    document.addEventListener("touchmove", move, { passive: false });
+    document.addEventListener("touchend", finish);
+    document.addEventListener("touchcancel", cancel);
+    return () => { if (start) start.node.style.transform = ""; document.removeEventListener("touchstart", begin); document.removeEventListener("touchmove", move); document.removeEventListener("touchend", finish); document.removeEventListener("touchcancel", cancel); };
+  }, [tabs, value, onChange, lang]);
 
   useEffect(() => {
     const node = ref.current;

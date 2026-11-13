@@ -245,7 +245,7 @@ export function StandingsTable({ rows: savedRows, labels, highlightTeamId, highl
                   <span className="text-center text-xs font-black tabular-nums text-primary">{num(row.points + row.points_adjust)}</span>
                 </>}
               </>;
-              const cls = `grid ${cols} items-center gap-1 px-3 ${modern ? "py-2" : "py-2.5"} active:bg-muted/60 ${live ? "bg-match-live/10" : selected ? "bg-primary/10" : ""}`;
+              const cls = `grid ${cols} items-center gap-1 px-3 ${modern ? "py-2" : "py-2.5"} active:bg-muted/60 ${selected ? "font-semibold" : ""}`;
               return row.team
                 ? <Link key={row.id} to="/teams/$id" params={{ id: row.team.id }} className={cls}>{inner}</Link>
                 : <div key={row.id} className={cls}>{inner}</div>;

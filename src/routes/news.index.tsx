@@ -39,8 +39,8 @@ function NewsPage() {
           {posts.map((n) => (
             <Link key={n.id} to="/news/$slug" params={{ slug: n.slug }} className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition hover:border-primary/50 hover:shadow-lg">
               {n.cover_url && (
-                <div className="relative flex aspect-video w-full items-center justify-center bg-gradient-to-br from-primary/25 via-card to-background">
-                  <img src={n.cover_url} alt="" className="relative h-full w-full object-contain" />
+                <div className="relative w-full">
+                  <img src={n.cover_url} alt="" className="block h-auto w-full" />
                 </div>
               )}
 

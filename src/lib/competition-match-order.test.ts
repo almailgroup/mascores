@@ -1,9 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { compareCompetitionRounds, compareTeamFixtures, estimatedFixtureDate, fixtureTime, sortTeamFixtures } from "./competition-match-order";
+import { currentCompetitionRound, compareCompetitionRounds, compareTeamFixtures, estimatedFixtureDate, fixtureTime, sortTeamFixtures } from "./competition-match-order";
 
 const bucket = (round: number, kickoff: string | null) => ({ round: `#${round}`, matches: [{ kickoff_at: kickoff }], order: 0 });
 
 describe("competition round placement", () => {
+  it("opens upcoming Round 9 rather than a postponed Round 6", () => {
+    const rounds = [{ round: 6, matches: [{ kickoff_at: null, status: "postponed" }] }, { round: 9, matches: [{ kickoff_at: null, status: "scheduled" }] }];
+    expect(currentCompetitionRound(rounds)?.round).toBe(9);
+  });
+  it("prioritises a round still being played over scheduled rounds", () => {
+    const rounds = [{ round: 6, matches: [{ kickoff_at: null, status: "scheduled" }] }, { round: 8, matches: [{ kickoff_at: null, status: "live" }] }];
+    expect(currentCompetitionRound(rounds)?.round).toBe(8);
+  });
   it("orders the admin Round labels numerically with postponed fixtures last within their own round", () => {
     const rounds = [
       { round: "Round 5", matches: [{ kickoff_at: null }], order: 0 },

@@ -15,7 +15,8 @@ import { SocialLinksSection } from "@/components/social-links";
 import { LinkedNews } from "@/components/linked-news";
 import { ArrowRight, Landmark, CalendarClock, Crown, Trophy, Users, Phone, Mail, Globe } from "lucide-react";
 import { MatchGroups, MatchRow, type MatchWithTeams } from "@/components/match-list";
-import { sortTeamFixtures } from "@/lib/competition-match-order";
+import { fixtureTime, sortTeamFixtures } from "@/lib/competition-match-order";
+import { fixtureSeasons, seasonFixtures, seasonIdentity } from "@/lib/season-stats";
 import { hasStandings } from "@/lib/match-result";
 import { type NationalPlayer, fetchNationalSquad } from "@/lib/national";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
@@ -55,6 +56,7 @@ function TeamPage() {
   }});
   const { t: tr } = useI18n();
   const [tab, setTab] = useState<Tab>("info");
+  const [selectedSeason, setSelectedSeason] = useState<string | null>(null);
   useRealtime(["teams", "players", "matches", "competitions", "standings_rows", "transfers"]);
 
   const team = useQuery({ queryKey: ["team", id], queryFn: async () => {
@@ -126,7 +128,10 @@ function TeamPage() {
     );
   }
 
-  const played = matches.data?.filter((m) => ["ft", "aet", "pen", "awarded"].includes(m.status)) ?? [];
+  const seasons = fixtureSeasons(matches.data ?? []);
+  const activeSeason = selectedSeason ?? seasons[0] ?? "";
+  const seasonMatches = seasonFixtures(matches.data ?? [], activeSeason);
+  const played = seasonMatches.filter((m) => ["ft", "aet", "pen", "awarded"].includes(m.status));
   const wins = played.filter((m) => (m.home_team_id === id ? (m.home_score ?? 0) > (m.away_score ?? 0) : (m.away_score ?? 0) > (m.home_score ?? 0))).length;
   const draws = played.filter((m) => (m.home_score ?? 0) === (m.away_score ?? 0)).length;
   const losses = played.length - wins - draws;
@@ -135,7 +140,7 @@ function TeamPage() {
   const upcoming = [...(matches.data ?? [])].filter((m) => m.status === "scheduled" && m.kickoff_at && new Date(m.kickoff_at).getTime() >= Date.now()).sort((a, b) => new Date(a.kickoff_at ?? 0).getTime() - new Date(b.kickoff_at ?? 0).getTime());
   const featured = upcoming[0] ?? matches.data?.[0] ?? null;
   const tournaments = [...new Map((matches.data ?? []).filter((m) => m.competition).map((m) => [m.competition!.slug, m.competition!])).values()];
-  const statComps: TeamComp[] = [...new Map((matches.data ?? [])
+  const statComps: TeamComp[] = [...new Map(seasonMatches
     .filter((m) => m.competition_id && m.competition)
     .map((m) => [m.competition_id, { id: m.competition_id, name: m.competition!.name, logo_url: m.competition!.logo_url ?? null, season: (m as { season?: string | null }).season ?? null }] as const))
     .values()];
@@ -175,7 +180,7 @@ function TeamPage() {
       </div>
 
       <div className="club-tabs-strip border-b pt-2">
-      <SwipeTabs className="gap-1 text-xs sm:text-sm">
+      <SwipeTabs tabs={TABS} value={tab} onChange={setTab} className="gap-1 text-xs sm:text-sm">
         {TABS.map((k) => (
           <button key={k} onClick={() => setTab(k)}
              className={`club-tab whitespace-nowrap px-3 py-2 font-semibold ${tab === k ? "club-tab-active" : ""}`}>
@@ -187,7 +192,7 @@ function TeamPage() {
       </div>
 
 
-      <div data-refresh-body>
+      <div data-refresh-body data-tab-panels>
       {tab === "matches" && (
         matches.data && matches.data.length > 0
           ? <TeamMatches data={matches.data} teamId={id} nextId={upcoming[0]?.id ?? null} />
@@ -319,6 +324,7 @@ function TeamPage() {
 
       {tab === "stats" && (
         <div className="space-y-4">
+          <SeasonMenu seasons={seasons} value={activeSeason} onChange={setSelectedSeason} formatValue={seasonIdentity} />
           <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
             <InfoCard label={tx("Played")} value={String(played.length)} />
             <InfoCard label={tx("Wins")} value={String(wins)} />
@@ -327,7 +333,7 @@ function TeamPage() {
             <InfoCard label={tx("Goals for")} value={String(gf)} />
             <InfoCard label={tx("Goals against")} value={String(ga)} />
           </div>
-          <TeamStats teamId={id} comps={statComps} />
+          <TeamStats teamId={id} comps={statComps} season={activeSeason} />
         </div>
       )}
 
@@ -627,9 +633,11 @@ function TeamMatches({ data, teamId, nextId }: { data: MatchWithTeams[]; teamId:
   const top = useRef<HTMLDivElement>(null);
   const [showToday, setShowToday] = useState(false);
   const resetPosition = useRef(0);
-  const timestamp = (m: MatchWithTeams) => m.kickoff_at ? new Date(m.kickoff_at).getTime() : 0;
-  const ordered = sortTeamFixtures(data);
-  const targetId = data.find((m) => ["live", "ht"].includes(m.status))?.id ?? nextId ?? ordered.find((m) => timestamp(m) <= Date.now())?.id ?? ordered[0]?.id;
+  const seasons = fixtureSeasons(data);
+  const [selected, setSelected] = useState(seasons[0] ?? "");
+  const filtered = seasonFixtures(data, selected);
+  const ordered = sortTeamFixtures(filtered);
+  const targetId = filtered.find((m) => ["live", "ht"].includes(m.status))?.id ?? filtered.find(m => m.id === nextId)?.id ?? ordered.find((m) => Number.isFinite(fixtureTime(m)) && fixtureTime(m) <= Date.now())?.id ?? ordered[0]?.id;
   const goToNext = () => {
     const target = Array.from(top.current?.querySelectorAll<HTMLElement>("[data-fixture-id]") ?? []).find((node) => node.dataset.fixtureId === targetId);
     if (!target) return;
@@ -647,6 +655,7 @@ function TeamMatches({ data, teamId, nextId }: { data: MatchWithTeams[]; teamId:
     return () => { cancelAnimationFrame(firstFrame); cancelAnimationFrame(secondFrame); window.removeEventListener("scroll", onScroll); };
   }, [targetId, teamId]);
   return <div ref={top} className="scroll-mt-40">
+    <div className="mb-3"><SeasonMenu seasons={seasons} value={selected} onChange={setSelected} formatValue={seasonIdentity} /></div>
     <MatchGroups data={ordered} highlightTeamId={teamId} />
     {showToday && <Button variant="outline" onClick={goToNext} className="fixed bottom-[calc(6rem+var(--sa-bottom))] left-1/2 z-30 -translate-x-1/2 rounded-full border-border bg-background text-foreground shadow">{tx("Today")}</Button>}
   </div>;

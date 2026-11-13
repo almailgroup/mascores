@@ -58,7 +58,7 @@ function runs(data: MatchWithTeams[]) {
   data.forEach((m, index) => {
     const key = m.competition?.slug ?? "other";
     const last = out[out.length - 1];
-    if (last && last.matches[0].competition?.slug === m.competition?.slug) last.matches.push(m);
+    if (last && last.matches[0].competition?.slug === m.competition?.slug && last.matches[0].season === m.season) last.matches.push(m);
     else out.push({ key: `${key}|${index}`, matches: [m] });
   });
   return out;
@@ -93,6 +93,7 @@ export function CompHeader({ m, group }: { m: MatchWithTeams; group?: string | n
           <span className="mt-0.5 flex items-center gap-1.5 text-[0.7rem] text-muted-foreground">
             <FlagIcon value={c.country_code ?? c.country} />
             <span className="truncate">{tx(c.country)}</span>
+            {m.season && <span dir="ltr" className="shrink-0">· {m.season.replace(/\b(\d{2})\b/g, "20$1")}</span>}
           </span>
         ) : null}
       </span>

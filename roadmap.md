@@ -1,4 +1,14 @@
 # Roadmap
+- [x] Season-scoped club totals/statistics and fixture filters; verified two seasons. Existing historical archive gaps are real, not invented dates.
+- [x] Android website-style navigation, Arabic web labels, native image saver and audio permission fixes implemented.
+- [ ] Android saving/audio and iOS native RTL verification: requires new native releases and physical devices; Android saver supports Android 10+.
+- [x] Current competition round excludes postponed fixtures; stable header verified and shared swipes added to competition, match, club, player and social profile views.
+- [x] Home Calendar label and same-day scheduled matches retained until live; regression tests passed.
+- [x] Remove coloured standings crest backplates; opponent context verified in lineup shares and professional player share preview.
+- [x] Match period confirmation dialog; explicit first-half stoppage time and editable seconds; clock regression tests passed.
+- [x] Manage access consolidation and duplicate cleanup; modern profile/privacy/report/block dialogs and Arabic View profile verified.
+- [x] Mobile news natural photo sizing verified; owner sound previews expand/collapse.
+- [x] Modern notifications inbox automatically marks existing notifications read on opening.
 - [x] Added all 21 unused substitutes to both benches for Al Salmiya–Kazma and Al Sahel–Kuwait SC; verified home and away bench views, with starters, ratings, events and results unchanged.
 - [x] Import Al Sahel–Kuwait SC and Al Salmiya–Kazma: final results, 44 starters, 19 used substitutes, 40 events and 63 published source ratings; verified in match pages, attribution private.
 - [x] Fill verified final statistics across all six finished Round 8 fixtures from Derbista; verified every Stats tab, preserved credible conflicting prior values, removed Al Arabi's stale live off-target row.

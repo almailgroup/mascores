@@ -74,7 +74,7 @@ export function ShareCardButton({ render, title, label: buttonLabel, iconOnly = 
           const info = await App.getInfo();
           build = ` (${info.version} · ${info.build})`;
         } catch { /* unknown */ }
-        setNotice(label(`This installed app${build} doesn't include the camera-roll saver. Delete it, install the newest TestFlight build, then tap Save again.`, `هذه النسخة المثبتة${build} لا تحتوي على ميزة الحفظ في ألبوم الكاميرا. احذف التطبيق وثبّت أحدث نسخة من TestFlight ثم اضغط حفظ مجددًا.`));
+        setNotice(label(`This installed app${build} needs an update to save photos. Install the latest version, then tap Save again.`, `هذه النسخة المثبتة${build} تحتاج إلى تحديث لحفظ الصور. ثبّت أحدث نسخة ثم اضغط حفظ مجددًا.`));
       } else if (result === "unsupported") {
         setHoldToSave(true);
         setNotice(label("This browser can’t save to Photos. Open MaScores on your iPhone to save it to your camera roll.", "هذا المتصفح لا يدعم الحفظ في الصور. افتح MaScores على جهازك لحفظها في ألبوم الكاميرا."));
