@@ -1,0 +1,2 @@
+ALTER TABLE public.admin_grants DROP CONSTRAINT admin_grants_user_id_scope_team_id_key;
+ALTER TABLE public.admin_grants ADD CONSTRAINT admin_grants_user_id_scope_team_id_key UNIQUE NULLS NOT DISTINCT (user_id, scope, team_id);
