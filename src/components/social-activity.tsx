@@ -41,7 +41,7 @@ export function SocialActivity() {
     const ids = activity.data?.notifications.filter(n => !n.read_at).map(n => n.id) ?? [];
     if (!user || !ids.length || marking.current) return;
     marking.current = true;
-    void supabase.from('social_notifications').update({ read_at: new Date().toISOString() }).eq('recipient_id', user.id).in('id', ids).then(async ({ error }) => {
+    void Promise.resolve(supabase.from('social_notifications').update({ read_at: new Date().toISOString() }).eq('recipient_id', user.id).in('id', ids)).then(async ({ error }) => {
       if (error) toast.error(label('Could not mark notifications read', 'تعذر تحديث الإشعارات'));
       else await qc.invalidateQueries({ queryKey: ['social-activity', user.id] });
     }).finally(() => { marking.current = false; });
