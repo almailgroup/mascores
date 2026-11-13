@@ -633,11 +633,8 @@ function TeamMatches({ data, teamId, nextId }: { data: MatchWithTeams[]; teamId:
   const top = useRef<HTMLDivElement>(null);
   const [showToday, setShowToday] = useState(false);
   const resetPosition = useRef(0);
-  const seasons = fixtureSeasons(data);
-  const [selected, setSelected] = useState(seasons[0] ?? "");
-  const filtered = seasonFixtures(data, selected);
-  const ordered = sortTeamFixtures(filtered);
-  const targetId = filtered.find((m) => ["live", "ht"].includes(m.status))?.id ?? filtered.find(m => m.id === nextId)?.id ?? ordered.find((m) => Number.isFinite(fixtureTime(m)) && fixtureTime(m) <= Date.now())?.id ?? ordered[0]?.id;
+  const ordered = sortTeamFixtures(data);
+  const targetId = data.find((m) => ["live", "ht"].includes(m.status))?.id ?? data.find(m => m.id === nextId)?.id ?? ordered.find((m) => Number.isFinite(fixtureTime(m)) && fixtureTime(m) <= Date.now())?.id ?? ordered[0]?.id;
   const goToNext = () => {
     const target = Array.from(top.current?.querySelectorAll<HTMLElement>("[data-fixture-id]") ?? []).find((node) => node.dataset.fixtureId === targetId);
     if (!target) return;
@@ -655,7 +652,6 @@ function TeamMatches({ data, teamId, nextId }: { data: MatchWithTeams[]; teamId:
     return () => { cancelAnimationFrame(firstFrame); cancelAnimationFrame(secondFrame); window.removeEventListener("scroll", onScroll); };
   }, [targetId, teamId]);
   return <div ref={top} className="scroll-mt-40">
-    <div className="mb-3"><SeasonMenu seasons={seasons} value={selected} onChange={setSelected} formatValue={seasonIdentity} /></div>
     <MatchGroups data={ordered} highlightTeamId={teamId} />
     {showToday && <Button variant="outline" onClick={goToNext} className="fixed bottom-[calc(6rem+var(--sa-bottom))] left-1/2 z-30 -translate-x-1/2 rounded-full border-border bg-background text-foreground shadow">{tx("Today")}</Button>}
   </div>;
