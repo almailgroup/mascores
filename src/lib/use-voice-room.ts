@@ -163,7 +163,7 @@ export function useVoiceRoom({ roomId, me, enabled, storedPeers = [], onModerati
         if (cancelled) { void room.disconnect(); return; }
         setAudioUp(true);
         room.remoteParticipants.forEach((p) => p.audioTrackPublications.forEach((pub) => { if (pub.track) addTrack(pub.track, p); }));
-        if (res.canPublish) await publishMic();
+        if (res.canPublish) await publishMic().catch(() => { /* mic error is surfaced without reconnecting an already connected room */ });
       } catch (error) {
         console.warn("Voice connect failed", error);
         if (!cancelled) retry = window.setTimeout(() => void connect(), 3000);

@@ -906,7 +906,8 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
   const [editing, setEditing] = useState<MatchEvent | null>(null);
 
   const patchMatch = async (patch: Partial<Match>) => {
-    await supabase.from("matches").update(patch as never).eq("id", match.id);
+    const { error } = await supabase.from("matches").update(patch as never).eq("id", match.id);
+    if (error) { toast.error("Could not update match"); throw error; }
     onSaved();
   };
 
