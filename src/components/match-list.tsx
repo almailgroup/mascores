@@ -93,7 +93,6 @@ export function CompHeader({ m, group }: { m: MatchWithTeams; group?: string | n
           <span className="mt-0.5 flex items-center gap-1.5 text-[0.7rem] text-muted-foreground">
             <FlagIcon value={c.country_code ?? c.country} />
             <span className="truncate">{tx(c.country)}</span>
-            {m.season && <span dir="ltr" className="shrink-0">· {m.season.replace(/\b(\d{2})\b/g, "20$1")}</span>}
           </span>
         ) : null}
       </span>
