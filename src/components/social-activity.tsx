@@ -42,6 +42,7 @@ export function SocialActivity() {
     if (!user || !ids.length || marking.current) return;
     marking.current = true;
     void Promise.resolve(supabase.from('social_notifications').update({ read_at: new Date().toISOString() }).eq('recipient_id', user.id).in('id', ids)).then(async ({ error }) => {
+      marking.current = false;
       if (error) toast.error(label('Could not mark notifications read', 'تعذر تحديث الإشعارات'));
       else await qc.invalidateQueries({ queryKey: ['social-activity', user.id] });
     }).finally(() => { marking.current = false; });
