@@ -44,9 +44,6 @@ const config: CapacitorConfig = {
     // No Safari-style link preview when pressing and holding.
     allowsLinkPreview: false,
   },
-  // Present as mobile Safari so Google allows its sign-in page inside the app.
-  overrideUserAgent:
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1",
   server: {
     url: appUrl,
     cleartext: false,

@@ -16,6 +16,7 @@ public class MainActivity extends BridgeActivity {
         // applies uniformly (Android 15+ enforces edge-to-edge anyway). The
         // SystemBars plugin injects the real bar heights into the page.
         EdgeToEdge.enable(this);
+        registerPlugin(PhotoLibraryPlugin.class);
         super.onCreate(savedInstanceState);
     }
 }

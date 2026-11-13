@@ -153,9 +153,13 @@ public class NativeTabBarPlugin: CAPPlugin, CAPBridgedPlugin, UITabBarController
         let items = call.getArray("items", JSObject.self) ?? []
         let selected = call.getInt("selected") ?? 0
         let dark = call.getBool("dark") ?? false
+        let rtl = call.getBool("rtl") ?? false
         DispatchQueue.main.async {
             guard let host = self.bridge?.viewController else { call.reject("No screen"); return }
             let (controller, wrap) = self.setup(in: host)
+            let direction: UISemanticContentAttribute = rtl ? .forceRightToLeft : .forceLeftToRight
+            controller.view.semanticContentAttribute = direction
+            controller.tabBar.semanticContentAttribute = direction
             host.overrideUserInterfaceStyle = dark ? .dark : .light
             let sig = items.map { "\($0["title"] as? String ?? "")|\($0["icon"] as? String ?? "")" }.joined(separator: ",")
             if sig != self.signature {

@@ -43,7 +43,7 @@ function callNativeSave(base64: string) {
  * Website: opens the system share sheet, where "Save Image" puts it in Photos.
  */
 export async function savePhoto(blob: Blob, fileName: string, title: string): Promise<SaveResult> {
-  const native = Capacitor.isNativePlatform() && Capacitor.getPlatform() === "ios";
+  const native = Capacitor.isNativePlatform();
   if (native) {
     const base64 = await toBase64(blob);
     // The native side never answers a call to a plugin it doesn't have, so a
