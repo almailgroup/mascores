@@ -28,7 +28,7 @@ import { StandingsTable } from "@/components/standings-table";
 import { useCompetitionLogo } from "@/lib/comp-logo";
 import { useLogoAccent } from "@/lib/logo-accent";
 import { compareGroupLabels } from "@/lib/group-order";
-import { compareCompetitionRounds, fixtureTime } from "@/lib/competition-match-order";
+import { currentCompetitionRound, compareCompetitionRounds, fixtureTime } from "@/lib/competition-match-order";
 import { useCollapsingHeader } from "@/hooks/use-collapsing-header";
 import { SportsHeaderBackground } from "@/components/sports-header-background";
 import { Button } from "@/components/ui/button";
@@ -218,7 +218,7 @@ function CompetitionPage() {
 
 
 
-       <div data-refresh-body>
+       <div data-refresh-body data-tab-panels>
        {activeTab === "overview" && <CompetitionOverviewTab c={c} season={season} teams={teams.data ?? []} titleHolder={friendly ? null : (titleHolder ?? null)} titles={friendly ? [] : (compTitles.data ?? [])} divisions={friendly ? [] : (divisions.data ?? [])} matches={matches.data ?? []} media={media.data ?? []} friendly={friendly} />}
 
       {activeTab === "matches" && <><SectionHeader title={t("tab.matches")} />
@@ -424,7 +424,7 @@ function CompetitionHero({ c, logo, hero, activeSeason, friendly, faved, onToggl
       </div>
 
       <div className="mt-2">
-        <SwipeTabs className="gap-1 text-xs sm:text-sm">
+        <SwipeTabs tabs={tabs} value={tab} onChange={onTab} className="gap-1 text-xs sm:text-sm">
           {tabs.map((item) => (
             <button
               key={item}
@@ -480,14 +480,18 @@ function CompetitionMatches({ data }: { data: MatchWithTeams[] }) {
     return a.order - b.order;
   });
   // Open on the round being played now: first round with an unfinished match, else the last one.
-  const done = (m: MatchWithTeams) => ["ft", "aet", "pen", "finished", "cancelled", "abandoned", "awarded"].includes(String((m as { status?: string }).status ?? "").toLowerCase());
-  const currentKey = (list.find((b) => b.matches.some((m) => !done(m))) ?? list[list.length - 1])?.key;
+  const currentKey = currentCompetitionRound(list)?.key;
   const scrolled = useRef(false);
   useEffect(() => {
     if (scrolled.current || !currentKey) return;
     scrolled.current = true;
     const el = document.querySelector(`[data-round-key="${CSS.escape(currentKey)}"]`);
-    if (el) requestAnimationFrame(() => el.scrollIntoView({ block: "start" }));
+    if (el) requestAnimationFrame(() => {
+      const header = document.querySelector<HTMLElement>("[data-refresh-header]");
+      if (!header) return;
+      header.dataset.preserveCollapse = "true";
+      window.scrollTo({ top: window.scrollY + el.getBoundingClientRect().top - header.getBoundingClientRect().bottom - 12, behavior: "instant" });
+    });
   }, [currentKey]);
   return (
     <div className="space-y-3">

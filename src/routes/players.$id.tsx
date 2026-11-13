@@ -159,7 +159,7 @@ function PlayerPage() {
         )}
       </div>
 
-      <SwipeTabs className="mb-4 gap-1 border-b border-border text-[0.85rem]">
+      <SwipeTabs tabs={["details", "matches", "media", "news"] as const} value={tab} onChange={setTab} className="mb-4 gap-1 border-b border-border text-[0.85rem]">
         {(["details", "matches", "media", "news"] as const).map((k) => (
            <button key={k} onClick={() => setTab(k)}
             className={`relative whitespace-nowrap px-4 pb-2.5 pt-2 font-semibold ${tab === k ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
@@ -169,6 +169,7 @@ function PlayerPage() {
         ))}
       </SwipeTabs>
 
+      <div data-tab-panels>
       {tab === "details" && (
         <>
           <div className="grid grid-cols-3 gap-y-4 rounded-2xl border border-border bg-card px-2 py-4 text-center">
@@ -230,6 +231,7 @@ function PlayerPage() {
       )}
 
       {tab === "news" && <LinkedNews kind="player" id={p.id} />}
+      </div>
     </AppShell>
   );
 }

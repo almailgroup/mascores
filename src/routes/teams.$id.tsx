@@ -175,7 +175,7 @@ function TeamPage() {
       </div>
 
       <div className="club-tabs-strip border-b pt-2">
-      <SwipeTabs className="gap-1 text-xs sm:text-sm">
+      <SwipeTabs tabs={TABS} value={tab} onChange={setTab} className="gap-1 text-xs sm:text-sm">
         {TABS.map((k) => (
           <button key={k} onClick={() => setTab(k)}
              className={`club-tab whitespace-nowrap px-3 py-2 font-semibold ${tab === k ? "club-tab-active" : ""}`}>
@@ -187,7 +187,7 @@ function TeamPage() {
       </div>
 
 
-      <div data-refresh-body>
+      <div data-refresh-body data-tab-panels>
       {tab === "matches" && (
         matches.data && matches.data.length > 0
           ? <TeamMatches data={matches.data} teamId={id} nextId={upcoming[0]?.id ?? null} />
