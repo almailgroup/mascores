@@ -58,7 +58,7 @@ function runs(data: MatchWithTeams[]) {
   data.forEach((m, index) => {
     const key = m.competition?.slug ?? "other";
     const last = out[out.length - 1];
-    if (last && last.matches[0].competition?.slug === m.competition?.slug && last.matches[0].season === m.season) last.matches.push(m);
+    if (last && last.matches[0].competition?.slug === m.competition?.slug) last.matches.push(m);
     else out.push({ key: `${key}|${index}`, matches: [m] });
   });
   return out;
