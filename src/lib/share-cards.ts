@@ -741,7 +741,6 @@ export async function drawPlayerCard(input: { name: string; photo?: string | nul
   text(rtl ? "ملف اللاعب" : "PLAYER PROFILE", rtl ? 1016 : 64, 113, 25, 800, ink, 660);
   text("MaScores / Football", rtl ? 64 : 1016, 113, 22, 600, muted, 300, rtl ? "left" : "right");
   const portraitX = rtl ? 426 : 64, sideX = rtl ? 64 : 690;
-  ctx.fillStyle = panel; ctx.fillRect(portraitX, 154, 590, 490);
   const source = portraitSource(input.photo);
   const [photo, logo] = await Promise.all([
     loadImage(source).then(image => image ?? loadImage(input.photo)), loadImage(input.clubLogo),
@@ -750,6 +749,7 @@ export async function drawPlayerCard(input: { name: string; photo?: string | nul
     const scale = Math.min(590 / photo.width, 490 / photo.height);
     ctx.drawImage(photo, portraitX + (590 - photo.width * scale) / 2, 154 + (490 - photo.height * scale) / 2, photo.width * scale, photo.height * scale);
   } else {
+    ctx.fillStyle = panel; ctx.fillRect(portraitX, 154, 590, 490);
     // The same person-symbol convention as the player page; never initials or a fictional face.
     ctx.fillStyle = muted; ctx.beginPath(); ctx.arc(portraitX + 295, 332, 64, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.ellipse(portraitX + 295, 520, 125, 100, 0, Math.PI, 0); ctx.fill();
