@@ -37,6 +37,7 @@ export function ManagePanel() {
   const [open, setOpen] = useState(false);
   const [secret, setSecret] = useState<{ email: string; password: string; emailed: boolean } | null>(null);
   const [editUser, setEditUser] = useState<ManagedUser | null>(null);
+  const [expandedUsers, setExpandedUsers] = useState<Set<string>>(new Set());
   const [note, setNote] = useState<string | null>(null);
   const load = useServerFn(listManagedUsers);
   const removeGrant = useServerFn(removeManagedGrant);
@@ -85,7 +86,7 @@ export function ManagePanel() {
                 <div className="truncate text-[0.7rem] text-muted-foreground">{user.email}</div>
               </div>
               <button className={btnGhost} onClick={() => setEditUser(user)}>
-                <Pencil className="h-3.5 w-3.5" /> Edit access
+                <Pencil className="h-3.5 w-3.5" /> Manage access
               </button>
               <button
                 className={btnGhost}
@@ -107,7 +108,8 @@ export function ManagePanel() {
               </button>
 
             </div>
-            <div className="mt-2 space-y-1.5">
+            <button type="button" aria-expanded={expandedUsers.has(user.id)} className={`${btnGhost} mt-2 w-full justify-between`} onClick={() => setExpandedUsers(previous => { const next = new Set(previous); if (next.has(user.id)) next.delete(user.id); else next.add(user.id); return next; })}>Access · {user.grants.length} {expandedUsers.has(user.id) ? "−" : "+"}</button>
+            {expandedUsers.has(user.id) && <div className="mt-2 space-y-1.5">
               {user.grants.map((g) => (
                 <div key={g.id} className="flex flex-wrap items-center gap-2 rounded-xl bg-muted/50 px-3 py-2">
                   <span className="min-w-0 flex-1 basis-[50%] truncate text-xs font-semibold">
@@ -124,7 +126,7 @@ export function ManagePanel() {
                   </button>
                 </div>
               ))}
-            </div>
+            </div>}
           </div>
         ))}
         {!users.isLoading && withAccess.length === 0 && <p className="text-sm text-muted-foreground">Nobody has extra access yet.</p>}
