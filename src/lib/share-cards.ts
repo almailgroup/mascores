@@ -720,20 +720,67 @@ export async function drawResultCard(input: {
 }
 
 /** Portrait and verified profile facts, through the shared branded export footer. */
-export async function drawPlayerCard(input: { name: string; photo?: string | null; club?: string | null; facts: { label: string; value: string }[]; rtl?: boolean }): Promise<Blob | null> {
-  const canvas = document.createElement("canvas"); canvas.width = 1080; canvas.height = 1120;
+export async function drawPlayerCard(input: { name: string; photo?: string | null; club?: string | null; clubLogo?: string | null; shirt?: string; position?: string; facts: { label: string; value: string }[]; rtl?: boolean }): Promise<Blob | null> {
+  await document.fonts.ready;
+  const canvas = document.createElement("canvas"); canvas.width = 1080; canvas.height = 1110;
   const ctx = canvas.getContext("2d"); if (!ctx) return null;
   const css = getComputedStyle(document.documentElement);
-  const bg = css.getPropertyValue("--card").trim(), ink = css.getPropertyValue("--foreground").trim(), muted = css.getPropertyValue("--muted-foreground").trim();
-  ctx.fillStyle = bg; ctx.fillRect(0, 0, 1080, 1120);
+  const token = (role: string) => css.getPropertyValue(`--player-export-${role}`).trim();
+  const paper = token("paper"), ink = token("ink"), muted = token("muted"), panel = token("panel"), accent = token("accent");
+  const rtl = Boolean(input.rtl);
+  ctx.fillStyle = paper; ctx.fillRect(0, 0, 1080, 1110);
+  // A fixed editorial grid preserves the original portrait, rather than inventing a cut-out.
+  const text = (value: string, x: number, y: number, size: number, weight: number, color: string, max: number, align: CanvasTextAlign = rtl ? "right" : "left") => {
+    ctx.direction = rtl ? "rtl" : "ltr"; ctx.textAlign = align; ctx.fillStyle = color;
+    let fitted = size; ctx.font = `${weight} ${fitted}px ${FONT}`;
+    while (ctx.measureText(value).width > max && fitted > 20) { fitted -= 1; ctx.font = `${weight} ${fitted}px ${FONT}`; }
+    ctx.fillText(value, x, y, max);
+  };
+  ctx.fillStyle = ink; ctx.fillRect(0, 0, 1080, 14);
+  ctx.fillStyle = accent; ctx.fillRect(rtl ? 920 : 64, 56, 96, 8);
+  text(rtl ? "ملف اللاعب" : "PLAYER PROFILE", rtl ? 1016 : 64, 113, 25, 800, ink, 660);
+  text("MaScores / Football", rtl ? 64 : 1016, 113, 22, 600, muted, 300, rtl ? "left" : "right");
+  const portraitX = rtl ? 426 : 64, sideX = rtl ? 64 : 690;
+  ctx.fillStyle = panel; ctx.fillRect(portraitX, 154, 590, 490);
   const source = portraitSource(input.photo);
-  const photo = await loadImage(source) ?? await loadImage(input.photo);
-  ctx.save(); ctx.beginPath(); ctx.arc(540, 230, 145, 0, Math.PI * 2); ctx.clip();
-  ctx.fillStyle = css.getPropertyValue("--muted").trim(); ctx.fillRect(395, 85, 290, 290);
-  if (photo) { const ratio = Math.max(290 / photo.width, 290 / photo.height); ctx.drawImage(photo, 540 - photo.width * ratio / 2, 230 - photo.height * ratio / 2, photo.width * ratio, photo.height * ratio); }
-  ctx.restore(); ctx.direction = input.rtl ? "rtl" : "ltr"; ctx.textAlign = "center";
-  ctx.fillStyle = ink; ctx.font = `800 52px ${FONT}`; ctx.fillText(input.name, 540, 460, 960);
-  if (input.club) { ctx.fillStyle = muted; ctx.font = `500 32px ${FONT}`; ctx.fillText(input.club, 540, 515, 960); }
-  input.facts.slice(0, 6).forEach((fact, i) => { const x = i % 2 ? 785 : 295, y = 635 + Math.floor(i / 2) * 155; ctx.fillStyle = muted; ctx.font = `500 26px ${FONT}`; ctx.fillText(fact.label, x, y, 450); ctx.fillStyle = ink; ctx.font = `700 34px ${FONT}`; ctx.fillText(fact.value, x, y + 48, 450); });
+  const [photo, logo] = await Promise.all([
+    loadImage(source).then(image => image ?? loadImage(input.photo)), loadImage(input.clubLogo),
+  ]);
+  if (photo) {
+    const scale = Math.min(590 / photo.width, 490 / photo.height);
+    ctx.drawImage(photo, portraitX + (590 - photo.width * scale) / 2, 154 + (490 - photo.height * scale) / 2, photo.width * scale, photo.height * scale);
+  } else {
+    // The same person-symbol convention as the player page; never initials or a fictional face.
+    ctx.fillStyle = muted; ctx.beginPath(); ctx.arc(portraitX + 295, 332, 64, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(portraitX + 295, 520, 125, 100, 0, Math.PI, 0); ctx.fill();
+  }
+  ctx.fillStyle = ink; ctx.fillRect(sideX, 154, 326, 490);
+  ctx.fillStyle = accent; ctx.fillRect(sideX, 154, 326, 12);
+  text(rtl ? "رقم القميص" : "SQUAD NUMBER", sideX + 163, 222, 22, 600, paper, 282, "center");
+  text(input.shirt ?? "—", sideX + 163, 402, 166, 900, accent, 282, "center");
+  ctx.fillStyle = muted; ctx.fillRect(sideX + 30, 454, 266, 1);
+  text(input.position ?? "—", sideX + 163, 507, 32, 700, paper, 266, "center");
+  if (logo) crest(ctx, logo, "", sideX + 163, 579, 76);
+  const anchor = rtl ? 1016 : 64;
+  // Names can use two full lines without compressing or cutting off a long surname.
+  const words = input.name.split(/\s+/); const lines: string[] = []; let line = "";
+  ctx.font = `900 66px ${FONT}`;
+  for (const word of words) {
+    const next = line ? `${line} ${word}` : word;
+    if (ctx.measureText(next).width > 952 && line && lines.length === 0) { lines.push(line); line = word; }
+    else line = next;
+  }
+  if (line) lines.push(line);
+  lines.forEach((value, i) => text(value, anchor, 735 + i * 76, 66, 900, ink, 952));
+  const clubY = lines.length > 1 ? 859 : 790;
+  text(input.club ?? "", anchor, clubY, 28, 600, muted, 952);
+  const gridY = lines.length > 1 ? 893 : 835;
+  input.facts.slice(0, 6).forEach((fact, i) => {
+    const col = rtl ? 2 - i % 3 : i % 3, x = 64 + col * 326, y = gridY + Math.floor(i / 3) * 100;
+    ctx.fillStyle = panel; ctx.fillRect(x, y, 300, 2);
+    const factX = rtl ? x + 290 : x;
+    text(fact.label, factX, y + 33, 21, 500, muted, 290);
+    text(fact.value, factX, y + 77, 33, 800, ink, 290);
+  });
   return toBlob(canvas);
 }

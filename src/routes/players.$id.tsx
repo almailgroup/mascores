@@ -124,7 +124,7 @@ function PlayerPage() {
       <div className="relative flex h-10 items-center justify-between">
         <BackButton iconOnly className="text-match-foreground" />
         <div data-no-gesture className="relative z-10 flex items-center gap-1 [&_button]:border-0 [&_button]:bg-transparent [&_button]:text-current">
-          <ShareCardButton iconOnly title={tx(p.name)} label={lang === "ar" ? "مشاركة اللاعب" : "Share player"} render={() => drawPlayerCard({ name: tx(p.name), photo: callUp?.photo_url ?? p.photo_url, club: p.team ? tx(p.team.name) : tr("player.freeAgent"), rtl: lang === "ar", facts: [
+          <ShareCardButton iconOnly title={tx(p.name)} label={lang === "ar" ? "مشاركة اللاعب" : "Share player"} render={() => drawPlayerCard({ name: tx(p.name), photo: callUp?.photo_url ?? p.photo_url, club: p.team ? tx(p.team.name) : tr("player.freeAgent"), clubLogo: p.team?.logo_url, shirt: num(callUp?.shirt_number ?? p.shirt_number ?? "—"), position: tx(p.position) ?? "—", rtl: lang === "ar", facts: [
             { label: tx("Nationality"), value: tx(p.nationality) ?? "—" },
             { label: tx("Position"), value: tx(p.position) ?? "—" },
             { label: tx("Age"), value: p.dob ? num(age(p.dob) ?? "—") : "—" },
