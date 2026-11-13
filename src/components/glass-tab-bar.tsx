@@ -27,7 +27,10 @@ export function GlassTabBar({ items, activeIndex, label, onReselect }: {
   const count = items.length;
 
   const slot = () => (st.current.width - PAD * 2) / count;
-  const indexAt = (x: number) => Math.max(0, Math.min(count - 1, Math.floor((x - PAD) / (slot() || 1))));
+  const rtl = () => (barRef.current ? getComputedStyle(barRef.current).direction === "rtl" : false);
+  // Arabic lays tabs right-to-left, so the visual slot mirrors the logical index.
+  const mirror = (i: number) => (rtl() ? count - 1 - i : i);
+  const indexAt = (x: number) => mirror(Math.max(0, Math.min(count - 1, Math.floor((x - PAD) / (slot() || 1)))));
 
   const paint = (animate: boolean) => {
     const s = st.current;
@@ -36,7 +39,7 @@ export function GlassTabBar({ items, activeIndex, label, onReselect }: {
     const w = slot();
     const pressed = s.dragging;
     const gx = pressed ? GROW_X : 0, gy = pressed ? GROW_Y : 0;
-    const base = s.moved ? Math.max(PAD, Math.min(s.width - PAD - w, s.x - w / 2)) : PAD + activeIndex * w;
+    const base = s.moved ? Math.max(PAD, Math.min(s.width - PAD - w, s.x - w / 2)) : PAD + mirror(activeIndex) * w;
     const left = base - gx, width = w + gx * 2;
     const t = animate ? `420ms ${SPRING}` : "0ms";
     for (const el of [lens, clip, inner]) el.style.transitionDuration = animate ? "420ms" : "0ms";
