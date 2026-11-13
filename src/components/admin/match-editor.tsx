@@ -21,6 +21,7 @@ import { ConfirmDelete } from "@/components/confirm-delete";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
 import { MinuteWheel } from "./minute-wheel";
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel } from "@/components/ui/alert-dialog";
 
 type MatchStat = Database["public"]["Tables"]["match_stats"]["Row"];
 type Channel = Database["public"]["Tables"]["broadcast_channels"]["Row"];
@@ -909,9 +910,15 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
     onSaved();
   };
 
-  const start = () => patchMatch({ timer_running: true, timer_started_at: new Date().toISOString(), status: match.status === "scheduled" ? "live" : match.status });
+  const [clockMinute, setClockMinute] = useState("");
+  const [clockSecond, setClockSecond] = useState("0");
+  const start = () => patchMatch({ timer_running: true, period: match.period ?? "1h", timer_started_at: new Date().toISOString(), status: match.status === "scheduled" ? "live" : match.status });
   const pause = () => patchMatch({ timer_running: false, timer_elapsed_seconds: matchClockSeconds(match), timer_started_at: null });
-  const setMinute = (m: number) => patchMatch({ timer_elapsed_seconds: m * 60, timer_started_at: match.timer_running ? new Date().toISOString() : null, live_minute: m });
+  const setTime = () => {
+    const m = Number(clockMinute), s = Number(clockSecond);
+    if (!clockMinute || !Number.isInteger(m) || m < 0 || !Number.isInteger(s) || s < 0 || s > 59) return;
+    return patchMatch({ period: match.period ?? "1h", timer_elapsed_seconds: m * 60 + s, timer_started_at: match.timer_running ? new Date().toISOString() : null, live_minute: m });
+  };
 
   useEffect(() => {
     if (!match.timer_running || match.status !== "live" || match.live_minute === minute) return;
@@ -981,8 +988,9 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
               ? <button className={btnGhost} onClick={pause}><Pause className="h-3.5 w-3.5" /> Stop clock</button>
               : <button className={btnPrimary} onClick={start}><Play className="h-3.5 w-3.5" /> {seconds > 0 ? "Resume" : "Start match"}</button>}
             <button className={btnGhost} onClick={() => patchMatch({ timer_running: false, timer_elapsed_seconds: 0, timer_started_at: null })}><RotateCcw className="h-3.5 w-3.5" /> Reset</button>
-            <input type="number" placeholder="Set minute" className="h-9 w-28 rounded-full border border-border bg-background px-3 text-xs"
-              onKeyDown={(e) => { if (e.key === "Enter") setMinute(Number((e.target as HTMLInputElement).value || 0)); }} />
+            <input aria-label="Minutes" type="number" min="0" placeholder="Minutes" value={clockMinute} onChange={e => setClockMinute(e.target.value)} className="h-10 w-24 rounded-md border border-border bg-background px-3 text-base" />
+            <input aria-label="Seconds" type="number" min="0" max="59" value={clockSecond} onChange={e => setClockSecond(e.target.value)} className="h-10 w-20 rounded-md border border-border bg-background px-3 text-base" />
+            <Button variant="outline" onClick={() => void setTime()}>Set time</Button>
           </div>
           <PeriodBoxes match={match} seconds={seconds} patchMatch={patchMatch} />
         </div>
@@ -1384,16 +1392,12 @@ function PeriodBoxes({ match, seconds, patchMatch }: { match: Match; seconds: nu
           </button>
         ))}
       </div>
-      {pending && (
-        <div className="mt-3 flex items-center justify-between gap-2 rounded-lg border-2 border-foreground bg-background p-3">
-          <span className="text-sm">Change to <b>{pending.label}</b>?</span>
-          <div className="flex gap-2">
-            <button type="button" className="rounded-md bg-muted px-3 py-2 text-sm" onClick={() => setPending(null)}>Cancel</button>
-            <button type="button" disabled={busy} className="rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground"
-              onClick={async () => { setBusy(true); try { await pending.run(); } finally { setBusy(false); setPending(null); } }}>Confirm</button>
-          </div>
-        </div>
-      )}
+      <AlertDialog open={!!pending} onOpenChange={open => { if (!open && !busy) setPending(null); }}>
+        <AlertDialogContent className="z-[170] w-[calc(100%-2rem)] rounded-lg">
+          <AlertDialogHeader><AlertDialogTitle>Change to {pending?.label}?</AlertDialogTitle><AlertDialogDescription>The match clock and status will update after confirmation.</AlertDialogDescription></AlertDialogHeader>
+          <AlertDialogFooter><AlertDialogCancel disabled={busy}>Cancel</AlertDialogCancel><Button disabled={busy} onClick={async () => { if (!pending) return; setBusy(true); try { await pending.run(); setPending(null); } catch { toast.error("Could not change period"); } finally { setBusy(false); } }}>Confirm</Button></AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
