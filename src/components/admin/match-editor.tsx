@@ -1394,7 +1394,7 @@ function PeriodBoxes({ match, seconds, patchMatch }: { match: Match; seconds: nu
         ))}
       </div>
       <AlertDialog open={!!pending} onOpenChange={open => { if (!open && !busy) setPending(null); }}>
-        <AlertDialogContent className="z-[170] w-[calc(100%-2rem)] rounded-lg">
+        <AlertDialogContent overlayClassName="z-[169] bg-foreground/50 backdrop-blur-sm" className="z-[170] w-[calc(100%-2rem)] rounded-lg">
           <AlertDialogHeader><AlertDialogTitle>Change to {pending?.label}?</AlertDialogTitle><AlertDialogDescription>The match clock and status will update after confirmation.</AlertDialogDescription></AlertDialogHeader>
           <AlertDialogFooter><AlertDialogCancel disabled={busy}>Cancel</AlertDialogCancel><Button disabled={busy} onClick={async () => { if (!pending) return; setBusy(true); try { await pending.run(); setPending(null); } catch { toast.error("Could not change period"); } finally { setBusy(false); } }}>Confirm</Button></AlertDialogFooter>
         </AlertDialogContent>
