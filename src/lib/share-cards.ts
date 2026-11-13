@@ -580,13 +580,14 @@ type CardPlayer = { name: string; number: string; photo?: string | null; sub?: {
 export async function drawTeamLineupCard(input: {
   possibleLineup?: boolean;
   competition: string; kickoff: string; accent: string;
+  fixture?: { home: string; away: string };
   team: { teamName: string; logo?: string | null; formation: string; coach?: string | null; rows: CardPlayer[][]; bench?: CardPlayer[] };
 }): Promise<Blob | null> {
   const { team } = input;
   const bench = (team.bench ?? []).slice(0, 14);
   const benchLines = Math.ceil(bench.length / 2);
   const benchH = bench.length ? 120 + benchLines * (bench.some((p) => p.sub) ? 66 : 50) : 0;
-  const W = 1080, py = 300, ph = 1240, H = py + ph + 60 + benchH + 80;
+  const W = 1080, py = 380, ph = 1240, H = py + ph + 60 + benchH + 80;
   const made = surface(W, H, input.accent);
   if (!made) return null;
   const { canvas, ctx } = made;
@@ -606,6 +607,7 @@ export async function drawTeamLineupCard(input: {
   ctx.fillText(team.formation, 1020, 120);
   if (team.coach) { ctx.font = `600 24px ${FONT}`; ctx.fillStyle = "rgba(255,255,255,0.72)"; ctx.fillText(`Coach · ${team.coach}`, 1020, 165, 360); }
 
+  if (input.fixture) { ctx.textAlign = "center"; ctx.fillStyle = "#ffffff"; ctx.font = `700 30px ${FONT}`; ctx.fillText(`${input.fixture.home}  vs  ${input.fixture.away}`, W / 2, 320, 950); }
   const px = 60, pw = 960;
   ctx.save(); roundRect(ctx, px, py, pw, ph, 32); ctx.clip();
   for (let i = 0; i < 14; i++) { ctx.fillStyle = i % 2 ? "#14532d" : "#166534"; ctx.fillRect(px, py + i * ph / 14, pw, ph / 14); }
@@ -714,5 +716,24 @@ export async function drawResultCard(input: {
     ctx.fillStyle = "rgba(255,255,255,0.15)"; ctx.fillRect(W / 2 - 1, 845, 2, 460);
     list(input.homeScorers, W / 2 - 40, "right"); list(input.awayScorers, W / 2 + 40, "left");
   }
+  return toBlob(canvas);
+}
+
+/** Portrait and verified profile facts, through the shared branded export footer. */
+export async function drawPlayerCard(input: { name: string; photo?: string | null; club?: string | null; facts: { label: string; value: string }[]; rtl?: boolean }): Promise<Blob | null> {
+  const canvas = document.createElement("canvas"); canvas.width = 1080; canvas.height = 1120;
+  const ctx = canvas.getContext("2d"); if (!ctx) return null;
+  const css = getComputedStyle(document.documentElement);
+  const bg = css.getPropertyValue("--card").trim(), ink = css.getPropertyValue("--foreground").trim(), muted = css.getPropertyValue("--muted-foreground").trim();
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, 1080, 1120);
+  const source = portraitSource(input.photo);
+  const photo = await loadImage(source) ?? await loadImage(input.photo);
+  ctx.save(); ctx.beginPath(); ctx.arc(540, 230, 145, 0, Math.PI * 2); ctx.clip();
+  ctx.fillStyle = css.getPropertyValue("--muted").trim(); ctx.fillRect(395, 85, 290, 290);
+  if (photo) { const ratio = Math.max(290 / photo.width, 290 / photo.height); ctx.drawImage(photo, 540 - photo.width * ratio / 2, 230 - photo.height * ratio / 2, photo.width * ratio, photo.height * ratio); }
+  ctx.restore(); ctx.direction = input.rtl ? "rtl" : "ltr"; ctx.textAlign = "center";
+  ctx.fillStyle = ink; ctx.font = `800 52px ${FONT}`; ctx.fillText(input.name, 540, 460, 960);
+  if (input.club) { ctx.fillStyle = muted; ctx.font = `500 32px ${FONT}`; ctx.fillText(input.club, 540, 515, 960); }
+  input.facts.slice(0, 6).forEach((fact, i) => { const x = i % 2 ? 785 : 295, y = 635 + Math.floor(i / 2) * 155; ctx.fillStyle = muted; ctx.font = `500 26px ${FONT}`; ctx.fillText(fact.label, x, y, 450); ctx.fillStyle = ink; ctx.font = `700 34px ${FONT}`; ctx.fillText(fact.value, x, y + 48, 450); });
   return toBlob(canvas);
 }
