@@ -18,7 +18,7 @@ export function resultScorers<T extends { name: string; minute: string; type: st
     const suffix = n % 100 >= 11 && n % 100 <= 13 ? "th" : (["th", "st", "nd", "rd"][n % 10] ?? "th");
     const goal = ["goal", "penalty_goal", "penalty", "own_goal"].includes(item.type);
     const label = arabic
-      ? `${goal ? "الهدف" : "البطاقة الحمراء"} ${n.toLocaleString("ar")}`
+      ? `${goal ? "الهدف" : "البطاقة الحمراء"} ${n.toLocaleString("ar", { numberingSystem: "arab" })}`
       : `${n}${suffix} ${goal ? "goal" : "red card"}`;
     const marker = item.type === "own_goal" ? (arabic ? " (عكسي)" : " (OG)") : ["penalty", "penalty_goal"].includes(item.type) ? (arabic ? " (جزاء)" : " (P)") : "";
     return { name: item.name, minute: `${label}${marker}` };
