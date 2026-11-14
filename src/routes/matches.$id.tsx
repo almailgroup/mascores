@@ -2,7 +2,7 @@ import { getSeoInfo, seoHead } from "@/lib/seo-head";
 import { possibleLineupWindow } from "@/lib/possible-lineup";
 import { hasStandings, headToHeadSummary, matchWinner } from "@/lib/match-result";
 import { eventPlayers } from "@/lib/event-players";
-import { matchEventOrder, resultScorers } from "@/lib/match-event-order";
+import { eventOrdinal, eventPosition, matchEventOrder, resultScorers } from "@/lib/match-event-order";
 import { MatchMissingPlayers } from "@/components/match-missing-players";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -140,7 +140,7 @@ function MatchPage() {
     queryFn: async () => {
       const { data } = await supabase.from("match_events")
         .select("*, player:player_id(id,name,name_ar,shirt_number,photo_url), team:team_id(id,name), sub_out:sub_out_player_id(id,name,photo_url), assister:assist_player_id(id,name,photo_url)")
-        .eq("match_id", id).order("minute").order("extra");
+        .eq("match_id", id).order("minute").order("extra").order("id");
       return (data ?? []) as unknown as (MatchEvent & { player: Player | null; team: Team | null; sub_out: { id: string; name: string } | null; assister?: { id: string; name: string; photo_url: string | null } | null })[];
     },
   });
@@ -227,7 +227,8 @@ function MatchPage() {
   const lineupsVisible = !match.hide_lineups && (match.lineups_published && (lineups.data?.length ?? 0) > 0) || isPossible;
   const tabs: ("details" | "lineups" | "stats" | "standings" | "previous" | "media")[] = ["details", ...(lineupsVisible ? ["lineups" as const] : []), ...(match.hide_stats ? [] : ["stats" as const]), ...(hasStandings(match.competition) ? ["standings" as const] : []), "previous", ...(match.hide_media ? [] : ["media" as const])];
   const eventOrder = matchEventOrder(events.data ?? []);
-  const ordinal = (n: number) => lang === "ar" ? num(n) : `${n}${n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th","st","nd","rd"][n % 10] ?? "th"}`;
+  const ordinal = (n: number) => eventOrdinal(n, lang === "ar");
+  const positionOf = (event: { id: string; minute: number | null; extra?: number | null }) => eventPosition(event, eventOrder, !!match.events_ordered, lang === "ar");
   const winner = match.status === "pen" ? matchWinner(match) : null;
   const penaltyWinner = winner === "home" ? match.home : winner === "away" ? match.away : null;
   const clock = matchClockSeconds(match);
@@ -505,7 +506,7 @@ function MatchPage() {
           photo: lu.player?.photo_url,
           sub: (() => {
             const e = subByPlayer.get(lu.player_id);
-            return e ? { minute: e.minute != null ? `${num(e.minute)}${e.extra ? `+${num(e.extra)}` : ""}'` : "", out: e.sub_out?.name ? tx(e.sub_out.name) : "" } : null;
+            return e ? { minute: positionOf(e), out: e.sub_out?.name ? tx(e.sub_out.name) : "" } : null;
           })(),
         });
         // Came-on substitutes for a club, for the bench sections and the
@@ -516,7 +517,7 @@ function MatchPage() {
             number: String(e.player?.shirt_number ?? ""),
             name: tx(e.player?.name) ?? "",
             photo: e.player?.photo_url,
-            sub: { minute: e.minute != null ? `${num(e.minute)}${e.extra ? `+${num(e.extra)}` : ""}'` : "", out: e.sub_out?.name ? tx(e.sub_out.name) : "" },
+            sub: { minute: positionOf(e), out: e.sub_out?.name ? tx(e.sub_out.name) : "" },
           }));
         // The shareable card mirrors what is on screen: formation, pitch, coach and bench.
         const lineupShare = {
@@ -634,7 +635,7 @@ function MatchPage() {
               const restBench = benchList.filter((r) => !subIds.has(r.player_id));
               const subCard = (e: MatchEvent & { player: Player | null; team: Team | null; sub_out: { id: string; name: string } | null }) => {
                 const rating = ratings.data?.find((item) => item.player_id === e.player_id)?.rating;
-                const minute = e.minute != null ? `${num(e.minute)}${e.extra ? `+${num(e.extra)}` : ""}'` : "";
+                const minute = positionOf(e);
                 return (
                   <Link key={e.id} to="/players/$id" params={{ id: e.player_id as string }} className="flex min-w-0 flex-col items-center gap-0.5 px-2 py-2 text-center">
                     <span className="flex h-11 w-full items-start justify-center gap-2">

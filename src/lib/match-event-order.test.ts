@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { matchEventOrder, resultScorers } from "./match-event-order";
+import { eventPosition, matchEventOrder, resultScorers } from "./match-event-order";
 
 describe("ordered result sharing", () => {
+  it("uses ordered labels for event dialogs, substitute rows and lineup exports", () => {
+    const event = { id: "sub", minute: 67, extra: 2 };
+    const order = new Map([["sub", 3]]);
+    expect(eventPosition(event, order, true)).toBe("3rd");
+    expect(eventPosition(event, order, true, true)).toBe("٣");
+    expect(eventPosition(event, order, false)).toBe("67+2′");
+  });
   const events = [
     { id: "home-first", type: "goal" },
     { id: "red", type: "red" },
