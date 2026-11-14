@@ -225,7 +225,7 @@ function MatchPage() {
   const displayLineups = isPossible ? possible.data?.rows ?? [] : lineups.data ?? [];
   const lineupsVisible = !match.hide_lineups && (match.lineups_published && (lineups.data?.length ?? 0) > 0) || isPossible;
   const tabs: ("details" | "lineups" | "stats" | "standings" | "previous" | "media")[] = ["details", ...(lineupsVisible ? ["lineups" as const] : []), ...(match.hide_stats ? [] : ["stats" as const]), ...(hasStandings(match.competition) ? ["standings" as const] : []), "previous", ...(match.hide_media ? [] : ["media" as const])];
-  const eventOrder = (() => { const map = new Map<string, number>(); const counts: Record<string, number> = {}; for (const e of (events.data ?? [])) { const k = ["goal","penalty_goal","own_goal"].includes(e.type) ? "goal" : e.type; counts[k] = (counts[k] ?? 0) + 1; map.set(e.id, counts[k]); } return map; })();
+  const eventOrder = (() => { const map = new Map<string, number>(); const counts: Record<string, number> = {}; for (const e of (events.data ?? [])) { const k = ["goal","penalty_goal","penalty","own_goal"].includes(e.type) ? "goal" : e.type; counts[k] = (counts[k] ?? 0) + 1; map.set(e.id, counts[k]); } return map; })();
   const ordinal = (n: number) => lang === "ar" ? num(n) : `${n}${n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th","st","nd","rd"][n % 10] ?? "th"}`;
   const winner = match.status === "pen" ? matchWinner(match) : null;
   const penaltyWinner = winner === "home" ? match.home : winner === "away" ? match.away : null;
