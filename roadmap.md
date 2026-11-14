@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Check event-order mode across result shares, event dialogs, lineup/substitute displays and new notifications; preserve stored events and existing deliveries.
 - [x] Season-scoped club totals/statistics and fixture filters; verified two seasons. Existing historical archive gaps are real, not invented dates.
 - [x] Android website-style navigation, Arabic web labels, native image saver and audio permission fixes implemented.
 - [ ] Android saving/audio and iOS native RTL verification: requires new native releases and physical devices; Android saver supports Android 10+.
