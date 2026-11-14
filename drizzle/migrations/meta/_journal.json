@@ -505,6 +505,13 @@
       "when": 1794567415061,
       "tag": "0071_unique_admin_grants_including_global_scopes",
       "breakpoints": true
+    },
+    {
+      "idx": 72,
+      "version": "7",
+      "when": 1794684689199,
+      "tag": "0072_match_advanced_settings",
+      "breakpoints": true
     }
   ]
 }

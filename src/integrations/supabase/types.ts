@@ -1273,6 +1273,11 @@ export type Database = {
           competition_id: string
           completed_at: string | null
           created_at: string
+          events_ordered: boolean
+          hide_lineups: boolean
+          hide_media: boolean
+          hide_momentum: boolean
+          hide_stats: boolean
           highlight_url: string | null
           home_coach_id: string | null
           home_formation: string | null
@@ -1312,6 +1317,11 @@ export type Database = {
           competition_id: string
           completed_at?: string | null
           created_at?: string
+          events_ordered?: boolean
+          hide_lineups?: boolean
+          hide_media?: boolean
+          hide_momentum?: boolean
+          hide_stats?: boolean
           highlight_url?: string | null
           home_coach_id?: string | null
           home_formation?: string | null
@@ -1351,6 +1361,11 @@ export type Database = {
           competition_id?: string
           completed_at?: string | null
           created_at?: string
+          events_ordered?: boolean
+          hide_lineups?: boolean
+          hide_media?: boolean
+          hide_momentum?: boolean
+          hide_stats?: boolean
           highlight_url?: string | null
           home_coach_id?: string | null
           home_formation?: string | null
