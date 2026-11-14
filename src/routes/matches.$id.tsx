@@ -2,6 +2,7 @@ import { getSeoInfo, seoHead } from "@/lib/seo-head";
 import { possibleLineupWindow } from "@/lib/possible-lineup";
 import { hasStandings, headToHeadSummary, matchWinner } from "@/lib/match-result";
 import { eventPlayers } from "@/lib/event-players";
+import { eventOrdinal, eventPosition, matchEventOrder, resultScorers } from "@/lib/match-event-order";
 import { MatchMissingPlayers } from "@/components/match-missing-players";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -139,7 +140,7 @@ function MatchPage() {
     queryFn: async () => {
       const { data } = await supabase.from("match_events")
         .select("*, player:player_id(id,name,name_ar,shirt_number,photo_url), team:team_id(id,name), sub_out:sub_out_player_id(id,name,photo_url), assister:assist_player_id(id,name,photo_url)")
-        .eq("match_id", id).order("minute").order("extra");
+        .eq("match_id", id).order("minute").order("extra").order("id");
       return (data ?? []) as unknown as (MatchEvent & { player: Player | null; team: Team | null; sub_out: { id: string; name: string } | null; assister?: { id: string; name: string; photo_url: string | null } | null })[];
     },
   });
@@ -225,8 +226,9 @@ function MatchPage() {
   const displayLineups = isPossible ? possible.data?.rows ?? [] : lineups.data ?? [];
   const lineupsVisible = !match.hide_lineups && (match.lineups_published && (lineups.data?.length ?? 0) > 0) || isPossible;
   const tabs: ("details" | "lineups" | "stats" | "standings" | "previous" | "media")[] = ["details", ...(lineupsVisible ? ["lineups" as const] : []), ...(match.hide_stats ? [] : ["stats" as const]), ...(hasStandings(match.competition) ? ["standings" as const] : []), "previous", ...(match.hide_media ? [] : ["media" as const])];
-  const eventOrder = (() => { const map = new Map<string, number>(); const counts: Record<string, number> = {}; for (const e of (events.data ?? [])) { const k = ["goal","penalty_goal","penalty","own_goal"].includes(e.type) ? "goal" : e.type; counts[k] = (counts[k] ?? 0) + 1; map.set(e.id, counts[k]); } return map; })();
-  const ordinal = (n: number) => lang === "ar" ? num(n) : `${n}${n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th","st","nd","rd"][n % 10] ?? "th"}`;
+  const eventOrder = matchEventOrder(events.data ?? []);
+  const ordinal = (n: number) => eventOrdinal(n, lang === "ar");
+  const positionOf = (event: { id: string; minute: number | null; extra?: number | null }) => eventPosition(event, eventOrder, !!match.events_ordered, lang === "ar");
   const winner = match.status === "pen" ? matchWinner(match) : null;
   const penaltyWinner = winner === "home" ? match.home : winner === "away" ? match.away : null;
   const clock = matchClockSeconds(match);
@@ -237,6 +239,7 @@ function MatchPage() {
       name: lang === "ar" && (event.player?.short_name_ar || event.player?.name_ar) ? ((event.player.short_name_ar ?? event.player.name_ar) ?? "") : tx(displayShortName(event.player?.short_name, event.player?.name)) ?? tx(event.player?.name) ?? tx(event.description ?? eventLabel(event.type)) ?? tx("Goal"),
       minute: `${event.minute ?? ""}${event.extra ? `+${event.extra}` : ""}'${event.type === "own_goal" ? " (OG)" : event.type === "penalty" ? " (P)" : ""}`,
       type: event.type,
+      order: eventOrder.get(event.id) ?? 1,
     }));
   // Header shows one row per player (minutes joined), at most three rows, then "+N goals".
   const groupScorers = (list: ReturnType<typeof scorerList>) => {
@@ -263,7 +266,8 @@ function MatchPage() {
     away: { name: tx(match.away?.name) ?? "TBD", logo_url: match.away?.logo_url ?? null },
     homeScore: ["scheduled", "postponed", "cancelled"].includes(match.status) ? "" : String(match.home_score ?? 0),
     awayScore: ["scheduled", "postponed", "cancelled"].includes(match.status) ? "" : String(match.away_score ?? 0),
-    homeScorers, awayScorers,
+    homeScorers: resultScorers(homeScorers, !!match.events_ordered, lang === "ar"),
+    awayScorers: resultScorers(awayScorers, !!match.events_ordered, lang === "ar"),
     homeLineup: starters(match.home_team_id),
     awayLineup: starters(match.away_team_id),
     // Canvas needs plain colours; the CSS colour-mix hero values cannot be parsed there.
@@ -285,7 +289,7 @@ function MatchPage() {
 
   return (
     <AppShell>
-      <Dialog open={!!selectedEvent} onOpenChange={open=>{if(!open)setSelectedEvent(null);}}><DialogContent className="max-w-sm overflow-hidden rounded-lg p-0"><DialogHeader className="border-b border-border px-5 pb-4 pt-5"><DialogTitle className="flex items-center gap-3 text-base"><EventArt type={selectedEvent?.type ?? "goal"} className="h-6 w-6" />{tx(selectedEvent ? eventLabel(selectedEvent.type) : "Player")}<span className="ms-auto pe-6 text-xs font-medium tabular-nums text-muted-foreground">{selectedEvent?.minute != null ? `${num(selectedEvent.minute)}′` : ""}</span></DialogTitle></DialogHeader><div className="divide-y divide-border px-2 pb-2">{selectedEvent && eventPlayers(selectedEvent).map(({player,role})=><Link key={player.id} to="/players/$id" params={{id:player.id}} onClick={()=>setSelectedEvent(null)} className="flex min-h-24 items-center gap-4 rounded-md px-3 py-4 transition-colors hover:bg-muted active:bg-muted"><PlayerAvatar src={player.photo_url} name={player.name} className="h-14 w-14 shrink-0" /><span className="min-w-0 flex-1"><span className={`mb-1 block text-[0.7rem] font-semibold ${role === "Out" ? "text-destructive" : role === "In" ? "text-success" : "text-muted-foreground"}`}>{tx(role === "Scorer" ? "Goal" : role)}</span><span className="block text-base font-bold leading-snug">{tx(player.name)}</span></span><ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" /></Link>)}</div></DialogContent></Dialog>
+      <Dialog open={!!selectedEvent} onOpenChange={open=>{if(!open)setSelectedEvent(null);}}><DialogContent className="max-w-sm overflow-hidden rounded-lg p-0"><DialogHeader className="border-b border-border px-5 pb-4 pt-5"><DialogTitle className="flex items-center gap-3 text-base"><EventArt type={selectedEvent?.type ?? "goal"} className="h-6 w-6" />{tx(selectedEvent ? eventLabel(selectedEvent.type) : "Player")}<span className="ms-auto pe-6 text-xs font-medium tabular-nums text-muted-foreground">{selectedEvent ? positionOf(selectedEvent) : ""}</span></DialogTitle></DialogHeader><div className="divide-y divide-border px-2 pb-2">{selectedEvent && eventPlayers(selectedEvent).map(({player,role})=><Link key={player.id} to="/players/$id" params={{id:player.id}} onClick={()=>setSelectedEvent(null)} className="flex min-h-24 items-center gap-4 rounded-md px-3 py-4 transition-colors hover:bg-muted active:bg-muted"><PlayerAvatar src={player.photo_url} name={player.name} className="h-14 w-14 shrink-0" /><span className="min-w-0 flex-1"><span className={`mb-1 block text-[0.7rem] font-semibold ${role === "Out" ? "text-destructive" : role === "In" ? "text-success" : "text-muted-foreground"}`}>{tx(role === "Scorer" ? "Goal" : role)}</span><span className="block text-base font-bold leading-snug">{tx(player.name)}</span></span><ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" /></Link>)}</div></DialogContent></Dialog>
       <div ref={heroRef} dir="ltr" className="match-hero sports-header -mx-4 mb-4 overflow-hidden px-4 pb-0 text-match-foreground sm:-mx-6 sm:px-6">
         <SportsHeaderBackground start={homeAccent?.color} end={awayAccent?.color} />
         <div className="relative flex items-center justify-between px-1 pb-1">
@@ -502,7 +506,7 @@ function MatchPage() {
           photo: lu.player?.photo_url,
           sub: (() => {
             const e = subByPlayer.get(lu.player_id);
-            return e ? { minute: e.minute != null ? `${num(e.minute)}${e.extra ? `+${num(e.extra)}` : ""}'` : "", out: e.sub_out?.name ? tx(e.sub_out.name) : "" } : null;
+            return e ? { minute: positionOf(e), out: e.sub_out?.name ? tx(e.sub_out.name) : "" } : null;
           })(),
         });
         // Came-on substitutes for a club, for the bench sections and the
@@ -513,7 +517,7 @@ function MatchPage() {
             number: String(e.player?.shirt_number ?? ""),
             name: tx(e.player?.name) ?? "",
             photo: e.player?.photo_url,
-            sub: { minute: e.minute != null ? `${num(e.minute)}${e.extra ? `+${num(e.extra)}` : ""}'` : "", out: e.sub_out?.name ? tx(e.sub_out.name) : "" },
+            sub: { minute: positionOf(e), out: e.sub_out?.name ? tx(e.sub_out.name) : "" },
           }));
         // The shareable card mirrors what is on screen: formation, pitch, coach and bench.
         const lineupShare = {
@@ -631,7 +635,7 @@ function MatchPage() {
               const restBench = benchList.filter((r) => !subIds.has(r.player_id));
               const subCard = (e: MatchEvent & { player: Player | null; team: Team | null; sub_out: { id: string; name: string } | null }) => {
                 const rating = ratings.data?.find((item) => item.player_id === e.player_id)?.rating;
-                const minute = e.minute != null ? `${num(e.minute)}${e.extra ? `+${num(e.extra)}` : ""}'` : "";
+                const minute = positionOf(e);
                 return (
                   <Link key={e.id} to="/players/$id" params={{ id: e.player_id as string }} className="flex min-w-0 flex-col items-center gap-0.5 px-2 py-2 text-center">
                     <span className="flex h-11 w-full items-start justify-center gap-2">
