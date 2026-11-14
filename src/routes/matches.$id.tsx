@@ -2,6 +2,7 @@ import { getSeoInfo, seoHead } from "@/lib/seo-head";
 import { possibleLineupWindow } from "@/lib/possible-lineup";
 import { hasStandings, headToHeadSummary, matchWinner } from "@/lib/match-result";
 import { eventPlayers } from "@/lib/event-players";
+import { matchEventOrder, resultScorers } from "@/lib/match-event-order";
 import { MatchMissingPlayers } from "@/components/match-missing-players";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -225,7 +226,7 @@ function MatchPage() {
   const displayLineups = isPossible ? possible.data?.rows ?? [] : lineups.data ?? [];
   const lineupsVisible = !match.hide_lineups && (match.lineups_published && (lineups.data?.length ?? 0) > 0) || isPossible;
   const tabs: ("details" | "lineups" | "stats" | "standings" | "previous" | "media")[] = ["details", ...(lineupsVisible ? ["lineups" as const] : []), ...(match.hide_stats ? [] : ["stats" as const]), ...(hasStandings(match.competition) ? ["standings" as const] : []), "previous", ...(match.hide_media ? [] : ["media" as const])];
-  const eventOrder = (() => { const map = new Map<string, number>(); const counts: Record<string, number> = {}; for (const e of (events.data ?? [])) { const k = ["goal","penalty_goal","penalty","own_goal"].includes(e.type) ? "goal" : e.type; counts[k] = (counts[k] ?? 0) + 1; map.set(e.id, counts[k]); } return map; })();
+  const eventOrder = matchEventOrder(events.data ?? []);
   const ordinal = (n: number) => lang === "ar" ? num(n) : `${n}${n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th","st","nd","rd"][n % 10] ?? "th"}`;
   const winner = match.status === "pen" ? matchWinner(match) : null;
   const penaltyWinner = winner === "home" ? match.home : winner === "away" ? match.away : null;
@@ -237,6 +238,7 @@ function MatchPage() {
       name: lang === "ar" && (event.player?.short_name_ar || event.player?.name_ar) ? ((event.player.short_name_ar ?? event.player.name_ar) ?? "") : tx(displayShortName(event.player?.short_name, event.player?.name)) ?? tx(event.player?.name) ?? tx(event.description ?? eventLabel(event.type)) ?? tx("Goal"),
       minute: `${event.minute ?? ""}${event.extra ? `+${event.extra}` : ""}'${event.type === "own_goal" ? " (OG)" : event.type === "penalty" ? " (P)" : ""}`,
       type: event.type,
+      order: eventOrder.get(event.id) ?? 1,
     }));
   // Header shows one row per player (minutes joined), at most three rows, then "+N goals".
   const groupScorers = (list: ReturnType<typeof scorerList>) => {
@@ -263,7 +265,8 @@ function MatchPage() {
     away: { name: tx(match.away?.name) ?? "TBD", logo_url: match.away?.logo_url ?? null },
     homeScore: ["scheduled", "postponed", "cancelled"].includes(match.status) ? "" : String(match.home_score ?? 0),
     awayScore: ["scheduled", "postponed", "cancelled"].includes(match.status) ? "" : String(match.away_score ?? 0),
-    homeScorers, awayScorers,
+    homeScorers: resultScorers(homeScorers, !!match.events_ordered, lang === "ar"),
+    awayScorers: resultScorers(awayScorers, !!match.events_ordered, lang === "ar"),
     homeLineup: starters(match.home_team_id),
     awayLineup: starters(match.away_team_id),
     // Canvas needs plain colours; the CSS colour-mix hero values cannot be parsed there.
