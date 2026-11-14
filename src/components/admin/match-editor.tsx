@@ -64,6 +64,7 @@ function useLiveClock(match: Match) {
 export function MatchEditor({ match: initial, teams, onClose }: { match: Match; teams: Team[]; onClose: () => void }) {
   const qc = useQueryClient();
   const [tab, setTab] = useState<"main" | "lineups" | "live" | "extras">("main");
+  const [advanced, setAdvanced] = useState(false);
 
   const matchQ = useQuery({
     queryKey: ["admin", "match", initial.id],
@@ -95,10 +96,43 @@ export function MatchEditor({ match: initial, teams, onClose }: { match: Match; 
             className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-md px-2 font-semibold ${tab === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}><Icon className="h-4 w-4" />{l}</button>
         ))}
       </div>
+      <button type="button" onClick={() => setAdvanced(true)} className="mb-5 flex min-h-11 w-full items-center justify-center rounded-lg border border-border bg-background text-sm font-semibold hover:bg-accent">Advanced</button>
+      {advanced && <AdvancedSettings match={match} onClose={() => setAdvanced(false)} onSaved={refresh} />}
       {tab === "main" && <MainTab match={match} teams={teams} onSaved={refresh} />}
       {tab === "lineups" && <LineupsTab match={match} teams={teams} onSaved={refresh} />}
       {tab === "live" && <LiveTab match={match} teams={teams} onSaved={refresh} />}
       {tab === "extras" && <ExtrasTab match={match} teams={teams} />}
+    </Modal>
+  );
+}
+
+const ADVANCED_OPTIONS = [
+  ["hide_stats", "Hide match statistics"],
+  ["hide_lineups", "Hide lineups"],
+  ["hide_media", "Hide media"],
+  ["hide_momentum", "Hide match momentum"],
+  ["events_ordered", "Show events in order (1st goal, 2nd goal) instead of time"],
+] as const;
+
+function AdvancedSettings({ match, onClose, onSaved }: { match: Match; onClose: () => void; onSaved: () => void }) {
+  const [values, setValues] = useState(() => Object.fromEntries(ADVANCED_OPTIONS.map(([k]) => [k, !!match[k]])) as Record<(typeof ADVANCED_OPTIONS)[number][0], boolean>);
+  const toggle = async (key: (typeof ADVANCED_OPTIONS)[number][0]) => {
+    const next = !values[key];
+    setValues((v) => ({ ...v, [key]: next }));
+    const { error } = await supabase.from("matches").update({ [key]: next } as never).eq("id", match.id);
+    if (error) { setValues((v) => ({ ...v, [key]: !next })); return; }
+    onSaved();
+  };
+  return (
+    <Modal open onClose={onClose} title="Advanced settings">
+      <div className="divide-y divide-border rounded-lg border border-border bg-background">
+        {ADVANCED_OPTIONS.map(([key, label]) => (
+          <button key={key} type="button" onClick={() => void toggle(key)} className="flex min-h-14 w-full items-center justify-between gap-3 px-4 text-start text-sm font-semibold">
+            <span>{label}</span>
+            <span className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${values[key] ? "bg-primary" : "bg-muted"}`}><span className={`absolute top-0.5 h-5 w-5 rounded-full bg-background shadow transition-all ${values[key] ? "start-[1.375rem]" : "start-0.5"}`} /></span>
+          </button>
+        ))}
+      </div>
     </Modal>
   );
 }
