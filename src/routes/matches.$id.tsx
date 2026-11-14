@@ -223,8 +223,10 @@ function MatchPage() {
   const hasStarted = !["scheduled", "postponed", "cancelled"].includes(match.status);
   const isPossible = mainAdmin.data === true && !match.lineups_published && possibleLineupWindow(match.status,match.kickoff_at,match.kickoff_date) && (possible.data?.rows.length ?? 0) > 0;
   const displayLineups = isPossible ? possible.data?.rows ?? [] : lineups.data ?? [];
-  const lineupsVisible = (match.lineups_published && (lineups.data?.length ?? 0) > 0) || isPossible;
-  const tabs: ("details" | "lineups" | "stats" | "standings" | "previous" | "media")[] = ["details", ...(lineupsVisible ? ["lineups" as const] : []), "stats", ...(hasStandings(match.competition) ? ["standings" as const] : []), "previous", "media"];
+  const lineupsVisible = !match.hide_lineups && (match.lineups_published && (lineups.data?.length ?? 0) > 0) || isPossible;
+  const tabs: ("details" | "lineups" | "stats" | "standings" | "previous" | "media")[] = ["details", ...(lineupsVisible ? ["lineups" as const] : []), ...(match.hide_stats ? [] : ["stats" as const]), ...(hasStandings(match.competition) ? ["standings" as const] : []), "previous", ...(match.hide_media ? [] : ["media" as const])];
+  const eventOrder = (() => { const map = new Map<string, number>(); const counts: Record<string, number> = {}; for (const e of (events.data ?? [])) { const k = ["goal","penalty_goal","penalty","own_goal"].includes(e.type) ? "goal" : e.type; counts[k] = (counts[k] ?? 0) + 1; map.set(e.id, counts[k]); } return map; })();
+  const ordinal = (n: number) => lang === "ar" ? num(n) : `${n}${n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th","st","nd","rd"][n % 10] ?? "th"}`;
   const winner = match.status === "pen" ? matchWinner(match) : null;
   const penaltyWinner = winner === "home" ? match.home : winner === "away" ? match.away : null;
   const clock = matchClockSeconds(match);
@@ -333,8 +335,8 @@ function MatchPage() {
 
         {(homeScorers.length > 0 || awayScorers.length > 0) && (
           <div className="match-fading-detail mt-3 grid grid-cols-2 items-start gap-8 px-4 text-[0.72rem] text-match-foreground/85">
-            <div className="space-y-1.5 text-end">{groupScorers(homeScorers).shown.map((scorer, index) => <div key={index} className="flex min-w-0 items-center justify-end gap-1.5"><span className="truncate" dir={lang === "ar" ? "rtl" : "ltr"}>{scorer.name} {num(scorer.minute)}</span><EventIcon type={scorer.type} /></div>)}{groupScorers(homeScorers).more > 0 && <div className="pe-5">+{num(groupScorers(homeScorers).more)} {lang === "ar" ? "أهداف" : "goals"}</div>}</div>
-            <div className="space-y-1.5 text-start">{groupScorers(awayScorers).shown.map((scorer, index) => <div key={index} className="flex min-w-0 items-center gap-1.5"><EventIcon type={scorer.type} /><span className="truncate" dir={lang === "ar" ? "rtl" : "ltr"}>{scorer.name} {num(scorer.minute)}</span></div>)}{groupScorers(awayScorers).more > 0 && <div className="ps-5">+{num(groupScorers(awayScorers).more)} {lang === "ar" ? "أهداف" : "goals"}</div>}</div>
+            <div className="space-y-1.5 text-end">{groupScorers(homeScorers).shown.map((scorer, index) => <div key={index} className="flex min-w-0 items-center justify-end gap-1.5"><span className="truncate" dir={lang === "ar" ? "rtl" : "ltr"}>{scorer.name}{match.events_ordered ? "" : ` ${num(scorer.minute)}`}</span><EventIcon type={scorer.type} /></div>)}{groupScorers(homeScorers).more > 0 && <div className="pe-5">+{num(groupScorers(homeScorers).more)} {lang === "ar" ? "أهداف" : "goals"}</div>}</div>
+            <div className="space-y-1.5 text-start">{groupScorers(awayScorers).shown.map((scorer, index) => <div key={index} className="flex min-w-0 items-center gap-1.5"><EventIcon type={scorer.type} /><span className="truncate" dir={lang === "ar" ? "rtl" : "ltr"}>{scorer.name}{match.events_ordered ? "" : ` ${num(scorer.minute)}`}</span></div>)}{groupScorers(awayScorers).more > 0 && <div className="ps-5">+{num(groupScorers(awayScorers).more)} {lang === "ar" ? "أهداف" : "goals"}</div>}</div>
           </div>
         )}
 
@@ -389,7 +391,7 @@ function MatchPage() {
                 </li>
               ) : (
                 <li key={entry.event.id} className="min-w-0"><Button variant="ghost" onClick={() => { const choices=eventPlayers(entry.event); if(choices.length===1)void navigate({to:"/players/$id",params:{id:choices[0].player.id}}); else if(choices.length>1)setSelectedEvent(entry.event); }} className={`relative flex h-auto w-full min-w-0 items-center justify-start gap-2.5 whitespace-normal rounded-none px-3 py-2 ${entry.event.player ? "active:bg-muted/60 hover:bg-muted/40" : ""} ${entry.side === "away" ? "flex-row-reverse text-end" : "text-start"}`}>
-                  <span className="w-11 shrink-0 whitespace-nowrap font-mono text-[0.7rem] text-muted-foreground">{entry.event.minute != null ? num(entry.event.minute) : "-"}{entry.event.extra ? `+${num(entry.event.extra)}` : ""}'</span>
+                  <span className="w-11 shrink-0 whitespace-nowrap font-mono text-[0.7rem] text-muted-foreground">{match.events_ordered ? ordinal(eventOrder.get(entry.event.id) ?? 1) : <>{entry.event.minute != null ? num(entry.event.minute) : "-"}{entry.event.extra ? `+${num(entry.event.extra)}` : ""}'</>}</span>
                   <EventIcon type={entry.event.type} />
                   <span className="min-w-0 flex-1">
                     {entry.event.player ? (
@@ -671,12 +673,12 @@ function MatchPage() {
         );
       })}
       </div>
-      <MatchMomentum matchId={id} home={match.home} away={match.away} minutes={match.momentum_minutes ?? 90} events={(events.data ?? []).map((e) => ({ minute: e.minute, type: e.type, team_id: e.team_id }))} />
+      {!match.hide_momentum && <MatchMomentum matchId={id} home={match.home} away={match.away} minutes={match.momentum_minutes ?? 90} events={(events.data ?? []).map((e) => ({ minute: e.minute, type: e.type, team_id: e.team_id }))} />}
       </div></LineupPortraits>}
-      {tab === "stats" && <MatchStatsPanel rows={stats.data ?? []} status={match.status} home={match.home} away={match.away} />}
+      {tab === "stats" && !match.hide_stats && <MatchStatsPanel rows={stats.data ?? []} status={match.status} home={match.home} away={match.away} />}
       {tab === "previous" && <PreviousMatches home={match.home} away={match.away} currentId={match.id} />}
       {tab === "standings" && hasStandings(match.competition) && <MatchStandings competitionId={match.competition_id} season={match.season} liveTeamIds={isLive ? [match.home_team_id, match.away_team_id].filter(Boolean) as string[] : []} highlightIds={[match.home_team_id, match.away_team_id].filter(Boolean) as string[]} />}
-      {tab === "media" && <div><h3 className="mb-3 font-bold">{tx("Videos & media")}</h3><div className="grid gap-2">{media.data?.map((item) => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="overflow-hidden rounded-xl border border-border bg-card hover:border-primary">{<MatchVideoThumb background={match.competition?.video_thumbnail_url} leagueLogo={match.competition?.logo_url} homeLogo={match.home?.logo_url} awayLogo={match.away?.logo_url} score={match.home_score != null && match.away_score != null ? `${match.home_score} - ${match.away_score}` : "VS"} />}<div className="p-4"><div className="text-xs font-bold uppercase text-primary">{item.source}</div><div className="mt-1 font-semibold">{tx(item.title) || tx("Open media")}</div></div></a>)}{media.data?.length === 0 && <p className="text-sm text-muted-foreground">{tx("No media posted.")}</p>}</div></div>}
+      {tab === "media" && !match.hide_media && <div><h3 className="mb-3 font-bold">{tx("Videos & media")}</h3><div className="grid gap-2">{media.data?.map((item) => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="overflow-hidden rounded-xl border border-border bg-card hover:border-primary">{<MatchVideoThumb background={match.competition?.video_thumbnail_url} leagueLogo={match.competition?.logo_url} homeLogo={match.home?.logo_url} awayLogo={match.away?.logo_url} score={match.home_score != null && match.away_score != null ? `${match.home_score} - ${match.away_score}` : "VS"} />}<div className="p-4"><div className="text-xs font-bold uppercase text-primary">{item.source}</div><div className="mt-1 font-semibold">{tx(item.title) || tx("Open media")}</div></div></a>)}{media.data?.length === 0 && <p className="text-sm text-muted-foreground">{tx("No media posted.")}</p>}</div></div>}
       </div>
     </AppShell>
   );
