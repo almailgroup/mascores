@@ -1,4 +1,5 @@
 import { TeamCrest } from "@/components/team-crest";
+import { KuwaitAirways } from "@/components/kuwait-airways";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
@@ -113,6 +114,7 @@ function Home() {
 
   return (
     <AppShell>
+      <KuwaitAirways />
       <div data-no-gesture role="tablist" aria-label={tx("Football")} className="mb-4 grid grid-cols-2 gap-2 border-b border-border">
         {(["matches", "competitions"] as const).map((m) => (
           <Button variant="ghost" role="tab" aria-selected={mode === m} key={m} onClick={() => setMode(m)}
