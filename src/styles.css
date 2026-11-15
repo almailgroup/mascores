@@ -4,6 +4,52 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Fixed artwork surfaces preserve the supplied airline logo in both themes. */
+:root {
+  --airways-paper: oklch(1 0 0);
+  --airways-ink: oklch(0.3 0.1 265);
+  --airways-edge: oklch(0.88 0.025 250);
+}
+.kuwait-airways {
+  display: grid;
+  grid-template-columns: minmax(112px, 30%) minmax(0, 1fr);
+  height: 126px;
+  width: 100%;
+  max-width: 760px;
+  margin-inline: auto;
+  overflow: hidden;
+  border: 1px solid var(--airways-edge);
+  border-radius: 8px;
+  background: var(--airways-paper);
+  color: var(--airways-ink);
+  isolation: isolate;
+}
+.kuwait-airways-identity {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px;
+  z-index: 1;
+  background: var(--airways-paper);
+}
+.kuwait-airways-label { font-size: 9px; font-weight: 600; line-height: 14px; }
+.kuwait-airways-mark { width: 96px; height: 96px; object-fit: contain; }
+.kuwait-airways-window { min-width: 0; overflow: hidden; }
+.kuwait-airways-flight {
+  width: 100%; height: 100%; object-fit: cover; object-position: center;
+  animation: kuwait-airways-cruise 14s ease-in-out infinite;
+  will-change: transform;
+}
+@keyframes kuwait-airways-cruise {
+  0%, 100% { transform: scale(1.02) translate(-0.5%, 0.5%); }
+  50% { transform: scale(1.09) translate(1%, -1%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kuwait-airways-flight { animation: none; will-change: auto; }
+}
+
 /* Safe-area insets. In the Android app the native shell injects the real
    status/navigation bar heights as --safe-area-inset-* on <html> (older
    Android WebViews report env(safe-area-inset-*) as 0), so prefer the
