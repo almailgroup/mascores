@@ -114,7 +114,6 @@ function Home() {
 
   return (
     <AppShell>
-      <KuwaitAirways />
       <div data-no-gesture role="tablist" aria-label={tx("Football")} className="mb-4 grid grid-cols-2 gap-2 border-b border-border">
         {(["matches", "competitions"] as const).map((m) => (
           <Button variant="ghost" role="tab" aria-selected={mode === m} key={m} onClick={() => setMode(m)}
@@ -320,6 +319,7 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
         setStatus(null);
         setCalendarOpen(false);
       }} onClose={() => setCalendarOpen(false)} />}
+      {!title && <KuwaitAirways />}
       {filterOpen && <TeamFilterDialog onClose={() => setFilterOpen(false)} onPick={(team) => {
         setOffset(0); setStatus("upcoming");
         setTeamFilters([team]);

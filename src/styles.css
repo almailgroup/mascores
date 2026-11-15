@@ -11,12 +11,11 @@
   --airways-edge: oklch(0.88 0.025 250);
 }
 .kuwait-airways {
-  display: grid;
-  grid-template-columns: minmax(112px, 30%) minmax(0, 1fr);
-  height: 126px;
+  position: relative;
+  height: 104px;
   width: 100%;
-  max-width: 760px;
-  margin-inline: auto;
+  max-width: 680px;
+  margin: 14px auto 0;
   overflow: hidden;
   border: 1px solid var(--airways-edge);
   border-radius: 8px;
@@ -25,29 +24,55 @@
   isolation: isolate;
 }
 .kuwait-airways-identity {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 114px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  padding: 6px;
+  gap: 0;
+  padding: 4px 12px 9px 6px;
   z-index: 1;
   background: var(--airways-paper);
+  clip-path: polygon(0 0, 100% 0, 88% 100%, 0 100%);
 }
-.kuwait-airways-label { font-size: 9px; font-weight: 600; line-height: 14px; }
-.kuwait-airways-mark { width: 96px; height: 96px; object-fit: contain; }
-.kuwait-airways-window { min-width: 0; overflow: hidden; }
+.kuwait-airways-label { font-size: 9px; font-weight: 600; line-height: 14px; white-space: nowrap; }
+.kuwait-airways-mark { width: 86px; height: 72px; object-fit: contain; }
+.kuwait-airways-window { position: absolute; inset: 0 0 0 98px; overflow: hidden; }
 .kuwait-airways-flight {
   width: 100%; height: 100%; object-fit: cover; object-position: center;
-  animation: kuwait-airways-cruise 14s ease-in-out infinite;
+  animation: kuwait-airways-cruise 10s ease-in-out infinite;
   will-change: transform;
 }
+.kuwait-airways-intro {
+  position: absolute; inset: 0; z-index: 2;
+  display: flex; align-items: center; justify-content: center; gap: 16px;
+  background: var(--airways-paper);
+  animation: kuwait-airways-reveal 10s cubic-bezier(.65, 0, .25, 1) infinite;
+}
+.kuwait-airways-intro img { width: 140px; height: 96px; object-fit: contain; }
+.kuwait-airways-intro .kuwait-airways-label { font-size: 11px; border-inline-start: 1px solid var(--airways-edge); padding-inline-start: 16px; }
+.kuwait-airways-progress {
+  position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; z-index: 3;
+  background: var(--airways-ink); transform-origin: left;
+  animation: kuwait-airways-progress 10s linear infinite;
+}
+@keyframes kuwait-airways-reveal {
+  0%, 15%, 100% { transform: translateX(0); }
+  28%, 87% { transform: translateX(-102%); }
+}
 @keyframes kuwait-airways-cruise {
-  0%, 100% { transform: scale(1.02) translate(-0.5%, 0.5%); }
-  50% { transform: scale(1.09) translate(1%, -1%); }
+  0%, 15%, 100% { transform: scale(1.18) translate(8%, 3%); }
+  85% { transform: scale(1.02) translate(-1%, -1%); }
+}
+@keyframes kuwait-airways-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
 }
 @media (prefers-reduced-motion: reduce) {
   .kuwait-airways-flight { animation: none; will-change: auto; }
+  .kuwait-airways-intro, .kuwait-airways-progress { display: none; }
 }
 
 /* Safe-area insets. In the Android app the native shell injects the real
