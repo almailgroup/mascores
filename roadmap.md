@@ -1,5 +1,5 @@
 # Roadmap
-- [ ] Add and verify an animated Home Kuwait Airways banner using supplied photos, visible only to the specified main-admin account; no popup or fullscreen advertising.
+- [x] Added animated Home Kuwait Airways banner using original supplied photos; verified named main-admin account, guest/sign-out hiding, phone/desktop fit, reduced motion and visibility regression tests; no popup or fullscreen advertising.
 - [x] Checked event-order mode across result shares, event dialogs, lineup/substitute displays and new notifications; regression tests and real result share passed. No ordered fixture currently has substitutions for live lineup/dialog verification; stored events and existing deliveries unchanged.
 - [x] Season-scoped club totals/statistics and fixture filters; verified two seasons. Existing historical archive gaps are real, not invented dates.
 - [x] Android website-style navigation, Arabic web labels, native image saver and audio permission fixes implemented.
