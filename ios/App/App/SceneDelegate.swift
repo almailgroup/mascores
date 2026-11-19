@@ -115,9 +115,9 @@ final class PassthroughView: UIView {
 public class NativeTabBarPlugin: CAPPlugin, CAPBridgedPlugin, UITabBarControllerDelegate {
     public let identifier = "NativeTabBarPlugin"
     public let jsName = "NativeTabBar"
-    public let pluginMethods = [
-        CAPPluginMethod(name: "show", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "hide", returnType: CAPPluginReturnPromise),
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(#selector(show(_:))),
+        CAPPluginMethod(#selector(hide(_:))),
     ]
     private var tbc: UITabBarController?
     private var container: PassthroughView?
@@ -277,18 +277,19 @@ final class FormAssistantBarHider {
 
     private static func apply(_ webView: WKWebView) -> Bool {
         for view in contentViews(in: webView) {
-            let baseClass = type(of: view)
+            let baseClass: AnyClass = type(of: view)
+            if String(describing: baseClass).hasSuffix("_NoFormBar") { continue }
             let newName = String(describing: baseClass) + "_NoFormBar"
             let targetClass: AnyClass
             if let existing = NSClassFromString(newName) {
                 targetClass = existing
             } else {
-                guard let superclass = baseClass.superclass,
-                      let newClass = objc_allocateClassPair(superclass, newName, 0) else { continue }
+                guard let newClass = objc_allocateClassPair(baseClass, newName, 0) else { continue }
                 let selector = sel_registerName("inputAccessoryView")
                 let block: @convention(block) (AnyObject) -> UIView? = { _ in nil }
                 let encoding = class_getInstanceMethod(baseClass, selector)
-                    .map { String(cString: method_getTypeEncoding($0)) } ?? "@16@0:8"
+                    .flatMap { method_getTypeEncoding($0) }
+                    .map { String(cString: $0) } ?? "@16@0:8"
                 class_addMethod(newClass, selector, imp_implementationWithBlock(block), encoding)
                 objc_registerClassPair(newClass)
                 helperClass = newClass
