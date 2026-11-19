@@ -1,4 +1,5 @@
 import { TeamCrest } from "@/components/team-crest";
+import { KuwaitAirways } from "@/components/kuwait-airways";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
@@ -307,7 +308,7 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
         </Button>
         <div className="ms-auto flex h-9 min-w-0 items-center gap-0">
           <Button variant="ghost" size="icon" className="size-8 rounded-md text-muted-foreground" onClick={() => { setOffset(offset - 1); setStatus(null); }} aria-label={tx("Previous day")}><ChevronLeft className="size-4" /></Button>
-          <Button variant="ghost" onClick={() => setCalendarOpen(true)} className="h-9 min-w-0 gap-1.5 px-2 text-xs font-semibold"><CalendarDays className="size-3.5 text-muted-foreground" />{dayLabel}</Button>
+          <Button variant="ghost" onClick={() => setCalendarOpen(true)} className="h-9 min-w-0 gap-1.5 px-2 text-xs font-semibold"><CalendarDays className="size-3.5 text-muted-foreground" />{status === "upcoming" ? (lang === "ar" ? "التقويم" : "Calendar") : dayLabel}</Button>
           <Button variant="ghost" size="icon" className="size-8 rounded-md text-muted-foreground" onClick={() => { setOffset(offset + 1); setStatus(null); }} aria-label={tx("Next day")}><ChevronRight className="size-4" /></Button>
         </div>
       </div>
@@ -318,6 +319,7 @@ function ScoreBoard({ liveCount, hideLive, title }: { liveCount: number; hideLiv
         setStatus(null);
         setCalendarOpen(false);
       }} onClose={() => setCalendarOpen(false)} />}
+      {!title && <KuwaitAirways />}
       {filterOpen && <TeamFilterDialog onClose={() => setFilterOpen(false)} onPick={(team) => {
         setOffset(0); setStatus("upcoming");
         setTeamFilters([team]);

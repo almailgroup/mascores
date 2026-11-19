@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import { grantTeam, isSelectedGrant } from "./grant-selection";
 
 /** The single owner account that can hand out and take away access. */
 export const OWNER_EMAIL = "mansouralmailscores@gmail.com";
@@ -147,7 +148,7 @@ export const addManagedUser = createServerFn({ method: "POST" })
         user_id: user!.id,
         scope,
         // Only club-bound areas keep a club; the rest are site-wide.
-        team_id: scope === "club_news" || scope === "rabta" ? teamId : null,
+        team_id: grantTeam(scope, teamId),
         requires_approval: data.requiresApproval,
         created_by: context.userId,
       })),
@@ -179,7 +180,7 @@ export const setManagedScopes = createServerFn({ method: "POST" })
       data.scopes.map((scope) => ({
         user_id: data.userId,
         scope,
-        team_id: scope === "club_news" || scope === "rabta" ? teamId : null,
+        team_id: grantTeam(scope, teamId),
         requires_approval: data.requiresApproval,
         created_by: context.userId,
       })),
@@ -187,8 +188,8 @@ export const setManagedScopes = createServerFn({ method: "POST" })
     );
     if (error) throw new Error(error.message);
     // Anything the owner unticked goes away, so the list always matches the ticks.
-    const { data: rows } = await admin.from("admin_grants").select("id,scope").eq("user_id", data.userId);
-    const stale = (rows ?? []).filter((row) => !data.scopes.includes(row.scope as GrantScope)).map((row) => row.id);
+    const { data: rows } = await admin.from("admin_grants").select("id,scope,team_id").eq("user_id", data.userId);
+    const stale = (rows ?? []).filter((row) => !isSelectedGrant(row, data.scopes, teamId)).map((row) => row.id);
     if (stale.length) await admin.from("admin_grants").delete().in("id", stale);
     // Keep the approval setting the same across everything they hold.
     await admin.from("admin_grants").update({ requires_approval: data.requiresApproval }).eq("user_id", data.userId);

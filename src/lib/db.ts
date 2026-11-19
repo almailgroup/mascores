@@ -50,10 +50,10 @@ export function formatClock(seconds: number): string {
 const PERIOD_CAP: Record<string, number> = { "1h": 2700, "2h": 5400, et1: 6300, et2: 7200 };
 const PERIOD_START: Record<string, number> = { "1h": 0, "2h": 2700, et1: 5400, et2: 6300 };
 
-/** Running period, from the admin's stored choice (falls back to the clock for older rows). */
-export function livePeriod(m: { period?: string | null }, seconds: number): string {
+/** Period changes are explicit; an unassigned legacy clock remains in the first half. */
+export function livePeriod(m: { period?: string | null }, _seconds: number): string {
   if (m.period && m.period in PERIOD_CAP) return m.period;
-  return seconds >= 6300 ? "et2" : seconds >= 5400 ? "et1" : seconds >= 2700 ? "2h" : "1h";
+  return "1h";
 }
 
 /** Live clock that stays in its period: past 45:00 in the 1st half shows "45+2'" until the admin starts the next one. */
@@ -86,9 +86,10 @@ export const STATUS_LABELS: Record<string, string> = {
   interrupted: "Interrupted",
 };
 
-export function formatKickoff(iso: string | null | undefined, locale?: string, announcedDate?: string | null): string {
-  if (!iso && announcedDate) return formatAnnouncedDate(announcedDate, locale);
-  if (!iso) return locale?.startsWith("ar") ? "لم يُحدد" : "TBD";
+export function formatKickoff(iso: string | null | undefined, locale?: string, announcedDate?: string | null, estimatedDate?: string | null): string {
+  if (!iso && announcedDate) return formatAnnouncedDate(announcedDate, locale, false, getTimeFormat() === "12");
+  if (!iso && estimatedDate) return formatAnnouncedDate(estimatedDate, locale, true, getTimeFormat() === "12");
+  if (!iso) return locale?.startsWith("ar") ? "التاريخ التقديري غير متاح · ١٢:٠٠ م" : "Estimated date TBD · 12:00 PM";
   const d = new Date(iso);
   return d.toLocaleString(locale, { timeZone: getMatchTimezone(), weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit", hour12: getTimeFormat() === "12" });
 }

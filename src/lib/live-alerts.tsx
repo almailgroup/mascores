@@ -7,6 +7,7 @@ import { isNativeApp, ensureNativePermission } from "@/lib/native-notify";
 import { playAlertSound, soundFor, type AlertEventKey, type AlertSoundMap } from "@/lib/alert-sounds";
 import { readClubAlerts } from "@/hooks/use-club-alerts";
 import { matchAlertPhase, type AlertMatchPhase } from '@/lib/match-alert-phase';
+import { eventPosition, matchEventOrder } from '@/lib/match-event-order';
 
 
 const ALERT_KEY = "mas.match_notification_ids";
@@ -30,6 +31,7 @@ type Info = {
   homeScore: number | null;
   awayScore: number | null;
   competition: string | null;
+  eventsOrdered: boolean;
 };
 
 const GOAL_TYPES = ["goal", "own_goal", "penalty_goal", "penalty"];
@@ -121,12 +123,12 @@ export function useLiveEventAlerts() {
       if (cached) return cached;
       const { data } = await supabase
         .from("matches")
-        .select("id,home_score,away_score,home_team_id,away_team_id,home:teams!matches_home_team_id_fkey(name),away:teams!matches_away_team_id_fkey(name),competition:competitions(name)")
+        .select("id,events_ordered,home_score,away_score,home_team_id,away_team_id,home:teams!matches_home_team_id_fkey(name),away:teams!matches_away_team_id_fkey(name),competition:competitions(name)")
         .eq("id", matchId)
         .maybeSingle();
       if (!data) return null;
       const row = data as unknown as {
-        home_score: number | null; away_score: number | null; home_team_id: string | null; away_team_id: string | null;
+        events_ordered: boolean; home_score: number | null; away_score: number | null; home_team_id: string | null; away_team_id: string | null;
         home: { name: string } | null; away: { name: string } | null; competition: { name: string } | null;
       };
       const value: Info = {
@@ -134,6 +136,7 @@ export function useLiveEventAlerts() {
         home: row.home?.name ?? "Home", away: row.away?.name ?? "Away",
         homeScore: row.home_score, awayScore: row.away_score,
         competition: row.competition?.name ?? null,
+        eventsOrdered: row.events_ordered,
       };
       info.set(matchId, value);
       return value;
@@ -156,6 +159,7 @@ export function useLiveEventAlerts() {
     const onEvent = async (row: EventRow) => {
       if (seen.current.has(row.id)) return;
       seen.current.add(row.id);
+      info.delete(row.match_id);
       const m = await loadMatch(row.match_id);
       if (cancelled || !wanted(m, row.match_id)) return;
       const meta = EVENT_TEXT[row.type] ?? { label: row.type.replace(/_/g, " ") };
@@ -163,7 +167,11 @@ export function useLiveEventAlerts() {
       if (category && preferences[category] === false) return;
       const side = m && row.team_id ? (row.team_id === m.homeId ? m.home : row.team_id === m.awayId ? m.away : null) : null;
       const who = await playerName(row.player_id);
-      const minute = row.minute != null ? `${row.minute}${row.extra ? `+${row.extra}` : ""}'` : "";
+      let minute = row.minute != null ? `${row.minute}${row.extra ? `+${row.extra}` : ""}'` : "";
+      if (m?.eventsOrdered) {
+        const { data } = await supabase.from("match_events").select("id,type").eq("match_id", row.match_id).order("minute").order("extra").order("id");
+        minute = data ? eventPosition(row, matchEventOrder(data), true) : "";
+      }
       const isGoal = GOAL_TYPES.includes(row.type);
       const fresh = isGoal ? await refreshScore(row.match_id) : m;
       const score = fresh && fresh.homeScore != null && fresh.awayScore != null ? `${fresh.homeScore} - ${fresh.awayScore}` : "";

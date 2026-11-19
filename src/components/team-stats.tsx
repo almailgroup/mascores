@@ -14,7 +14,7 @@ import { BarChart3, Goal, ShieldCheck, Activity } from "lucide-react";
 export type TeamComp = { id: string; name: string; logo_url: string | null; season: string | null };
 
 /** Club-page statistics: the same leaderboards as the competition Stats tab, filtered to one club. */
-export function TeamStats({ teamId, comps }: { teamId: string; comps: TeamComp[] }) {
+export function TeamStats({ teamId, comps, season }: { teamId: string; comps: TeamComp[]; season: string }) {
   const tx = useTx();
   const num = useNum();
   const [active, setActive] = useState(comps[0]?.id ?? "");
@@ -23,7 +23,7 @@ export function TeamStats({ teamId, comps }: { teamId: string; comps: TeamComp[]
 
   const q = useQuery({
     enabled: !!comp,
-    queryKey: ["team-stats", comp?.id, comp?.season, teamId],
+    queryKey: ["team-stats", comp?.id, season, teamId],
     queryFn: () => comp ? fetchCompetitionStats(comp.id, comp.season ?? null) : Promise.reject(new Error("No competition")),
   });
 

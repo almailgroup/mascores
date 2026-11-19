@@ -1,0 +1,419 @@
+{
+  "verified_at": "2026-11-08T18:41:23.076Z",
+  "matches": [
+    {
+      "match_id": "ade11709-6dcf-421b-afbb-ec0ae7215fa7",
+      "source_url": "https://derbista.com/en/match/al-fahaheel-vs-al-sulaibikhat-2026-11-07",
+      "statistics": [
+        [
+          "Ball possession",
+          "45%",
+          "55%"
+        ],
+        [
+          "Corner kicks",
+          "4",
+          "8"
+        ],
+        [
+          "Fouls",
+          "11",
+          "7"
+        ],
+        [
+          "Offsides",
+          "2",
+          "1"
+        ],
+        [
+          "Dangerous attacks",
+          "51",
+          "56"
+        ],
+        [
+          "Yellow cards",
+          "2",
+          "2"
+        ],
+        [
+          "Attacks",
+          "80",
+          "88"
+        ],
+        [
+          "Throw-ins",
+          "23",
+          "16"
+        ],
+        [
+          "Free kicks",
+          "6",
+          "13"
+        ],
+        [
+          "Goal kicks",
+          "10",
+          "7"
+        ]
+      ],
+      "omitted": [
+        [
+          "Shots",
+          "8",
+          "5",
+          "Conflicts with verified saved shot totals and goals"
+        ],
+        [
+          "Shots on target",
+          "3",
+          "0",
+          "Conflicts with verified saved shot totals and goals"
+        ]
+      ]
+    },
+    {
+      "match_id": "fbcc0141-2bb0-42f9-b391-58f8883e65e7",
+      "source_url": "https://derbista.com/en/match/al-shabab-vs-al-tadhamon-2026-11-07",
+      "statistics": [
+        [
+          "Ball possession",
+          "50%",
+          "50%"
+        ],
+        [
+          "Total shots",
+          "10",
+          "17"
+        ],
+        [
+          "Shots on target",
+          "4",
+          "8"
+        ],
+        [
+          "Corner kicks",
+          "2",
+          "9"
+        ],
+        [
+          "Fouls",
+          "16",
+          "10"
+        ],
+        [
+          "Offsides",
+          "1",
+          "1"
+        ],
+        [
+          "Dangerous attacks",
+          "62",
+          "61"
+        ],
+        [
+          "Saves",
+          "4",
+          "2"
+        ],
+        [
+          "Yellow cards",
+          "3",
+          "1"
+        ],
+        [
+          "Red cards",
+          "0",
+          "1"
+        ],
+        [
+          "Attacks",
+          "69",
+          "70"
+        ],
+        [
+          "Throw-ins",
+          "18",
+          "21"
+        ]
+      ],
+      "omitted": []
+    },
+    {
+      "match_id": "4c4d50ce-7f7a-4ebd-84b0-94a5dcdb8629",
+      "source_url": "https://derbista.com/en/match/al-arabi-sc-vs-al-nasar-2026-11-07",
+      "statistics": [
+        [
+          "Ball possession",
+          "64%",
+          "36%"
+        ],
+        [
+          "Total shots",
+          "7",
+          "5"
+        ],
+        [
+          "Shots on target",
+          "4",
+          "2"
+        ],
+        [
+          "Corner kicks",
+          "8",
+          "0"
+        ],
+        [
+          "Fouls",
+          "10",
+          "8"
+        ],
+        [
+          "Offsides",
+          "2",
+          "1"
+        ],
+        [
+          "Dangerous attacks",
+          "59",
+          "38"
+        ],
+        [
+          "Yellow cards",
+          "0",
+          "1"
+        ],
+        [
+          "Attacks",
+          "91",
+          "71"
+        ],
+        [
+          "Throw-ins",
+          "22",
+          "24"
+        ],
+        [
+          "Free kicks",
+          "11",
+          "12"
+        ],
+        [
+          "Goal kicks",
+          "3",
+          "2"
+        ]
+      ],
+      "omitted": []
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "source_url": "https://derbista.com/en/match/al-jahra-vs-al-qadsia-2026-11-07",
+      "statistics": [
+        [
+          "Ball possession",
+          "32%",
+          "68%"
+        ],
+        [
+          "Total shots",
+          "3",
+          "14"
+        ],
+        [
+          "Shots on target",
+          "2",
+          "6"
+        ],
+        [
+          "Corner kicks",
+          "3",
+          "8"
+        ],
+        [
+          "Fouls",
+          "3",
+          "12"
+        ],
+        [
+          "Offsides",
+          "2",
+          "3"
+        ],
+        [
+          "Dangerous attacks",
+          "27",
+          "54"
+        ],
+        [
+          "Yellow cards",
+          "1",
+          "1"
+        ],
+        [
+          "Attacks",
+          "53",
+          "85"
+        ],
+        [
+          "Throw-ins",
+          "19",
+          "30"
+        ],
+        [
+          "Free kicks",
+          "16",
+          "5"
+        ],
+        [
+          "Substitutions",
+          "3",
+          "5"
+        ]
+      ],
+      "omitted": [
+        [
+          "Goal kicks",
+          "3",
+          "0",
+          "Away zero lacks credibility"
+        ]
+      ]
+    },
+    {
+      "match_id": "3a79c941-0683-4c05-af25-cc46307b3f60",
+      "source_url": "https://derbista.com/en/match/al-sahel-vs-al-kuwait-2026-11-07",
+      "statistics": [
+        [
+          "Ball possession",
+          "30%",
+          "70%"
+        ],
+        [
+          "Total shots",
+          "1",
+          "15"
+        ],
+        [
+          "Shots on target",
+          "0",
+          "9"
+        ],
+        [
+          "Corner kicks",
+          "1",
+          "8"
+        ],
+        [
+          "Fouls",
+          "15",
+          "13"
+        ],
+        [
+          "Offsides",
+          "1",
+          "2"
+        ],
+        [
+          "Dangerous attacks",
+          "31",
+          "43"
+        ],
+        [
+          "Yellow cards",
+          "2",
+          "2"
+        ],
+        [
+          "Red cards",
+          "1",
+          "0"
+        ],
+        [
+          "Attacks",
+          "46",
+          "58"
+        ],
+        [
+          "Throw-ins",
+          "19",
+          "12"
+        ],
+        [
+          "Free kicks",
+          "15",
+          "16"
+        ]
+      ],
+      "omitted": []
+    },
+    {
+      "match_id": "4c26bb12-0019-4ce4-911b-dcdf731145a9",
+      "source_url": "https://derbista.com/en/match/al-salmiyah-vs-kazma-2026-11-07",
+      "statistics": [
+        [
+          "Ball possession",
+          "44%",
+          "56%"
+        ],
+        [
+          "Total shots",
+          "9",
+          "9"
+        ],
+        [
+          "Shots on target",
+          "3",
+          "5"
+        ],
+        [
+          "Corner kicks",
+          "1",
+          "3"
+        ],
+        [
+          "Fouls",
+          "16",
+          "9"
+        ],
+        [
+          "Offsides",
+          "1",
+          "1"
+        ],
+        [
+          "Dangerous attacks",
+          "25",
+          "46"
+        ],
+        [
+          "Yellow cards",
+          "6",
+          "3"
+        ],
+        [
+          "Attacks",
+          "48",
+          "64"
+        ],
+        [
+          "Throw-ins",
+          "15",
+          "19"
+        ],
+        [
+          "Free kicks",
+          "10",
+          "16"
+        ],
+        [
+          "Goal kicks",
+          "5",
+          "4"
+        ]
+      ],
+      "omitted": []
+    }
+  ],
+  "preserved": "Existing results, lineups and events in earlier matches; no source names in visible content.",
+  "omitted_categories": "Undefined ball safe, injuries, goal attempts; no derived shot totals or guesses."
+}

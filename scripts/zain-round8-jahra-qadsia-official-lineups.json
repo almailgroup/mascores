@@ -1,0 +1,457 @@
+{
+  "source": "Official club lineup screenshots supplied by user; MFSoccer used only for formations and pitch coordinates",
+  "uploads": [
+    "IMG_5452.png",
+    "IMG_5453.png",
+    "IMG_5454.png",
+    "IMG_5455.png"
+  ],
+  "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+  "lineups": [
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "91915327-7b03-4ccf-b968-52a1dae28a9f",
+      "player_id": "7c2db5f0-6dd9-4508-a1de-cf0ebc9569aa",
+      "source_name": "مبارك الحربي",
+      "shirt_number": 1,
+      "is_starting": true,
+      "position_code": "GK",
+      "source_x": 50,
+      "source_y": 90
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "91915327-7b03-4ccf-b968-52a1dae28a9f",
+      "player_id": "7cb65594-8c29-4cee-a3c0-5d58c36ca6be",
+      "source_name": "عبدالعزيز رسام",
+      "shirt_number": 2,
+      "is_starting": true,
+      "position_code": "L1-1",
+      "source_x": 20,
+      "source_y": 70.5
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "91915327-7b03-4ccf-b968-52a1dae28a9f",
+      "player_id": "1fedeeeb-bbb3-4435-9d84-04b364eb1d67",
+      "source_name": "تاكامبا ناسام",
+      "shirt_number": 26,
+      "is_starting": true,
+      "position_code": "L1-3",
+      "source_x": 60,
+      "source_y": 70.5
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "91915327-7b03-4ccf-b968-52a1dae28a9f",
+      "player_id": "a7801557-1afe-4fed-bc3f-639885cd562b",
+      "source_name": "ماركوس راموس",
+      "shirt_number": 13,
+      "is_starting": true,
+      "position_code": "L1-2",
+      "source_x": 40,
+      "source_y": 70.5
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "91915327-7b03-4ccf-b968-52a1dae28a9f",
+      "player_id": "3918852e-af85-436c-b2f6-8d50d03fa98d",
+      "source_name": "جاسم العنزي",
+      "shirt_number": 4,
+      "is_starting": true,
+      "position_code": "L1-4",
+      "source_x": 80,
+      "source_y": 70.5
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "91915327-7b03-4ccf-b968-52a1dae28a9f",
+      "player_id": "ce2824e2-4f3d-4128-89b7-8bb961fdb8a3",
+      "source_name": "عبدالله الداحس",
+      "shirt_number": 80,
+      "is_starting": true,
+      "position_code": "L2-1",
+      "source_x": 33.3,
+      "source_y": 51
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "91915327-7b03-4ccf-b968-52a1dae28a9f",
+      "player_id": "fb9c5ffb-1646-4a32-9fa7-695feceb26ee",
+      "source_name": "كيريست افالانا",
+      "shirt_number": 16,
+      "is_starting": true,
+      "position_code": "L4-1",
+      "source_x": 50,
+      "source_y": 12
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "91915327-7b03-4ccf-b968-52a1dae28a9f",
+      "player_id": "59522c75-f955-4dd5-b798-1321226f29c9",
+      "source_name": "أحمد العجمي",
+      "shirt_number": 18,
+      "is_starting": true,
+      "position_code": "L3-3",
+      "source_x": 76.1,
+      "source_y": 31.9
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "91915327-7b03-4ccf-b968-52a1dae28a9f",
+      "player_id": "23f93bed-69fa-438b-b2f4-ee284a7d966b",
+      "source_name": "ايفانز امبوفو",
+      "shirt_number": 15,
+      "is_starting": true,
+      "position_code": "L3-2",
+      "source_x": 50.5,
+      "source_y": 31.7
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "91915327-7b03-4ccf-b968-52a1dae28a9f",
+      "player_id": "cba586dc-137f-4ab4-909a-163391103b0b",
+      "source_name": "طلال مزيد",
+      "shirt_number": 19,
+      "is_starting": true,
+      "position_code": "L3-1",
+      "source_x": 25,
+      "source_y": 31.5
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "91915327-7b03-4ccf-b968-52a1dae28a9f",
+      "player_id": "4fd1c93e-6da9-4a0f-aab9-398cd83db441",
+      "source_name": "بدر سالم الشمري",
+      "shirt_number": 12,
+      "is_starting": true,
+      "position_code": "L2-2",
+      "source_x": 66.6,
+      "source_y": 51.6
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "91915327-7b03-4ccf-b968-52a1dae28a9f",
+      "player_id": "9f86489d-e5b2-4951-8f8e-ab2475b463c5",
+      "source_name": "حمد الخالدي",
+      "shirt_number": 40,
+      "is_starting": false,
+      "position_code": null
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "91915327-7b03-4ccf-b968-52a1dae28a9f",
+      "player_id": "30e1268b-2503-4736-af65-c2d787f7c78e",
+      "source_name": "منصور بندر",
+      "shirt_number": 5,
+      "is_starting": false,
+      "position_code": null
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "91915327-7b03-4ccf-b968-52a1dae28a9f",
+      "player_id": "5f9b8cb9-e719-4360-b8b5-3da0dae1e30d",
+      "source_name": "مشاري البارود",
+      "shirt_number": 3,
+      "is_starting": false,
+      "position_code": null
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "91915327-7b03-4ccf-b968-52a1dae28a9f",
+      "player_id": "08c44be5-8c78-4651-91f7-7143f5d5723c",
+      "source_name": "محمد العمران",
+      "shirt_number": 20,
+      "is_starting": false,
+      "position_code": null
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "91915327-7b03-4ccf-b968-52a1dae28a9f",
+      "player_id": "6679b4a5-cc14-4fce-8eb8-18b2eab809a8",
+      "source_name": "تركي المطيري",
+      "shirt_number": 22,
+      "is_starting": false,
+      "position_code": null
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "91915327-7b03-4ccf-b968-52a1dae28a9f",
+      "player_id": "e9a8b667-4be5-4416-831a-afa7cb0b4fbd",
+      "source_name": "عبدالرحمن الظفيري",
+      "shirt_number": 88,
+      "is_starting": false,
+      "position_code": null
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "91915327-7b03-4ccf-b968-52a1dae28a9f",
+      "player_id": "e5bc82c9-e6b4-4117-abb4-f40cc22dfd25",
+      "source_name": "أحمد الشمري",
+      "shirt_number": 77,
+      "is_starting": false,
+      "position_code": null
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "91915327-7b03-4ccf-b968-52a1dae28a9f",
+      "player_id": "b0c87bba-6d6f-4e96-8891-ce3f930ec0f7",
+      "source_name": "لويسنهو",
+      "shirt_number": 16,
+      "is_starting": false,
+      "position_code": null
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "91915327-7b03-4ccf-b968-52a1dae28a9f",
+      "player_id": "0cb970de-ac7c-4879-9952-31d634382003",
+      "source_name": "مشعل الحبص",
+      "shirt_number": 45,
+      "is_starting": false,
+      "position_code": null
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "8d6cb3fe-6e3d-4cdc-af60-ea9de938d174",
+      "player_id": "b98d9a7b-86dd-437a-abe0-3393bbab89f3",
+      "source_name": "سعود الجناعي",
+      "shirt_number": 22,
+      "is_starting": true,
+      "position_code": "GK",
+      "source_x": 50,
+      "source_y": 90
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "8d6cb3fe-6e3d-4cdc-af60-ea9de938d174",
+      "player_id": "7d618e28-116c-477b-b779-8987b9eaf91e",
+      "source_name": "راشد الدوسري",
+      "shirt_number": 4,
+      "is_starting": true,
+      "position_code": "L1-1",
+      "source_x": 20,
+      "source_y": 70.5
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "8d6cb3fe-6e3d-4cdc-af60-ea9de938d174",
+      "player_id": "c8be42b9-01f2-43b5-94b4-7c923c8ecd64",
+      "source_name": "خالد صباح",
+      "shirt_number": 6,
+      "is_starting": true,
+      "position_code": "L1-3",
+      "source_x": 60,
+      "source_y": 70.5
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "8d6cb3fe-6e3d-4cdc-af60-ea9de938d174",
+      "player_id": "e8197dc0-4843-46c0-9903-09a95a5b6aee",
+      "source_name": "معاذ الظفيري",
+      "shirt_number": 3,
+      "is_starting": true,
+      "position_code": "L1-4",
+      "source_x": 80,
+      "source_y": 70.5
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "8d6cb3fe-6e3d-4cdc-af60-ea9de938d174",
+      "player_id": "cff1cd10-8726-4cff-85e7-29df58c21113",
+      "source_name": "سيدريك جبو",
+      "shirt_number": 5,
+      "is_starting": true,
+      "position_code": "L1-2",
+      "source_x": 40,
+      "source_y": 70.5
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "8d6cb3fe-6e3d-4cdc-af60-ea9de938d174",
+      "player_id": "6b5e76b5-50da-47c0-abad-066c94219523",
+      "source_name": "جاسم المطر",
+      "shirt_number": 28,
+      "is_starting": true,
+      "position_code": "L2-1",
+      "source_x": 33.3,
+      "source_y": 51
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "8d6cb3fe-6e3d-4cdc-af60-ea9de938d174",
+      "player_id": "eef9bf86-f0b9-427d-9b01-fcf2a19c2ee1",
+      "source_name": "عبدالله مطاوع",
+      "shirt_number": 8,
+      "is_starting": true,
+      "position_code": "L2-2",
+      "source_x": 66.7,
+      "source_y": 51
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "8d6cb3fe-6e3d-4cdc-af60-ea9de938d174",
+      "player_id": "1c78889f-2466-4256-b6e6-1e1904aaee58",
+      "source_name": "عيد الرشيدي",
+      "shirt_number": 11,
+      "is_starting": true,
+      "position_code": "L3-1",
+      "source_x": 25,
+      "source_y": 31.5
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "8d6cb3fe-6e3d-4cdc-af60-ea9de938d174",
+      "player_id": "c35131bc-9929-4d52-a421-0590e7eedda4",
+      "source_name": "عبدالرحمن المشيفري",
+      "shirt_number": 21,
+      "is_starting": true,
+      "position_code": "L3-2",
+      "source_x": 49.6,
+      "source_y": 33.2
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "8d6cb3fe-6e3d-4cdc-af60-ea9de938d174",
+      "player_id": "78a1dc40-3088-42ad-99d7-075a9f09e6fe",
+      "source_name": "ناصر الرواحي",
+      "shirt_number": 7,
+      "is_starting": true,
+      "position_code": "L3-3",
+      "source_x": 73.9,
+      "source_y": 31.6
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "8d6cb3fe-6e3d-4cdc-af60-ea9de938d174",
+      "player_id": "d6792312-a55c-4190-bd69-465f293bc141",
+      "source_name": "حمزة خابا",
+      "shirt_number": 23,
+      "is_starting": true,
+      "position_code": "L4-1",
+      "source_x": 50,
+      "source_y": 12
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "8d6cb3fe-6e3d-4cdc-af60-ea9de938d174",
+      "player_id": "77172346-c3b1-438e-b55f-7cacb21e39b0",
+      "source_name": "بدر جمال",
+      "shirt_number": 13,
+      "is_starting": false,
+      "position_code": null
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "8d6cb3fe-6e3d-4cdc-af60-ea9de938d174",
+      "player_id": "70830535-7148-4883-b7c8-96fef0812d5f",
+      "source_name": "احمد اليحيى",
+      "shirt_number": 2,
+      "is_starting": false,
+      "position_code": null
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "8d6cb3fe-6e3d-4cdc-af60-ea9de938d174",
+      "player_id": "433db96e-d918-41b2-b8b5-51d2c2cf934c",
+      "source_name": "سالم الريس",
+      "shirt_number": 78,
+      "is_starting": false,
+      "position_code": null
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "8d6cb3fe-6e3d-4cdc-af60-ea9de938d174",
+      "player_id": "d1b00d06-94e9-4df2-99b5-e2e559634ef2",
+      "source_name": "عبدالعزيز وادي",
+      "shirt_number": 14,
+      "is_starting": false,
+      "position_code": null
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "8d6cb3fe-6e3d-4cdc-af60-ea9de938d174",
+      "player_id": "0aedee28-d340-4d3c-8027-e29474693914",
+      "source_name": "طلال الفاضل",
+      "shirt_number": 31,
+      "is_starting": false,
+      "position_code": null
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "8d6cb3fe-6e3d-4cdc-af60-ea9de938d174",
+      "player_id": "ba7c2391-4f3c-475c-bd4c-18799629c69f",
+      "source_name": "بدر المطوع",
+      "shirt_number": 17,
+      "is_starting": false,
+      "position_code": null
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "8d6cb3fe-6e3d-4cdc-af60-ea9de938d174",
+      "player_id": "b37c751e-6faa-476d-b24e-f924604ae304",
+      "source_name": "احمد بودي",
+      "shirt_number": 19,
+      "is_starting": false,
+      "position_code": null
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "8d6cb3fe-6e3d-4cdc-af60-ea9de938d174",
+      "player_id": "e5f0beb5-d594-489b-998a-612dadffccb7",
+      "source_name": "ايوب لخضر",
+      "shirt_number": 77,
+      "is_starting": false,
+      "position_code": null
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "8d6cb3fe-6e3d-4cdc-af60-ea9de938d174",
+      "player_id": "48e0f76c-431a-44f1-ae0a-3ef895a9f342",
+      "source_name": "خالد الخرقاوي",
+      "shirt_number": 9,
+      "is_starting": false,
+      "position_code": null
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "8d6cb3fe-6e3d-4cdc-af60-ea9de938d174",
+      "player_id": "13e92e0f-c30f-4c5c-8ac4-50fc136414c7",
+      "source_name": "عبدالوهاب الشلال",
+      "shirt_number": 29,
+      "is_starting": false,
+      "position_code": null
+    },
+    {
+      "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+      "team_id": "8d6cb3fe-6e3d-4cdc-af60-ea9de938d174",
+      "player_id": "f51a4499-666d-44e9-8ba2-60e9b8c5a63a",
+      "source_name": "راكان السعيد",
+      "shirt_number": 32,
+      "is_starting": false,
+      "position_code": null
+    }
+  ],
+  "official_absences": {
+    "الجهراء": [
+      "طلال جازع",
+      "يوسف الرشيدي",
+      "عادل جاسم",
+      "فهد السلامه",
+      "بشار عبدالله",
+      "عبدالعزيز اسعد",
+      "عبدالرحمن الاصيمع",
+      "محمد الرشيدي"
+    ],
+    "القادسية": [
+      "يوسف الحقان",
+      "عذبي شهاب",
+      "خالد ابراهيم",
+      "حميد القلاف"
+    ]
+  },
+  "shirt_number_override": {
+    "player": "Christ Afalna",
+    "shirt_number": 16,
+    "source": "IMG_5452.png"
+  }
+}

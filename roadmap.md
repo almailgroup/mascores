@@ -1,4 +1,31 @@
 # Roadmap
+- [x] Added animated Home Kuwait Airways banner using original supplied photos; verified named main-admin account, guest/sign-out hiding, phone/desktop fit, reduced motion and visibility regression tests; no popup or fullscreen advertising.
+- [x] Checked event-order mode across result shares, event dialogs, lineup/substitute displays and new notifications; regression tests and real result share passed. No ordered fixture currently has substitutions for live lineup/dialog verification; stored events and existing deliveries unchanged.
+- [x] Season-scoped club totals/statistics and fixture filters; verified two seasons. Existing historical archive gaps are real, not invented dates.
+- [x] Android website-style navigation, Arabic web labels, native image saver and audio permission fixes implemented.
+- [ ] Android saving/audio and iOS native RTL verification: requires new native releases and physical devices; Android saver supports Android 10+.
+- [x] Current competition round excludes postponed fixtures; stable header verified and shared swipes added to competition, match, club, player and social profile views.
+- [x] Home Calendar label and same-day scheduled matches retained until live; regression tests passed.
+- [x] Remove coloured standings crest backplates; opponent context verified in lineup shares and professional player share preview.
+- [x] Match period confirmation dialog; explicit first-half stoppage time and editable seconds; clock regression tests passed.
+- [x] Manage access consolidation and duplicate cleanup; modern profile/privacy/report/block dialogs and Arabic View profile verified.
+- [x] Mobile news natural photo sizing verified; owner sound previews expand/collapse.
+- [x] Modern notifications inbox automatically marks existing notifications read on opening.
+- [x] Added all 21 unused substitutes to both benches for Al Salmiya–Kazma and Al Sahel–Kuwait SC; verified home and away bench views, with starters, ratings, events and results unchanged.
+- [x] Import Al Sahel–Kuwait SC and Al Salmiya–Kazma: final results, 44 starters, 19 used substitutes, 40 events and 63 published source ratings; verified in match pages, attribution private.
+- [x] Fill verified final statistics across all six finished Round 8 fixtures from Derbista; verified every Stats tab, preserved credible conflicting prior values, removed Al Arabi's stale live off-target row.
+- [x] Add Team administrator and Head of football staff options; both selectable in the signed-in editor.
+- [x] Import 13 published Al Qadsia–Al Jahra statistics from BallWhizz; verify saved values and match-page display.
+- [x] Check visible app source and stored match descriptions, events, source notes and content: no MFSoccer mentions remain; retain private audit attribution only.
+- [x] Restored Al Arabi–Al Nasr's 47′ “Penalty missed” event; final score and other events unchanged.
+- [x] Replace Al Arabi–Al Nasr's early live statistics with published final Derbista values under the user's permission to use any accessible published source.
+- [x] Assigned the 47′ missed penalty to Anayo Iwuala and added 30 final MFSoccer player ratings; verified in preview.
+- [x] Corrected Al Qadsia–Al Jahra to the official club screenshots: 22 starters, 9 Jahra substitutes, 11 Qadsia substitutes, Christ Afalna #16; verified in preview.
+- [x] Fill verified Round 7–8 statistics and Al Arabi–Al Nasr Round 8 lineups/events/current live clock; verified in preview. Unpublished or inconsistent categories omitted.
+- [x] Add Al Arabi–Al Nasr bench from the source and verify both clubs (11 each).
+- [x] Zain Premier League: added 31 missing mfsoccer fixtures; all 132 verified with no duplicates
+- [x] Head-to-head: show every completed meeting, independent of club-history limits
+- [x] Fixture display: 12 PM for missing times and clearly labelled estimated dates app-wide
 - [x] Android safe area: edge-to-edge + SystemBars-injected safe-area insets (new Android build required, v1.0.1)
 - [x] Android Google sign-in black screen: register the native return link and test callback completion; new Android build and device retest required.
 - [x] Rabta post notifications

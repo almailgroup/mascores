@@ -42,8 +42,8 @@ function ArticlePage() {
        <BackButton />
       <article className="overflow-hidden rounded-3xl border border-border bg-card">
         {n.cover_url && (
-          <div className="relative flex w-full items-center justify-center bg-gradient-to-br from-primary/25 via-card to-background">
-            <img src={n.cover_url} alt="" className="max-h-[70vh] w-full object-contain" />
+          <div className="relative w-full">
+            <img src={n.cover_url} alt="" className="block h-auto w-full" />
           </div>
         )}
 
@@ -58,7 +58,7 @@ function ArticlePage() {
             {n.author_display ? ` · ${n.author_display}` : ""}
           </div>
           <div className="mt-6 space-y-4 text-[0.95rem] leading-7 text-foreground/90">
-             {(lang === "ar" && n.body_markdown_ar ? n.body_markdown_ar : tx(n.body_markdown)).split(/\n{2,}/).map((para, i) => <p key={i} className="whitespace-pre-wrap">{para}</p>)}
+             {(lang === "ar" && n.body_markdown_ar ? n.body_markdown_ar : tx(n.body_markdown)).split(/\n{2,}/).map(para => para.trim()).filter(Boolean).map((para, i) => <p key={i} className="whitespace-pre-wrap">{para}</p>)}
           </div>
         </div>
       </article>

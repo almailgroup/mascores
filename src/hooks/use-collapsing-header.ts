@@ -11,10 +11,13 @@ export function useCollapsingHeader(key: string, distance = 160) {
       frame = 0;
       header.style.setProperty("--collapse", String(Math.min(1, Math.max(0, window.scrollY / distance))));
     };
-    const scroll = () => { if (!frame) frame = requestAnimationFrame(update); };
+    const scroll = () => { if (header.dataset.preserveCollapse === "true") return; if (!frame) frame = requestAnimationFrame(update); };
+    const release = () => { delete header.dataset.preserveCollapse; };
     update();
     window.addEventListener("scroll", scroll, { passive: true });
-    return () => { cancelAnimationFrame(frame); window.removeEventListener("scroll", scroll); };
+    window.addEventListener("touchstart", release, { passive: true });
+    window.addEventListener("wheel", release, { passive: true });
+    return () => { cancelAnimationFrame(frame); window.removeEventListener("scroll", scroll); window.removeEventListener("touchstart", release); window.removeEventListener("wheel", release); };
   }, [key, distance]);
   return ref;
 }

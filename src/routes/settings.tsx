@@ -194,7 +194,7 @@ function SettingsPage() {
                 </button>
                 {username && (
                   <Link to="/u/$username" params={{ username }} className="inline-block text-xs font-semibold text-primary">
-                    View my profile
+                    {lang === "ar" ? "عرض ملفي الشخصي" : "View my profile"}
                   </Link>
                 )}
               </div>

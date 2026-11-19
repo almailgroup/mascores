@@ -1,0 +1,1471 @@
+{
+ "source": "https://mfsoccer.com (client-computed mfsoccer ratings, round 7 league)",
+ "note": "Kuwait SC vs Kazma not played; mfsoccer ratings replaced previous estimates for the 5 played matches.",
+ "ratings": [
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "2ce90ae8-7b6b-4313-ace5-6280ad02e3b0",
+   "rating": 9,
+   "source_name": "عبدالرحمن الرشيدي",
+   "club": "التضامن",
+   "shirt": "99",
+   "name": "Abdulrahman Al Rashidi",
+   "via": "shirt"
+  },
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "2b5f01aa-55da-4115-a44b-63afc9ed7069",
+   "rating": 8.1,
+   "source_name": "أحمد شبيب",
+   "club": "التضامن",
+   "shirt": "10",
+   "name": "Ahmad Shabib",
+   "via": "shirt"
+  },
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "7e2f1856-d83c-4887-ba2b-9491d0baf03b",
+   "rating": 7.9,
+   "source_name": "سعود قاسم",
+   "club": "التضامن",
+   "shirt": "19",
+   "name": "Saud Qassem",
+   "via": "shirt"
+  },
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "4608faa4-1f5e-4392-9927-71a6eff1a553",
+   "rating": 7.3,
+   "source_name": "سانتوس",
+   "club": "التضامن",
+   "shirt": "29",
+   "name": "Marlon Santos",
+   "via": "shirt"
+  },
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "37c671a2-befa-4b71-9057-76cc03b504bb",
+   "rating": 6.7,
+   "source_name": "محمد القبندي",
+   "club": "التضامن",
+   "shirt": "14",
+   "name": "Mohammad Al Qabandi",
+   "via": "shirt"
+  },
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "0d5cd1c4-cc0e-4806-b4fa-8ece28f1cb04",
+   "rating": 6.7,
+   "source_name": "بيريرا",
+   "club": "التضامن",
+   "shirt": "15",
+   "name": "Pierre Desiré Zebli",
+   "via": "shirt"
+  },
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "ca4bd446-b733-4652-be88-d14790e7314e",
+   "rating": 6.7,
+   "source_name": "تركي اليوسف",
+   "club": "التضامن",
+   "shirt": "55",
+   "name": "Turki Abdulaziz Al Yousef",
+   "via": "shirt"
+  },
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "13674462-d922-40b9-8636-8daecd85f712",
+   "rating": 6.7,
+   "source_name": "أبوبكر دومبيا",
+   "club": "التضامن",
+   "shirt": "77",
+   "name": "Aboubacar Junior Doumbia",
+   "via": "shirt"
+  },
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "8b3971f2-5627-4f35-a51f-b0d128c80b0e",
+   "rating": 6.6,
+   "source_name": "زكريا سليماني",
+   "club": "التضامن",
+   "shirt": "69",
+   "name": "Zakariya Souleymane",
+   "via": "shirt"
+  },
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "30422933-7e9e-4c79-bb3d-ce3c046998cd",
+   "rating": 6.6,
+   "source_name": "وليد سعد",
+   "club": "التضامن",
+   "shirt": "3",
+   "name": "Waleed Saad",
+   "via": "shirt"
+  },
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "64f641ba-b70e-4f08-8352-03a941784f40",
+   "rating": 6.6,
+   "source_name": "داود الخالدي",
+   "club": "التضامن",
+   "shirt": "1",
+   "name": "Dawood Al Khaldi",
+   "via": "shirt"
+  },
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "f08867ef-2006-49a8-9796-ca3b0b356d78",
+   "rating": 6.5,
+   "source_name": "فواز الخالدي",
+   "club": "التضامن",
+   "shirt": "44",
+   "name": "Fawaz Al Khaldi",
+   "via": "shirt"
+  },
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "172c5920-9c0e-43cc-a15d-a8321428d3a3",
+   "rating": 6.5,
+   "source_name": "محمد عليان",
+   "club": "التضامن",
+   "shirt": "4",
+   "name": "Mohammed Alyan",
+   "via": "shirt"
+  },
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "6d372561-8be3-4b84-944f-53d99ca4aafd",
+   "rating": 6.5,
+   "source_name": "فهد الرشيدي",
+   "club": "التضامن",
+   "shirt": "9",
+   "name": "Fahad Al Rashidi",
+   "via": "shirt"
+  },
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "b6e15500-b695-4c31-a025-1da5f37b7bed",
+   "rating": 6.4,
+   "source_name": "سلطان صلبوخ",
+   "club": "التضامن",
+   "shirt": "25",
+   "name": "Sultan Salboukh",
+   "via": "shirt"
+  },
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "c478865d-9ce8-4ecd-b09b-1ab5ad8d2a2c",
+   "rating": 6.3,
+   "source_name": "نايف العازمي",
+   "club": "التضامن",
+   "shirt": "22",
+   "name": "Naif Al Azmi",
+   "via": "shirt"
+  },
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "3e63903d-1f58-44ad-ba32-f28c4370dd76",
+   "rating": 7.6,
+   "source_name": "فاضل الصراف",
+   "club": "الساحل",
+   "shirt": "20",
+   "name": "Fadhel Al Sarraf",
+   "via": "shirt"
+  },
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "a979e2fe-07bd-4d16-8688-b03ffa3a8bdb",
+   "rating": 7.6,
+   "source_name": "ألن دي سوزا",
+   "club": "الساحل",
+   "shirt": "29",
+   "name": "Allan Paulista",
+   "via": "shirt"
+  },
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "c47ec56a-1043-4a54-a71f-fcb8a41f92b3",
+   "rating": 6.5,
+   "source_name": "ناصر القحطاني",
+   "club": "الساحل",
+   "shirt": "14",
+   "name": "Nasser Al Qahtani",
+   "via": "shirt"
+  },
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "14fa3649-5e8f-46cc-aae0-aa4878d123f8",
+   "rating": 6.5,
+   "source_name": "حمزه زياد",
+   "club": "الساحل",
+   "shirt": "66",
+   "name": "Hamza Zeyad",
+   "via": "shirt"
+  },
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "a818ca59-942a-58e4-a015-4742bc900f90",
+   "rating": 6.5,
+   "source_name": "نواف المطيري",
+   "club": "الساحل",
+   "shirt": "10",
+   "name": "Nawaf Al Mutairi",
+   "via": "shirt"
+  },
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "7501053f-626d-4ba3-83cd-44e3197d5b91",
+   "rating": 6.4,
+   "source_name": "أحمد غازي",
+   "club": "الساحل",
+   "shirt": "8",
+   "name": "Ahmad Ghazi",
+   "via": "shirt"
+  },
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "9a6b375d-a4d6-49ec-8db2-55287e758120",
+   "rating": 6.4,
+   "source_name": "يوسف بادي",
+   "club": "الساحل",
+   "shirt": "6",
+   "name": "Yousef Badi",
+   "via": "shirt"
+  },
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "38348bba-26a3-486d-adc3-245cc456d112",
+   "rating": 6.4,
+   "source_name": "غازي العتيبي",
+   "club": "الساحل",
+   "shirt": "87",
+   "name": "Ghazi Al Otaibi",
+   "via": "shirt"
+  },
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "f4cc9148-9766-42fa-bdc9-177079e11519",
+   "rating": 6.4,
+   "source_name": "فيصل عجب",
+   "club": "الساحل",
+   "shirt": "9",
+   "name": "Faisal Ajab",
+   "via": "shirt"
+  },
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "89e038c5-a740-4e33-8934-c186fd769114",
+   "rating": 6.3,
+   "source_name": "علي جوهر",
+   "club": "الساحل",
+   "shirt": "2",
+   "name": "Ali Jawhar",
+   "via": "shirt"
+  },
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "bd6f2351-ba09-4d2f-8aab-b337a8b6929e",
+   "rating": 6.2,
+   "source_name": "محمد الراشد",
+   "club": "الساحل",
+   "shirt": "28",
+   "name": "Mohammed Al Rashed",
+   "via": "shirt"
+  },
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "d2ed6231-a41a-43a7-b511-971edbc1dcbc",
+   "rating": 6.2,
+   "source_name": "عبدالرحمن الديحاني",
+   "club": "الساحل",
+   "shirt": "5",
+   "name": "Abdulrahman Al Daihani",
+   "via": "shirt"
+  },
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "9fb05813-0731-4cea-bc52-9202851a05b4",
+   "rating": 6.2,
+   "source_name": "موريسيو",
+   "club": "الساحل",
+   "shirt": "15",
+   "name": "Mauricio Moraes",
+   "via": "shirt"
+  },
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "866a5126-8642-48cc-9f07-c0af2e1d847f",
+   "rating": 6.2,
+   "source_name": "عمر الهنودي",
+   "club": "الساحل",
+   "shirt": "33",
+   "name": "Omar Al Hanoudi",
+   "via": "shirt"
+  },
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "c6f9e545-bd38-48d7-bb05-5f2a0a222e27",
+   "rating": 6.2,
+   "source_name": "بدر الزايد",
+   "club": "الساحل",
+   "shirt": "44",
+   "name": "Bader Al Zayed",
+   "via": "shirt"
+  },
+  {
+   "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+   "player_id": "0090b591-985a-4876-ae78-98193f47846d",
+   "rating": 5.7,
+   "source_name": "مشعل الرشيدي",
+   "club": "الساحل",
+   "shirt": "1",
+   "name": "Meshal Al Rashidi",
+   "via": "shirt"
+  },
+  {
+   "match_id": "7b0dbcf2-5f8b-4a18-ac55-896fec52f262",
+   "player_id": "5eadb220-bcf0-44c6-bdd1-0c1754721bf5",
+   "rating": 7.6,
+   "source_name": "فهد زويد",
+   "club": "الصليبخات",
+   "shirt": "19",
+   "name": "Fahad Zuwaid",
+   "via": "shirt"
+  },
+  {
+   "match_id": "7b0dbcf2-5f8b-4a18-ac55-896fec52f262",
+   "player_id": "e4f3fecc-5913-44a6-aca5-e415b03a02d0",
+   "rating": 7.5,
+   "source_name": "لوكاس شالون",
+   "club": "الصليبخات",
+   "shirt": "27",
+   "name": "Lucas Shallon",
+   "via": "shirt"
+  },
+  {
+   "match_id": "7b0dbcf2-5f8b-4a18-ac55-896fec52f262",
+   "player_id": "73ef0e77-b09e-45c1-8636-0d6ee8d6db6d",
+   "rating": 7.5,
+   "source_name": "عبدالله العوضي",
+   "club": "الصليبخات",
+   "shirt": "17",
+   "name": "Abdullah Al Awadhi",
+   "via": "shirt"
+  },
+  {
+   "match_id": "7b0dbcf2-5f8b-4a18-ac55-896fec52f262",
+   "player_id": "8078e2fb-ff5d-4a2b-95a3-5e8736fb7aed",
+   "rating": 6.7,
+   "source_name": "ويلفز دامسينا",
+   "club": "الصليبخات",
+   "shirt": "20",
+   "name": "Welves Damacena",
+   "via": "shirt"
+  },
+  {
+   "match_id": "7b0dbcf2-5f8b-4a18-ac55-896fec52f262",
+   "player_id": "4231c574-ea81-41c9-b195-56520eb0a42a",
+   "rating": 6.6,
+   "source_name": "مبارك سعيد",
+   "club": "الصليبخات",
+   "shirt": "23",
+   "name": "Mubarak Saeed",
+   "via": "shirt"
+  },
+  {
+   "match_id": "7b0dbcf2-5f8b-4a18-ac55-896fec52f262",
+   "player_id": "c06761aa-bc43-4bf8-a346-1b2288a6e569",
+   "rating": 6.6,
+   "source_name": "فهد الهولي",
+   "club": "الصليبخات",
+   "shirt": "6",
+   "name": "Fahad Al Houli",
+   "via": "shirt"
+  },
+  {
+   "match_id": "7b0dbcf2-5f8b-4a18-ac55-896fec52f262",
+   "player_id": "40ea6767-6f95-4ec0-ab54-7cb0697b3366",
+   "rating": 6.6,
+   "source_name": "برونو دومنيغيس",
+   "club": "الصليبخات",
+   "shirt": "55",
+   "name": "Bruno Domingues",
+   "via": "shirt"
+  },
+  {
+   "match_id": "7b0dbcf2-5f8b-4a18-ac55-896fec52f262",
+   "player_id": "1f0f8a65-7b04-4de6-9887-2133414b78ed",
+   "rating": 6.5,
+   "source_name": "شيلدون",
+   "club": "الصليبخات",
+   "shirt": "33",
+   "name": "Leonardo Sheldon",
+   "via": "shirt"
+  },
+  {
+   "match_id": "7b0dbcf2-5f8b-4a18-ac55-896fec52f262",
+   "player_id": "4f2a12d0-376a-4edc-b1ca-67abe2e1d319",
+   "rating": 6.5,
+   "source_name": "إيليلسون بيبي",
+   "club": "الصليبخات",
+   "shirt": "44",
+   "name": "Elielson Cardoso Bebê",
+   "via": "shirt"
+  },
+  {
+   "match_id": "7b0dbcf2-5f8b-4a18-ac55-896fec52f262",
+   "player_id": "11265013-bb65-432d-8258-eb78d6ec6b44",
+   "rating": 6.5,
+   "source_name": "علي الموسوي",
+   "club": "الصليبخات",
+   "shirt": "4",
+   "name": "Ali Al Mousawy",
+   "via": "shirt"
+  },
+  {
+   "match_id": "7b0dbcf2-5f8b-4a18-ac55-896fec52f262",
+   "player_id": "71ac7b44-a9e4-4b95-8337-1eb53992fcdb",
+   "rating": 6.5,
+   "source_name": "نواف الشيباني",
+   "club": "الصليبخات",
+   "shirt": "8",
+   "name": "Nawaf Al Shaibani",
+   "via": "alias"
+  },
+  {
+   "match_id": "7b0dbcf2-5f8b-4a18-ac55-896fec52f262",
+   "player_id": "4ece15ad-f52f-4400-8c39-8a64a0819f90",
+   "rating": 6.4,
+   "source_name": "صالح خميس",
+   "club": "الصليبخات",
+   "shirt": "2",
+   "name": "Saleh Khamees Al Enezi",
+   "via": "alias"
+  },
+  {
+   "match_id": "7b0dbcf2-5f8b-4a18-ac55-896fec52f262",
+   "player_id": "7ca6d0b9-9ba6-46a0-b04c-3d3950001cfe",
+   "rating": 6,
+   "source_name": "عبدالرحمن الشريفي",
+   "club": "الصليبخات",
+   "shirt": "22",
+   "name": "Abdulrahman Al Sharifi",
+   "via": "shirt"
+  },
+  {
+   "match_id": "7b0dbcf2-5f8b-4a18-ac55-896fec52f262",
+   "player_id": "4a5e3a79-7707-4d40-a44f-a335bae57171",
+   "rating": 7.8,
+   "source_name": "مبارك الفنيني",
+   "club": "السالمية",
+   "shirt": "26",
+   "name": "Mubarak Al Faneni",
+   "via": "shirt"
+  },
+  {
+   "match_id": "7b0dbcf2-5f8b-4a18-ac55-896fec52f262",
+   "player_id": "7efa6100-e084-4e3b-9eca-0718496543fa",
+   "rating": 6.7,
+   "source_name": "عبد الله يوسف",
+   "club": "السالمية",
+   "shirt": "9",
+   "name": "Abdullah Al Yusuf",
+   "via": "shirt"
+  },
+  {
+   "match_id": "7b0dbcf2-5f8b-4a18-ac55-896fec52f262",
+   "player_id": "44d0de20-1b58-4cb3-82cd-2216e10cd1e0",
+   "rating": 6.6,
+   "source_name": "عبد الرحمن الخضر",
+   "club": "السالمية",
+   "shirt": "3",
+   "name": "Abdulrahman Al Khudher",
+   "via": "shirt"
+  },
+  {
+   "match_id": "7b0dbcf2-5f8b-4a18-ac55-896fec52f262",
+   "player_id": "6c53b429-a6b8-442d-8040-038b8903409b",
+   "rating": 6.6,
+   "source_name": "فواز عايض",
+   "club": "السالمية",
+   "shirt": "10",
+   "name": "Fawaz Ayedh",
+   "via": "shirt"
+  },
+  {
+   "match_id": "7b0dbcf2-5f8b-4a18-ac55-896fec52f262",
+   "player_id": "2593f1e8-9686-4586-9e86-78a55ccd3334",
+   "rating": 6.6,
+   "source_name": "محمود الأســود",
+   "club": "السالمية",
+   "shirt": "7",
+   "name": "Mahmoud Al Aswad",
+   "via": "shirt"
+  },
+  {
+   "match_id": "7b0dbcf2-5f8b-4a18-ac55-896fec52f262",
+   "player_id": "ef05230b-ca35-4a79-af41-aa0ca3d25f94",
+   "rating": 6.6,
+   "source_name": "معاذ الاصيمع",
+   "club": "السالمية",
+   "shirt": "19",
+   "name": "Moaath Al Enezi",
+   "via": "alias"
+  },
+  {
+   "match_id": "7b0dbcf2-5f8b-4a18-ac55-896fec52f262",
+   "player_id": "965df201-22db-4365-b1f0-312463c6a21f",
+   "rating": 6.5,
+   "source_name": "خالد العثمان",
+   "club": "السالمية",
+   "shirt": "24",
+   "name": "Khalid Al Othman",
+   "via": "shirt"
+  },
+  {
+   "match_id": "7b0dbcf2-5f8b-4a18-ac55-896fec52f262",
+   "player_id": "568fb255-56c7-4646-9448-9d2622777afc",
+   "rating": 6.5,
+   "source_name": "شاهزود",
+   "club": "السالمية",
+   "shirt": "4",
+   "name": "Shakhzod Azmiddinov",
+   "via": "shirt"
+  },
+  {
+   "match_id": "7b0dbcf2-5f8b-4a18-ac55-896fec52f262",
+   "player_id": "6566d562-b640-4295-8dc8-9676d34229af",
+   "rating": 6.5,
+   "source_name": "عبدالمحسن التركماني",
+   "club": "السالمية",
+   "shirt": "18",
+   "name": "Abdulmohsen Al Turkmani ",
+   "via": "alias"
+  },
+  {
+   "match_id": "7b0dbcf2-5f8b-4a18-ac55-896fec52f262",
+   "player_id": "ce2155c8-fcd2-4010-a902-2b68d45552cb",
+   "rating": 6.4,
+   "source_name": "احمد بو مريوم",
+   "club": "السالمية",
+   "shirt": "6",
+   "name": "Ahmed Bomaryoum",
+   "via": "shirt"
+  },
+  {
+   "match_id": "7b0dbcf2-5f8b-4a18-ac55-896fec52f262",
+   "player_id": "bf31b5e0-4ab5-4247-b4a9-4ead985c0365",
+   "rating": 6.4,
+   "source_name": "مهدي دشتي",
+   "club": "السالمية",
+   "shirt": "16",
+   "name": "Mahdi Dashti ",
+   "via": "shirt"
+  },
+  {
+   "match_id": "7b0dbcf2-5f8b-4a18-ac55-896fec52f262",
+   "player_id": "631c9df4-be14-4b26-9a66-eda9e36de560",
+   "rating": 6.3,
+   "source_name": "عبدالرحمن الفضلي",
+   "club": "السالمية",
+   "shirt": "35",
+   "name": "Abdulrahman Al Fadhli",
+   "via": "shirt"
+  },
+  {
+   "match_id": "7b0dbcf2-5f8b-4a18-ac55-896fec52f262",
+   "player_id": "2139164b-d76d-48cd-91b2-6a7226ba38e1",
+   "rating": 6.3,
+   "source_name": "عقيل الهزيم",
+   "club": "السالمية",
+   "shirt": "23",
+   "name": "Aqeel Al Hazeem",
+   "via": "alias"
+  },
+  {
+   "match_id": "7b0dbcf2-5f8b-4a18-ac55-896fec52f262",
+   "player_id": "0e3589ec-6739-4600-825f-b9ce2f7aa32e",
+   "rating": 6.2,
+   "source_name": "تريسور",
+   "club": "السالمية",
+   "shirt": "29",
+   "name": "Trésor Yamba",
+   "via": "shirt"
+  },
+  {
+   "match_id": "9f2fde82-79cf-4ccf-a45d-2f1215a83182",
+   "player_id": "fb9c5ffb-1646-4a32-9fa7-695feceb26ee",
+   "rating": 8.8,
+   "source_name": "كيريست افالانا",
+   "club": "الجهراء",
+   "shirt": "98",
+   "name": "Christ Afalna",
+   "via": "shirt"
+  },
+  {
+   "match_id": "9f2fde82-79cf-4ccf-a45d-2f1215a83182",
+   "player_id": "7c2db5f0-6dd9-4508-a1de-cf0ebc9569aa",
+   "rating": 8.4,
+   "source_name": "مبارك الحربي",
+   "club": "الجهراء",
+   "shirt": "1",
+   "name": "Mubarak Al Harbi",
+   "via": "shirt"
+  },
+  {
+   "match_id": "9f2fde82-79cf-4ccf-a45d-2f1215a83182",
+   "player_id": "59522c75-f955-4dd5-b798-1321226f29c9",
+   "rating": 8.1,
+   "source_name": "أحمد العجمي",
+   "club": "الجهراء",
+   "shirt": "18",
+   "name": "Ahmad Al Ajmi",
+   "via": "shirt"
+  },
+  {
+   "match_id": "9f2fde82-79cf-4ccf-a45d-2f1215a83182",
+   "player_id": "7cb65594-8c29-4cee-a3c0-5d58c36ca6be",
+   "rating": 7.8,
+   "source_name": "عبدالعزيز رسام",
+   "club": "الجهراء",
+   "shirt": "2",
+   "name": "Abdulaziz Al Rassam",
+   "via": "shirt"
+  },
+  {
+   "match_id": "9f2fde82-79cf-4ccf-a45d-2f1215a83182",
+   "player_id": "a7801557-1afe-4fed-bc3f-639885cd562b",
+   "rating": 7.8,
+   "source_name": "ماركوس راموس",
+   "club": "الجهراء",
+   "shirt": "13",
+   "name": "Marcos Ramos",
+   "via": "shirt"
+  },
+  {
+   "match_id": "9f2fde82-79cf-4ccf-a45d-2f1215a83182",
+   "player_id": "1fedeeeb-bbb3-4435-9d84-04b364eb1d67",
+   "rating": 7.8,
+   "source_name": "تاكامبا ناسام",
+   "club": "الجهراء",
+   "shirt": "26",
+   "name": "Tchamba Ngassam",
+   "via": "shirt"
+  },
+  {
+   "match_id": "9f2fde82-79cf-4ccf-a45d-2f1215a83182",
+   "player_id": "3918852e-af85-436c-b2f6-8d50d03fa98d",
+   "rating": 7.8,
+   "source_name": "جاسم العنزي",
+   "club": "الجهراء",
+   "shirt": "4",
+   "name": "Jasem Fahad Al Enezi",
+   "via": "shirt"
+  },
+  {
+   "match_id": "9f2fde82-79cf-4ccf-a45d-2f1215a83182",
+   "player_id": "ce2824e2-4f3d-4128-89b7-8bb961fdb8a3",
+   "rating": 7.8,
+   "source_name": "عبدالله الداحس",
+   "club": "الجهراء",
+   "shirt": "80",
+   "name": "Abdullah Al Dahes",
+   "via": "shirt"
+  },
+  {
+   "match_id": "9f2fde82-79cf-4ccf-a45d-2f1215a83182",
+   "player_id": "23f93bed-69fa-438b-b2f4-ee284a7d966b",
+   "rating": 7.8,
+   "source_name": "ايفانز امبوفو",
+   "club": "الجهراء",
+   "shirt": "15",
+   "name": "Evans Ampofo",
+   "via": "shirt"
+  },
+  {
+   "match_id": "9f2fde82-79cf-4ccf-a45d-2f1215a83182",
+   "player_id": "4fd1c93e-6da9-4a0f-aab9-398cd83db441",
+   "rating": 7,
+   "source_name": "بدر سالم الشمري",
+   "club": "الجهراء",
+   "shirt": "12",
+   "name": "Bader Al Shammeri",
+   "via": "shirt"
+  },
+  {
+   "match_id": "9f2fde82-79cf-4ccf-a45d-2f1215a83182",
+   "player_id": "cba586dc-137f-4ab4-909a-163391103b0b",
+   "rating": 6.6,
+   "source_name": "طلال مزيد",
+   "club": "الجهراء",
+   "shirt": "19",
+   "name": "Talal Mazid",
+   "via": "shirt"
+  },
+  {
+   "match_id": "9f2fde82-79cf-4ccf-a45d-2f1215a83182",
+   "player_id": "e5bc82c9-e6b4-4117-abb4-f40cc22dfd25",
+   "rating": 6.5,
+   "source_name": "أحمد الشمري",
+   "club": "الجهراء",
+   "shirt": "77",
+   "name": "Ahmad Ali Al Shammeri",
+   "via": "shirt"
+  },
+  {
+   "match_id": "9f2fde82-79cf-4ccf-a45d-2f1215a83182",
+   "player_id": "b0c87bba-6d6f-4e96-8891-ce3f930ec0f7",
+   "rating": 6.5,
+   "source_name": "لويسنهو",
+   "club": "الجهراء",
+   "shirt": "16",
+   "name": "Luisinho",
+   "via": "shirt"
+  },
+  {
+   "match_id": "9f2fde82-79cf-4ccf-a45d-2f1215a83182",
+   "player_id": "e9a8b667-4be5-4416-831a-afa7cb0b4fbd",
+   "rating": 6.3,
+   "source_name": "عبدالرحمن الظفيري",
+   "club": "الجهراء",
+   "shirt": "88",
+   "name": "Abdulrahman Al Dhaferi",
+   "via": "shirt"
+  },
+  {
+   "match_id": "9f2fde82-79cf-4ccf-a45d-2f1215a83182",
+   "player_id": "2cc83522-fbb4-47ec-b802-6109486ad215",
+   "rating": 6.5,
+   "source_name": "رانجا شيفافيرو",
+   "club": "الفحيحيل",
+   "shirt": "9",
+   "name": "Ranga Piniel Chivaviro",
+   "via": "shirt"
+  },
+  {
+   "match_id": "9f2fde82-79cf-4ccf-a45d-2f1215a83182",
+   "player_id": "8553e5cd-52c3-47ee-8425-f8dc8a471cf3",
+   "rating": 6.4,
+   "source_name": "حمد الطويل",
+   "club": "الفحيحيل",
+   "shirt": "7",
+   "name": "Hamad Al Taweel",
+   "via": "shirt"
+  },
+  {
+   "match_id": "9f2fde82-79cf-4ccf-a45d-2f1215a83182",
+   "player_id": "fae9641f-bbb8-41ce-b1fc-0cf304649496",
+   "rating": 6.4,
+   "source_name": "جاتوش بانوم",
+   "club": "الفحيحيل",
+   "shirt": "25",
+   "name": "Gatoch Panom Yiech",
+   "via": "shirt"
+  },
+  {
+   "match_id": "9f2fde82-79cf-4ccf-a45d-2f1215a83182",
+   "player_id": "195e119e-4142-44aa-87c4-713658007596",
+   "rating": 6.4,
+   "source_name": "سلمان البوص",
+   "club": "الفحيحيل",
+   "shirt": "10",
+   "name": "Salman Al Bouss",
+   "via": "shirt"
+  },
+  {
+   "match_id": "9f2fde82-79cf-4ccf-a45d-2f1215a83182",
+   "player_id": "a188114c-7eb5-4810-bea3-5c29a270aec3",
+   "rating": 6.4,
+   "source_name": "همام صبحي",
+   "club": "الفحيحيل",
+   "shirt": "17",
+   "name": "Homam Mahmoud",
+   "via": "shirt"
+  },
+  {
+   "match_id": "9f2fde82-79cf-4ccf-a45d-2f1215a83182",
+   "player_id": "28b8b218-cbae-4f13-b2fc-9c1b7b40487f",
+   "rating": 6.3,
+   "source_name": "احمد النصر",
+   "club": "الفحيحيل",
+   "shirt": "24",
+   "name": "Ahmed Al Nasr",
+   "via": "shirt"
+  },
+  {
+   "match_id": "9f2fde82-79cf-4ccf-a45d-2f1215a83182",
+   "player_id": "cd977101-e633-4545-b867-7ad014016126",
+   "rating": 6.3,
+   "source_name": "شريدة الشريدة",
+   "club": "الفحيحيل",
+   "shirt": "15",
+   "name": "Shereedah Al Shereedah",
+   "via": "shirt"
+  },
+  {
+   "match_id": "9f2fde82-79cf-4ccf-a45d-2f1215a83182",
+   "player_id": "970c7288-392b-4067-a224-308d7e734530",
+   "rating": 6.2,
+   "source_name": "عبدالعزيز ناجي",
+   "club": "الفحيحيل",
+   "shirt": "60",
+   "name": "Abdulaziz Naji",
+   "via": "shirt"
+  },
+  {
+   "match_id": "9f2fde82-79cf-4ccf-a45d-2f1215a83182",
+   "player_id": "b51ab35b-d3c9-422b-bd35-24d4a03d8830",
+   "rating": 6.2,
+   "source_name": "كارلوس",
+   "club": "الفحيحيل",
+   "shirt": "35",
+   "name": "Breno Calixto",
+   "via": "shirt"
+  },
+  {
+   "match_id": "9f2fde82-79cf-4ccf-a45d-2f1215a83182",
+   "player_id": "6969b5a5-5ecf-4a5f-bcd2-3c188b60f156",
+   "rating": 6.2,
+   "source_name": "جاسم كرم",
+   "club": "الفحيحيل",
+   "shirt": "45",
+   "name": "Jassem Karam",
+   "via": "shirt"
+  },
+  {
+   "match_id": "9f2fde82-79cf-4ccf-a45d-2f1215a83182",
+   "player_id": "5d3e9c13-b71e-48aa-a3f1-61ec26cccb58",
+   "rating": 6.2,
+   "source_name": "محمد الفارسي",
+   "club": "الفحيحيل",
+   "shirt": "70",
+   "name": "Mohammad Al Faresi",
+   "via": "shirt"
+  },
+  {
+   "match_id": "9f2fde82-79cf-4ccf-a45d-2f1215a83182",
+   "player_id": "8ae9b747-4449-46c0-a91b-5fb4d5810234",
+   "rating": 5.9,
+   "source_name": "احمد دشتي",
+   "club": "الفحيحيل",
+   "shirt": "26",
+   "name": "Ahmad Dashti",
+   "via": "shirt"
+  },
+  {
+   "match_id": "d84ed368-7e75-4599-a483-44881bc349ee",
+   "player_id": "6b5e76b5-50da-47c0-abad-066c94219523",
+   "rating": 6.5,
+   "source_name": "جاسم المطر",
+   "club": "القادسية",
+   "shirt": "28",
+   "name": "Jassim Al Mutar",
+   "via": "shirt"
+  },
+  {
+   "match_id": "d84ed368-7e75-4599-a483-44881bc349ee",
+   "player_id": "1c78889f-2466-4256-b6e6-1e1904aaee58",
+   "rating": 6.5,
+   "source_name": "عيد الرشيدي",
+   "club": "القادسية",
+   "shirt": "11",
+   "name": "Eid Al Rashidi",
+   "via": "shirt"
+  },
+  {
+   "match_id": "d84ed368-7e75-4599-a483-44881bc349ee",
+   "player_id": "13e92e0f-c30f-4c5c-8ac4-50fc136414c7",
+   "rating": 6.5,
+   "source_name": "عبدالوهاب الشلال",
+   "club": "القادسية",
+   "shirt": "29",
+   "name": "Abdulwahab Al Shallal",
+   "via": "shirt"
+  },
+  {
+   "match_id": "d84ed368-7e75-4599-a483-44881bc349ee",
+   "player_id": "48e0f76c-431a-44f1-ae0a-3ef895a9f342",
+   "rating": 6.5,
+   "source_name": "خالد الخرقاوي",
+   "club": "القادسية",
+   "shirt": "9",
+   "name": "Khaled Al Kharqawi",
+   "via": "shirt"
+  },
+  {
+   "match_id": "d84ed368-7e75-4599-a483-44881bc349ee",
+   "player_id": "78a1dc40-3088-42ad-99d7-075a9f09e6fe",
+   "rating": 6.4,
+   "source_name": "ناصر الرواحي",
+   "club": "القادسية",
+   "shirt": "7",
+   "name": "Nasser Al Rawahi",
+   "via": "shirt"
+  },
+  {
+   "match_id": "d84ed368-7e75-4599-a483-44881bc349ee",
+   "player_id": "c35131bc-9929-4d52-a421-0590e7eedda4",
+   "rating": 6.4,
+   "source_name": "عبدالرحمن المشيفري",
+   "club": "القادسية",
+   "shirt": "21",
+   "name": "Abdulrahman Al Mushaifri",
+   "via": "shirt"
+  },
+  {
+   "match_id": "d84ed368-7e75-4599-a483-44881bc349ee",
+   "player_id": "6bd28caa-2298-4c97-b2e0-f2ab25367058",
+   "rating": 6.4,
+   "source_name": "خالد محمد ابراهيم",
+   "club": "القادسية",
+   "shirt": "36",
+   "name": "Khaled Ebrahim",
+   "via": "shirt"
+  },
+  {
+   "match_id": "d84ed368-7e75-4599-a483-44881bc349ee",
+   "player_id": "e5f0beb5-d594-489b-998a-612dadffccb7",
+   "rating": 6.4,
+   "source_name": "ايوب لخضر",
+   "club": "القادسية",
+   "shirt": "77",
+   "name": "Ayoub Lakhdar",
+   "via": "shirt"
+  },
+  {
+   "match_id": "d84ed368-7e75-4599-a483-44881bc349ee",
+   "player_id": "cff1cd10-8726-4cff-85e7-29df58c21113",
+   "rating": 6.4,
+   "source_name": "سيدريك جبو",
+   "club": "القادسية",
+   "shirt": "5",
+   "name": "Cedrik Gbo",
+   "via": "shirt"
+  },
+  {
+   "match_id": "d84ed368-7e75-4599-a483-44881bc349ee",
+   "player_id": "eef9bf86-f0b9-427d-9b01-fcf2a19c2ee1",
+   "rating": 6.4,
+   "source_name": "عبدالله مطاوع",
+   "club": "القادسية",
+   "shirt": "8",
+   "name": "Abdullah Motawe",
+   "via": "shirt"
+  },
+  {
+   "match_id": "d84ed368-7e75-4599-a483-44881bc349ee",
+   "player_id": "d6792312-a55c-4190-bd69-465f293bc141",
+   "rating": 6.3,
+   "source_name": "حمزة خابا",
+   "club": "القادسية",
+   "shirt": "23",
+   "name": "Hamza Khabba",
+   "via": "shirt"
+  },
+  {
+   "match_id": "d84ed368-7e75-4599-a483-44881bc349ee",
+   "player_id": "77172346-c3b1-438e-b55f-7cacb21e39b0",
+   "rating": 6.3,
+   "source_name": "بدر جمال",
+   "club": "القادسية",
+   "shirt": "13",
+   "name": "Bader Jamal",
+   "via": "shirt"
+  },
+  {
+   "match_id": "d84ed368-7e75-4599-a483-44881bc349ee",
+   "player_id": "7d618e28-116c-477b-b779-8987b9eaf91e",
+   "rating": 6.2,
+   "source_name": "راشد الدوسري",
+   "club": "القادسية",
+   "shirt": "4",
+   "name": "Rashed Al Dosari",
+   "via": "shirt"
+  },
+  {
+   "match_id": "d84ed368-7e75-4599-a483-44881bc349ee",
+   "player_id": "c8be42b9-01f2-43b5-94b4-7c923c8ecd64",
+   "rating": 6.2,
+   "source_name": "خالد صباح",
+   "club": "القادسية",
+   "shirt": "6",
+   "name": "Khaled Sabah",
+   "via": "shirt"
+  },
+  {
+   "match_id": "d84ed368-7e75-4599-a483-44881bc349ee",
+   "player_id": "e8197dc0-4843-46c0-9903-09a95a5b6aee",
+   "rating": 6.2,
+   "source_name": "معاذ الظفيري",
+   "club": "القادسية",
+   "shirt": "3",
+   "name": "Moaath Al Dhaferi",
+   "via": "shirt"
+  },
+  {
+   "match_id": "d84ed368-7e75-4599-a483-44881bc349ee",
+   "player_id": "10a4d857-23b0-4113-9652-d96e36967171",
+   "rating": 5.9,
+   "source_name": "حميد القلاف",
+   "club": "القادسية",
+   "shirt": "33",
+   "name": "Hameed Al Qallaf",
+   "via": "shirt"
+  },
+  {
+   "match_id": "d84ed368-7e75-4599-a483-44881bc349ee",
+   "player_id": "c33fa399-fa9a-47d7-bbe7-ae86ee6c56c6",
+   "rating": 8.4,
+   "source_name": "احمد عادي",
+   "club": "العربي",
+   "shirt": "26",
+   "name": "Ahmad Aadi",
+   "via": "shirt"
+  },
+  {
+   "match_id": "d84ed368-7e75-4599-a483-44881bc349ee",
+   "player_id": "a5d3c943-181e-44f3-9b29-07160862601b",
+   "rating": 8.2,
+   "source_name": "ايوالا",
+   "club": "العربي",
+   "shirt": "7",
+   "name": "Anayo Iwuala",
+   "via": "alias"
+  },
+  {
+   "match_id": "d84ed368-7e75-4599-a483-44881bc349ee",
+   "player_id": "e3a8d897-b70c-487f-888d-082ccff5bcfe",
+   "rating": 7.9,
+   "source_name": "علي خلف",
+   "club": "العربي",
+   "shirt": "17",
+   "name": "Ali Khalaf",
+   "via": "shirt"
+  },
+  {
+   "match_id": "d84ed368-7e75-4599-a483-44881bc349ee",
+   "player_id": "c06d55d7-1155-47d9-bc12-e9dea3bffa5e",
+   "rating": 7.8,
+   "source_name": "عبدالوهاب العوضي",
+   "club": "العربي",
+   "shirt": "2",
+   "name": "Abdulwahab Awadi",
+   "via": "shirt"
+  },
+  {
+   "match_id": "d84ed368-7e75-4599-a483-44881bc349ee",
+   "player_id": "19751bcf-1831-426c-b88e-48cdb092d7c4",
+   "rating": 7.8,
+   "source_name": "بدر الدين سوياد",
+   "club": "العربي",
+   "shirt": "27",
+   "name": "Badreddine Souyad",
+   "via": "shirt"
+  },
+  {
+   "match_id": "d84ed368-7e75-4599-a483-44881bc349ee",
+   "player_id": "ed97bdd2-b0ce-4ba9-8f5f-797438223f06",
+   "rating": 7.8,
+   "source_name": "عزيز نصاري",
+   "club": "العربي",
+   "shirt": "21",
+   "name": "Abdulaziz Nasari",
+   "via": "shirt"
+  },
+  {
+   "match_id": "d84ed368-7e75-4599-a483-44881bc349ee",
+   "player_id": "0013de0b-3722-4c1c-a8a6-c92ae8fa7383",
+   "rating": 7.7,
+   "source_name": "بندر السلامة",
+   "club": "العربي",
+   "shirt": "10",
+   "name": "Bandar Al Salama",
+   "via": "shirt"
+  },
+  {
+   "match_id": "d84ed368-7e75-4599-a483-44881bc349ee",
+   "player_id": "464cd2ce-2221-4401-bb27-3b38651dfd88",
+   "rating": 7.6,
+   "source_name": "جمعة عبود",
+   "club": "العربي",
+   "shirt": "5",
+   "name": "Jumma Aboud",
+   "via": "shirt"
+  },
+  {
+   "match_id": "d84ed368-7e75-4599-a483-44881bc349ee",
+   "player_id": "643911e1-9ddb-43b7-b212-b1b333c25ee5",
+   "rating": 7.6,
+   "source_name": "زيد قنبر",
+   "club": "العربي",
+   "shirt": "98",
+   "name": "Zaid Qunbar",
+   "via": "shirt"
+  },
+  {
+   "match_id": "d84ed368-7e75-4599-a483-44881bc349ee",
+   "player_id": "977456de-d8da-4337-87ca-c7c241628f4f",
+   "rating": 7,
+   "source_name": "كينان ماليكو",
+   "club": "العربي",
+   "shirt": "18",
+   "name": "Canaan Markneh",
+   "via": "shirt"
+  },
+  {
+   "match_id": "d84ed368-7e75-4599-a483-44881bc349ee",
+   "player_id": "95edfade-c364-402e-8ccd-bb82329b717d",
+   "rating": 6.7,
+   "source_name": "حمد الحربي",
+   "club": "العربي",
+   "shirt": "12",
+   "name": "Hamad Al Harbi",
+   "via": "shirt"
+  },
+  {
+   "match_id": "d84ed368-7e75-4599-a483-44881bc349ee",
+   "player_id": "eef07411-e107-4bd4-82b4-e01304886150",
+   "rating": 6.6,
+   "source_name": "وليد ولد الشيخ",
+   "club": "العربي",
+   "shirt": "73",
+   "name": "Walid Ould Chikh",
+   "via": "shirt"
+  },
+  {
+   "match_id": "d84ed368-7e75-4599-a483-44881bc349ee",
+   "player_id": "0626d6b0-0f55-44db-b3ad-b3927c4fea31",
+   "rating": 6.6,
+   "source_name": "يوسف ماجد",
+   "club": "العربي",
+   "shirt": "19",
+   "name": "Yousef Majed",
+   "via": "shirt"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "b7527867-106e-4fe2-8fa4-54691bd74464",
+   "rating": 7.4,
+   "source_name": "حازم الحاج حسن",
+   "club": "النصر",
+   "shirt": "99",
+   "name": "Hazem Haj Hassen",
+   "via": "shirt"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "44a155e0-4564-4dc7-aab0-287879f2cf20",
+   "rating": 6.7,
+   "source_name": "فواز المبيلش",
+   "club": "النصر",
+   "shirt": "9",
+   "name": "Fawaz Al Mubailish",
+   "via": "alias"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "f60354ab-d18d-4448-aff9-ee281d5bcc0d",
+   "rating": 6.6,
+   "source_name": "محمد حمد",
+   "club": "النصر",
+   "shirt": "77",
+   "name": "Mohammad Al Adwani",
+   "via": "alias"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "ec3de498-9efe-4661-883d-a789a874a80c",
+   "rating": 6.5,
+   "source_name": "خالد محمد",
+   "club": "النصر",
+   "shirt": "15",
+   "name": "Khaled Saadoun",
+   "via": "alias"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "b1e40711-d8e2-44c8-88e9-d1e1e9aed26b",
+   "rating": 6.5,
+   "source_name": "سيف الحشان",
+   "club": "النصر",
+   "shirt": "7",
+   "name": "Saif Al Hashan",
+   "via": "shirt"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "0e1f357b-370b-461f-bbc8-6458edbafee4",
+   "rating": 6.5,
+   "source_name": "ايمن لقجع",
+   "club": "النصر",
+   "shirt": "8",
+   "name": "Aymen Issad Lakdja",
+   "via": "shirt"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "a3c89396-e346-44e9-9ab4-6148b67b70a0",
+   "rating": 6.5,
+   "source_name": "محمد عبدالهادي",
+   "club": "النصر",
+   "shirt": "20",
+   "name": "Mohammed Abdul Hadi",
+   "via": "alias"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "69371ec2-3996-4bcc-9504-4c7a119f36da",
+   "rating": 6.4,
+   "source_name": "مسفر العدواني",
+   "club": "النصر",
+   "shirt": "50",
+   "name": "Mesfer Al Adwani",
+   "via": "shirt"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "be6b5a6f-b22e-46e7-980e-b2cfd0e6ae1e",
+   "rating": 6.4,
+   "source_name": "عبدالعزيز الشمري",
+   "club": "النصر",
+   "shirt": "26",
+   "name": "Abdulaziz Al Shammari",
+   "via": "shirt"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "5a1d32b4-e1d2-4562-a620-2e27663816a7",
+   "rating": 7.3,
+   "source_name": "راشد فراج",
+   "club": "الشباب",
+   "shirt": "23",
+   "name": "Rashed Al Mutairi",
+   "via": "alias"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "09afeb40-a898-48b7-b916-45f6b9d4f479",
+   "rating": 6.7,
+   "source_name": "يوسف نجف",
+   "club": "الشباب",
+   "shirt": "15",
+   "name": "Yousef Najaf",
+   "via": "alias"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "75808dcd-53be-4ba8-a7fc-1763f86f069e",
+   "rating": 6.5,
+   "source_name": "محمد غانم",
+   "club": "الشباب",
+   "shirt": "30",
+   "name": "Mohammad Ghanem",
+   "via": "alias"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "de2eefd4-9725-40bc-b012-1f0494808b52",
+   "rating": 6.5,
+   "source_name": "منير السبيعي",
+   "club": "الشباب",
+   "shirt": "5",
+   "name": "Muneer Al Subaiei",
+   "via": "alias"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "800212c4-569c-4d27-81d0-d746d2f116bf",
+   "rating": 6.5,
+   "source_name": "علي مصطفى",
+   "club": "الشباب",
+   "shirt": "11",
+   "name": "Ali Mustafa",
+   "via": "alias"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "9be733e6-66b8-4926-8eac-6604466aa854",
+   "rating": 6.5,
+   "source_name": "مزيد نواف",
+   "club": "الشباب",
+   "shirt": "88",
+   "name": "Mazyad Nawaf",
+   "via": "shirt"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "c8d02a56-fbe4-4eb3-862d-e5ce40db7e28",
+   "rating": 6.5,
+   "source_name": "سعد المطيري",
+   "club": "الشباب",
+   "shirt": "18",
+   "name": "Saad Al Mutairi",
+   "via": "shirt"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "6dc7880d-e4d4-4fe9-87c3-254cc3fdbd74",
+   "rating": 6.5,
+   "source_name": "محمد خليل",
+   "club": "الشباب",
+   "shirt": "12",
+   "name": "Mohammed Khalil",
+   "via": "shirt"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "e6fd81ac-4945-48b4-87f8-941ea9847380",
+   "rating": 6.3,
+   "source_name": "ضاري العتيبي",
+   "club": "الشباب",
+   "shirt": "34",
+   "name": "Dhari Al Otaibi",
+   "via": "alias"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "85fb8cd3-c53c-4f7e-aebb-6dda4f3e220c",
+   "rating": 6.2,
+   "source_name": "جاسم عتيق",
+   "club": "الشباب",
+   "shirt": "45",
+   "name": "Jassim Ateeq",
+   "via": "alias"
+  },
+  {
+   "match_id": "7b0dbcf2-5f8b-4a18-ac55-896fec52f262",
+   "player_id": "5f319623-ef19-410b-82b1-a71457765a5c",
+   "rating": 6.6,
+   "source_name": "ديفيــد سامبيسا",
+   "club": "السالمية",
+   "name": "David Sambissa",
+   "via": "name"
+  },
+  {
+   "match_id": "7b0dbcf2-5f8b-4a18-ac55-896fec52f262",
+   "player_id": "a55cbd8f-01e7-434a-9583-0d506aca181e",
+   "rating": 6.4,
+   "source_name": "عبدالله الجزاف",
+   "club": "السالمية",
+   "name": "Abdullah Al Jazzaf",
+   "via": "name"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "83cedf21-0c32-41ec-8d14-5ce89076702b",
+   "rating": 7.4,
+   "source_name": "على حسن",
+   "club": "النصر",
+   "name": "Ali Hassan",
+   "via": "name"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "767dde1f-f7f3-4855-9804-72dbd716aff7",
+   "rating": 7.3,
+   "source_name": "عبدالرحمن كوكو",
+   "club": "النصر",
+   "name": "Abdelrahman Kuku",
+   "via": "name"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "ec799d3a-8efb-4ee3-b6d4-da1fecbfc384",
+   "rating": 6.6,
+   "source_name": "نواف ثامر",
+   "club": "النصر",
+   "name": "Nawaf Thamer Al Khaldi",
+   "via": "name"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "55128b12-bed8-4e66-a726-03379c01908f",
+   "rating": 6.6,
+   "source_name": "هاشم نجيب",
+   "club": "النصر",
+   "name": "Hashim Najib",
+   "via": "name"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "49e925e5-d5b8-4270-b2c9-b2f7a54831ee",
+   "rating": 6.6,
+   "source_name": "يوسف ثامر",
+   "club": "النصر",
+   "name": "Yousef Thamer",
+   "via": "name"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "2bb730f8-8c73-49ba-ae19-015016179160",
+   "rating": 6.5,
+   "source_name": "موريبا ديارا",
+   "club": "النصر",
+   "name": "Moriba Diarra",
+   "via": "name"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "f2325191-20a3-4aae-a73b-2ef3d3a468b0",
+   "rating": 6.3,
+   "source_name": "خالد عجاجي",
+   "club": "النصر",
+   "name": "Khaled Al Ajaji",
+   "via": "name"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "18d107e2-9c81-4487-867f-79581f67818c",
+   "rating": 8.6,
+   "source_name": "جيوفاني دي سيلفا",
+   "club": "الشباب",
+   "name": "Giovanni Da Silva",
+   "via": "name"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "3fd0bf3a-55c2-4207-a25d-a7d9aa278ca0",
+   "rating": 7.8,
+   "source_name": "يعقوب الطراروه",
+   "club": "الشباب",
+   "name": "Yaqoub Al Tararwa",
+   "via": "name"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "8691bb34-fbc0-4c63-a047-33a3d08990d8",
+   "rating": 6.7,
+   "source_name": "ماثيوس توتو",
+   "club": "الشباب",
+   "name": "Matheus Toto",
+   "via": "name"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "19706787-bc05-4e07-8ff8-971b3a81151f",
+   "rating": 6.6,
+   "source_name": "ميشيل دي ليما",
+   "club": "الشباب",
+   "name": "Michel De Lima",
+   "via": "name"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "a7e976b7-e5b8-49b0-8305-01be23814fe3",
+   "rating": 6.5,
+   "source_name": "عمر المسيليم",
+   "club": "الشباب",
+   "name": "Omar Al Musailem",
+   "via": "name"
+  },
+  {
+   "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+   "player_id": "73a94134-8225-4639-9f46-3610391d343c",
+   "rating": 6.4,
+   "source_name": "عبدالرحمن رفاعي",
+   "club": "الشباب",
+   "name": "Abdulrahman Al Rifai",
+   "via": "name"
+  }
+ ]
+}

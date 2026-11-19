@@ -1,0 +1,1 @@
+ALTER TABLE public.matches ADD COLUMN IF NOT EXISTS hide_stats boolean NOT NULL DEFAULT false, ADD COLUMN IF NOT EXISTS hide_lineups boolean NOT NULL DEFAULT false, ADD COLUMN IF NOT EXISTS hide_media boolean NOT NULL DEFAULT false, ADD COLUMN IF NOT EXISTS hide_momentum boolean NOT NULL DEFAULT false, ADD COLUMN IF NOT EXISTS events_ordered boolean NOT NULL DEFAULT false;

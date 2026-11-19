@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Play, Square, Volume2 } from "lucide-react";
+import { Play, Square, Volume2, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 
@@ -46,6 +46,7 @@ export function NotificationSoundPreview() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState<string | null>(null);
   const [error, setError] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   useEffect(() => () => { audioRef.current?.pause(); }, []);
   const preview = (id: string) => {
     audioRef.current?.pause();
@@ -61,10 +62,11 @@ export function NotificationSoundPreview() {
   };
   return (
     <section className="mt-6 border-y border-border py-5" aria-labelledby="sound-preview-heading">
-      <h2 id="sound-preview-heading" className="flex items-center gap-2 text-sm font-semibold">
+      <Button id="sound-preview-heading" variant="ghost" className="w-full justify-start px-0 text-sm font-semibold" aria-expanded={expanded} aria-controls="sound-preview-list" onClick={() => { if (expanded) { audioRef.current?.pause(); setPlaying(null); } setExpanded(!expanded); }}>
         <Volume2 className="h-4 w-4 text-primary" />{lang === "ar" ? "أصوات التنبيهات" : "Notification sounds"}
-      </h2>
-      <div className="mt-3 grid gap-x-6 sm:grid-cols-2">
+        <ChevronDown className={`ms-auto h-4 w-4 transition-transform ${expanded ? "rotate-180" : ""}`} />
+      </Button>
+      {expanded && <div id="sound-preview-list" className="mt-3 grid gap-x-6 sm:grid-cols-2">
         {sounds.map(([id, en, ar]) => {
           const active = playing === id;
           const label = lang === "ar" ? ar : en;
@@ -78,8 +80,8 @@ export function NotificationSoundPreview() {
             </Button>
           </div>;
         })}
-      </div>
-      {error && <p role="alert" className="mt-3 text-sm text-destructive">{lang === "ar" ? "تعذّر تشغيل الصوت. حاول مرة أخرى." : "Could not play the sound. Please try again."}</p>}
+      </div>}
+      {expanded && error && <p role="alert" className="mt-3 text-sm text-destructive">{lang === "ar" ? "تعذّر تشغيل الصوت. حاول مرة أخرى." : "Could not play the sound. Please try again."}</p>}
     </section>
   );
 }

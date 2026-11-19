@@ -15,7 +15,8 @@ import { SocialLinksSection } from "@/components/social-links";
 import { LinkedNews } from "@/components/linked-news";
 import { ArrowRight, Landmark, CalendarClock, Crown, Trophy, Users, Phone, Mail, Globe } from "lucide-react";
 import { MatchGroups, MatchRow, type MatchWithTeams } from "@/components/match-list";
-import { sortTeamFixtures } from "@/lib/competition-match-order";
+import { fixtureTime, sortTeamFixtures } from "@/lib/competition-match-order";
+import { fixtureSeasons, seasonFixtures, seasonIdentity } from "@/lib/season-stats";
 import { hasStandings } from "@/lib/match-result";
 import { type NationalPlayer, fetchNationalSquad } from "@/lib/national";
 import { useDates, useNum, useTx } from "@/lib/auto-translate";
@@ -55,6 +56,7 @@ function TeamPage() {
   }});
   const { t: tr } = useI18n();
   const [tab, setTab] = useState<Tab>("info");
+  const [selectedSeason, setSelectedSeason] = useState<string | null>(null);
   useRealtime(["teams", "players", "matches", "competitions", "standings_rows", "transfers"]);
 
   const team = useQuery({ queryKey: ["team", id], queryFn: async () => {
@@ -126,7 +128,10 @@ function TeamPage() {
     );
   }
 
-  const played = matches.data?.filter((m) => ["ft", "aet", "pen", "awarded"].includes(m.status)) ?? [];
+  const seasons = fixtureSeasons(matches.data ?? []);
+  const activeSeason = selectedSeason ?? seasons[0] ?? "";
+  const seasonMatches = seasonFixtures(matches.data ?? [], activeSeason);
+  const played = seasonMatches.filter((m) => ["ft", "aet", "pen", "awarded"].includes(m.status));
   const wins = played.filter((m) => (m.home_team_id === id ? (m.home_score ?? 0) > (m.away_score ?? 0) : (m.away_score ?? 0) > (m.home_score ?? 0))).length;
   const draws = played.filter((m) => (m.home_score ?? 0) === (m.away_score ?? 0)).length;
   const losses = played.length - wins - draws;
@@ -135,7 +140,7 @@ function TeamPage() {
   const upcoming = [...(matches.data ?? [])].filter((m) => m.status === "scheduled" && m.kickoff_at && new Date(m.kickoff_at).getTime() >= Date.now()).sort((a, b) => new Date(a.kickoff_at ?? 0).getTime() - new Date(b.kickoff_at ?? 0).getTime());
   const featured = upcoming[0] ?? matches.data?.[0] ?? null;
   const tournaments = [...new Map((matches.data ?? []).filter((m) => m.competition).map((m) => [m.competition!.slug, m.competition!])).values()];
-  const statComps: TeamComp[] = [...new Map((matches.data ?? [])
+  const statComps: TeamComp[] = [...new Map(seasonMatches
     .filter((m) => m.competition_id && m.competition)
     .map((m) => [m.competition_id, { id: m.competition_id, name: m.competition!.name, logo_url: m.competition!.logo_url ?? null, season: (m as { season?: string | null }).season ?? null }] as const))
     .values()];
@@ -175,7 +180,7 @@ function TeamPage() {
       </div>
 
       <div className="club-tabs-strip border-b pt-2">
-      <SwipeTabs className="gap-1 text-xs sm:text-sm">
+      <SwipeTabs tabs={TABS} value={tab} onChange={setTab} className="gap-1 text-xs sm:text-sm">
         {TABS.map((k) => (
           <button key={k} onClick={() => setTab(k)}
              className={`club-tab whitespace-nowrap px-3 py-2 font-semibold ${tab === k ? "club-tab-active" : ""}`}>
@@ -187,7 +192,7 @@ function TeamPage() {
       </div>
 
 
-      <div data-refresh-body>
+      <div data-refresh-body data-tab-panels>
       {tab === "matches" && (
         matches.data && matches.data.length > 0
           ? <TeamMatches data={matches.data} teamId={id} nextId={upcoming[0]?.id ?? null} />
@@ -241,7 +246,7 @@ function TeamPage() {
           {featured ? (
             <section className="overflow-hidden rounded-2xl border border-border bg-card">
               <div className="border-b border-border px-4 py-2.5 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{tx(featured.status === "scheduled" ? "Next match" : "Featured match")}</div>
-              <MatchRow m={featured} highlightTeamId={id} />
+              <MatchRow m={featured} fixtures={matches.data ?? []} highlightTeamId={id} />
             </section>
           ) : null}
 
@@ -319,6 +324,7 @@ function TeamPage() {
 
       {tab === "stats" && (
         <div className="space-y-4">
+          <SeasonMenu seasons={seasons} value={activeSeason} onChange={setSelectedSeason} formatValue={seasonIdentity} />
           <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
             <InfoCard label={tx("Played")} value={String(played.length)} />
             <InfoCard label={tx("Wins")} value={String(wins)} />
@@ -327,7 +333,7 @@ function TeamPage() {
             <InfoCard label={tx("Goals for")} value={String(gf)} />
             <InfoCard label={tx("Goals against")} value={String(ga)} />
           </div>
-          <TeamStats teamId={id} comps={statComps} />
+          <TeamStats teamId={id} comps={statComps} season={activeSeason} />
         </div>
       )}
 
@@ -411,14 +417,18 @@ function RecentForm({ matches, teamId }: { matches: MatchWithTeams[]; teamId: st
   const tx = useTx();
   const played = matches
     .filter((m) => ["ft", "aet", "pen", "awarded"].includes(m.status))
-    .slice(0, 10)
+    // Date-only historical fixtures have no kickoff_at; sort every played match by its real day.
+    .map((m) => ({ m, t: Date.parse((m.kickoff_at ?? (m as { kickoff_date?: string | null }).kickoff_date ?? "") as string) || 0 }))
+    .sort((a, b) => b.t - a.t)
+    .map(({ m }) => m)
+    .slice(0, 5)
     .reverse();
   if (played.length === 0) return null;
   return (
     <section className="rounded-2xl border border-border bg-card p-4">
       <h2 className="text-center text-sm font-bold">{tx("Recent form")}</h2>
-      <div className="mt-3 overflow-x-auto rounded-2xl bg-muted/50 p-3">
-        <div className="flex min-w-max items-stretch gap-2">
+      <div className="mt-3 rounded-2xl bg-muted/50 p-3">
+        <div className="grid grid-cols-5 items-stretch gap-2">
           {played.map((m) => {
             const home = m.home_team_id === teamId;
             const own = (home ? m.home_score : m.away_score) ?? 0;
@@ -426,15 +436,15 @@ function RecentForm({ matches, teamId }: { matches: MatchWithTeams[]; teamId: st
             const opp = home ? m.away : m.home;
             const result = own > other ? "w" : own === other ? "d" : "l";
             return (
-              <Link key={m.id} to="/matches/$id" params={{ id: m.id }} className="flex w-12 flex-col items-center gap-2">
+              <Link key={m.id} to="/matches/$id" params={{ id: m.id }} className="flex min-w-0 flex-col items-center gap-2">
                 <TeamCrest name={opp?.name} logo={opp?.logo_url} className="h-8 w-8" />
                 <span className="flex h-28 w-full flex-col justify-center">
                   <span className="flex h-1/2 items-end justify-center">
-                    {result === "w" && <span className="h-full w-8 rounded-t-sm bg-success" />}
+                    {result === "w" && <span className="h-full w-full max-w-12 rounded-t-sm bg-success" />}
                   </span>
                   <span className="flex h-1/2 items-start justify-center">
-                    {result === "l" && <span className="h-full w-8 rounded-b-sm bg-destructive" />}
-                    {result === "d" && <span className="h-1.5 w-8 rounded-sm bg-muted-foreground/50" />}
+                    {result === "l" && <span className="h-full w-full max-w-12 rounded-b-sm bg-destructive" />}
+                    {result === "d" && <span className="h-1.5 w-full max-w-12 rounded-sm bg-muted-foreground/50" />}
                   </span>
                 </span>
               </Link>
@@ -623,9 +633,8 @@ function TeamMatches({ data, teamId, nextId }: { data: MatchWithTeams[]; teamId:
   const top = useRef<HTMLDivElement>(null);
   const [showToday, setShowToday] = useState(false);
   const resetPosition = useRef(0);
-  const timestamp = (m: MatchWithTeams) => m.kickoff_at ? new Date(m.kickoff_at).getTime() : 0;
   const ordered = sortTeamFixtures(data);
-  const targetId = data.find((m) => ["live", "ht"].includes(m.status))?.id ?? nextId ?? ordered.find((m) => timestamp(m) <= Date.now())?.id ?? ordered[0]?.id;
+  const targetId = data.find((m) => ["live", "ht"].includes(m.status))?.id ?? data.find(m => m.id === nextId)?.id ?? ordered.find((m) => Number.isFinite(fixtureTime(m)) && fixtureTime(m) <= Date.now())?.id ?? ordered[0]?.id;
   const goToNext = () => {
     const target = Array.from(top.current?.querySelectorAll<HTMLElement>("[data-fixture-id]") ?? []).find((node) => node.dataset.fixtureId === targetId);
     if (!target) return;

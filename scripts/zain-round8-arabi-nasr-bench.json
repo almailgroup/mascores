@@ -1,0 +1,156 @@
+[
+  {
+    "team_id": "598d82e7-8002-4423-9468-d58ec371907c",
+    "player_id": "0387045b-b98e-4724-af15-8796c016b238",
+    "source_name": "عبدالرحمن عجاج",
+    "name": "Abdulrahman Ajaj",
+    "shirt_number": 35
+  },
+  {
+    "team_id": "598d82e7-8002-4423-9468-d58ec371907c",
+    "player_id": "2a7c9494-a5c3-462f-8af0-7dea24c04a78",
+    "source_name": "محمد خالد",
+    "name": "Mohammed Khaled",
+    "shirt_number": 4
+  },
+  {
+    "team_id": "598d82e7-8002-4423-9468-d58ec371907c",
+    "player_id": "de23a9f9-43b5-4e12-a49b-0f0f03530646",
+    "source_name": "عبدالله عمار",
+    "name": "Abdullah Ammar",
+    "shirt_number": 3
+  },
+  {
+    "team_id": "598d82e7-8002-4423-9468-d58ec371907c",
+    "player_id": "5c2a4b0d-db0c-4f4d-b7e3-9caf502bd24f",
+    "source_name": "يوسف الخبيزي",
+    "name": "Yousef Al Khubaizi",
+    "shirt_number": 13
+  },
+  {
+    "team_id": "598d82e7-8002-4423-9468-d58ec371907c",
+    "player_id": "0013de0b-3722-4c1c-a8a6-c92ae8fa7383",
+    "source_name": "بندر السلامة",
+    "name": "Bandar Al Salama",
+    "shirt_number": 10
+  },
+  {
+    "team_id": "598d82e7-8002-4423-9468-d58ec371907c",
+    "player_id": "eef07411-e107-4bd4-82b4-e01304886150",
+    "source_name": "وليد ولد الشيخ",
+    "name": "Walid Ould Chikh",
+    "shirt_number": 73
+  },
+  {
+    "team_id": "598d82e7-8002-4423-9468-d58ec371907c",
+    "player_id": "bac2c20a-a1f3-4367-9757-d6892882ce64",
+    "source_name": "علي عبدالرسول",
+    "name": "Ali Abdulrasool",
+    "shirt_number": 16
+  },
+  {
+    "team_id": "598d82e7-8002-4423-9468-d58ec371907c",
+    "player_id": "c1570a8d-d0c7-4b8c-ad71-7012b0db96e1",
+    "source_name": "علي الدوخي",
+    "name": "Ali Al Doukhi",
+    "shirt_number": 9
+  },
+  {
+    "team_id": "598d82e7-8002-4423-9468-d58ec371907c",
+    "player_id": "9e84d880-79a7-43c9-b546-ec1d7329c9fb",
+    "source_name": "يوسف صباح",
+    "name": "Yousef Sabah",
+    "shirt_number": 70
+  },
+  {
+    "team_id": "598d82e7-8002-4423-9468-d58ec371907c",
+    "player_id": "5ce296ab-1688-448f-8c8f-b45b0290029b",
+    "source_name": "فواز الداوود",
+    "name": "Fawaz Al Dawood",
+    "shirt_number": 88
+  },
+  {
+    "team_id": "598d82e7-8002-4423-9468-d58ec371907c",
+    "player_id": "5ace0eb8-3267-4322-9f9d-ebbccd9a2de6",
+    "source_name": "طلال المطرود",
+    "name": "Talal Al Matroud",
+    "shirt_number": 76
+  },
+  {
+    "team_id": "2986f4c3-8906-483b-b021-dae5ddf46c2a",
+    "player_id": "ba2dd1ae-837a-417a-bbfb-e788084348f2",
+    "source_name": "سلمان بورميه",
+    "name": "Salman Aburamia",
+    "shirt_number": 17
+  },
+  {
+    "team_id": "2986f4c3-8906-483b-b021-dae5ddf46c2a",
+    "player_id": "0e1f357b-370b-461f-bbc8-6458edbafee4",
+    "source_name": "ايمن لقجع",
+    "name": "Aymen Issad Lakdja",
+    "shirt_number": 8
+  },
+  {
+    "team_id": "2986f4c3-8906-483b-b021-dae5ddf46c2a",
+    "player_id": "83cedf21-0c32-41ec-8d14-5ce89076702b",
+    "source_name": "على حسن",
+    "name": "Ali Hassan",
+    "shirt_number": 10
+  },
+  {
+    "team_id": "2986f4c3-8906-483b-b021-dae5ddf46c2a",
+    "player_id": "06647db1-3dbb-4b1c-a03c-5f0a638d4a96",
+    "source_name": "محمد الحسينان",
+    "name": "Mohammad Al Husainan",
+    "shirt_number": 22
+  },
+  {
+    "team_id": "2986f4c3-8906-483b-b021-dae5ddf46c2a",
+    "player_id": "2679fb71-1e0d-424a-bcfb-f5aa6e303042",
+    "source_name": "علي عبدالله الظفيري",
+    "name": "Ali Al Dhafiri",
+    "shirt_number": 3
+  },
+  {
+    "team_id": "2986f4c3-8906-483b-b021-dae5ddf46c2a",
+    "player_id": "ec799d3a-8efb-4ee3-b6d4-da1fecbfc384",
+    "source_name": "نواف ثامر",
+    "name": "Nawaf Thamer Al Khaldi",
+    "shirt_number": 5
+  },
+  {
+    "team_id": "2986f4c3-8906-483b-b021-dae5ddf46c2a",
+    "player_id": "a3c89396-e346-44e9-9ab4-6148b67b70a0",
+    "source_name": "محمد عبدالهادي",
+    "name": "Mohammed Abdul Hadi",
+    "shirt_number": 20
+  },
+  {
+    "team_id": "2986f4c3-8906-483b-b021-dae5ddf46c2a",
+    "player_id": "b1e40711-d8e2-44c8-88e9-d1e1e9aed26b",
+    "source_name": "سيف الحشان",
+    "name": "Saif Al Hashan",
+    "shirt_number": 7
+  },
+  {
+    "team_id": "2986f4c3-8906-483b-b021-dae5ddf46c2a",
+    "player_id": "456e3683-3dcf-497d-a628-ef3942af67ff",
+    "source_name": "عيد طلال رقبة",
+    "name": "Eid Al Ruqbah",
+    "shirt_number": 40
+  },
+  {
+    "team_id": "2986f4c3-8906-483b-b021-dae5ddf46c2a",
+    "player_id": "8aa763ea-2f4e-4969-8252-f8f52417f005",
+    "source_name": "كريم سليم شاهين",
+    "name": "Karim Shaheen",
+    "shirt_number": 35
+  },
+  {
+    "team_id": "2986f4c3-8906-483b-b021-dae5ddf46c2a",
+    "player_id": "0e3becad-8d25-4760-bfe6-7b32a5a015c8",
+    "source_name": "ابراهيم الظفيري",
+    "name": "Ibrahim Al Dhufairi",
+    "shirt_number": 25
+  }
+]

@@ -20,6 +20,8 @@ const STAFF_ROLES = [
   "Team doctor",
   "Kit manager",
   "Team manager",
+  "Team administrator",
+  "Head of football",
   "Scout",
   "Media officer",
   "Youth coach",

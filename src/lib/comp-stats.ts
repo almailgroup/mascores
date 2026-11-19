@@ -56,8 +56,14 @@ export async function fetchCompetitionStats(competitionId: string, season: strin
     .select("id,status,home_team_id,away_team_id,home_score,away_score")
     .eq("competition_id", competitionId);
   if (season) matchQuery = matchQuery.eq("season", season);
-  const { data: rawMatches } = await matchQuery;
-  const matches = (rawMatches ?? []).filter((m) => FINISHED.has(m.status));
+  const rawMatches: { id: string; status: string; home_team_id: string | null; away_team_id: string | null; home_score: number | null; away_score: number | null }[] = [];
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await matchQuery.order("id").range(from, from + 999);
+    if (error) throw error;
+    rawMatches.push(...(data ?? []));
+    if (!data || data.length < 1000) break;
+  }
+  const matches = rawMatches.filter((m) => FINISHED.has(m.status));
   const ids = matches.map((m) => m.id);
   if (ids.length === 0) return { players: [], teams: [], matches: 0 };
 

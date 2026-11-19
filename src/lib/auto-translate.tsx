@@ -212,7 +212,7 @@ export function useDates() {
   const locale = lang === "ar" ? "ar-EG" : "en-GB";
   return {
     locale,
-    kickoff: (iso: string | null | undefined, announcedDate?: string | null) => formatKickoff(iso, locale, announcedDate),
+    kickoff: (iso: string | null | undefined, announcedDate?: string | null, estimatedDate?: string | null) => formatKickoff(iso, locale, announcedDate, estimatedDate),
     time: (iso: string | null | undefined) => formatKickoffTime(iso, locale),
     dob: (iso: string | null | undefined) => formatDob(iso, locale),
     date: (iso: string | null | undefined, opts?: Intl.DateTimeFormatOptions) => formatDate(iso, locale, opts),

@@ -1,7 +1,8 @@
 import { getSeoInfo, seoHead } from "@/lib/seo-head";
 import { possibleLineupWindow } from "@/lib/possible-lineup";
-import { hasStandings, matchWinner } from "@/lib/match-result";
+import { hasStandings, headToHeadSummary, matchWinner } from "@/lib/match-result";
 import { eventPlayers } from "@/lib/event-players";
+import { eventOrdinal, eventPosition, matchEventOrder, resultScorers } from "@/lib/match-event-order";
 import { MatchMissingPlayers } from "@/components/match-missing-players";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,7 @@ import { MatchHighlightCard } from "@/components/match-highlight-card";
 import { displayShortName } from "@/lib/short-name";
 import { FavoriteButton, MatchNotificationButton, useFavorites } from "@/hooks/use-favorites";
 import { useCollapsingHeader } from "@/hooks/use-collapsing-header";
+import { compareTeamFixtures, estimatedFixtureDate } from "@/lib/competition-match-order";
 
 /** Crest + name used inside the slim match hero. The follow star sits on the
  *  outer edge of each club: home star on the left, away star on the right. */
@@ -120,13 +122,25 @@ function MatchPage() {
       return data as (Match & { home: Team | null; away: Team | null; competition: { id: string; name: string; name_ar: string | null; slug: string; logo_url: string | null; sport: string; country: string | null; country_code: string | null; format?: string | null; hidden_tabs?: string[] | null; video_thumbnail_url?: string | null } | null }) | null;
     },
   });
+  const schedulePeers = useQuery({
+    enabled: !!m.data && !m.data.kickoff_at && !m.data.kickoff_date && !!m.data.competition_id,
+    queryKey: ["match-date-estimate", id, m.data?.competition_id, m.data?.season],
+    queryFn: async () => {
+      const match = m.data!;
+      let query = supabase.from("matches").select("id,competition_id,season,round_number,kickoff_at,kickoff_date").eq("competition_id", match.competition_id);
+      query = match.season == null ? query.is("season", null) : query.eq("season", match.season);
+      const { data, error } = await query;
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
   const heroRef = useCollapsingHeader(`${id}:${m.isLoading}`, 180);
   const events = useQuery({
     queryKey: ["match-events", id],
     queryFn: async () => {
       const { data } = await supabase.from("match_events")
         .select("*, player:player_id(id,name,name_ar,shirt_number,photo_url), team:team_id(id,name), sub_out:sub_out_player_id(id,name,photo_url), assister:assist_player_id(id,name,photo_url)")
-        .eq("match_id", id).order("minute").order("extra");
+        .eq("match_id", id).order("minute").order("extra").order("id");
       return (data ?? []) as unknown as (MatchEvent & { player: Player | null; team: Team | null; sub_out: { id: string; name: string } | null; assister?: { id: string; name: string; photo_url: string | null } | null })[];
     },
   });
@@ -205,12 +219,16 @@ function MatchPage() {
   if (m.isLoading) return <AppShell><LoadingSkeleton /></AppShell>;
   if (!m.data) return <AppShell><EmptyState title={tx("Match not found")} /></AppShell>;
   const match = m.data;
+  const estimatedDate = match.kickoff_at || match.kickoff_date ? null : estimatedFixtureDate(schedulePeers.data ?? [], match);
   const isLive = ["live", "ht"].includes(match.status);
   const hasStarted = !["scheduled", "postponed", "cancelled"].includes(match.status);
   const isPossible = mainAdmin.data === true && !match.lineups_published && possibleLineupWindow(match.status,match.kickoff_at,match.kickoff_date) && (possible.data?.rows.length ?? 0) > 0;
   const displayLineups = isPossible ? possible.data?.rows ?? [] : lineups.data ?? [];
-  const lineupsVisible = (match.lineups_published && (lineups.data?.length ?? 0) > 0) || isPossible;
-  const tabs: ("details" | "lineups" | "stats" | "standings" | "previous" | "media")[] = ["details", ...(lineupsVisible ? ["lineups" as const] : []), "stats", ...(hasStandings(match.competition) ? ["standings" as const] : []), "previous", "media"];
+  const lineupsVisible = !match.hide_lineups && (match.lineups_published && (lineups.data?.length ?? 0) > 0) || isPossible;
+  const tabs: ("details" | "lineups" | "stats" | "standings" | "previous" | "media")[] = ["details", ...(lineupsVisible ? ["lineups" as const] : []), ...(match.hide_stats ? [] : ["stats" as const]), ...(hasStandings(match.competition) ? ["standings" as const] : []), "previous", ...(match.hide_media ? [] : ["media" as const])];
+  const eventOrder = matchEventOrder(events.data ?? []);
+  const ordinal = (n: number) => eventOrdinal(n, lang === "ar");
+  const positionOf = (event: { id: string; minute: number | null; extra?: number | null }) => eventPosition(event, eventOrder, !!match.events_ordered, lang === "ar");
   const winner = match.status === "pen" ? matchWinner(match) : null;
   const penaltyWinner = winner === "home" ? match.home : winner === "away" ? match.away : null;
   const clock = matchClockSeconds(match);
@@ -221,6 +239,7 @@ function MatchPage() {
       name: lang === "ar" && (event.player?.short_name_ar || event.player?.name_ar) ? ((event.player.short_name_ar ?? event.player.name_ar) ?? "") : tx(displayShortName(event.player?.short_name, event.player?.name)) ?? tx(event.player?.name) ?? tx(event.description ?? eventLabel(event.type)) ?? tx("Goal"),
       minute: `${event.minute ?? ""}${event.extra ? `+${event.extra}` : ""}'${event.type === "own_goal" ? " (OG)" : event.type === "penalty" ? " (P)" : ""}`,
       type: event.type,
+      order: eventOrder.get(event.id) ?? 1,
     }));
   // Header shows one row per player (minutes joined), at most three rows, then "+N goals".
   const groupScorers = (list: ReturnType<typeof scorerList>) => {
@@ -241,13 +260,14 @@ function MatchPage() {
     .map((row) => ({ number: row.shirt_number ? String(row.shirt_number) : "", name: tx(displayShortName(row.player?.short_name, row.player?.name)) ?? "" }));
   const shareData = {
     competition: [tx(match.competition?.name) ?? "", roundLabel(match.round_number, match.round) ? tx(roundLabel(match.round_number, match.round)) : ""].filter(Boolean).join(" · "),
-    kickoff: dates.kickoff(match.kickoff_at, match.kickoff_date),
-    status: match.status === "live" ? formatLiveClock(match, clock) : match.status === "scheduled" ? dates.kickoff(match.kickoff_at, match.kickoff_date) : tx(STATUS_LABELS[match.status] ?? match.status) ?? match.status,
+    kickoff: dates.kickoff(match.kickoff_at, match.kickoff_date, estimatedDate),
+    status: match.status === "live" ? formatLiveClock(match, clock) : match.status === "scheduled" ? dates.kickoff(match.kickoff_at, match.kickoff_date, estimatedDate) : tx(STATUS_LABELS[match.status] ?? match.status) ?? match.status,
     home: { name: tx(match.home?.name) ?? "TBD", logo_url: match.home?.logo_url ?? null },
     away: { name: tx(match.away?.name) ?? "TBD", logo_url: match.away?.logo_url ?? null },
     homeScore: ["scheduled", "postponed", "cancelled"].includes(match.status) ? "" : String(match.home_score ?? 0),
     awayScore: ["scheduled", "postponed", "cancelled"].includes(match.status) ? "" : String(match.away_score ?? 0),
-    homeScorers, awayScorers,
+    homeScorers: resultScorers(homeScorers, !!match.events_ordered, lang === "ar"),
+    awayScorers: resultScorers(awayScorers, !!match.events_ordered, lang === "ar"),
     homeLineup: starters(match.home_team_id),
     awayLineup: starters(match.away_team_id),
     // Canvas needs plain colours; the CSS colour-mix hero values cannot be parsed there.
@@ -269,7 +289,7 @@ function MatchPage() {
 
   return (
     <AppShell>
-      <Dialog open={!!selectedEvent} onOpenChange={open=>{if(!open)setSelectedEvent(null);}}><DialogContent className="max-w-sm overflow-hidden rounded-lg p-0"><DialogHeader className="border-b border-border px-5 pb-4 pt-5"><DialogTitle className="flex items-center gap-3 text-base"><EventArt type={selectedEvent?.type ?? "goal"} className="h-6 w-6" />{tx(selectedEvent ? eventLabel(selectedEvent.type) : "Player")}<span className="ms-auto pe-6 text-xs font-medium tabular-nums text-muted-foreground">{selectedEvent?.minute != null ? `${num(selectedEvent.minute)}′` : ""}</span></DialogTitle></DialogHeader><div className="divide-y divide-border px-2 pb-2">{selectedEvent && eventPlayers(selectedEvent).map(({player,role})=><Link key={player.id} to="/players/$id" params={{id:player.id}} onClick={()=>setSelectedEvent(null)} className="flex min-h-24 items-center gap-4 rounded-md px-3 py-4 transition-colors hover:bg-muted active:bg-muted"><PlayerAvatar src={player.photo_url} name={player.name} className="h-14 w-14 shrink-0" /><span className="min-w-0 flex-1"><span className={`mb-1 block text-[0.7rem] font-semibold ${role === "Out" ? "text-destructive" : role === "In" ? "text-success" : "text-muted-foreground"}`}>{tx(role === "Scorer" ? "Goal" : role)}</span><span className="block text-base font-bold leading-snug">{tx(player.name)}</span></span><ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" /></Link>)}</div></DialogContent></Dialog>
+      <Dialog open={!!selectedEvent} onOpenChange={open=>{if(!open)setSelectedEvent(null);}}><DialogContent className="max-w-sm overflow-hidden rounded-lg p-0"><DialogHeader className="border-b border-border px-5 pb-4 pt-5"><DialogTitle className="flex items-center gap-3 text-base"><EventArt type={selectedEvent?.type ?? "goal"} className="h-6 w-6" />{tx(selectedEvent ? eventLabel(selectedEvent.type) : "Player")}<span className="ms-auto pe-6 text-xs font-medium tabular-nums text-muted-foreground">{selectedEvent ? positionOf(selectedEvent) : ""}</span></DialogTitle></DialogHeader><div className="divide-y divide-border px-2 pb-2">{selectedEvent && eventPlayers(selectedEvent).map(({player,role})=><Link key={player.id} to="/players/$id" params={{id:player.id}} onClick={()=>setSelectedEvent(null)} className="flex min-h-24 items-center gap-4 rounded-md px-3 py-4 transition-colors hover:bg-muted active:bg-muted"><PlayerAvatar src={player.photo_url} name={player.name} className="h-14 w-14 shrink-0" /><span className="min-w-0 flex-1"><span className={`mb-1 block text-[0.7rem] font-semibold ${role === "Out" ? "text-destructive" : role === "In" ? "text-success" : "text-muted-foreground"}`}>{tx(role === "Scorer" ? "Goal" : role)}</span><span className="block text-base font-bold leading-snug">{tx(player.name)}</span></span><ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" /></Link>)}</div></DialogContent></Dialog>
       <div ref={heroRef} dir="ltr" className="match-hero sports-header -mx-4 mb-4 overflow-hidden px-4 pb-0 text-match-foreground sm:-mx-6 sm:px-6">
         <SportsHeaderBackground start={homeAccent?.color} end={awayAccent?.color} />
         <div className="relative flex items-center justify-between px-1 pb-1">
@@ -306,7 +326,7 @@ function MatchPage() {
         </div>
 
         {penaltyWinner && <div className="match-fading-detail px-2 text-center text-xs font-bold text-match-foreground">{tx(penaltyWinner.name)} · {tx("Won on penalties")}</div>}
-        <div className="match-fading-detail px-2 text-center text-[0.65rem] font-semibold uppercase text-match-foreground/70">{match.status === "postponed" ? tx("Postponed") : num(dates.kickoff(match.kickoff_at, match.kickoff_date))}</div>
+        <div className="match-fading-detail px-2 text-center text-[0.65rem] font-semibold uppercase text-match-foreground/70">{match.status === "postponed" ? tx("Postponed") : num(dates.kickoff(match.kickoff_at, match.kickoff_date, estimatedDate))}</div>
 
         <div className="match-fading-detail mt-3 grid grid-cols-2 gap-8 px-5 text-center">
           <div className="min-w-0">
@@ -319,20 +339,20 @@ function MatchPage() {
 
         {(homeScorers.length > 0 || awayScorers.length > 0) && (
           <div className="match-fading-detail mt-3 grid grid-cols-2 items-start gap-8 px-4 text-[0.72rem] text-match-foreground/85">
-            <div className="space-y-1.5 text-end">{groupScorers(homeScorers).shown.map((scorer, index) => <div key={index} className="flex min-w-0 items-center justify-end gap-1.5"><span className="truncate" dir={lang === "ar" ? "rtl" : "ltr"}>{scorer.name} {num(scorer.minute)}</span><EventIcon type={scorer.type} /></div>)}{groupScorers(homeScorers).more > 0 && <div className="pe-5">+{num(groupScorers(homeScorers).more)} {lang === "ar" ? "أهداف" : "goals"}</div>}</div>
-            <div className="space-y-1.5 text-start">{groupScorers(awayScorers).shown.map((scorer, index) => <div key={index} className="flex min-w-0 items-center gap-1.5"><EventIcon type={scorer.type} /><span className="truncate" dir={lang === "ar" ? "rtl" : "ltr"}>{scorer.name} {num(scorer.minute)}</span></div>)}{groupScorers(awayScorers).more > 0 && <div className="ps-5">+{num(groupScorers(awayScorers).more)} {lang === "ar" ? "أهداف" : "goals"}</div>}</div>
+            <div className="space-y-1.5 text-end">{groupScorers(homeScorers).shown.map((scorer, index) => <div key={index} className="flex min-w-0 items-center justify-end gap-1.5"><span className="truncate" dir={lang === "ar" ? "rtl" : "ltr"}>{scorer.name}{match.events_ordered ? "" : ` ${num(scorer.minute)}`}</span><EventIcon type={scorer.type} /></div>)}{groupScorers(homeScorers).more > 0 && <div className="pe-5">+{num(groupScorers(homeScorers).more)} {lang === "ar" ? "أهداف" : "goals"}</div>}</div>
+            <div className="space-y-1.5 text-start">{groupScorers(awayScorers).shown.map((scorer, index) => <div key={index} className="flex min-w-0 items-center gap-1.5"><EventIcon type={scorer.type} /><span className="truncate" dir={lang === "ar" ? "rtl" : "ltr"}>{scorer.name}{match.events_ordered ? "" : ` ${num(scorer.minute)}`}</span></div>)}{groupScorers(awayScorers).more > 0 && <div className="ps-5">+{num(groupScorers(awayScorers).more)} {lang === "ar" ? "أهداف" : "goals"}</div>}</div>
           </div>
         )}
 
         </div>
         <div className="match-tabs border-t border-match-foreground/10 px-1">
-          <SwipeTabs className="gap-1.5 text-sm">
+          <SwipeTabs tabs={tabs} value={tab} onChange={setTab} className="gap-1.5 text-sm">
             {tabs.map((item) => <button key={item} onClick={() => setTab(item)} className={`shrink-0 px-4 pb-3 pt-3 text-sm font-semibold capitalize ${tab === item ? "border-b-2 border-match-tab text-match-foreground" : "text-match-foreground/55"}`}>{tx(item === "media" ? "Media" : item === "previous" ? "Matches" : item === "details" ? "Details" : item === "lineups" ? "Lineups" : item === "standings" ? "Standings" : "Stats")}</button>)}
           </SwipeTabs>
         </div>
       </div>
 
-      <div className="px-4 pb-6 sm:px-6">
+      <div data-tab-panels className="px-4 pb-6 sm:px-6">
       {tab === "details" && match.competition && (
         <Link to="/competitions/$slug" params={{ slug: match.competition.slug }}
           className="mb-3 flex items-center gap-2 rounded-2xl border border-border bg-card px-3 py-2 shadow-sm transition hover:border-primary">
@@ -375,7 +395,7 @@ function MatchPage() {
                 </li>
               ) : (
                 <li key={entry.event.id} className="min-w-0"><Button variant="ghost" onClick={() => { const choices=eventPlayers(entry.event); if(choices.length===1)void navigate({to:"/players/$id",params:{id:choices[0].player.id}}); else if(choices.length>1)setSelectedEvent(entry.event); }} className={`relative flex h-auto w-full min-w-0 items-center justify-start gap-2.5 whitespace-normal rounded-none px-3 py-2 ${entry.event.player ? "active:bg-muted/60 hover:bg-muted/40" : ""} ${entry.side === "away" ? "flex-row-reverse text-end" : "text-start"}`}>
-                  <span className="w-11 shrink-0 whitespace-nowrap font-mono text-[0.7rem] text-muted-foreground">{entry.event.minute != null ? num(entry.event.minute) : "-"}{entry.event.extra ? `+${num(entry.event.extra)}` : ""}'</span>
+                  <span className="w-11 shrink-0 whitespace-nowrap font-mono text-[0.7rem] text-muted-foreground">{match.events_ordered ? ordinal(eventOrder.get(entry.event.id) ?? 1) : <>{entry.event.minute != null ? num(entry.event.minute) : "-"}{entry.event.extra ? `+${num(entry.event.extra)}` : ""}'</>}</span>
                   <EventIcon type={entry.event.type} />
                   <span className="min-w-0 flex-1">
                     {entry.event.player ? (
@@ -405,7 +425,7 @@ function MatchPage() {
           <div className="overflow-hidden rounded-2xl border border-border bg-card">
             <div className="border-b border-border bg-muted/40 px-4 py-2.5 text-[0.7rem] font-bold uppercase tracking-widest text-muted-foreground">{tx("Match information")}</div>
             <dl className="grid gap-3 p-4 text-sm sm:grid-cols-2">
-              {([["Competition", tx(match.competition?.name)], ["Date & time", num(dates.kickoff(match.kickoff_at, match.kickoff_date))], ["Stadium", tx(match.venue)], ["City", tx(match.city)], ["Referee", tx(match.referee)]] as [string, string | null | undefined][]).filter((item): item is [string, string] => !!item[1]).map(([k, v]) => (
+              {([["Competition", tx(match.competition?.name)], ["Date & time", num(dates.kickoff(match.kickoff_at, match.kickoff_date, estimatedDate))], ["Stadium", tx(match.venue)], ["City", tx(match.city)], ["Referee", tx(match.referee)]] as [string, string | null | undefined][]).filter((item): item is [string, string] => !!item[1]).map(([k, v]) => (
                 <div key={k} className="min-w-0">
                   <dt className="flex items-center gap-1 text-[0.65rem] uppercase tracking-wide text-muted-foreground">{k === "Stadium" ? <MapPin className="h-3 w-3" /> : k === "Referee" ? <Users className="h-3 w-3" /> : null}{tx(k)}</dt>
                   <dd className="mt-0.5 break-words font-semibold">{v}</dd>
@@ -486,7 +506,7 @@ function MatchPage() {
           photo: lu.player?.photo_url,
           sub: (() => {
             const e = subByPlayer.get(lu.player_id);
-            return e ? { minute: e.minute != null ? `${num(e.minute)}${e.extra ? `+${num(e.extra)}` : ""}'` : "", out: e.sub_out?.name ? tx(e.sub_out.name) : "" } : null;
+            return e ? { minute: positionOf(e), out: e.sub_out?.name ? tx(e.sub_out.name) : "" } : null;
           })(),
         });
         // Came-on substitutes for a club, for the bench sections and the
@@ -497,7 +517,7 @@ function MatchPage() {
             number: String(e.player?.shirt_number ?? ""),
             name: tx(e.player?.name) ?? "",
             photo: e.player?.photo_url,
-            sub: { minute: e.minute != null ? `${num(e.minute)}${e.extra ? `+${num(e.extra)}` : ""}'` : "", out: e.sub_out?.name ? tx(e.sub_out.name) : "" },
+            sub: { minute: positionOf(e), out: e.sub_out?.name ? tx(e.sub_out.name) : "" },
           }));
         // The shareable card mirrors what is on screen: formation, pitch, coach and bench.
         const lineupShare = {
@@ -615,7 +635,7 @@ function MatchPage() {
               const restBench = benchList.filter((r) => !subIds.has(r.player_id));
               const subCard = (e: MatchEvent & { player: Player | null; team: Team | null; sub_out: { id: string; name: string } | null }) => {
                 const rating = ratings.data?.find((item) => item.player_id === e.player_id)?.rating;
-                const minute = e.minute != null ? `${num(e.minute)}${e.extra ? `+${num(e.extra)}` : ""}'` : "";
+                const minute = positionOf(e);
                 return (
                   <Link key={e.id} to="/players/$id" params={{ id: e.player_id as string }} className="flex min-w-0 flex-col items-center gap-0.5 px-2 py-2 text-center">
                     <span className="flex h-11 w-full items-start justify-center gap-2">
@@ -657,12 +677,12 @@ function MatchPage() {
         );
       })}
       </div>
-      <MatchMomentum matchId={id} home={match.home} away={match.away} minutes={match.momentum_minutes ?? 90} events={(events.data ?? []).map((e) => ({ minute: e.minute, type: e.type, team_id: e.team_id }))} />
+      {!match.hide_momentum && <MatchMomentum matchId={id} home={match.home} away={match.away} minutes={match.momentum_minutes ?? 90} events={(events.data ?? []).map((e) => ({ minute: e.minute, type: e.type, team_id: e.team_id }))} />}
       </div></LineupPortraits>}
-      {tab === "stats" && <MatchStatsPanel rows={stats.data ?? []} status={match.status} home={match.home} away={match.away} />}
+      {tab === "stats" && !match.hide_stats && <MatchStatsPanel rows={stats.data ?? []} status={match.status} home={match.home} away={match.away} />}
       {tab === "previous" && <PreviousMatches home={match.home} away={match.away} currentId={match.id} />}
       {tab === "standings" && hasStandings(match.competition) && <MatchStandings competitionId={match.competition_id} season={match.season} liveTeamIds={isLive ? [match.home_team_id, match.away_team_id].filter(Boolean) as string[] : []} highlightIds={[match.home_team_id, match.away_team_id].filter(Boolean) as string[]} />}
-      {tab === "media" && <div><h3 className="mb-3 font-bold">{tx("Videos & media")}</h3><div className="grid gap-2">{media.data?.map((item) => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="overflow-hidden rounded-xl border border-border bg-card hover:border-primary">{<MatchVideoThumb background={match.competition?.video_thumbnail_url} leagueLogo={match.competition?.logo_url} homeLogo={match.home?.logo_url} awayLogo={match.away?.logo_url} score={match.home_score != null && match.away_score != null ? `${match.home_score} - ${match.away_score}` : "VS"} />}<div className="p-4"><div className="text-xs font-bold uppercase text-primary">{item.source}</div><div className="mt-1 font-semibold">{tx(item.title) || tx("Open media")}</div></div></a>)}{media.data?.length === 0 && <p className="text-sm text-muted-foreground">{tx("No media posted.")}</p>}</div></div>}
+      {tab === "media" && !match.hide_media && <div><h3 className="mb-3 font-bold">{tx("Videos & media")}</h3><div className="grid gap-2">{media.data?.map((item) => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="overflow-hidden rounded-xl border border-border bg-card hover:border-primary">{<MatchVideoThumb background={match.competition?.video_thumbnail_url} leagueLogo={match.competition?.logo_url} homeLogo={match.home?.logo_url} awayLogo={match.away?.logo_url} score={match.home_score != null && match.away_score != null ? `${match.home_score} - ${match.away_score}` : "VS"} />}<div className="p-4"><div className="text-xs font-bold uppercase text-primary">{item.source}</div><div className="mt-1 font-semibold">{tx(item.title) || tx("Open media")}</div></div></a>)}{media.data?.length === 0 && <p className="text-sm text-muted-foreground">{tx("No media posted.")}</p>}</div></div>}
       </div>
     </AppShell>
   );
@@ -726,28 +746,29 @@ function PreviousMatchesInner({ home, away, currentId }: {
       return (data ?? []) as unknown as PastRow[];
     },
   });
+  const meetings = useQuery({
+    enabled: !!homeId && !!awayId,
+    queryKey: ["head-to-head", homeId, awayId, currentId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("matches")
+        .select("*, home:home_team_id(id,name,logo_url), away:away_team_id(id,name,logo_url), competition:competition_id(id,name,logo_url,country,country_code)")
+        .or(`and(home_team_id.eq.${homeId},away_team_id.eq.${awayId}),and(home_team_id.eq.${awayId},away_team_id.eq.${homeId})`)
+        .neq("id", currentId)
+        .in("status", ["ft", "aet", "pen", "awarded"]);
+      if (error) throw error;
+      return ((data ?? []) as unknown as PastRow[]).sort(compareTeamFixtures);
+    },
+  });
 
   if (!homeId && !awayId) return <p className="text-sm text-muted-foreground">{tx("Teams are needed to show matches.")}</p>;
 
   const focusId = mode === "away" ? awayId : homeId;
   const all = q.data ?? [];
-  const rows = all.filter((m) => {
-    if (mode === "h2h") {
-      const pair = [m.home_team_id, m.away_team_id];
-      if (!(pair.includes(homeId) && pair.includes(awayId))) return false;
-    } else if (!focusId || (m.home_team_id !== focusId && m.away_team_id !== focusId)) return false;
-    return true;
-  });
+  const h2h = meetings.data ?? [];
+  const rows = mode === "h2h" ? h2h : all.filter((m) => !!focusId && (m.home_team_id === focusId || m.away_team_id === focusId));
 
-  // Head-to-head summary of the last 10 meetings.
-  const h2h = all.filter((m) => [m.home_team_id, m.away_team_id].includes(homeId) && [m.home_team_id, m.away_team_id].includes(awayId)).slice(0, 10);
-  let homeWins = 0, awayWins = 0, draws = 0;
-  for (const m of h2h) {
-    if (m.home_score == null || m.away_score == null) continue;
-    if (m.home_score === m.away_score) draws++;
-    else if ((m.home_score > m.away_score) === (m.home_team_id === homeId)) homeWins++;
-    else awayWins++;
-  }
+  // Every completed meeting counts, independently of either club's history limit.
+  const { homeWins, awayWins, draws } = headToHeadSummary(h2h, homeId ?? "");
 
   // Group the visible list by competition, keeping the newest-first order.
   const groups: { key: string; comp: PastRow["competition"]; list: PastRow[] }[] = [];
@@ -764,7 +785,7 @@ function PreviousMatchesInner({ home, away, currentId }: {
       {h2h.length > 0 && (
         <div className="rounded-2xl border border-border bg-card p-4 text-center">
           <h3 className="text-sm font-bold">{tx("Head-to-head")}</h3>
-          <p className="mt-1 text-xs text-muted-foreground">{tx("Last")} {num(h2h.length)} {tx("matches")}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{num(h2h.length)} {tx("matches")}</p>
           <div className="mt-3 grid grid-cols-3 items-center gap-2">
             <div className="flex min-w-0 items-center gap-2">
               <TeamCrest name={home?.name} logo={home?.logo_url} className="h-9 w-9 shrink-0" />
@@ -807,7 +828,7 @@ function PreviousMatchesInner({ home, away, currentId }: {
               return (
                 <Link key={m.id} to="/matches/$id" params={{ id: m.id }} className="flex items-center gap-3 border-t border-border px-4 py-2.5 first:border-0 hover:bg-accent/50">
                   <span className="w-16 shrink-0 text-[0.7rem] leading-tight text-muted-foreground">
-                    <span className={`block ${off ? "line-through" : ""}`}>{num(dates.kickoff(m.kickoff_at))}</span>
+                    <span className={`block ${off ? "line-through" : ""}`}>{num(dates.kickoff(m.kickoff_at, m.kickoff_date))}</span>
                     <span className="block">{off ? "" : tx(STATUS_LABELS[m.status] ?? m.status)}</span>
                   </span>
                   <span className="min-w-0 flex-1 space-y-1">

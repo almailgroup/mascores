@@ -21,6 +21,7 @@ import { ConfirmDelete } from "@/components/confirm-delete";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
 import { MinuteWheel } from "./minute-wheel";
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel } from "@/components/ui/alert-dialog";
 
 type MatchStat = Database["public"]["Tables"]["match_stats"]["Row"];
 type Channel = Database["public"]["Tables"]["broadcast_channels"]["Row"];
@@ -63,6 +64,7 @@ function useLiveClock(match: Match) {
 export function MatchEditor({ match: initial, teams, onClose }: { match: Match; teams: Team[]; onClose: () => void }) {
   const qc = useQueryClient();
   const [tab, setTab] = useState<"main" | "lineups" | "live" | "extras">("main");
+  const [advanced, setAdvanced] = useState(false);
 
   const matchQ = useQuery({
     queryKey: ["admin", "match", initial.id],
@@ -94,10 +96,43 @@ export function MatchEditor({ match: initial, teams, onClose }: { match: Match; 
             className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-md px-2 font-semibold ${tab === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}><Icon className="h-4 w-4" />{l}</button>
         ))}
       </div>
+      <button type="button" onClick={() => setAdvanced(true)} className="mb-5 flex min-h-11 w-full items-center justify-center rounded-lg border border-border bg-background text-sm font-semibold hover:bg-accent">Advanced</button>
+      {advanced && <AdvancedSettings match={match} onClose={() => setAdvanced(false)} onSaved={refresh} />}
       {tab === "main" && <MainTab match={match} teams={teams} onSaved={refresh} />}
       {tab === "lineups" && <LineupsTab match={match} teams={teams} onSaved={refresh} />}
       {tab === "live" && <LiveTab match={match} teams={teams} onSaved={refresh} />}
       {tab === "extras" && <ExtrasTab match={match} teams={teams} />}
+    </Modal>
+  );
+}
+
+const ADVANCED_OPTIONS = [
+  ["hide_stats", "Hide match statistics"],
+  ["hide_lineups", "Hide lineups"],
+  ["hide_media", "Hide media"],
+  ["hide_momentum", "Hide match momentum"],
+  ["events_ordered", "Show events in order (1st goal, 2nd goal) instead of time"],
+] as const;
+
+function AdvancedSettings({ match, onClose, onSaved }: { match: Match; onClose: () => void; onSaved: () => void }) {
+  const [values, setValues] = useState(() => Object.fromEntries(ADVANCED_OPTIONS.map(([k]) => [k, !!match[k]])) as Record<(typeof ADVANCED_OPTIONS)[number][0], boolean>);
+  const toggle = async (key: (typeof ADVANCED_OPTIONS)[number][0]) => {
+    const next = !values[key];
+    setValues((v) => ({ ...v, [key]: next }));
+    const { error } = await supabase.from("matches").update({ [key]: next } as never).eq("id", match.id);
+    if (error) { setValues((v) => ({ ...v, [key]: !next })); return; }
+    onSaved();
+  };
+  return (
+    <Modal open onClose={onClose} title="Advanced settings">
+      <div className="divide-y divide-border rounded-lg border border-border bg-background">
+        {ADVANCED_OPTIONS.map(([key, label]) => (
+          <button key={key} type="button" onClick={() => void toggle(key)} className="flex min-h-14 w-full items-center justify-between gap-3 px-4 text-start text-sm font-semibold">
+            <span>{label}</span>
+            <span className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${values[key] ? "bg-primary" : "bg-muted"}`}><span className={`absolute top-0.5 h-5 w-5 rounded-full bg-background shadow transition-all ${values[key] ? "start-[1.375rem]" : "start-0.5"}`} /></span>
+          </button>
+        ))}
+      </div>
     </Modal>
   );
 }
@@ -905,13 +940,20 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
   const [editing, setEditing] = useState<MatchEvent | null>(null);
 
   const patchMatch = async (patch: Partial<Match>) => {
-    await supabase.from("matches").update(patch as never).eq("id", match.id);
+    const { error } = await supabase.from("matches").update(patch as never).eq("id", match.id);
+    if (error) { toast.error("Could not update match"); throw error; }
     onSaved();
   };
 
-  const start = () => patchMatch({ timer_running: true, timer_started_at: new Date().toISOString(), status: match.status === "scheduled" ? "live" : match.status });
+  const [clockMinute, setClockMinute] = useState("");
+  const [clockSecond, setClockSecond] = useState("0");
+  const start = () => patchMatch({ timer_running: true, period: match.period ?? "1h", timer_started_at: new Date().toISOString(), status: match.status === "scheduled" ? "live" : match.status });
   const pause = () => patchMatch({ timer_running: false, timer_elapsed_seconds: matchClockSeconds(match), timer_started_at: null });
-  const setMinute = (m: number) => patchMatch({ timer_elapsed_seconds: m * 60, timer_started_at: match.timer_running ? new Date().toISOString() : null, live_minute: m });
+  const setTime = () => {
+    const m = Number(clockMinute), s = Number(clockSecond);
+    if (!clockMinute || !Number.isInteger(m) || m < 0 || !Number.isInteger(s) || s < 0 || s > 59) return;
+    return patchMatch({ period: match.period ?? "1h", timer_elapsed_seconds: m * 60 + s, timer_started_at: match.timer_running ? new Date().toISOString() : null, live_minute: m });
+  };
 
   useEffect(() => {
     if (!match.timer_running || match.status !== "live" || match.live_minute === minute) return;
@@ -981,8 +1023,9 @@ function LiveTab({ match, teams, onSaved }: { match: Match; teams: Team[]; onSav
               ? <button className={btnGhost} onClick={pause}><Pause className="h-3.5 w-3.5" /> Stop clock</button>
               : <button className={btnPrimary} onClick={start}><Play className="h-3.5 w-3.5" /> {seconds > 0 ? "Resume" : "Start match"}</button>}
             <button className={btnGhost} onClick={() => patchMatch({ timer_running: false, timer_elapsed_seconds: 0, timer_started_at: null })}><RotateCcw className="h-3.5 w-3.5" /> Reset</button>
-            <input type="number" placeholder="Set minute" className="h-9 w-28 rounded-full border border-border bg-background px-3 text-xs"
-              onKeyDown={(e) => { if (e.key === "Enter") setMinute(Number((e.target as HTMLInputElement).value || 0)); }} />
+            <input aria-label="Minutes" type="number" min="0" placeholder="Minutes" value={clockMinute} onChange={e => setClockMinute(e.target.value)} className="h-10 w-24 rounded-md border border-border bg-background px-3 text-base" />
+            <input aria-label="Seconds" type="number" min="0" max="59" value={clockSecond} onChange={e => setClockSecond(e.target.value)} className="h-10 w-20 rounded-md border border-border bg-background px-3 text-base" />
+            <Button variant="outline" onClick={() => void setTime()}>Set time</Button>
           </div>
           <PeriodBoxes match={match} seconds={seconds} patchMatch={patchMatch} />
         </div>
@@ -1384,16 +1427,12 @@ function PeriodBoxes({ match, seconds, patchMatch }: { match: Match; seconds: nu
           </button>
         ))}
       </div>
-      {pending && (
-        <div className="mt-3 flex items-center justify-between gap-2 rounded-lg border-2 border-foreground bg-background p-3">
-          <span className="text-sm">Change to <b>{pending.label}</b>?</span>
-          <div className="flex gap-2">
-            <button type="button" className="rounded-md bg-muted px-3 py-2 text-sm" onClick={() => setPending(null)}>Cancel</button>
-            <button type="button" disabled={busy} className="rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground"
-              onClick={async () => { setBusy(true); try { await pending.run(); } finally { setBusy(false); setPending(null); } }}>Confirm</button>
-          </div>
-        </div>
-      )}
+      <AlertDialog open={!!pending} onOpenChange={open => { if (!open && !busy) setPending(null); }}>
+        <AlertDialogContent overlayClassName="z-[169] bg-foreground/50 backdrop-blur-sm" className="z-[170] w-[calc(100%-2rem)] rounded-lg">
+          <AlertDialogHeader><AlertDialogTitle>Change to {pending?.label}?</AlertDialogTitle><AlertDialogDescription>The match clock and status will update after confirmation.</AlertDialogDescription></AlertDialogHeader>
+          <AlertDialogFooter><AlertDialogCancel disabled={busy}>Cancel</AlertDialogCancel><Button disabled={busy} onClick={async () => { if (!pending) return; setBusy(true); try { await pending.run(); setPending(null); } catch { toast.error("Could not change period"); } finally { setBusy(false); } }}>Confirm</Button></AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

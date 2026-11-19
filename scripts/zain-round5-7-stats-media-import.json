@@ -1,0 +1,297 @@
+{
+  "competition": "Zain Premier League",
+  "season": "2026/2027",
+  "rounds": [
+    5,
+    6,
+    7
+  ],
+  "method": "Only absent statistic labels are inserted; existing statistics and media are preserved. Video titles verified with YouTube oEmbed. Postponed matches excluded. Conflicting published values were not used to overwrite existing data.",
+  "stats": [
+    {
+      "id": "86698bf4-12f2-5768-853e-4182e36fab84",
+      "match_id": "475b45ff-6314-49b5-b788-0f22d11b03ec",
+      "label": "Total shots",
+      "home_value": "16",
+      "away_value": "12",
+      "sort_order": 1,
+      "source": "https://www.ysscores.com/en/match/6018573/Al-Fahaheel-SC-vs-Al-Shabab"
+    },
+    {
+      "id": "2ac1f3aa-a6ff-5923-8caa-2ed7edadf4b9",
+      "match_id": "77f74163-fada-4663-9f4b-8ab2204fd5b5",
+      "label": "Total shots",
+      "home_value": "9",
+      "away_value": "13",
+      "sort_order": 1,
+      "source": "https://scoresivo.com/en/match/58305-al-nasr-vs-al-tadamon"
+    },
+    {
+      "id": "c982a7e4-0b53-5b6f-8250-ff0118af31b3",
+      "match_id": "81df673a-3958-4404-9020-1fcd43c5eb1e",
+      "label": "Ball possession",
+      "home_value": "59%",
+      "away_value": "41%",
+      "sort_order": 0,
+      "source": "https://www.ysscores.com/en/match/6141481/Kuwait-SC-vs-Al-Sulaibikhat-SC"
+    },
+    {
+      "id": "511b55bc-cc95-5c81-aca1-3ec83dacf50b",
+      "match_id": "81df673a-3958-4404-9020-1fcd43c5eb1e",
+      "label": "Total shots",
+      "home_value": "10",
+      "away_value": "7",
+      "sort_order": 1,
+      "source": "https://www.ysscores.com/en/match/6141481/Kuwait-SC-vs-Al-Sulaibikhat-SC"
+    },
+    {
+      "id": "c8c14151-b0d6-5176-81a6-30217707f31a",
+      "match_id": "81df673a-3958-4404-9020-1fcd43c5eb1e",
+      "label": "Shots on target",
+      "home_value": "8",
+      "away_value": "3",
+      "sort_order": 2,
+      "source": "https://www.ysscores.com/en/match/6141481/Kuwait-SC-vs-Al-Sulaibikhat-SC"
+    },
+    {
+      "id": "ad21839a-53d8-5cbf-8cb2-4d72e7e9b106",
+      "match_id": "81df673a-3958-4404-9020-1fcd43c5eb1e",
+      "label": "Corner kicks",
+      "home_value": "2",
+      "away_value": "3",
+      "sort_order": 3,
+      "source": "https://www.ysscores.com/en/match/6141481/Kuwait-SC-vs-Al-Sulaibikhat-SC"
+    },
+    {
+      "id": "9656def1-7261-5bf3-8be5-c834c01f8d7f",
+      "match_id": "81df673a-3958-4404-9020-1fcd43c5eb1e",
+      "label": "Offsides",
+      "home_value": "2",
+      "away_value": "2",
+      "sort_order": 4,
+      "source": "https://www.ysscores.com/en/match/6141481/Kuwait-SC-vs-Al-Sulaibikhat-SC"
+    },
+    {
+      "id": "0a3691f5-9939-541c-858a-1918029240d1",
+      "match_id": "81df673a-3958-4404-9020-1fcd43c5eb1e",
+      "label": "Fouls",
+      "home_value": "5",
+      "away_value": "15",
+      "sort_order": 5,
+      "source": "https://www.ysscores.com/en/match/6141481/Kuwait-SC-vs-Al-Sulaibikhat-SC"
+    },
+    {
+      "id": "e81aab6d-d950-5969-866e-f72cf7aade83",
+      "match_id": "81df673a-3958-4404-9020-1fcd43c5eb1e",
+      "label": "Free kicks",
+      "home_value": "16",
+      "away_value": "8",
+      "sort_order": 12,
+      "source": "https://www.ysscores.com/en/match/6141481/Kuwait-SC-vs-Al-Sulaibikhat-SC"
+    },
+    {
+      "id": "7945b503-f11e-528b-87c2-afcb6e51c00c",
+      "match_id": "81df673a-3958-4404-9020-1fcd43c5eb1e",
+      "label": "Throw-ins",
+      "home_value": "8",
+      "away_value": "6",
+      "sort_order": 13,
+      "source": "https://www.ysscores.com/en/match/6141481/Kuwait-SC-vs-Al-Sulaibikhat-SC"
+    },
+    {
+      "id": "9ad1314a-200d-5098-9386-3357d9134a0b",
+      "match_id": "81df673a-3958-4404-9020-1fcd43c5eb1e",
+      "label": "Goal kicks",
+      "home_value": "6",
+      "away_value": "2",
+      "sort_order": 14,
+      "source": "https://www.ysscores.com/en/match/6141481/Kuwait-SC-vs-Al-Sulaibikhat-SC"
+    },
+    {
+      "id": "e9de3d05-5893-526c-976b-95beb3fa48cf",
+      "match_id": "a18044df-376f-4c7e-8f7e-45885e169b47",
+      "label": "Total shots",
+      "home_value": "4",
+      "away_value": "13",
+      "sort_order": 1,
+      "source": "https://www.ysscores.com/en/match/6018574/Al-Jahra-SC-vs-Kazma-SC"
+    },
+    {
+      "id": "ef10bbf4-419d-5edf-be98-549616401b55",
+      "match_id": "9cadefd0-2b60-4e64-9c75-17406c7da798",
+      "label": "Total shots",
+      "home_value": "15",
+      "away_value": "5",
+      "sort_order": 1,
+      "source": "https://derbista.com/en/match/kazma-vs-al-sulaibikhat-2026-10-23"
+    },
+    {
+      "id": "9c30ff47-c60d-5f40-a773-e89253b80c14",
+      "match_id": "4fa706b3-87ee-4c8b-adcc-4aa7e73ca870",
+      "label": "Total shots",
+      "home_value": "9",
+      "away_value": "13",
+      "sort_order": 1,
+      "source": "https://api.madplay.app/scores/_ys/en/match/6018579/Al-Tadamon-SC-(Kuwait)-vs-Kuwait-SC"
+    },
+    {
+      "id": "9d5eedab-807d-5471-be75-a98205ab14da",
+      "match_id": "b400c084-5848-46ec-9c3f-286505b74dd1",
+      "label": "Total shots",
+      "home_value": "8",
+      "away_value": "10",
+      "sort_order": 1,
+      "source": "https://dafouri.net/match/6018577?lang=en"
+    },
+    {
+      "id": "88c7760f-3788-56fa-b173-9cdf796b4575",
+      "match_id": "b400c084-5848-46ec-9c3f-286505b74dd1",
+      "label": "Corner kicks",
+      "home_value": "8",
+      "away_value": "9",
+      "sort_order": 3,
+      "source": "https://dafouri.net/match/6018577?lang=en"
+    },
+    {
+      "id": "1c12a7a7-8212-5cb6-8404-541f747f359c",
+      "match_id": "52b6eb8c-d6b3-4367-9dca-fd627a32b918",
+      "label": "Total shots",
+      "home_value": "9",
+      "away_value": "7",
+      "sort_order": 1,
+      "source": "https://dafouri.net/match/6141483?lang=en"
+    },
+    {
+      "id": "aba940ce-20f6-5a5c-9506-8a5303b787a3",
+      "match_id": "3dabd86e-986c-4c64-bc39-bcc217cba7dc",
+      "label": "Total shots",
+      "home_value": "9",
+      "away_value": "6",
+      "sort_order": 1,
+      "source": "https://scoresivo.com/en/match/58909-al-arabi-vs-al-fahaheel"
+    },
+    {
+      "id": "28b39bf5-5de5-52cc-ab4b-8c2c02217bcb",
+      "match_id": "0bf4c825-c8b8-4a51-84cd-c9e920bd8fd6",
+      "label": "Total shots",
+      "home_value": "2",
+      "away_value": "19",
+      "sort_order": 1,
+      "source": "https://scoresivo.com/en/match/58916-al-shabab-vs-qadsia-sc"
+    },
+    {
+      "id": "2175c9ca-aef9-5108-b5e1-950d46749cd4",
+      "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+      "label": "Total shots",
+      "home_value": "14",
+      "away_value": "9",
+      "sort_order": 1,
+      "source": "https://scoresivo.com/en/match/59072-al-tadamon-vs-al-sahel-sc"
+    },
+    {
+      "id": "e75692f3-8617-5749-93b3-116dd21c1623",
+      "match_id": "7b0dbcf2-5f8b-4a18-ac55-896fec52f262",
+      "label": "Total shots",
+      "home_value": "4",
+      "away_value": "8",
+      "sort_order": 1,
+      "source": "https://www.ysscores.com/en/match/6141485/Al-Sulaibikhat-SC-vs-Al-Salmiya-SC"
+    },
+    {
+      "id": "63e0b6d2-6f41-5dac-a0b7-c23d19b03fd3",
+      "match_id": "9f2fde82-79cf-4ccf-a45d-2f1215a83182",
+      "label": "Total shots",
+      "home_value": "11",
+      "away_value": "9",
+      "sort_order": 1,
+      "source": "https://www.ysscores.com/en/match/6018580/Al-Jahra-SC-vs-Al-Fahaheel-SC"
+    },
+    {
+      "id": "72bbaca1-21a5-5ac2-8e53-33bdd4cb5257",
+      "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+      "label": "Ball possession",
+      "home_value": "51%",
+      "away_value": "49%",
+      "sort_order": 0,
+      "source": "https://api.madplay.app/scores/_ys/en/match/6018582/Al-Nasr-SC-(Kuwait)-vs-Al-Shabab"
+    },
+    {
+      "id": "afece040-87cf-5a9d-ae31-ebef8c9753c7",
+      "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+      "label": "Total shots",
+      "home_value": "7",
+      "away_value": "6",
+      "sort_order": 1,
+      "source": "https://api.madplay.app/scores/_ys/en/match/6018582/Al-Nasr-SC-(Kuwait)-vs-Al-Shabab"
+    },
+    {
+      "id": "f2238fd3-5b72-525a-a5f5-e95d531a3061",
+      "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+      "label": "Shots on target",
+      "home_value": "2",
+      "away_value": "2",
+      "sort_order": 2,
+      "source": "https://api.madplay.app/scores/_ys/en/match/6018582/Al-Nasr-SC-(Kuwait)-vs-Al-Shabab"
+    },
+    {
+      "id": "11a888e2-b310-5c37-948e-d40c6d167842",
+      "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+      "label": "Corner kicks",
+      "home_value": "3",
+      "away_value": "5",
+      "sort_order": 3,
+      "source": "https://api.madplay.app/scores/_ys/en/match/6018582/Al-Nasr-SC-(Kuwait)-vs-Al-Shabab"
+    },
+    {
+      "id": "3c5c55e2-2938-5a26-8d4f-18f8d071c59f",
+      "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+      "label": "Offsides",
+      "home_value": "3",
+      "away_value": "1",
+      "sort_order": 4,
+      "source": "https://api.madplay.app/scores/_ys/en/match/6018582/Al-Nasr-SC-(Kuwait)-vs-Al-Shabab"
+    },
+    {
+      "id": "7a4930b6-8286-509d-9232-9d4e9e787d3c",
+      "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+      "label": "Fouls",
+      "home_value": "10",
+      "away_value": "9",
+      "sort_order": 5,
+      "source": "https://api.madplay.app/scores/_ys/en/match/6018582/Al-Nasr-SC-(Kuwait)-vs-Al-Shabab"
+    }
+  ],
+  "full_matches": [
+    {
+      "id": "4b0ab485-a1d6-53f6-9413-ac98ccdbbd81",
+      "owner_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+      "title": "Full Match | Al Tadamon SC 3-2 Al Sahel SC",
+      "url": "https://www.youtube.com/watch?v=tT91B_4HK0A",
+      "verified_title": "مباراة التضامن vs الساحل .. دوري زين الكويتي لكرة القدم .. الجولة السابعة - 31-10-2026"
+    },
+    {
+      "id": "10059c87-0a8f-54d1-82d9-95209ea322c3",
+      "owner_id": "9f2fde82-79cf-4ccf-a45d-2f1215a83182",
+      "title": "Full Match | Al Jahra SC 3-0 Al Fahaheel SC",
+      "url": "https://www.youtube.com/watch?v=JITphtGyQ1I",
+      "verified_title": "مباراة الجهراء vs الفحيحيل .. دوري زين الكويتي لكرة القدم .. الجولة السابعة - 1-11-2026"
+    }
+  ],
+  "highlights": [
+    {
+      "match_id": "dff4cc58-a549-47b6-85cf-f751350e3483",
+      "url": "https://www.youtube.com/watch?v=f_7uNILSUYE",
+      "verified_title": "دوري زين الممتاز | التضامن 3 الساحل 2 | موسم 2026/2027 القسم الأول أهداف المباراة"
+    },
+    {
+      "match_id": "9f2fde82-79cf-4ccf-a45d-2f1215a83182",
+      "url": "https://www.youtube.com/watch?v=7sxggE0GDRM",
+      "verified_title": "دوري زين الممتاز | الجهراء 3 الفحيحيل 0 | موسم 2026/2027 القسم الأول أهداف المباراة"
+    },
+    {
+      "match_id": "8c75692e-4ad4-4aaa-85ef-4b59459841a2",
+      "url": "https://www.youtube.com/watch?v=yWcDCirCUls",
+      "verified_title": "ملخص مباراة النصر و الشباب | إثارة إلى اللحظات الأخيرة | دوري زين الكويتي 2-11-2026"
+    }
+  ]
+}

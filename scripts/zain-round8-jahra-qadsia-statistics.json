@@ -1,0 +1,32 @@
+{
+  "match_id": "4de2dd12-4fb6-4255-84ee-67005f136722",
+  "source_url": "https://ballwhizz.com/en/matches/14715",
+  "verified_at": "2026-11-08",
+  "fixture_date": "2026-11-07",
+  "status": "Full Time",
+  "home": "Al Jahra",
+  "away": "Al Qadsia",
+  "score": [0, 1],
+  "statistics": [
+    ["Ball possession", "32%", "68%"],
+    ["Total shots", "3", "14"],
+    ["Shots on target", "2", "6"],
+    ["Shots off target", "1", "8"],
+    ["Corner kicks", "3", "8"],
+    ["Fouls", "3", "12"],
+    ["Offsides", "2", "3"],
+    ["Yellow cards", "1", "1"],
+    ["Attacks", "53", "85"],
+    ["Dangerous attacks", "27", "54"],
+    ["Free kicks", "16", "5"],
+    ["Throw-ins", "19", "30"],
+    ["Substitutions", "3", "5"]
+  ],
+  "omitted_source_categories": {
+    "Goal kicks": "Away zero is not sufficiently credible to import.",
+    "Goal attempts": "Definition unclear relative to explicit total shots.",
+    "Ball safe": "Undefined provider-specific metric.",
+    "Goals": "Already shown in the unchanged match result."
+  },
+  "preserved": ["score", "status", "lineups", "events", "existing red-card count"]
+}
