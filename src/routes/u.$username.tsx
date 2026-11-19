@@ -31,7 +31,7 @@ function FollowList({userId,kind,onClose}:{userId:string;kind:'followers'|'follo
   const people=useQuery({queryKey:['follow-list',userId,kind],queryFn:async()=>{const {data,error}=await supabase.rpc('social_follow_list',{_user:userId,_kind:kind});if(error)throw error;return data??[];}});
   const list=(people.data??[]).filter(p=>`${p.display_name??''} ${p.username??''}`.toLowerCase().includes(q.toLowerCase().trim()));
   return <SocialScreen open title={kind==='followers'?(lang==='ar'?'المتابعون':'Followers'):(lang==='ar'?'يتابع':'Following')} onClose={onClose}>
-    <input autoFocus aria-label="Search users" placeholder={lang==='ar'?'البحث عن أشخاص…':'Search people…'} value={q} onChange={e=>setQ(e.target.value)} className="mb-5 w-full rounded-md border border-border bg-muted px-4 py-3 text-base"/>
+    <input autoCorrect="off" autoCapitalize="none" spellCheck={false} autoComplete="off" autoFocus aria-label="Search users" placeholder={lang==='ar'?'البحث عن أشخاص…':'Search people…'} value={q} onChange={e=>setQ(e.target.value)} className="mb-5 w-full rounded-md border border-border bg-muted px-4 py-3 text-base"/>
     {people.isLoading&&<Loader2 className="mx-auto animate-spin"/>}
     {people.isError&&<Button onClick={()=>void people.refetch()}>Try again</Button>}
     {list.map(p=><Link key={p.id} to="/u/$username" params={{username:p.username??p.id}} onClick={onClose} className="flex items-center gap-3 py-3">

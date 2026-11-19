@@ -71,7 +71,7 @@ export function FirstRunSetup({ children }: { children: ReactNode }) {
         {stage === "teams" ? <>
           <h1 id="welcome-title" className="mt-8 text-3xl font-bold">{ar ? "اختر فرقك" : "Choose your teams"}</h1>
           <p className="mt-2 text-sm text-muted-foreground">اختر فرقك المفضلة · Choose your favourites</p>
-          <label className="mt-6 flex h-12 items-center gap-3 rounded-lg border border-border bg-card px-4"><Search className="h-5 w-5 text-muted-foreground" /><input aria-label="Search teams" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search teams / ابحث عن فريق" className="min-w-0 flex-1 bg-transparent text-sm outline-none" /></label>
+          <label className="mt-6 flex h-12 items-center gap-3 rounded-lg border border-border bg-card px-4"><Search className="h-5 w-5 text-muted-foreground" /><input autoCorrect="off" autoCapitalize="none" spellCheck={false} autoComplete="off" aria-label="Search teams" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search teams / ابحث عن فريق" className="min-w-0 flex-1 bg-transparent text-sm outline-none" /></label>
           <div className="mt-4 grid flex-1 content-start grid-cols-2 gap-2 pb-6">
             {teams.isPending ? <Loader2 className="col-span-2 mx-auto my-8 h-6 w-6 animate-spin text-primary" /> : teams.isError ? <div className="col-span-2 py-6 text-center"><Button variant="outline" onClick={() => void teams.refetch()}>Try again / حاول مجدداً</Button></div> : visible.length === 0 ? <p className="col-span-2 py-6 text-center text-sm text-muted-foreground">No teams / لا توجد فرق</p> : visible.map((team) => {
               const active = selected.includes(team.id);
