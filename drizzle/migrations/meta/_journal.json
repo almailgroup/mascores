@@ -519,6 +519,20 @@
       "when": 1794686314572,
       "tag": "0073_ordered_event_future_pushes",
       "breakpoints": true
+    },
+    {
+      "idx": 74,
+      "version": "7",
+      "when": 1795082303329,
+      "tag": "0074_harden_restore_deleted_batch",
+      "breakpoints": true
+    },
+    {
+      "idx": 75,
+      "version": "7",
+      "when": 1795082372559,
+      "tag": "0075_harden_merge_records",
+      "breakpoints": true
     }
   ]
 }
