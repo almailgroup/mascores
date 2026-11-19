@@ -136,7 +136,7 @@ function SearchPage() {
           </button>
           <div className="mas-search-field search-field-enter flex h-11 min-w-0 flex-1 items-center gap-2 rounded-full border border-border bg-card px-4 text-foreground shadow-sm focus-within:border-primary/50">
             <SearchIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
-            <input autoFocus value={q} onChange={(e) => setQ(e.target.value)}
+            <input autoCorrect="off" autoCapitalize="none" spellCheck={false} autoComplete="off" autoFocus value={q} onChange={(e) => setQ(e.target.value)}
               placeholder="Search MaScores"
               className="min-w-0 flex-1 bg-transparent text-base outline-none sm:text-sm" />
             {q && <button aria-label={tx("Clear")} onClick={() => setQ("")} className="text-muted-foreground"><X className="h-4 w-4" /></button>}

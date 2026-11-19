@@ -18,6 +18,7 @@ import { isNativeApp } from "@/lib/native-notify";
 import { GlassTabBar } from "@/components/glass-tab-bar";
 import { useNativeTabBar } from "@/lib/native-tab-bar";
 import { Capacitor } from "@capacitor/core";
+import { useTranslationReady } from "@/lib/auto-translate";
 
 /**
  * A restricted person cannot use the app at all: they only see why, and a box to
@@ -120,6 +121,11 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
   const [nativeApp, setNativeApp] = useState(false);
   const [iosApp, setIosApp] = useState(false);
   useEffect(() => { setNativeApp(isNativeApp()); setIosApp(isNativeApp() && Capacitor.getPlatform() !== "android" && !/android/i.test(navigator.userAgent)); }, []);
+  const translationReady = useTranslationReady();
+  const { switching: languageSwitching } = useI18n();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const appReady = mounted && translationReady && !languageSwitching;
   const onPrimary = !bare && PRIMARY_NAV.some((item) => location.pathname === item.to || location.pathname === `${item.to}/`);
   const activeTab = PRIMARY_NAV.findIndex((item) => item.exact ? location.pathname === item.to : location.pathname.startsWith(item.to));
   const systemBar = useNativeTabBar({
@@ -188,7 +194,7 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
       </div>
 
       <BrowseGestures />
-      {onPrimary && !systemBar && (iosApp ? (
+      {appReady && onPrimary && !systemBar && (iosApp ? (
         <nav data-no-gesture aria-label="Main navigation" className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3 md:hidden" style={{ paddingBottom: "max(0.5rem, var(--sa-bottom))" }}>
           <GlassTabBar
             items={PRIMARY_NAV}

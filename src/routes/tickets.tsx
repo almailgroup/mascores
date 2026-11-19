@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Ticket as TicketIcon, Loader2, CheckCircle2, Clock, ArrowRight, ArrowLeft, X, Sparkles, Minus, Plus, ChevronRight } from "lucide-react";
-import { AppShell, BackButton } from "@/components/app-shell";
+import { AppShell } from "@/components/app-shell";
 import { QrCode } from "@/components/qr-code";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -144,7 +144,6 @@ function TicketsPage() {
 
   return (
     <AppShell>
-      <BackButton />
       <div className="mb-5 overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/15 via-card to-card p-5">
         <div className="flex items-center gap-2 text-primary"><TicketIcon className="h-5 w-5" /><span className="text-[0.7rem] font-bold uppercase tracking-widest">{tx("Tickets")}</span></div>
         <h1 className="mt-1 text-2xl font-black tracking-tight">{tx("Match tickets")}</h1>

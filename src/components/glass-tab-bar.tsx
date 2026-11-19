@@ -81,7 +81,7 @@ export function GlassTabBar({ items, activeIndex, label, onReselect }: {
   const renderTabs = (tinted: boolean) => items.map((item) => (
     <div key={item.to} {...(!tinted ? { role: "tab", "aria-selected": items.indexOf(item) === activeIndex, "aria-label": label(item.labelKey) } : {})}
       className="relative flex min-w-0 flex-1 flex-col items-center gap-0.5 py-2 text-[0.62rem] font-bold">
-      <item.icon className="h-5 w-5" strokeWidth={tinted ? 2.4 : 2.2} />
+      <item.icon className="h-[18px] w-[18px]" strokeWidth={tinted ? 2.4 : 2.2} />
       <span className="truncate">{label(item.labelKey)}</span>
     </div>
   ));
