@@ -146,6 +146,26 @@ export function AppShell({ children, bare = false }: { children: ReactNode; bare
   useAskForAlerts();
   const suspension = useMySuspension(user?.id);
 
+  // Short slide-fade when moving between the bottom tab pages (Home, News, …).
+  const lastTabPath = useRef(location.pathname);
+  useEffect(() => {
+    const from = lastTabPath.current;
+    lastTabPath.current = location.pathname;
+    if (from === location.pathname) return;
+    const tabIndex = (path: string) => PRIMARY_NAV.findIndex((item) => item.exact ? path === item.to : path.startsWith(item.to));
+    const fromIndex = tabIndex(from);
+    const toIndex = tabIndex(location.pathname);
+    if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const node = document.querySelector<HTMLElement>("[data-browse-page]");
+    if (!node) return;
+    const dir = (toIndex > fromIndex ? 1 : -1) * (lang === "ar" ? -1 : 1);
+    node.animate(
+      [{ transform: `translateX(${dir * 18}px)`, opacity: 0.4 }, { transform: "translateX(0)", opacity: 1 }],
+      { duration: 240, easing: "cubic-bezier(.2,.8,.2,1)" },
+    );
+  }, [location.pathname, lang]);
+
   const profile = useQuery({
     enabled: !!user,
     queryKey: ["shell-profile", user?.id],
